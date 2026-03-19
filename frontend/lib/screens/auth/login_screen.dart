@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isPasswordVisible = false; // State untuk visibilitas password
 
   Future<void> _login() async {
     setState(() => _isLoading = true);
@@ -66,15 +67,43 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder())),
-            const SizedBox(height: 15),
-            TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder())),
-            const SizedBox(height: 20),
-            _isLoading ? const CircularProgressIndicator() : ElevatedButton(
-              onPressed: _login,
-              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-              child: const Text('Masuk'),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
             ),
+            const SizedBox(height: 15),
+            TextField(
+              controller: _passwordController,
+              obscureText: !_isPasswordVisible, // Gunakan state
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: const OutlineInputBorder(),
+                // Tambahkan ikon mata di sini
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    // Pilih ikon berdasarkan state
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    // Update state saat ikon ditekan
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _login,
+                    style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+                    child: const Text('Masuk'),
+                  ),
             TextButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
