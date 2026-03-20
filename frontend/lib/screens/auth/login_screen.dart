@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../dashboard/dashboard_screen.dart';
-import '../dashboard/admin_dashboard_screen.dart';
+
+import '../dashboard/dashboard_screen.dart'; 
+import '../dashboard/admin/admin_main_layout.dart'; // Import layout admin sudah ditambahkan di sini
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -41,10 +42,11 @@ class _LoginScreenState extends State<LoginScreen> {
         
         String userRole = data['user']['role'];
 
+        // Navigasi dipisah berdasarkan Role
         if (userRole == 'Admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+            MaterialPageRoute(builder: (context) => const AdminMainLayout()),
           );
         } else {
           Navigator.pushReplacement(
@@ -55,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message']), backgroundColor: Colors.red),
+          SnackBar(content: Text(data['message'] ?? 'Login gagal'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
