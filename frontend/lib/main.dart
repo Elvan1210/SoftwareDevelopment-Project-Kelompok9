@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/auth/login_screen.dart'; // Panggil layar login
+import 'screens/auth/login_screen.dart';
 
 void main() {
   runApp(const MyPSKDApp());
@@ -14,7 +14,7 @@ class MyPSKDApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'MyPSKD',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginScreen(), // Halaman pertama yang dibuka adalah Login
+      home: const LoginScreen(),
     );
   }
 }

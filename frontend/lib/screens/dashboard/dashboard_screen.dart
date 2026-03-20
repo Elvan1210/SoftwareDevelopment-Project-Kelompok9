@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../auth/login_screen.dart';
 
-// Dummy data for demonstration
 const String studentName = "Software Dev Pls IP 4";
 const String studentProfileUrl = "https://i.pravatar.cc/150?u=ahmad_dhani";
 const int pendingTasks = 5;
@@ -21,12 +21,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _selectedIndex = index;
     });
-    // Handle navigation to other screens here
   }
 
   @override
   Widget build(BuildContext context) {
-    // Simple color scheme
     final Color primaryColor = Colors.blue.shade800;
     final Color secondaryColor = Colors.purple.shade600;
     final Color cardBackgroundColor = Colors.white;
@@ -34,7 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: _buildAppBar(primaryColor),
+      appBar: _buildAppBar(primaryColor, context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -85,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(Color primaryColor) {
+  PreferredSizeWidget _buildAppBar(Color primaryColor, BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -109,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               Text(
                 studentName,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -126,6 +124,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Icon(Icons.notifications, color: Colors.grey.shade700),
           ),
           onPressed: () {},
+        ),
+        IconButton(
+          icon: Icon(Icons.logout, color: Colors.red.shade400),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          },
         ),
         const SizedBox(width: 8),
       ],

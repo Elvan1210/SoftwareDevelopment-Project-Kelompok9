@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'register_screen.dart'; // Panggil file register
-import '../dashboard/dashboard_screen.dart'; // Panggil file dashboard
+import '../dashboard/dashboard_screen.dart';
+import '../dashboard/admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _isPasswordVisible = false; // State untuk visibilitas password
+  bool _isPasswordVisible = false;
 
   Future<void> _login() async {
     setState(() => _isLoading = true);
@@ -34,25 +34,34 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Berhasil: ${data['message']}'), backgroundColor: Colors.green),
+          SnackBar(content: Text(data['message']), backgroundColor: Colors.green),
         );
         
-        // Pindah ke halaman Dashboard jika sukses
-        if (mounted) {
+        String userRole = data['user']['role'];
+
+        if (userRole == 'Admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+          );
+        } else {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const DashboardScreen()),
           );
         }
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal: ${data['message']}'), backgroundColor: Colors.red),
+          SnackBar(content: Text(data['message']), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error jaringan: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     }
     setState(() => _isLoading = false);
@@ -77,18 +86,15 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 15),
             TextField(
               controller: _passwordController,
-              obscureText: !_isPasswordVisible, // Gunakan state
+              obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
                 labelText: 'Password',
                 border: const OutlineInputBorder(),
-                // Tambahkan ikon mata di sini
                 suffixIcon: IconButton(
                   icon: Icon(
-                    // Pilih ikon berdasarkan state
                     _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                   ),
                   onPressed: () {
-                    // Update state saat ikon ditekan
                     setState(() {
                       _isPasswordVisible = !_isPasswordVisible;
                     });
@@ -104,12 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                     child: const Text('Masuk'),
                   ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
-              },
-              child: const Text('Belum punya akun? Buat di sini'),
-            )
           ],
         ),
       ),
