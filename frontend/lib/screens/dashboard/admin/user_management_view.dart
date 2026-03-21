@@ -15,6 +15,7 @@ class _UserManagementViewState extends State<UserManagementView> {
   List<dynamic> _users = [];
   bool _isLoading = false;
   String _searchQuery = '';
+  String _selectedRole = 'Semua';
 
   @override
   void initState() {
@@ -123,8 +124,11 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   List<dynamic> get _filteredUsers {
-    if (_searchQuery.isEmpty) return _users;
     return _users.where((user) {
+      final roleMatches = _selectedRole == 'Semua' || (user['role'] ?? '') == _selectedRole;
+      if (!roleMatches) return false;
+
+      if (_searchQuery.isEmpty) return true;
       final searchStr = _searchQuery.toLowerCase();
       final nama = (user['nama'] ?? '').toString().toLowerCase();
       final role = (user['role'] ?? '').toString().toLowerCase();
@@ -146,16 +150,46 @@ class _UserManagementViewState extends State<UserManagementView> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              decoration: InputDecoration(
-                hintText: 'Cari nama, role, email, atau kelas...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true, 
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                    decoration: InputDecoration(
+                      hintText: 'Cari nama, role, email, atau kelas...',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true, 
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedRole,
+                      items: ['Semua', 'Siswa', 'Guru', 'Admin']
+                          .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedRole = val);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
