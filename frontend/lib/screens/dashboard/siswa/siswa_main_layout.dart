@@ -4,6 +4,8 @@ import 'siswa_dashboard_screen.dart';
 import 'siswa_tugas_detail_screen.dart';
 import 'siswa_nilai_view.dart';
 import 'siswa_pengumuman_view.dart';
+import 'siswa_materi_view.dart';
+import 'siswa_profil_view.dart';
 
 class SiswaMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -23,8 +25,10 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     super.initState();
     _views = [
       SiswaDashboardScreen(userData: widget.userData, token: widget.token),
+      SiswaMateriView(userData: widget.userData, token: widget.token),
       SiswaNilaiView(userData: widget.userData, token: widget.token),
       SiswaPengumumanView(token: widget.token),
+      SiswaProfilView(userData: widget.userData),
     ];
   }
 
@@ -37,8 +41,10 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
         onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Materi'),
           NavigationDestination(icon: Icon(Icons.grade_outlined), selectedIcon: Icon(Icons.grade), label: 'Nilai'),
           NavigationDestination(icon: Icon(Icons.campaign_outlined), selectedIcon: Icon(Icons.campaign), label: 'Pengumuman'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );
