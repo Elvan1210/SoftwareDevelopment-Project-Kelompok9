@@ -22,7 +22,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     super.initState();
     _views.addAll([
       const AdminDashboardView(),
-      const UserManagementView(),
+      UserManagementView(token: widget.token),
       KelasManagementView(token: widget.token),
       const Center(child: Text('Modul Materi')),
       const Center(child: Text('Modul Tugas')),
