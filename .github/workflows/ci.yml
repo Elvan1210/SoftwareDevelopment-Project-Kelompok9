@@ -1,0 +1,51 @@
+name: LMS Kelompok 9 CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  backend-lint-and-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node.js 18.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    - run: npm ci
+    - run: npm run lint --if-present
+    - run: npm audit
+
+  frontend-build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+    - uses: actions/checkout@v3
+    - uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+    - run: flutter pub get
+    - run: flutter analyze
+    # Assuming flutter test is configured
+    # - run: flutter test
+    - run: flutter build web --release
+
+  docker-build-verification:
+    needs: [backend-lint-and-security, frontend-build-test]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Verify Backend Container Build
+      run: docker build -t backend-test ./backend
+    - name: Verify Frontend Container Build
+      run: docker build -t frontend-test ./frontend

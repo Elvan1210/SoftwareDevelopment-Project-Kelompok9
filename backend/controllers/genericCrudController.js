@@ -10,10 +10,16 @@ const createCrudController = (collectionName) => ({
   // GET /api/:collection
   getAll: async (req, res) => {
     try {
-      const snapshot = await db.collection(collectionName).get();
+      const limit = parseInt(req.query.limit) || 50;
+      const offset = parseInt(req.query.offset) || 0;
+      
+      const snapshot = await db.collection(collectionName)
+                                .limit(limit)
+                                .offset(offset)
+                                .get();
       const data = [];
       snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
-      res.status(200).json(data);
+      res.status(200).json({ data, limit, offset });
     } catch (error) {
       res.status(500).json({ message: 'Error server', error: error.message });
     }

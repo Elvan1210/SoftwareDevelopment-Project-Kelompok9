@@ -16,10 +16,10 @@ exports.login = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, userData.password);
     if (!isPasswordValid) return res.status(401).json({ message: 'Password salah' });
-
+    const settings = require('../config/settings');
     const token = jwt.sign(
       { id: userId, role: userData.role, email: userData.email },
-      process.env.JWT_SECRET || 'rahasia',
+      settings.jwtSecret,
       { expiresIn: '24h' }
     );
 
