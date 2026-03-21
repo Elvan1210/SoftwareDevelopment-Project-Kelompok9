@@ -1,13 +1,21 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const logger = require('./config/logger');
+const settings = require('./config/settings');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 // ─── Global Middleware ──────────────────────────────────────────────────────
+app.use(helmet()); // Secure HTTP headers against vulnerabilities like XSS
 app.use(cors());
 app.use(express.json());
+
+// ─── Health check Endpoint ──────────────────────────────────────────────────
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
 
 // ─── Import Routes ──────────────────────────────────────────────────────────
 const authRoutes        = require('./routes/authRoutes');
@@ -31,7 +39,17 @@ app.use('/api/pengumuman',  pengumumanRoutes);
 app.use('/api/pengumpulan', pengumpulanRoutes);
 app.use('/api/notifikasi',  notifikasiRoutes);
 
+// ─── Global Error Handling ──────────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  logger.error(`Error processing request: ${req.method} ${req.url}`, {
+    error: err.message,
+    stack: err.stack,
+    ip: req.ip
+  });
+  res.status(500).json({ message: 'Terjadi kesalahan sistem', error: settings.nodeEnv === 'development' ? err.message : null });
+});
+
 // ─── Start Server ───────────────────────────────────────────────────────────
-app.listen(port, () => {
-  console.log(`Server Backend berjalan di http://localhost:${port}`);
+app.listen(settings.port, () => {
+  logger.info(`Server Backend berjalan dengan aman di http://localhost:${settings.port}`);
 });
