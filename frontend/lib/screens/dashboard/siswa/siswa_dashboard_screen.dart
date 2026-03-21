@@ -6,7 +6,8 @@ import 'siswa_tugas_detail_screen.dart';
 
 class SiswaDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
-  const SiswaDashboardScreen({super.key, required this.userData});
+  final String token;
+  const SiswaDashboardScreen({super.key, required this.userData, required this.token});
 
   @override
   State<SiswaDashboardScreen> createState() => _SiswaDashboardScreenState();
@@ -28,8 +29,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      final resTugas = await http.get(Uri.parse('http://localhost:3000/api/tugas'));
-      final resPengumuman = await http.get(Uri.parse('http://localhost:3000/api/pengumuman'));
+      final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final resTugas = await http.get(Uri.parse('http://localhost:3000/api/tugas'), headers: headers);
+      final resPengumuman = await http.get(Uri.parse('http://localhost:3000/api/pengumuman'), headers: headers);
 
       if (resTugas.statusCode == 200) {
         List allTugas = jsonDecode(resTugas.body);
@@ -181,7 +183,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
             subtitle: Text("Deadline: ${task['deadline'] ?? '-'}"),
             trailing: ElevatedButton(
               onPressed: () async {
-                await Navigator.push(context, MaterialPageRoute(builder: (context) => SiswaTugasDetailScreen(tugas: task, userData: widget.userData)));
+                await Navigator.push(context, MaterialPageRoute(builder: (context) => SiswaTugasDetailScreen(tugas: task, userData: widget.userData, token: widget.token)));
                 _fetchData();
               },
               style: ElevatedButton.styleFrom(

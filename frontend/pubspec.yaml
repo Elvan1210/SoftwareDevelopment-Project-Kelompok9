@@ -1,4 +1,4 @@
-name: frontend
+name: mypskd
 description: A new Flutter project.
 publish_to: 'none'
 version: 1.0.0+1
@@ -13,6 +13,7 @@ dependencies:
   fl_chart: ^0.65.0
   file_picker: ^6.1.1
   intl: ^0.19.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

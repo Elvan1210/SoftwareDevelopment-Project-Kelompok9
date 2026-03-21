@@ -11,6 +11,20 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// ─── Middleware JWT Auth ────────────────────────────────────────────────────
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer <token>"
+  if (!token) return res.status(401).json({ message: 'Akses ditolak. Token tidak ada.' });
+
+  jwt.verify(token, process.env.JWT_SECRET || 'rahasia', (err, decoded) => {
+    if (err) return res.status(403).json({ message: 'Token tidak valid atau sudah expired.' });
+    req.user = decoded;
+    next();
+  });
+};
+// ───────────────────────────────────────────────────────────────────────────
+
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -38,7 +52,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 const generateCrudRoutes = (collectionName) => {
-  app.get(`/api/${collectionName}`, async (req, res) => {
+  app.get(`/api/${collectionName}`, verifyToken, async (req, res) => {
     try {
       const snapshot = await db.collection(collectionName).get();
       const data = [];
@@ -47,21 +61,21 @@ const generateCrudRoutes = (collectionName) => {
     } catch (error) { res.status(500).json({ message: 'Error server', error: error.message }); }
   });
 
-  app.post(`/api/${collectionName}`, async (req, res) => {
+  app.post(`/api/${collectionName}`, verifyToken, async (req, res) => {
     try {
       const docRef = await db.collection(collectionName).add(req.body);
       res.status(201).json({ message: 'Data dibuat', id: docRef.id });
     } catch (error) { res.status(500).json({ message: 'Error server', error: error.message }); }
   });
 
-  app.put(`/api/${collectionName}/:id`, async (req, res) => {
+  app.put(`/api/${collectionName}/:id`, verifyToken, async (req, res) => {
     try {
       await db.collection(collectionName).doc(req.params.id).update(req.body);
       res.status(200).json({ message: 'Data diupdate' });
     } catch (error) { res.status(500).json({ message: 'Error server', error: error.message }); }
   });
 
-  app.delete(`/api/${collectionName}/:id`, async (req, res) => {
+  app.delete(`/api/${collectionName}/:id`, verifyToken, async (req, res) => {
     try {
       await db.collection(collectionName).doc(req.params.id).delete();
       res.status(200).json({ message: 'Data dihapus' });
@@ -75,7 +89,7 @@ generateCrudRoutes('nilai');
 generateCrudRoutes('pengumuman');
 generateCrudRoutes('pengumpulan');
 
-app.get('/api/users', async (req, res) => {
+app.get('/api/users', verifyToken, async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
     const users = [];
@@ -84,7 +98,7 @@ app.get('/api/users', async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Error server', error: error.message }); }
 });
 
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', verifyToken, async (req, res) => {
   try {
     const { nama, email, password, role, kelas } = req.body;
     const salt = await bcrypt.genSalt(10);
@@ -95,7 +109,7 @@ app.post('/api/users', async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Error server', error: error.message }); }
 });
 
-app.put('/api/users/:id', async (req, res) => {
+app.put('/api/users/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { nama, email, role, password, kelas } = req.body;
@@ -109,7 +123,7 @@ app.put('/api/users/:id', async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Error server', error: error.message }); }
 });
 
-app.delete('/api/users/:id', async (req, res) => {
+app.delete('/api/users/:id', verifyToken, async (req, res) => {
   try {
     await db.collection('users').doc(req.params.id).delete();
     res.status(200).json({ message: 'User dihapus' });

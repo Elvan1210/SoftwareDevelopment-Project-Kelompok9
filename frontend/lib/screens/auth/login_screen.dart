@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import '../dashboard/siswa/siswa_dashboard_screen.dart';
+import '../dashboard/siswa/siswa_main_layout.dart';
 import '../dashboard/admin/admin_main_layout.dart';
 import '../dashboard/guru/guru_main_layout.dart';
 
@@ -38,15 +38,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         if (!mounted) return;
         
+        final String token = data['token'];
         String userRole = data['user']['role'];
         Map<String, dynamic> userData = data['user'];
 
         if (userRole == 'Admin') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AdminMainLayout()));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminMainLayout(token: token)));
         } else if (userRole == 'Guru') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GuruMainLayout(userData: userData)));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GuruMainLayout(userData: userData, token: token)));
         } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SiswaDashboardScreen(userData: userData)));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SiswaMainLayout(userData: userData, token: token)));
         }
       } else {
         if (!mounted) return;

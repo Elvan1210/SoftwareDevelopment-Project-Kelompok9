@@ -6,8 +6,9 @@ import 'package:file_picker/file_picker.dart';
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
   final Map<String, dynamic> userData;
+  final String token;
 
-  const SiswaTugasDetailScreen({super.key, required this.tugas, required this.userData});
+  const SiswaTugasDetailScreen({super.key, required this.tugas, required this.userData, required this.token});
 
   @override
   State<SiswaTugasDetailScreen> createState() => _SiswaTugasDetailScreenState();
@@ -28,7 +29,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   Future<void> _checkSubmissionStatus() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/api/pengumpulan'));
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/api/pengumpulan'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       if (response.statusCode == 200) {
         List allData = jsonDecode(response.body);
         var submission = allData.where((p) => p['tugas_id'] == widget.tugas['id'] && p['siswa_id'] == widget.userData['id']).toList();
@@ -83,7 +87,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
       };
       final response = await http.post(
         Uri.parse('http://localhost:3000/api/pengumpulan'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
         body: jsonEncode(body)
       );
 
@@ -107,7 +111,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     if (_pengumpulanId == null) return;
     setState(() => _isLoading = true);
     try {
-      final response = await http.delete(Uri.parse('http://localhost:3000/api/pengumpulan/$_pengumpulanId'));
+      final response = await http.delete(
+        Uri.parse('http://localhost:3000/api/pengumpulan/$_pengumpulanId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       if (response.statusCode == 200) {
         setState(() {
           _isTurnedIn = false;
