@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../services/notifikasi_service.dart';
 
 class GuruMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -164,6 +165,13 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     Uri.parse('$baseUrl/api/materi'),
                     headers: headers,
                     body: jsonEncode(body),
+                  );
+                  // Kirim Notifikasi
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Materi Baru: ${judulCtrl.text}',
+                    pesan: 'Materi baru telah ditambahkan oleh ${widget.userData['nama']} untuk mapel ${mapelCtrl.text}',
+                    token: widget.token,
+                    targetKelas: kelasCtrl.text.isNotEmpty ? kelasCtrl.text : null,
                   );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);

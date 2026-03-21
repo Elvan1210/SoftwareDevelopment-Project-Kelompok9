@@ -4,6 +4,7 @@ import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
+import '../../../services/notifikasi_service.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -106,6 +107,13 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                   await http.put(url, headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(url, headers: headers, body: jsonEncode(body));
+                  // Kirim Notifikasi
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Tugas Baru: ${judulCtrl.text}',
+                    pesan: 'Tugas baru dari ${widget.userData['nama']} (Deadline: ${deadlineCtrl.text})',
+                    token: widget.token,
+                    targetKelas: widget.userData['kelas'],
+                  );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchTugas();

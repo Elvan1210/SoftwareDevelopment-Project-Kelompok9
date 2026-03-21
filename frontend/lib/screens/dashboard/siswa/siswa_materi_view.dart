@@ -2,6 +2,7 @@
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../widgets/notification_bell.dart';
 
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -79,6 +80,7 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
         elevation: 0,
         foregroundColor: Colors.black87,
         automaticallyImplyLeading: false,
+        actions: [NotificationBell(userData: widget.userData, token: widget.token, iconColor: Colors.black87), const SizedBox(width:8)],
       ),
       body: Column(
         children: [
@@ -319,3 +321,4 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
     );
   }
 }
+

@@ -7,6 +7,7 @@ import 'admin_tugas_view.dart';
 import 'admin_nilai_view.dart';
 import 'admin_pengumuman_view.dart';
 import 'admin_profil_view.dart';
+import '../../../widgets/notification_bell.dart';
 
 class AdminMainLayout extends StatefulWidget {
   final String token;
@@ -55,6 +56,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black87,
+        actions: [
+          NotificationBell(
+            userData: const {'id': 'admin', 'role': 'Admin', 'nama': 'Administrator', 'kelas': ''},
+            token: widget.token,
+            iconColor: Colors.black87,
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {

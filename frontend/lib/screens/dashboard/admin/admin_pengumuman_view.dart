@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../widgets/confirm_delete.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
+import '../../../services/notifikasi_service.dart';
 
 class AdminPengumumanView extends StatefulWidget {
   final String token;
@@ -98,6 +99,12 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                   await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Pengumuman Admin: ${judulCtrl.text}',
+                    pesan: isiCtrl.text,
+                    token: widget.token,
+                    targetRole: 'Semua', 
+                  );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchPengumuman();

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../auth/login_screen.dart';
 import 'siswa_dashboard_screen.dart';
 import 'siswa_tugas_detail_screen.dart';
@@ -29,7 +29,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
       SiswaTugasView(userData: widget.userData, token: widget.token),
       SiswaMateriView(userData: widget.userData, token: widget.token),
       SiswaNilaiView(userData: widget.userData, token: widget.token),
-      SiswaPengumumanView(token: widget.token),
+      SiswaPengumumanView(userData: widget.userData, token: widget.token),
       SiswaProfilView(userData: widget.userData),
     ];
   }
@@ -53,3 +53,4 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     );
   }
 }
+
