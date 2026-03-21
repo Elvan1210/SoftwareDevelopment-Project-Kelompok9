@@ -3,6 +3,7 @@ import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
+import '../../../services/notifikasi_service.dart';
 
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -113,6 +114,15 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           _isTurnedIn = true;
           _pengumpulanId = resData['id'];
         });
+        
+        // Kirim notifikasi ke Guru
+        NotifikasiService.kirimNotifikasi(
+          judul: 'Tugas Dikumpulkan!',
+          pesan: '${widget.userData['nama']} telah mengumpulkan tugas "${widget.tugas['judul']}"',
+          token: widget.token,
+          targetUserId: widget.tugas['guru_id'],
+        );
+
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tugas berhasil dikumpulkan!'), backgroundColor: Colors.green));
       } else {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengirim: ${response.statusCode} - ${response.body}'), backgroundColor: Colors.red));
