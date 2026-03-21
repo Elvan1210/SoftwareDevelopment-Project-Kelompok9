@@ -170,6 +170,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
             Text('Jatuh tempo: ${widget.tugas['deadline']}', style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
             const SizedBox(height: 4),
             Text('Mata Pelajaran: ${widget.tugas['mapel'] ?? widget.tugas['kelas']}', style: const TextStyle(fontSize: 16)),
+            if ((widget.tugas['guru_nama'] ?? '').toString().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text('Guru: ${widget.tugas['guru_nama']}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+            ],
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),

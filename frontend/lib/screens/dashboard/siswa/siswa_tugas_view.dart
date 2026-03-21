@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -237,6 +237,13 @@ class _SiswaTugasViewState extends State<SiswaTugasView>
                 tugas['judul'] ?? 'Tugas',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+              if ((tugas['guru_nama'] ?? '').toString().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Guru: ${tugas['guru_nama']}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+              ],
 
               const SizedBox(height: 8),
 

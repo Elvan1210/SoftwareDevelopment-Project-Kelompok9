@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
@@ -91,6 +91,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 'deadline': deadlineCtrl.text,
                 'link': linkCtrl.text,
                 'guru_id': widget.userData['id'],
+                'guru_nama': widget.userData['nama'],
                 'mapel': widget.userData['kelas'],
                 'status': 'Aktif',
                 'tanggal_dibuat': DateTime.now().toIso8601String()
