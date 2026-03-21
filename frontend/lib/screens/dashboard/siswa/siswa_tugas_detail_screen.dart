@@ -19,6 +19,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   bool _isLoading = true;
   bool _isTurnedIn = false;
   String? _pengumpulanId;
+  int? _nilaiSiswa;
   List<String> _attachments = [];
 
   @override
@@ -30,21 +31,34 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   Future<void> _checkSubmissionStatus() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/pengumpulan'),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
-      if (response.statusCode == 200) {
-        List allData = jsonDecode(response.body);
-        var submission = allData.where((p) => p['tugas_id'] == widget.tugas['id'] && p['siswa_id'] == widget.userData['id']).toList();
+      final responses = await Future.wait([
+        http.get(
+          Uri.parse('$baseUrl/api/pengumpulan'),
+          headers: {'Authorization': 'Bearer ${widget.token}'},
+        ),
+        http.get(
+          Uri.parse('$baseUrl/api/nilai'),
+          headers: {'Authorization': 'Bearer ${widget.token}'},
+        ),
+      ]);
 
-        if (submission.isNotEmpty) {
-          setState(() {
+      if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
+        List allPengumpulan = jsonDecode(responses[0].body);
+        List allNilai = jsonDecode(responses[1].body);
+
+        var submission = allPengumpulan.where((p) => p['tugas_id'] == widget.tugas['id'] && p['siswa_id'] == widget.userData['id']).toList();
+        var nilaiMilikSiswa = allNilai.where((n) => n['tugas_id'] == widget.tugas['id'] && n['siswa_id'] == widget.userData['id']).toList();
+
+        setState(() {
+          if (submission.isNotEmpty) {
             _isTurnedIn = true;
             _pengumpulanId = submission[0]['id'];
             _attachments = List<String>.from(submission[0]['files'] ?? []);
-          });
-        }
+          }
+          if (nilaiMilikSiswa.isNotEmpty) {
+            _nilaiSiswa = nilaiMilikSiswa[0]['nilai'];
+          }
+        });
       }
     } catch (e) {
       debugPrint("Error Check Status: $e");
@@ -85,6 +99,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         'siswa_nama': widget.userData['nama'],
         'files': _attachments,
         'waktu_pengumpulan': DateTime.now().toIso8601String(),
+        'status': 'Diserahkan'
       };
       final response = await http.post(
         Uri.parse('$baseUrl/api/pengumpulan'),
@@ -177,6 +192,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
+            
             // Menampilkan Deskripsi bila ada
             if ((widget.tugas['deskripsi'] ?? '').toString().isNotEmpty) ...[
               const Text('Deskripsi:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -199,6 +215,33 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
+            ],
+
+            // Menampilkan Nilai jika sudah dinilai
+            if (_nilaiSiswa != null) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.stars, color: Colors.green.shade700, size: 32),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tugas Dinilai', style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: 2),
+                        Text('Nilai kamu: $_nilaiSiswa / 100', style: TextStyle(color: Colors.green.shade700, fontSize: 14)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
 
             const Text('My work', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
