@@ -33,8 +33,8 @@ class _NotificationBellState extends State<NotificationBell> {
       );
 
       if (response.statusCode == 200) {
-        final _dec_allData = jsonDecode(response.body);
-        List allData = _dec_allData is List ? _dec_allData : [];
+        final decAllData = jsonDecode(response.body);
+        List allData = decAllData is List ? decAllData : [];
         
         // Filter notifikasi yang ditujukan untuk user ini
         List myNotifs = allData.where((n) {

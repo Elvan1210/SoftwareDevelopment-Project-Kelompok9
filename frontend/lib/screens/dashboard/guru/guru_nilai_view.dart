@@ -136,7 +136,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
 
                 if (response.statusCode == 200 || response.statusCode == 201) {
-                  Navigator.pop(ctx);
+                  if (ctx.mounted) Navigator.pop(ctx);
                   _fetchData();
                 }
               },

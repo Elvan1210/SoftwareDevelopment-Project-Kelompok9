@@ -35,10 +35,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
       ]);
 
       if (results[0].statusCode == 200 && results[1].statusCode == 200) {
-        final _dec_allPengumpulan = jsonDecode(results[0].body);
-        List allPengumpulan = _dec_allPengumpulan is List ? _dec_allPengumpulan : [];
-        final _dec_allNilai = jsonDecode(results[1].body);
-        List allNilai = _dec_allNilai is List ? _dec_allNilai : [];
+        final decAllPengumpulan = jsonDecode(results[0].body);
+        List allPengumpulan = decAllPengumpulan is List ? decAllPengumpulan : [];
+        final decAllNilai = jsonDecode(results[1].body);
+        List allNilai = decAllNilai is List ? decAllNilai : [];
 
         setState(() {
           _pengumpulanList = allPengumpulan.where((p) => p['tugas_id'] == widget.tugas['id']).toList();
