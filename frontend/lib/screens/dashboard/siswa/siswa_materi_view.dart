@@ -25,19 +25,19 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
   Future<void> _fetchMateri() async {
     setState(() => _isLoading = true);
     try {
-      // Materi bisa diambil dari tugas yang berjenis materi, atau koleksi materi tersendiri
-      // Untuk sementara fetch dari /api/tugas dan filter yang relevan
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/tugas'),
+        Uri.parse('http://localhost:3000/api/materi'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
-        List allData = jsonDecode(response.body);
+        List all = jsonDecode(response.body);
         setState(() {
-          _materiList = allData
-              .where((t) =>
-                  t['kelas'] == widget.userData['kelas'] ||
-                  t['mapel'] == widget.userData['kelas'])
+          // Filter materi yang relevan untuk kelas siswa ini
+          _materiList = all
+              .where((m) =>
+                  m['kelas'] == widget.userData['kelas'] ||
+                  m['kelas'] == null ||
+                  (m['kelas'] ?? '').toString().isEmpty)
               .toList();
         });
       }
@@ -47,22 +47,33 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  List<dynamic> get _filteredMateri {
+  List<dynamic> get _filtered {
     if (_searchQuery.isEmpty) return _materiList;
     return _materiList.where((m) {
       final judul = (m['judul'] ?? '').toString().toLowerCase();
       final mapel = (m['mapel'] ?? '').toString().toLowerCase();
+      final deskripsi = (m['deskripsi'] ?? '').toString().toLowerCase();
       return judul.contains(_searchQuery.toLowerCase()) ||
-          mapel.contains(_searchQuery.toLowerCase());
+          mapel.contains(_searchQuery.toLowerCase()) ||
+          deskripsi.contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = [
+      Colors.blue.shade700,
+      Colors.purple.shade600,
+      Colors.teal.shade600,
+      Colors.orange.shade700,
+      Colors.green.shade700,
+      Colors.pink.shade600,
+    ];
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Materi Kelas', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Materi', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black87,
@@ -93,22 +104,22 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
             ),
           ),
 
-          // List materi
+          // List
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _filteredMateri.isEmpty
+                : _filtered.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.menu_book_outlined, size: 80, color: Colors.grey.shade400),
+                            Icon(Icons.menu_book_outlined, size: 80, color: Colors.grey.shade300),
                             const SizedBox(height: 16),
                             Text(
                               _searchQuery.isEmpty
-                                  ? 'Belum ada materi untuk kelas ini.'
+                                  ? 'Belum ada materi tersedia.'
                                   : 'Materi tidak ditemukan.',
-                              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                              style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
                             ),
                           ],
                         ),
@@ -117,64 +128,11 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
                         onRefresh: _fetchMateri,
                         child: ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                          itemCount: _filteredMateri.length,
+                          itemCount: _filtered.length,
                           itemBuilder: (context, index) {
-                            final m = _filteredMateri[index];
-                            final colors = [
-                              Colors.blue.shade700,
-                              Colors.purple.shade600,
-                              Colors.teal.shade600,
-                              Colors.orange.shade700,
-                              Colors.green.shade700,
-                            ];
+                            final m = _filtered[index];
                             final color = colors[index % colors.length];
-
-                            return Card(
-                              elevation: 2,
-                              margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(14),
-                                onTap: () => _showMateriDetail(context, m),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 52,
-                                        height: 52,
-                                        decoration: BoxDecoration(
-                                          color: color.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(Icons.menu_book, color: color, size: 28),
-                                      ),
-                                      const SizedBox(width: 14),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              m['judul'] ?? 'Tanpa Judul',
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold, fontSize: 15),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              m['mapel'] ?? widget.userData['kelas'] ?? '-',
-                                              style: TextStyle(
-                                                  color: Colors.grey.shade600, fontSize: 13),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(Icons.chevron_right, color: Colors.grey.shade400),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
+                            return _materiCard(m, color);
                           },
                         ),
                       ),
@@ -184,23 +142,82 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
     );
   }
 
-  void _showMateriDetail(BuildContext context, Map<String, dynamic> materi) {
+  Widget _materiCard(Map<String, dynamic> m, Color color) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _showDetail(m, color),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.menu_book, color: color, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      m['judul'] ?? 'Tanpa Judul',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      m['mapel'] ?? '-',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    ),
+                    if ((m['deskripsi'] ?? '').toString().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        m['deskripsi'],
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDetail(Map<String, dynamic> m, Color color) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
+        initialChildSize: 0.55,
         maxChildSize: 0.9,
         minChildSize: 0.4,
         expand: false,
-        builder: (_, controller) => Padding(
-          padding: const EdgeInsets.all(24.0),
+        builder: (_, controller) => SingleChildScrollView(
+          controller: controller,
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Handle bar
               Center(
                 child: Container(
                   width: 40,
@@ -212,22 +229,88 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(materi['judul'] ?? '-',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Chip(
-                label: Text(materi['mapel'] ?? '-',
-                    style: const TextStyle(fontSize: 12)),
-                backgroundColor: Colors.blue.shade50,
+
+              // Icon + judul
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.menu_book, color: color, size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      m['judul'] ?? '-',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
+
+              const SizedBox(height: 16),
+
+              // Info chips
+              Wrap(
+                spacing: 8,
+                children: [
+                  if ((m['mapel'] ?? '').toString().isNotEmpty)
+                    Chip(
+                      avatar: Icon(Icons.book_outlined, size: 16, color: color),
+                      label: Text(m['mapel'], style: const TextStyle(fontSize: 12)),
+                      backgroundColor: color.withOpacity(0.08),
+                    ),
+                  if ((m['kelas'] ?? '').toString().isNotEmpty)
+                    Chip(
+                      avatar: const Icon(Icons.class_outlined, size: 16),
+                      label: Text(m['kelas'], style: const TextStyle(fontSize: 12)),
+                      backgroundColor: Colors.grey.shade100,
+                    ),
+                ],
+              ),
+
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              Text('Deadline: ${materi['deadline'] ?? '-'}',
-                  style: TextStyle(color: Colors.grey.shade600)),
-              const SizedBox(height: 8),
-              Text('Status: ${materi['status'] ?? '-'}',
-                  style: TextStyle(color: Colors.grey.shade600)),
+
+              // Deskripsi
+              if ((m['deskripsi'] ?? '').toString().isNotEmpty) ...[
+                const Text('Deskripsi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 6),
+                Text(m['deskripsi'], style: const TextStyle(fontSize: 14, height: 1.5)),
+                const SizedBox(height: 16),
+              ],
+
+              // Link/file materi jika ada
+              if ((m['link'] ?? '').toString().isNotEmpty) ...[
+                const Text('Link Materi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.link, color: Colors.blue.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          m['link'],
+                          style: TextStyle(color: Colors.blue.shade700, decoration: TextDecoration.underline),
+                          maxLines: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 24),
             ],
           ),
         ),
