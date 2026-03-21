@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -252,7 +253,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(icon: const Icon(Icons.edit, color: Colors.orange), onPressed: () => _showMateriForm(m)),
-                          IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _deleteMateri(m['id'])),
+                          IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus materi ini?')) _deleteMateri(m['id']); }),
                         ],
                       ),
                     ),

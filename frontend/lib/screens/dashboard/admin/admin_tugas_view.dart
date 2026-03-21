@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
@@ -103,7 +104,7 @@ class _AdminTugasViewState extends State<AdminTugasView> {
                                   Text('Deadline: ${t['deadline'] ?? '-'} • Kelas: ${t['kelas'] ?? t['mapel'] ?? '-'}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                                 ],
                               ),
-                              trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => _deleteTugas(t['id'])),
+                              trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus tugas ini?')) _deleteTugas(t['id']); }),
                               isThreeLine: true,
                             ),
                           );

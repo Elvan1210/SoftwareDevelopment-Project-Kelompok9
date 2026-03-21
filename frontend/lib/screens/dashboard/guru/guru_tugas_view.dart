@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -177,7 +178,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                           },
                         ),
                         IconButton(icon: const Icon(Icons.edit, color: Colors.orange), onPressed: () => _showTugasForm(t)),
-                        IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _deleteTugas(t['id'])),
+                        IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus tugas ini?')) _deleteTugas(t['id']); }),
                       ],
                     ),
                   ),

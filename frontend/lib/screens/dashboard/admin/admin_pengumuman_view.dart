@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
@@ -167,7 +168,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(icon: const Icon(Icons.edit, color: Colors.blue, size: 20), onPressed: () => _showPengumumanForm(p)),
-                                    IconButton(icon: const Icon(Icons.delete, color: Colors.red, size: 20), onPressed: () => _deletePengumuman(p['id'])),
+                                    IconButton(icon: const Icon(Icons.delete, color: Colors.red, size: 20), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus pengumuman ini?')) _deletePengumuman(p['id']); }),
                                   ],
                                 ),
                                 children: [

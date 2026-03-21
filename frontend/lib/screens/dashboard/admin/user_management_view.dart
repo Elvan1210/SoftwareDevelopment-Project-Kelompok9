@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -301,7 +302,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         ),
                                         IconButton(
                                           icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
-                                          onPressed: () => _deleteUser(user['id']),
+                                          onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus user ini?')) _deleteUser(user['id']); },
                                           tooltip: 'Hapus User',
                                         ),
                                       ],

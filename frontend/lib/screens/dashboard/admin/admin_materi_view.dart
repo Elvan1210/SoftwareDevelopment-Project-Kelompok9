@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
@@ -97,7 +98,7 @@ class _AdminMateriViewState extends State<AdminMateriView> {
                               leading: CircleAvatar(backgroundColor: Colors.teal.shade50, child: Icon(Icons.menu_book, color: Colors.teal.shade700, size: 20)),
                               title: Text(m['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Text('${m['mapel'] ?? '-'} • Guru: ${m['guru_nama'] ?? '-'} • Kelas: ${m['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                              trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => _deleteMateri(m['id'])),
+                              trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus materi ini?')) _deleteMateri(m['id']); }),
                             ),
                           );
                         },
