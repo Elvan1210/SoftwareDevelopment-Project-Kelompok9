@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -16,30 +16,109 @@ class GuruTugasDetailScreen extends StatefulWidget {
 class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
   bool _isLoading = true;
   List<dynamic> _pengumpulanList = [];
+  List<dynamic> _nilaiList = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchPengumpulan();
+    _fetchData();
   }
 
-  Future<void> _fetchPengumpulan() async {
+  Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/pengumpulan'),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
-      if (response.statusCode == 200) {
-        List allData = jsonDecode(response.body);
+      final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final results = await Future.wait([
+        http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
+      ]);
+
+      if (results[0].statusCode == 200 && results[1].statusCode == 200) {
+        List allPengumpulan = jsonDecode(results[0].body);
+        List allNilai = jsonDecode(results[1].body);
+
         setState(() {
-          _pengumpulanList = allData.where((p) => p['tugas_id'] == widget.tugas['id']).toList();
+          _pengumpulanList = allPengumpulan.where((p) => p['tugas_id'] == widget.tugas['id']).toList();
+          _nilaiList = allNilai.where((n) => n['tugas_id'] == widget.tugas['id']).toList();
         });
       }
     } catch (e) {
-      debugPrint("Error Fetch Pengumpulan: $e");
+      debugPrint("Error Fetch Data: $e");
     }
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _showNilaiDialog(Map<String, dynamic> pengumpulan, Map<String, dynamic>? existingNilai) {
+    final ctrl = TextEditingController(text: existingNilai != null ? existingNilai['nilai'].toString() : '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(existingNilai != null ? 'Edit Nilai' : 'Beri Nilai'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Siswa: ${pengumpulan['siswa_nama']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Nilai (0-100)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () async {
+              if (ctrl.text.isEmpty) return;
+              final nilaiVal = int.tryParse(ctrl.text) ?? 0;
+              
+              final body = {
+                'siswa_id': pengumpulan['siswa_id'],
+                'siswa_nama': pengumpulan['siswa_nama'],
+                'guru_id': widget.tugas['guru_id'],
+                'guru_nama': widget.tugas['guru_nama'],
+                'mapel': widget.tugas['mapel'] ?? widget.tugas['kelas'] ?? 'Umum',
+                'tugas_id': widget.tugas['id'],
+                'tugas_judul': widget.tugas['judul'],
+                'nilai': nilaiVal,
+                'waktu_dinilai': DateTime.now().toIso8601String(),
+              };
+
+              final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
+              
+              try {
+                if (existingNilai != null) {
+                  await http.put(Uri.parse('$baseUrl/api/nilai/${existingNilai['id']}'), headers: headers, body: jsonEncode(body));
+                } else {
+                  await http.post(Uri.parse('$baseUrl/api/nilai'), headers: headers, body: jsonEncode(body));
+                  // Pilihan opsional: update API pengumpulan agar statusnya 'Dinilai'
+                  // Karena struktur db kita bebas, kita bisa pass saja update statusnya:
+                  await http.put(
+                    Uri.parse('$baseUrl/api/pengumpulan/${pengumpulan['id']}'), 
+                    headers: headers, 
+                    body: jsonEncode({
+                      ...pengumpulan,
+                      'status': 'Dinilai'
+                    })
+                  );
+                }
+                if (ctx.mounted) Navigator.pop(ctx);
+                _fetchData(); 
+              } catch (e) {
+                debugPrint('Error saving nilai: $e');
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatDate(String isoDate) {
@@ -53,6 +132,13 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Hasil Pengumpulan')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -63,84 +149,107 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
           ],
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _pengumpulanList.isEmpty
-              ? const Center(child: Text('Belum ada siswa yang mengumpulkan tugas ini.', style: TextStyle(fontSize: 16)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _pengumpulanList.length,
-                  itemBuilder: (context, index) {
-                    final p = _pengumpulanList[index];
-                    final List<dynamic> files = p['files'] ?? [];
+      body: _pengumpulanList.isEmpty
+          ? const Center(child: Text('Belum ada siswa yang mengumpulkan tugas ini.', style: TextStyle(fontSize: 16)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _pengumpulanList.length,
+              itemBuilder: (context, index) {
+                final p = _pengumpulanList[index];
+                final List<dynamic> files = p['files'] ?? [];
+                
+                // Cari apakah sudah ada nilai untuk siswa ini di tugas ini
+                Map<String, dynamic>? existingNilai;
+                try {
+                  existingNilai = _nilaiList.firstWhere((n) => n['siswa_id'] == p['siswa_id'] && n['tugas_id'] == widget.tugas['id']);
+                } catch (e) {
+                  existingNilai = null;
+                }
 
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                final isGraded = existingNilai != null;
+
+                return Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    const CircleAvatar(
-                                      backgroundColor: Colors.blue,
-                                      radius: 16,
-                                      child: Icon(Icons.person, size: 16, color: Colors.white),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(p['siswa_nama'] ?? 'Siswa Tidak Diketahui', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  ],
+                                const CircleAvatar(
+                                  backgroundColor: Colors.blue,
+                                  radius: 16,
+                                  child: Icon(Icons.person, size: 16, color: Colors.white),
                                 ),
-                                Text(
-                                  'Diserahkan',
-                                  style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
+                                const SizedBox(width: 8),
+                                Text(p['siswa_nama'] ?? 'Siswa Tidak Diketahui', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text('Waktu: ${_formatDate(p['waktu_pengumpulan'])}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                            const Divider(height: 24),
-                            const Text('File Terlampir:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                            const SizedBox(height: 8),
-                            if (files.isEmpty)
-                              const Text('- Tidak ada file', style: TextStyle(fontStyle: FontStyle.italic))
-                            else
-                              ...files.map((file) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 4),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.attachment, size: 16, color: Colors.grey),
-                                        const SizedBox(width: 8),
-                                        Expanded(child: Text(file.toString(), style: const TextStyle(color: Colors.blue))),
-                                      ],
-                                    ),
-                                  )),
-                            const SizedBox(height: 16),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modul Penilaian Belum Tersedia')));
-                                },
-                                icon: const Icon(Icons.grade, size: 18),
-                                label: const Text('Beri Nilai'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purple.shade600,
-                                  foregroundColor: Colors.white,
-                                ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isGraded ? Colors.green.shade50 : Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                            )
+                              child: Text(
+                                isGraded ? 'Dinilai' : 'Diserahkan',
+                                style: TextStyle(color: isGraded ? Colors.green.shade700 : Colors.blue.shade700, fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        const SizedBox(height: 8),
+                        Text('Waktu: ${_formatDate(p['waktu_pengumpulan'])}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                        const Divider(height: 24),
+                        const Text('File Terlampir:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        const SizedBox(height: 8),
+                        if (files.isEmpty)
+                          const Text('- Tidak ada file', style: TextStyle(fontStyle: FontStyle.italic))
+                        else
+                          ...files.map((file) => Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.attachment, size: 16, color: Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: Text(file.toString(), style: const TextStyle(color: Colors.blue))),
+                                  ],
+                                ),
+                              )),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            isGraded
+                                ? Text(
+                                    'Nilai: ${existingNilai['nilai']}',
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                                  )
+                                : const SizedBox.shrink(),
+                            ElevatedButton.icon(
+                              onPressed: () => _showNilaiDialog(p, existingNilai),
+                              icon: Icon(isGraded ? Icons.edit : Icons.grade, size: 18),
+                              label: Text(isGraded ? 'Edit Nilai' : 'Beri Nilai'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isGraded ? Colors.orange.shade600 : Colors.purple.shade600,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
