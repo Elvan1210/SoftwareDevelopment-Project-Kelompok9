@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -14,6 +14,7 @@ class UserManagementView extends StatefulWidget {
 class _UserManagementViewState extends State<UserManagementView> {
   List<dynamic> _users = [];
   bool _isLoading = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -121,47 +122,82 @@ class _UserManagementViewState extends State<UserManagementView> {
     );
   }
 
+  List<dynamic> get _filteredUsers {
+    if (_searchQuery.isEmpty) return _users;
+    return _users.where((user) {
+      final searchStr = _searchQuery.toLowerCase();
+      final nama = (user['nama'] ?? '').toString().toLowerCase();
+      final role = (user['role'] ?? '').toString().toLowerCase();
+      final kelas = (user['kelas'] ?? '').toString().toLowerCase();
+      final email = (user['email'] ?? '').toString().toLowerCase();
+      return nama.contains(searchStr) || role.contains(searchStr) || kelas.contains(searchStr) || email.contains(searchStr);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-    
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showUserForm(),
         backgroundColor: Colors.blue.shade800,
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Nama', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Role', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Kelas/Mapel', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Aksi', style: TextStyle(fontWeight: FontWeight.bold))),
-              ],
-              rows: _users.map((user) {
-                return DataRow(cells: [
-                  DataCell(Text(user['nama'] ?? '-')),
-                  DataCell(Chip(
-                    label: Text(user['role'] ?? 'Siswa', style: const TextStyle(fontSize: 12)),
-                    backgroundColor: user['role'] == 'Guru' ? Colors.purple.shade100 : Colors.blue.shade100,
-                  )),
-                  DataCell(Text(user['kelas'] ?? '-')),
-                  DataCell(Row(
-                    children: [
-                      IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showUserForm(user)),
-                      IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _deleteUser(user['id'])),
-                    ],
-                  )),
-                ]);
-              }).toList(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              decoration: InputDecoration(
+                hintText: 'Cari nama, role, email, atau kelas...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true, 
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              ),
             ),
           ),
-        ),
+          Expanded(
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Card(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          columns: const [
+                            DataColumn(label: Text('Nama', style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Role', style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Kelas/Mapel', style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Aksi', style: TextStyle(fontWeight: FontWeight.bold))),
+                          ],
+                          rows: _filteredUsers.map((user) {
+                            return DataRow(cells: [
+                              DataCell(Text(user['nama'] ?? '-')),
+                              DataCell(Chip(
+                                label: Text(user['role'] ?? 'Siswa', style: const TextStyle(fontSize: 12)),
+                                backgroundColor: user['role'] == 'Guru' ? Colors.purple.shade100 : Colors.blue.shade100,
+                              )),
+                              DataCell(Text(user['kelas'] ?? '-')),
+                              DataCell(Row(
+                                children: [
+                                  IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showUserForm(user)),
+                                  IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _deleteUser(user['id'])),
+                                ],
+                              )),
+                            ]);
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+          ),
+        ],
       ),
     );
   }
