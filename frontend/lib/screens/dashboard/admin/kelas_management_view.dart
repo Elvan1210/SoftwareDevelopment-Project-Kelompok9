@@ -210,7 +210,7 @@ class _KelasCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(kelas['nama_kelas'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Text(kelas['jurusan'] ?? '-', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: accent, letterSpacing: 1)),
+                    Text(kelas['jurusan'] ?? '-', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: accent, letterSpacing: 1)),
                   ],
                 ),
               ),
