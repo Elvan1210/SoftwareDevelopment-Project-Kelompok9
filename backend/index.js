@@ -18,6 +18,7 @@ const materiRoutes      = require('./routes/materiRoutes');
 const nilaiRoutes       = require('./routes/nilaiRoutes');
 const pengumumanRoutes  = require('./routes/pengumumanRoutes');
 const pengumpulanRoutes = require('./routes/pengumpulanRoutes');
+const notifikasiRoutes  = require('./routes/notifikasiRoutes');
 
 // ─── Register Routes ────────────────────────────────────────────────────────
 app.use('/api',             authRoutes);
@@ -28,6 +29,7 @@ app.use('/api/materi',      materiRoutes);
 app.use('/api/nilai',       nilaiRoutes);
 app.use('/api/pengumuman',  pengumumanRoutes);
 app.use('/api/pengumpulan', pengumpulanRoutes);
+app.use('/api/notifikasi',  notifikasiRoutes);
 
 // ─── Start Server ───────────────────────────────────────────────────────────
 app.listen(port, () => {

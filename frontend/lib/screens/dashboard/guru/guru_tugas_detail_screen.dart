@@ -3,6 +3,7 @@ import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../../../services/notifikasi_service.dart';
 
 class GuruTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -96,6 +97,12 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                   await http.put(Uri.parse('$baseUrl/api/nilai/${existingNilai['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(Uri.parse('$baseUrl/api/nilai'), headers: headers, body: jsonEncode(body));
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Nilai Tugas Keluar!',
+                    pesan: 'Tugas "${widget.tugas['judul']}" kamu dapat nilai $nilaiVal dari ${widget.tugas['guru_nama']}',
+                    token: widget.token,
+                    targetUserId: pengumpulan['siswa_id'],
+                  );
                   // Pilihan opsional: update API pengumpulan agar statusnya 'Dinilai'
                   // Karena struktur db kita bebas, kita bisa pass saja update statusnya:
                   await http.put(
@@ -105,6 +112,13 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                       ...pengumpulan,
                       'status': 'Dinilai'
                     })
+                  );
+                  // Kirim Notifikasi Nilai
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Nilai Tugas Keluar!',
+                    pesan: 'Tugas "${widget.tugas['judul']}" kamu dapat nilai $nilaiVal dari ${widget.tugas['guru_nama']}',
+                    token: widget.token,
+                    targetUserId: pengumpulan['siswa_id'],
                   );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);

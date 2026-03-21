@@ -2,10 +2,12 @@
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../widgets/notification_bell.dart';
 
 class SiswaPengumumanView extends StatefulWidget {
+  final Map<String, dynamic> userData;
   final String token;
-  const SiswaPengumumanView({super.key, required this.token});
+  const SiswaPengumumanView({super.key, required this.userData, required this.token});
 
   @override
   State<SiswaPengumumanView> createState() => _SiswaPengumumanViewState();
@@ -47,6 +49,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
         elevation: 0,
         foregroundColor: Colors.black87,
         automaticallyImplyLeading: false,
+        actions: [NotificationBell(userData: widget.userData, token: widget.token, iconColor: Colors.black87), const SizedBox(width:8)],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -100,3 +103,4 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
     );
   }
 }
+

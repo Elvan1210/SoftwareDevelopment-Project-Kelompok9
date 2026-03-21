@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
+import '../../../services/notifikasi_service.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -90,6 +92,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 'deadline': deadlineCtrl.text,
                 'link': linkCtrl.text,
                 'guru_id': widget.userData['id'],
+                'guru_nama': widget.userData['nama'],
                 'mapel': widget.userData['kelas'],
                 'status': 'Aktif',
                 'tanggal_dibuat': DateTime.now().toIso8601String()
@@ -104,6 +107,13 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                   await http.put(url, headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(url, headers: headers, body: jsonEncode(body));
+                  // Kirim Notifikasi
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Tugas Baru: ${judulCtrl.text}',
+                    pesan: 'Tugas baru dari ${widget.userData['nama']} (Deadline: ${deadlineCtrl.text})',
+                    token: widget.token,
+                    targetKelas: widget.userData['kelas'],
+                  );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchTugas();
@@ -177,7 +187,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                           },
                         ),
                         IconButton(icon: const Icon(Icons.edit, color: Colors.orange), onPressed: () => _showTugasForm(t)),
-                        IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _deleteTugas(t['id'])),
+                        IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus tugas ini?')) _deleteTugas(t['id']); }),
                       ],
                     ),
                   ),

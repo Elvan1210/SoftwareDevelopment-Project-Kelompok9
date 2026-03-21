@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../services/notifikasi_service.dart';
 
 class GuruPengumumanView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -91,6 +93,12 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                   await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
+                  NotifikasiService.kirimNotifikasi(
+                    judul: 'Pengumuman: ${judulCtrl.text}',
+                    pesan: isiCtrl.text,
+                    token: widget.token,
+                    targetRole: 'Semua', // Guru ngasih pengumuman ke Semua (siswa & guru)
+                  );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchPengumuman();
@@ -147,7 +155,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(icon: const Icon(Icons.edit, color: Colors.orange, size: 20), onPressed: () => _showPengumumanForm(p)),
-                        IconButton(icon: const Icon(Icons.delete, color: Colors.red, size: 20), onPressed: () => _deletePengumuman(p['id'])),
+                        IconButton(icon: const Icon(Icons.delete, color: Colors.red, size: 20), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus pengumuman ini?')) _deletePengumuman(p['id']); }),
                       ],
                     ),
                     children: [

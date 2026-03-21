@@ -2,6 +2,7 @@
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../widgets/notification_bell.dart';
 import 'siswa_tugas_detail_screen.dart';
 
 class SiswaTugasView extends StatefulWidget {
@@ -82,6 +83,7 @@ class _SiswaTugasViewState extends State<SiswaTugasView>
         elevation: 0,
         foregroundColor: Colors.black87,
         automaticallyImplyLeading: false,
+        actions: [NotificationBell(userData: widget.userData, token: widget.token, iconColor: Colors.black87), const SizedBox(width:8)],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.blue.shade800,
@@ -237,6 +239,13 @@ class _SiswaTugasViewState extends State<SiswaTugasView>
                 tugas['judul'] ?? 'Tugas',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+              if ((tugas['guru_nama'] ?? '').toString().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Guru: ${tugas['guru_nama']}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+              ],
 
               const SizedBox(height: 8),
 
@@ -307,3 +316,4 @@ class _SiswaTugasViewState extends State<SiswaTugasView>
     );
   }
 }
+
