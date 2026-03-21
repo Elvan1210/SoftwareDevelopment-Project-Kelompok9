@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -173,6 +173,30 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
+            // Menampilkan Deskripsi bila ada
+            if ((widget.tugas['deskripsi'] ?? '').toString().isNotEmpty) ...[
+              const Text('Deskripsi:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(
+                widget.tugas['deskripsi'],
+                style: const TextStyle(fontSize: 16, height: 1.5),
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // Menampilkan Link bila ada
+            if ((widget.tugas['link'] ?? '').toString().isNotEmpty) ...[
+              const Text('Link Pendukung:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              SelectableText(
+                widget.tugas['link'],
+                style: const TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline),
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+            ],
+
             const Text('My work', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             if (_attachments.isNotEmpty)
