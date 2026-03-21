@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../services/notifikasi_service.dart';
+import '../../../widgets/app_shell.dart';
 
 class AdminPengumumanView extends StatefulWidget {
   final String token;
@@ -32,7 +34,8 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (res.statusCode == 200) {
-        setState(() => _pengumumanList = jsonDecode(res.body));
+        final dec = jsonDecode(res.body);
+        setState(() => _pengumumanList = dec is List ? dec : []);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -41,20 +44,13 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
   }
 
   Future<void> _deletePengumuman(String id) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Pengumuman'),
-        content: const Text('Yakin ingin menghapus pengumuman ini?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red), onPressed: () => Navigator.pop(ctx, true), child: const Text('Hapus', style: TextStyle(color: Colors.white))),
-        ],
-      ),
-    );
-    if (ok == true) {
-      await http.delete(Uri.parse('$baseUrl/api/pengumuman/$id'), headers: {'Authorization': 'Bearer ${widget.token}'});
-      _fetchPengumuman();
+    if (await confirmDelete(context, pesan: 'Hapus pengumuman ini?')) {
+      try {
+        await http.delete(Uri.parse('$baseUrl/api/pengumuman/$id'), headers: {'Authorization': 'Bearer ${widget.token}'});
+        _fetchPengumuman();
+      } catch (e) {
+        debugPrint('Error: $e');
+      }
     }
   }
 
@@ -63,27 +59,36 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     final judulCtrl = TextEditingController(text: isEditing ? pengumuman['judul'] : '');
     final isiCtrl = TextEditingController(text: isEditing ? pengumuman['isi'] : '');
     final now = DateTime.now();
-    final tanggalStr = '${now.day} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][now.month - 1]} ${now.year}';
+    final tanggalStr = '${now.day} ${['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][now.month - 1]} ${now.year}';
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isEditing ? 'Edit Pengumuman' : 'Buat Pengumuman (Admin)'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: judulCtrl, decoration: const InputDecoration(labelText: 'Judul Pengumuman', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(
-              controller: isiCtrl,
-              maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Isi Pengumuman', border: OutlineInputBorder()),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(isEditing ? 'Edit Pengumuman' : 'Buat Pengumuman Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
+        content: SizedBox(
+          width: 500,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                AntigravityTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: Icons.campaign_rounded),
+                const SizedBox(height: 16),
+                AntigravityTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+              ],
             ),
-          ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             onPressed: () async {
               if (judulCtrl.text.isEmpty || isiCtrl.text.isEmpty) return;
               final body = {
@@ -91,7 +96,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                 'isi': isiCtrl.text,
                 'tanggal': isEditing ? (pengumuman['tanggal'] ?? tanggalStr) : tanggalStr,
                 'guru_id': 'admin',
-                'guru_nama': 'Administrator',
+                'author': 'Administrator',
               };
               final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
               try {
@@ -99,12 +104,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                   await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
-                  NotifikasiService.kirimNotifikasi(
-                    judul: 'Pengumuman Admin: ${judulCtrl.text}',
-                    pesan: isiCtrl.text,
-                    token: widget.token,
-                    targetRole: 'Semua', 
-                  );
+                  NotifikasiService.kirimNotifikasi(judul: 'Pengumuman Admin: ${judulCtrl.text}', pesan: isiCtrl.text, token: widget.token, targetRole: 'Semua');
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchPengumuman();
@@ -112,7 +112,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                 debugPrint('Error saving: $e');
               }
             },
-            child: const Text('Simpan'),
+            child: Text(isEditing ? 'Simpan' : 'Terbitkan', style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -125,70 +125,131 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showPengumumanForm(),
-        backgroundColor: Colors.blue.shade800,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Buat Pengumuman', style: TextStyle(color: Colors.white)),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: TextField(
-              onChanged: (v) => setState(() => _searchQuery = v),
-              decoration: InputDecoration(
+    if (_isLoading) {
+      return AppShell(child: _buildSkeleton());
+    }
+
+    return AppShell(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: AntigravityFAB(
+          onPressed: () => _showPengumumanForm(),
+          icon: Icons.campaign_rounded,
+          label: 'Buat Pengumuman',
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+              child: AntigravityTextField(
                 hintText: 'Cari pengumuman...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true, fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-              ),
+                prefixIcon: Icons.search_rounded,
+                onChanged: (val) => setState(() => _searchQuery = val),
+              ).animate().fadeIn().slideY(begin: -0.1),
             ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filtered.isEmpty
-                    ? Center(child: Text('Belum ada pengumuman.', style: TextStyle(color: Colors.grey.shade500)))
-                    : RefreshIndicator(
-                        onRefresh: _fetchPengumuman,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
-                          itemCount: _filtered.length,
-                          itemBuilder: (_, i) {
-                            final p = _filtered[i];
-                            return Card(
-                              elevation: 2,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              child: ExpansionTile(
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(8)),
-                                  child: Icon(Icons.campaign, color: Colors.orange.shade700),
-                                ),
-                                title: Text(p['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                subtitle: Text('${p['tanggal'] ?? '-'} • Oleh: ${p['guru_nama'] ?? 'Unknown'}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(icon: const Icon(Icons.edit, color: Colors.blue, size: 20), onPressed: () => _showPengumumanForm(p)),
-                                    IconButton(icon: const Icon(Icons.delete, color: Colors.red, size: 20), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus pengumuman ini?')) _deletePengumuman(p['id']); }),
-                                  ],
-                                ),
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                    child: Align(alignment: Alignment.centerLeft, child: Text(p['isi'] ?? '-')),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+            Expanded(
+              child: _filtered.isEmpty
+                  ? const EmptyState(icon: Icons.campaign_rounded, message: 'Belum ada pengumuman.', color: Colors.orange)
+                  : RefreshIndicator(
+                      onRefresh: _fetchPengumuman,
+                      child: LayoutBuilder(
+                        builder: (ctx, c) {
+                          final w = c.maxWidth;
+                          final padding = Breakpoints.screenPadding(w);
+
+                          return ListView.builder(
+                            padding: padding,
+                            itemCount: _filtered.length,
+                            itemBuilder: (_, i) {
+                              final p = _filtered[i];
+                              return _AdminPengumumanCard(
+                                pengumuman: p,
+                                onEdit: () => _showPengumumanForm(p),
+                                onDelete: () => _deletePengumuman(p['id'].toString()),
+                              ).animate(delay: (i * 60).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                            },
+                          );
+                        },
                       ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: 5,
+      itemBuilder: (_, __) => const Padding(
+        padding: EdgeInsets.only(bottom: 16),
+        child: SkeletonLoader(height: 120, radius: 24),
+      ),
+    );
+  }
+}
+
+class _AdminPengumumanCard extends StatelessWidget {
+  final dynamic pengumuman;
+  final VoidCallback onEdit, onDelete;
+  const _AdminPengumumanCard({required this.pengumuman, required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    const Color accent = Colors.orange;
+    final theme = Theme.of(context);
+
+    return PremiumCard(
+      accentColor: accent,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(16)),
+            child: const Icon(Icons.campaign_rounded, color: accent, size: 24),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text(pengumuman['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    IconButton(
+                      onPressed: () {
+                        final renderBox = context.findRenderObject() as RenderBox;
+                        final offset = renderBox.localToGlobal(Offset.zero);
+                        showMenu(
+                          context: context,
+                          position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          items: [
+                            PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
+                            PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                          ],
+                        );
+                      },
+                      icon: Icon(Icons.more_vert_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
+                ),
+                Text(pengumuman['tanggal'] ?? '-', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(120))),
+                const SizedBox(height: 12),
+                Text(pengumuman['isi'] ?? '-', style: TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.onSurface.withAlpha(180))),
+                if (pengumuman['author'] != null || pengumuman['guru_nama'] != null) ...[
+                  const SizedBox(height: 16),
+                  Text('Oleh: ${pengumuman['author'] ?? pengumuman['guru_nama']}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(150))),
+                ],
+              ],
+            ),
           ),
         ],
       ),

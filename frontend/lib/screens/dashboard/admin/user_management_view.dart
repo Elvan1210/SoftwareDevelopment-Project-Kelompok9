@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/app_shell.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -14,7 +16,7 @@ class UserManagementView extends StatefulWidget {
 
 class _UserManagementViewState extends State<UserManagementView> {
   List<dynamic> _users = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
   String _searchQuery = '';
   String _selectedRole = 'Semua';
 
@@ -32,23 +34,26 @@ class _UserManagementViewState extends State<UserManagementView> {
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
-        setState(() => _users = jsonDecode(response.body));
+        final dec = jsonDecode(response.body);
+        setState(() => _users = dec is List ? dec : []);
       }
     } catch (e) {
       debugPrint("Error: $e");
     }
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _deleteUser(String id) async {
-    try {
-      await http.delete(
-        Uri.parse('$baseUrl/api/users/$id'),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
-      _fetchUsers();
-    } catch (e) {
-      debugPrint("Error: $e");
+    if (await confirmDelete(context, pesan: 'Hapus akun ini secara permanen?')) {
+      try {
+        await http.delete(
+          Uri.parse('$baseUrl/api/users/$id'),
+          headers: {'Authorization': 'Bearer ${widget.token}'},
+        );
+        _fetchUsers();
+      } catch (e) {
+        debugPrint("Error: $e");
+      }
     }
   }
 
@@ -63,37 +68,50 @@ class _UserManagementViewState extends State<UserManagementView> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setStateDialog) => AlertDialog(
-          title: Text(isEditing ? 'Edit User' : 'Tambah User'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: namaCtrl, decoration: const InputDecoration(labelText: 'Nama Lengkap')),
-                TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
-                TextField(
-                  controller: passCtrl, 
-                  decoration: InputDecoration(labelText: isEditing ? 'Password Baru (Kosongkan jika tidak diubah)' : 'Password'),
-                  obscureText: true,
-                ),
-                DropdownButtonFormField<String>(
-                  value: role,
-                  decoration: const InputDecoration(labelText: 'Role'),
-                  items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-                  onChanged: (val) => setStateDialog(() => role = val!),
-                ),
-                TextField(controller: kelasCtrl, decoration: const InputDecoration(labelText: 'Kelas / Mapel')),
-              ],
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text(isEditing ? 'Edit User' : 'Tambah User Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  AntigravityTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: Icons.person_outline_rounded),
+                  const SizedBox(height: 16),
+                  AntigravityTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+                  const SizedBox(height: 16),
+                  AntigravityTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: Icons.lock_outline_rounded, obscureText: true),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: role,
+                    decoration: InputDecoration(
+                      labelText: 'Role',
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      filled: true,
+                      fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                    ),
+                    items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                    onChanged: (val) => setDialogState(() => role = val!),
+                  ),
+                  const SizedBox(height: 16),
+                  AntigravityTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: Icons.class_outlined),
+                ],
+              ),
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
               onPressed: () async {
-                final url = isEditing 
-                    ? Uri.parse('$baseUrl/api/users/${user['id']}')
-                    : Uri.parse('$baseUrl/api/users');
-                
                 final body = {
                   'nama': namaCtrl.text,
                   'email': emailCtrl.text,
@@ -104,19 +122,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                   body['password'] = passCtrl.text;
                 }
 
-                try {
-                  if (isEditing) {
-                    await http.put(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body));
-                  } else {
-                    await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body));
-                  }
+                final url = isEditing ? Uri.parse('$baseUrl/api/users/${user['id']}') : Uri.parse('$baseUrl/api/users');
+                final response = await (isEditing
+                    ? http.put(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
+                    : http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
+
+                if (response.statusCode == 200 || response.statusCode == 201) {
                   if (ctx.mounted) Navigator.pop(ctx);
                   _fetchUsers();
-                } catch (e) {
-                  debugPrint("Error saving: $e");
                 }
               },
-              child: const Text('Simpan'),
+              child: const Text('Simpan User', style: TextStyle(fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -133,197 +149,244 @@ class _UserManagementViewState extends State<UserManagementView> {
       final searchStr = _searchQuery.toLowerCase();
       final nama = (user['nama'] ?? '').toString().toLowerCase();
       final role = (user['role'] ?? '').toString().toLowerCase();
-      final kelas = (user['kelas'] ?? '').toString().toLowerCase();
       final email = (user['email'] ?? '').toString().toLowerCase();
-      return nama.contains(searchStr) || role.contains(searchStr) || kelas.contains(searchStr) || email.contains(searchStr);
+      return nama.contains(searchStr) || role.contains(searchStr) || email.contains(searchStr);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showUserForm(),
-        backgroundColor: Colors.blue.shade800,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Tambah User', style: TextStyle(color: Colors.white)),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+    if (_isLoading) {
+      return AppShell(child: _buildSkeleton());
+    }
+
+    final totalUsers = _users.length;
+    final totalTeachers = _users.where((u) => u['role'] == 'Guru').length;
+    final totalStudents = _users.where((u) => u['role'] == 'Siswa').length;
+
+    return AppShell(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: AntigravityFAB(
+          onPressed: () => _showUserForm(),
+          icon: Icons.person_add_rounded,
+          label: 'Tambah User',
+        ),
+        body: Column(
+          children: [
+            // ── KPI Stats Row ──────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: Row(
+                children: [
+                  _buildStatCard('Total User', totalUsers.toString(), Colors.blue),
+                  const SizedBox(width: 16),
+                  _buildStatCard('Guru', totalTeachers.toString(), Colors.purple),
+                  const SizedBox(width: 16),
+                  _buildStatCard('Siswa', totalStudents.toString(), const Color(0xFF10B981)),
+                ],
+              ).animate().fadeIn().slideY(begin: -0.1),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    onChanged: (val) => setState(() => _searchQuery = val),
-                    decoration: InputDecoration(
-                      hintText: 'Cari nama, email, kelas...',
-                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedRole,
-                        icon: Icon(Icons.filter_list, color: Colors.blue.shade700),
-                        style: const TextStyle(color: Colors.black87, fontSize: 14),
-                        items: ['Semua', 'Siswa', 'Guru', 'Admin']
-                            .map((r) => DropdownMenuItem(value: r, child: Text(r == 'Semua' ? 'Filter Role' : r)))
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedRole = val);
+
+            // ── Search & Filter Action Bar ────────────────
+            _buildHeader(),
+
+            Expanded(
+              child: _filteredUsers.isEmpty
+                  ? const EmptyState(icon: Icons.person_search_rounded, message: 'Tidak ada user ditemukan.', color: Colors.blue)
+                  : RefreshIndicator(
+                      onRefresh: _fetchUsers,
+                      child: LayoutBuilder(
+                        builder: (ctx, c) {
+                          final w = c.maxWidth;
+                          final padding = Breakpoints.screenPadding(w);
+                          final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+
+                          return GridView.builder(
+                            padding: padding,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossCount,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: crossCount == 1 ? 3.0 : 1.4,
+                            ),
+                            itemCount: _filteredUsers.length,
+                            itemBuilder: (_, i) {
+                              final u = _filteredUsers[i];
+                              return _UserCard(
+                                user: u,
+                                onEdit: () => _showUserForm(u),
+                                onDelete: () => _deleteUser(u['id'].toString()),
+                              ).animate(delay: (i * 30).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                            },
+                          );
                         },
                       ),
                     ),
-                  ),
-                ),
-              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredUsers.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.person_search, size: 64, color: Colors.grey.shade300),
-                            const SizedBox(height: 16),
-                            Text('Tidak ada user yang ditemukan.', style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _fetchUsers,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                          itemCount: _filteredUsers.length,
-                          itemBuilder: (_, index) {
-                            final user = _filteredUsers[index];
-                            final role = user['role'] ?? 'Siswa';
-                            final isSiswa = role == 'Siswa';
-                            final isGuru = role == 'Guru';
-                            final roleColor = isGuru ? Colors.purple : (isSiswa ? Colors.blue : Colors.orange);
-
-                            return Card(
-                              elevation: 0,
-                              margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: BorderSide(color: Colors.grey.shade200),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 28,
-                                      backgroundColor: roleColor.withOpacity(0.1),
-                                      child: Icon(
-                                        isGuru ? Icons.history_edu : (isSiswa ? Icons.face : Icons.admin_panel_settings),
-                                        color: roleColor,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            user['nama'] ?? '-',
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            user['email'] ?? '-',
-                                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(color: roleColor.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
-                                                child: Text(roleStr(role), style: TextStyle(color: roleColor.shade700, fontSize: 11, fontWeight: FontWeight.bold)),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              if ((user['kelas'] ?? '').toString().isNotEmpty && user['kelas'] != '-') 
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6)),
-                                                  child: Text(
-                                                    '${isGuru ? "Mapel" : "Kelas"}: ${user['kelas']}',
-                                                    style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(Icons.edit_outlined, color: Colors.blue.shade400),
-                                          onPressed: () => _showUserForm(user),
-                                          tooltip: 'Edit User',
-                                        ),
-                                        IconButton(
-                                          icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
-                                          onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus user ini?')) _deleteUser(user['id']); },
-                                          tooltip: 'Hapus User',
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  String roleStr(String role) {
-    if (role == 'Siswa') return 'Siswa';
-    if (role == 'Guru') return 'Guru';
-    if (role == 'Admin') return 'Admin';
-    return role;
+  Widget _buildStatCard(String label, String value, Color color) {
+    return Expanded(
+      child: PremiumCard(
+        accentColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color.withAlpha(180))),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      child: Column(
+        children: [
+          AntigravityTextField(
+            hintText: 'Cari nama, email, role...',
+            prefixIcon: Icons.search_rounded,
+            onChanged: (val) => setState(() => _searchQuery = val),
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['Semua', 'Siswa', 'Guru', 'Admin'].map((r) {
+                final isSelected = _selectedRole == r;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: AnimatedContainer(
+                    duration: 300.ms,
+                    child: ChoiceChip(
+                      label: Text(r),
+                      selected: isSelected,
+                      onSelected: (val) => setState(() => _selectedRole = r),
+                      backgroundColor: Colors.transparent,
+                      selectedColor: Theme.of(context).primaryColor.withAlpha(isSelected ? 40 : 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withAlpha(50))),
+                      labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? Theme.of(context).primaryColor : Colors.grey),
+                      showCheckmark: false,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.05),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return Column(
+      children: [
+        const Padding(padding: EdgeInsets.all(24), child: SkeletonLoader(height: 80, radius: 24)),
+        const Padding(padding: EdgeInsets.symmetric(horizontal: 24), child: SkeletonLoader(height: 56, radius: 16)),
+        Expanded(
+          child: GridView.count(
+            padding: const EdgeInsets.all(24),
+            crossAxisCount: 2,
+            childAspectRatio: 1.4,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UserCard extends StatelessWidget {
+  final dynamic user;
+  final VoidCallback onEdit, onDelete;
+
+  const _UserCard({required this.user, required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final String role = user['role'] ?? 'Siswa';
+    final roleColor = role == 'Guru' ? Colors.purple : (role == 'Admin' ? Colors.orange : Colors.blue);
+
+    return PremiumCard(
+      accentColor: roleColor,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [roleColor.withAlpha(100), roleColor.withAlpha(40)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Icon(role == 'Guru' ? Icons.history_edu_rounded : (role == 'Admin' ? Icons.vpn_key_rounded : Icons.face_6_rounded), color: Colors.white, size: 24),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user['nama'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: roleColor.withAlpha(20), borderRadius: BorderRadius.circular(4)),
+                      child: Text(role.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: roleColor, letterSpacing: 0.5)),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuButton<String>(
+                onSelected: (val) {
+                  if (val == 'edit') onEdit();
+                  if (val == 'delete') onDelete();
+                },
+                icon: Icon(Icons.more_horiz_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                itemBuilder: (_) => [
+                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
+                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                ],
+              ),
+            ],
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              Icon(Icons.alternate_email_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
+              const SizedBox(width: 8),
+              Expanded(child: Text(user['email'] ?? '-', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+          if ((user['kelas'] ?? '').toString().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.class_outlined, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
+                const SizedBox(width: 8),
+                Text(user['kelas'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

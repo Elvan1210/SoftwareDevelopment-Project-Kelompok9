@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
+import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../widgets/notification_bell.dart';
 
 class SiswaNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -27,15 +28,13 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/nilai'),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
+          Uri.parse('$baseUrl/api/nilai'),
+          headers: {'Authorization': 'Bearer ${widget.token}'});
       if (response.statusCode == 200) {
-        List data = jsonDecode(response.body);
+        final dec = jsonDecode(response.body);
+        List data = dec is List ? dec : [];
         setState(() {
-          _nilaiList = data
-              .where((n) => n['siswa_id'] == widget.userData['id'])
-              .toList();
+          _nilaiList = data.where((n) => n['siswa_id'] == widget.userData['id']).toList();
         });
       }
     } catch (e) {
@@ -44,101 +43,104 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  Color _getNilaiColor(dynamic nilai) {
-    final n = (nilai is String ? double.tryParse(nilai) : nilai?.toDouble()) ?? 0;
-    if (n >= 85) return Colors.green.shade700;
-    if (n >= 75) return Colors.blue.shade700;
-    if (n >= 65) return Colors.orange.shade700;
-    return Colors.red.shade700;
-  }
-
-  String _getPredikat(dynamic nilai) {
-    final n = (nilai is String ? double.tryParse(nilai) : nilai?.toDouble()) ?? 0;
-    if (n >= 90) return 'A';
-    if (n >= 80) return 'B';
-    if (n >= 70) return 'C';
-    if (n >= 60) return 'D';
-    return 'E';
+  Color _gradeColor(dynamic nilai) {
+    final v = double.tryParse(nilai.toString()) ?? 0;
+    if (v >= 80) return const Color(0xFF10B981);
+    if (v >= 60) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text('Nilai Saya', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black87,
-        automaticallyImplyLeading: false,
-        actions: [NotificationBell(userData: widget.userData, token: widget.token, iconColor: Colors.black87), const SizedBox(width:8)],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _nilaiList.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.grade_outlined, size: 80, color: Colors.grey.shade400),
-                      const SizedBox(height: 16),
-                      Text('Belum ada nilai yang diinput.', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _fetchNilai,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _nilaiList.length,
-                    itemBuilder: (context, index) {
-                      final n = _nilaiList[index];
-                      final color = _getNilaiColor(n['nilai']);
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: color.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _getPredikat(n['nilai']),
-                                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: color),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+    if (_isLoading) {
+      return AppShell(
+        child: _buildSkeleton(),
+      );
+    }
+
+    return AppShell(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _nilaiList.isEmpty
+            ? const EmptyState(
+                icon: Icons.workspace_premium_rounded,
+                message: 'Belum ada nilai\nyang diinput guru.',
+                color: Color(0xFF3B82F6))
+            : RefreshIndicator(
+                onRefresh: _fetchNilai,
+                child: LayoutBuilder(
+                  builder: (ctx, c) {
+                    final crossCount = c.maxWidth > 900 ? 3 : (c.maxWidth > 500 ? 2 : 1);
+                    final padding = Breakpoints.screenPadding(c.maxWidth);
+                    return GridView.builder(
+                      padding: padding,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: crossCount == 1 ? 3.5 : 1.8,
+                      ),
+                      itemCount: _nilaiList.length,
+                      itemBuilder: (_, i) {
+                        final n = _nilaiList[i];
+                        final color = _gradeColor(n['nilai']);
+                        return RepaintBoundary(
+                          child: PremiumCard(
+                            accentColor: color,
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
                                   children: [
-                                    Text(n['mapel'] ?? 'Mata Pelajaran', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                    const SizedBox(height: 4),
-                                    Text(n['keterangan'] ?? '', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(color: color.withAlpha(20), borderRadius: BorderRadius.circular(10)),
+                                      child: Icon(Icons.grade_rounded, color: color, size: 20),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(n['mapel'] ?? '-',
+                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
+                                    ),
                                   ],
                                 ),
-                              ),
-                              Text(
-                                '${n['nilai'] ?? '-'}',
-                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(n['nilai']?.toString() ?? '-',
+                                        style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
+                                    if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
+                                      Text(n['keterangan'],
+                                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ).animate(delay: (i * 60).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
+                        );
+                      },
+                    );
+                  },
                 ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return GridView.count(
+      padding: const EdgeInsets.all(24),
+      crossAxisCount: 2,
+      childAspectRatio: 1.8,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
     );
   }
 }
-

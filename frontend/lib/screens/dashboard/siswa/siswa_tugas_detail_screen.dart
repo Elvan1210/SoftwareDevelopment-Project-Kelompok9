@@ -44,8 +44,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
       ]);
 
       if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
-        List allPengumpulan = jsonDecode(responses[0].body);
-        List allNilai = jsonDecode(responses[1].body);
+        final _dec_allPengumpulan = jsonDecode(responses[0].body);
+        List allPengumpulan = _dec_allPengumpulan is List ? _dec_allPengumpulan : [];
+        final _dec_allNilai = jsonDecode(responses[1].body);
+        List allNilai = _dec_allNilai is List ? _dec_allNilai : [];
 
         var submission = allPengumpulan.where((p) => p['tugas_id'] == widget.tugas['id'] && p['siswa_id'] == widget.userData['id']).toList();
         var nilaiMilikSiswa = allNilai.where((n) => n['tugas_id'] == widget.tugas['id'] && n['siswa_id'] == widget.userData['id']).toList();
