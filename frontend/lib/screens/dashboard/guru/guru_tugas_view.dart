@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -57,18 +57,28 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   void _showTugasForm([Map<String, dynamic>? tugas]) {
     final isEditing = tugas != null;
     final judulCtrl = TextEditingController(text: isEditing ? tugas['judul'] : '');
-    final deadlineCtrl = TextEditingController(text: isEditing ? tugas['deadline'] : '');
+    final deskripsiCtrl = TextEditingController(text: isEditing ? (tugas['deskripsi'] ?? '') : '');
+    final deadlineCtrl = TextEditingController(text: isEditing ? (tugas['deadline'] ?? '') : '');
+    final linkCtrl = TextEditingController(text: isEditing ? (tugas['link'] ?? '') : '');
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: judulCtrl, decoration: const InputDecoration(labelText: 'Judul Tugas')),
-            TextField(controller: deadlineCtrl, decoration: const InputDecoration(labelText: 'Deadline (Contoh: 24 Mar 2026)')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: judulCtrl, decoration: const InputDecoration(labelText: 'Judul Tugas')),
+              TextField(
+                controller: deskripsiCtrl, 
+                maxLines: 3, 
+                decoration: const InputDecoration(labelText: 'Deskripsi Tugas'),
+              ),
+              TextField(controller: deadlineCtrl, decoration: const InputDecoration(labelText: 'Deadline (Contoh: 24 Mar 2026)')),
+              TextField(controller: linkCtrl, decoration: const InputDecoration(labelText: 'Link Pendukung (Opsional)')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
@@ -76,10 +86,13 @@ class _GuruTugasViewState extends State<GuruTugasView> {
             onPressed: () async {
               final body = {
                 'judul': judulCtrl.text,
+                'deskripsi': deskripsiCtrl.text,
                 'deadline': deadlineCtrl.text,
+                'link': linkCtrl.text,
                 'guru_id': widget.userData['id'],
                 'mapel': widget.userData['kelas'],
-                'status': 'Aktif'
+                'status': 'Aktif',
+                'tanggal_dibuat': DateTime.now().toIso8601String()
               };
 
               final url = isEditing 
@@ -110,10 +123,11 @@ class _GuruTugasViewState extends State<GuruTugasView> {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showTugasForm(),
         backgroundColor: Colors.blue.shade800,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Tugas Baru', style: TextStyle(color: Colors.white)),
       ),
       body: _tugasList.isEmpty
           ? const Center(child: Text('Belum ada tugas yang Anda buat.'))
@@ -124,17 +138,41 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 final t = _tugasList[index];
                 return Card(
                   elevation: 2,
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
-                    leading: const Icon(Icons.assignment, color: Colors.blue, size: 36),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: const CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Icon(Icons.assignment, color: Colors.white),
+                    ),
                     title: Text(t['judul'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Deadline: ${t['deadline']}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          t['deskripsi'] ?? 'Tidak ada deskripsi',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time, size: 14, color: Colors.red),
+                            const SizedBox(width: 4),
+                            Text('Deadline: ${t['deadline']}', style: const TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ],
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
                           icon: const Icon(Icons.visibility, color: Colors.green),
                           tooltip: 'Lihat Pengumpulan',
-                            onPressed: () {
+                          onPressed: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => GuruTugasDetailScreen(tugas: t, token: widget.token)));
                           },
                         ),
