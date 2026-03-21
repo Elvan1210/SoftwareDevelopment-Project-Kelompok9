@@ -35,13 +35,18 @@ class _NotificationBellState extends State<NotificationBell> {
       if (response.statusCode == 200) {
         List allData = jsonDecode(response.body);
         
-        // Filter notifikasi yang ditujukan untuk user ini
+        // Filter notifikasi yang secara presisi ditujukan untuk user ini
         List myNotifs = allData.where((n) {
-          bool matchUser = n['target_user_id'] == widget.userData['id'];
-          bool matchKelas = n['target_kelas'] == widget.userData['kelas'];
-          bool matchRole = n['target_role'] == widget.userData['role'] || n['target_role'] == 'Semua';
-          
-          return matchUser || matchKelas || matchRole;
+          // 1. Jika ada target user spesifik, HANYA user tersebut yang dapat
+          if (n['target_user_id'] != null) {
+            return n['target_user_id'] == widget.userData['id'];
+          }
+
+          // 2. Jika bukan target spesifik, harus memenuhi syarat Role DAN Kelas (jika disetel)
+          bool roleMatch = n['target_role'] == null || n['target_role'] == 'Semua' || n['target_role'] == widget.userData['role'];
+          bool kelasMatch = n['target_kelas'] == null || n['target_kelas'] == widget.userData['kelas'];
+
+          return roleMatch && kelasMatch;
         }).toList();
 
         // Sort dari yang terbaru

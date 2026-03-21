@@ -112,6 +112,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     judul: 'Tugas Baru: ${judulCtrl.text}',
                     pesan: 'Tugas baru dari ${widget.userData['nama']} (Deadline: ${deadlineCtrl.text})',
                     token: widget.token,
+                    targetRole: 'Siswa',
                     targetKelas: widget.userData['kelas'],
                   );
                 }

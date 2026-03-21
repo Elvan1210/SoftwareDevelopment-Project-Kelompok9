@@ -171,6 +171,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     judul: 'Materi Baru: ${judulCtrl.text}',
                     pesan: 'Materi baru telah ditambahkan oleh ${widget.userData['nama']} untuk mapel ${mapelCtrl.text}',
                     token: widget.token,
+                    targetRole: 'Siswa',
                     targetKelas: kelasCtrl.text.isNotEmpty ? kelasCtrl.text : null,
                   );
                 }
