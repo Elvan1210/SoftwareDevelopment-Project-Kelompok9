@@ -85,6 +85,7 @@ const generateCrudRoutes = (collectionName) => {
 
 generateCrudRoutes('kelas');
 generateCrudRoutes('tugas');
+generateCrudRoutes('materi');
 generateCrudRoutes('nilai');
 generateCrudRoutes('pengumuman');
 generateCrudRoutes('pengumpulan');

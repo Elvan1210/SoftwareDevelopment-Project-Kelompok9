@@ -14,7 +14,6 @@ class SiswaDashboardScreen extends StatefulWidget {
 }
 
 class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
-  int _selectedIndex = 0;
   bool _isLoading = true;
   List<dynamic> _tugasList = [];
   List<dynamic> _pengumumanList = [];
@@ -50,11 +49,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +79,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                 ],
               ),
             ),
-      bottomNavigationBar: _buildBottomNavigationBar(primaryColor),
     );
   }
 
@@ -217,23 +210,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildBottomNavigationBar(Color primaryColor) {
-    return BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Tugas'),
-        BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Materi'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
-      ],
-      currentIndex: _selectedIndex,
-      selectedItemColor: primaryColor,
-      unselectedItemColor: Colors.grey.shade600,
-      onTap: _onItemTapped,
-      showUnselectedLabels: true,
-      type: BottomNavigationBarType.fixed,
     );
   }
 }

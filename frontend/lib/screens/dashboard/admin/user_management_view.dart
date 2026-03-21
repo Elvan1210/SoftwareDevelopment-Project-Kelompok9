@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class UserManagementView extends StatefulWidget {
-  const UserManagementView({super.key});
+  final String token;
+  const UserManagementView({super.key, required this.token});
 
   @override
   State<UserManagementView> createState() => _UserManagementViewState();
@@ -22,7 +23,10 @@ class _UserManagementViewState extends State<UserManagementView> {
   Future<void> _fetchUsers() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/api/users'));
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/api/users'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       if (response.statusCode == 200) {
         setState(() => _users = jsonDecode(response.body));
       }
@@ -34,7 +38,10 @@ class _UserManagementViewState extends State<UserManagementView> {
 
   Future<void> _deleteUser(String id) async {
     try {
-      await http.delete(Uri.parse('http://localhost:3000/api/users/$id'));
+      await http.delete(
+        Uri.parse('http://localhost:3000/api/users/$id'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       _fetchUsers();
     } catch (e) {
       debugPrint("Error: $e");
@@ -95,9 +102,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                 try {
                   if (isEditing) {
-                    await http.put(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+                    await http.put(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body));
                   } else {
-                    await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+                    await http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body));
                   }
                   if (ctx.mounted) Navigator.pop(ctx);
                   _fetchUsers();
