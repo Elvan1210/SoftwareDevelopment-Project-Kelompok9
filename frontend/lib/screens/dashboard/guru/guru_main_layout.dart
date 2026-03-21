@@ -6,6 +6,7 @@ import 'guru_materi_view.dart';
 import 'guru_nilai_view.dart';
 import 'guru_pengumuman_view.dart';
 import 'guru_profil_view.dart';
+import '../../../widgets/notification_bell.dart';
 
 class GuruMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -50,6 +51,10 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black87,
+        actions: [
+          NotificationBell(userData: widget.userData, token: widget.token, iconColor: Colors.black87),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _views[_selectedIndex],
       bottomNavigationBar: NavigationBar(
