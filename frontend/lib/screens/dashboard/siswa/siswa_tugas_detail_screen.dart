@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
@@ -30,7 +31,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/pengumpulan'),
+        Uri.parse('$baseUrl/api/pengumpulan'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -86,7 +87,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         'waktu_pengumpulan': DateTime.now().toIso8601String(),
       };
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/pengumpulan'),
+        Uri.parse('$baseUrl/api/pengumpulan'),
         headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
         body: jsonEncode(body)
       );
@@ -112,7 +113,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await http.delete(
-        Uri.parse('http://localhost:3000/api/pengumpulan/$_pengumpulanId'),
+        Uri.parse('$baseUrl/api/pengumpulan/$_pengumpulanId'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {

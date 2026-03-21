@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../auth/login_screen.dart';
+import '../../../services/auth_service.dart';
 
 class SiswaProfilView extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -103,10 +104,11 @@ class SiswaProfilView extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        );
+                        AuthService.logout();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
                       },
                       icon: const Icon(Icons.logout, color: Colors.red),
                       label: const Text('Keluar', style: TextStyle(color: Colors.red, fontSize: 16)),

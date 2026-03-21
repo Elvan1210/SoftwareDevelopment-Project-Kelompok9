@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -24,7 +25,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/users'),
+        Uri.parse('$baseUrl/api/users'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -39,7 +40,7 @@ class _UserManagementViewState extends State<UserManagementView> {
   Future<void> _deleteUser(String id) async {
     try {
       await http.delete(
-        Uri.parse('http://localhost:3000/api/users/$id'),
+        Uri.parse('$baseUrl/api/users/$id'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       _fetchUsers();
@@ -87,8 +88,8 @@ class _UserManagementViewState extends State<UserManagementView> {
             ElevatedButton(
               onPressed: () async {
                 final url = isEditing 
-                    ? Uri.parse('http://localhost:3000/api/users/${user['id']}')
-                    : Uri.parse('http://localhost:3000/api/users');
+                    ? Uri.parse('$baseUrl/api/users/${user['id']}')
+                    : Uri.parse('$baseUrl/api/users');
                 
                 final body = {
                   'nama': namaCtrl.text,

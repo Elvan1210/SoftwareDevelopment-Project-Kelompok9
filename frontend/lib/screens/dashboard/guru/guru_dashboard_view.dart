@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -28,10 +29,10 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
       final results = await Future.wait([
-        http.get(Uri.parse('http://localhost:3000/api/tugas'), headers: headers),
-        http.get(Uri.parse('http://localhost:3000/api/materi'), headers: headers),
-        http.get(Uri.parse('http://localhost:3000/api/nilai'), headers: headers),
-        http.get(Uri.parse('http://localhost:3000/api/pengumuman'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/materi'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
       ]);
 
       if (results[0].statusCode == 200) {

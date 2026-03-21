@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
@@ -26,7 +27,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/tugas'),
+        Uri.parse('$baseUrl/api/tugas'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -44,7 +45,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   Future<void> _deleteTugas(String id) async {
     try {
       await http.delete(
-        Uri.parse('http://localhost:3000/api/tugas/$id'),
+        Uri.parse('$baseUrl/api/tugas/$id'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       _fetchTugas();
@@ -82,8 +83,8 @@ class _GuruTugasViewState extends State<GuruTugasView> {
               };
 
               final url = isEditing 
-                  ? Uri.parse('http://localhost:3000/api/tugas/${tugas['id']}')
-                  : Uri.parse('http://localhost:3000/api/tugas');
+                  ? Uri.parse('$baseUrl/api/tugas/${tugas['id']}')
+                  : Uri.parse('$baseUrl/api/tugas');
               final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
               try {
                 if (isEditing) {

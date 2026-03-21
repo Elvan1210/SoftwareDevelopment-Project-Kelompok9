@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -24,7 +25,7 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/kelas'),
+        Uri.parse('$baseUrl/api/kelas'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -55,7 +56,7 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     if (confirm == true) {
       try {
         await http.delete(
-          Uri.parse('http://localhost:3000/api/kelas/$id'),
+          Uri.parse('$baseUrl/api/kelas/$id'),
           headers: {'Authorization': 'Bearer ${widget.token}'},
         );
         _fetchKelas();
@@ -98,9 +99,9 @@ class _KelasManagementViewState extends State<KelasManagementView> {
               final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
               try {
                 if (isEditing) {
-                  await http.put(Uri.parse('http://localhost:3000/api/kelas/${kelas['id']}'), headers: headers, body: jsonEncode(body));
+                  await http.put(Uri.parse('$baseUrl/api/kelas/${kelas['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
-                  await http.post(Uri.parse('http://localhost:3000/api/kelas'), headers: headers, body: jsonEncode(body));
+                  await http.post(Uri.parse('$baseUrl/api/kelas'), headers: headers, body: jsonEncode(body));
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchKelas();
