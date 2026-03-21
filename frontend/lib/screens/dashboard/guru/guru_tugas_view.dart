@@ -5,7 +5,8 @@ import 'guru_tugas_detail_screen.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
-  const GuruTugasView({super.key, required this.userData});
+  final String token;
+  const GuruTugasView({super.key, required this.userData, required this.token});
 
   @override
   State<GuruTugasView> createState() => _GuruTugasViewState();
@@ -24,7 +25,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   Future<void> _fetchTugas() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/api/tugas'));
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/api/tugas'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         setState(() {
@@ -39,7 +43,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
 
   Future<void> _deleteTugas(String id) async {
     try {
-      await http.delete(Uri.parse('http://localhost:3000/api/tugas/$id'));
+      await http.delete(
+        Uri.parse('http://localhost:3000/api/tugas/$id'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       _fetchTugas();
     } catch (e) {
       debugPrint("Error: $e");
@@ -77,12 +84,12 @@ class _GuruTugasViewState extends State<GuruTugasView> {
               final url = isEditing 
                   ? Uri.parse('http://localhost:3000/api/tugas/${tugas['id']}')
                   : Uri.parse('http://localhost:3000/api/tugas');
-
+              final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
               try {
                 if (isEditing) {
-                  await http.put(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+                  await http.put(url, headers: headers, body: jsonEncode(body));
                 } else {
-                  await http.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+                  await http.post(url, headers: headers, body: jsonEncode(body));
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchTugas();
@@ -126,8 +133,8 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         IconButton(
                           icon: const Icon(Icons.visibility, color: Colors.green),
                           tooltip: 'Lihat Pengumpulan',
-                          onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => GuruTugasDetailScreen(tugas: t)));
+                            onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => GuruTugasDetailScreen(tugas: t, token: widget.token)));
                           },
                         ),
                         IconButton(icon: const Icon(Icons.edit, color: Colors.orange), onPressed: () => _showTugasForm(t)),

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import '../../auth/login_screen.dart';
 import 'guru_dashboard_view.dart';
 import 'guru_tugas_view.dart';
+import 'guru_nilai_view.dart';
+import 'guru_pengumuman_view.dart';
 
 class GuruMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
-  const GuruMainLayout({super.key, required this.userData});
+  final String token;
+  const GuruMainLayout({super.key, required this.userData, required this.token});
 
   @override
   State<GuruMainLayout> createState() => _GuruMainLayoutState();
@@ -20,9 +23,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     super.initState();
     _views = [
       GuruDashboardView(userData: widget.userData),
-      GuruTugasView(userData: widget.userData),
-      const Center(child: Text('Modul Nilai Siswa')),
-      const Center(child: Text('Modul Materi')),
+      GuruTugasView(userData: widget.userData, token: widget.token),
+      GuruNilaiView(userData: widget.userData, token: widget.token),
+      GuruPengumumanView(userData: widget.userData, token: widget.token),
     ];
   }
 
@@ -43,10 +46,10 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          NavigationDestination(icon: Icon(Icons.assignment), label: 'Kelola Tugas'),
-          NavigationDestination(icon: Icon(Icons.grade), label: 'Input Nilai'),
-          NavigationDestination(icon: Icon(Icons.book), label: 'Materi'),
+          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Kelola Tugas'),
+          NavigationDestination(icon: Icon(Icons.grade_outlined), selectedIcon: Icon(Icons.grade), label: 'Input Nilai'),
+          NavigationDestination(icon: Icon(Icons.campaign_outlined), selectedIcon: Icon(Icons.campaign), label: 'Pengumuman'),
         ],
       ),
     );

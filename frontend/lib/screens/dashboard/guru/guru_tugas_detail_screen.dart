@@ -5,7 +5,8 @@ import 'package:intl/intl.dart';
 
 class GuruTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
-  const GuruTugasDetailScreen({super.key, required this.tugas});
+  final String token;
+  const GuruTugasDetailScreen({super.key, required this.tugas, required this.token});
 
   @override
   State<GuruTugasDetailScreen> createState() => _GuruTugasDetailScreenState();
@@ -24,7 +25,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
   Future<void> _fetchPengumpulan() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/api/pengumpulan'));
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/api/pengumpulan'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
       if (response.statusCode == 200) {
         List allData = jsonDecode(response.body);
         setState(() {

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'admin_dashboard_view.dart';
 import 'user_management_view.dart';
+import 'kelas_management_view.dart';
 import '../../auth/login_screen.dart';
 
 class AdminMainLayout extends StatefulWidget {
-  const AdminMainLayout({super.key});
+  final String token;
+  const AdminMainLayout({super.key, this.token = ''});
 
   @override
   State<AdminMainLayout> createState() => _AdminMainLayoutState();
@@ -13,17 +15,23 @@ class AdminMainLayout extends StatefulWidget {
 class _AdminMainLayoutState extends State<AdminMainLayout> {
   int _selectedIndex = 0;
 
-  final List<Widget> _views = [
-    const AdminDashboardView(),
-    const UserManagementView(),
-    const Center(child: Text('Modul Kelas & Mapel')),
-    const Center(child: Text('Modul Materi')),
-    const Center(child: Text('Modul Tugas')),
-    const Center(child: Text('Modul Nilai')),
-    const Center(child: Text('Modul Jadwal')),
-    const Center(child: Text('Modul Pengumuman')),
-    const Center(child: Text('Settings')),
-  ];
+  final List<Widget> _views = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _views.addAll([
+      const AdminDashboardView(),
+      const UserManagementView(),
+      KelasManagementView(token: widget.token),
+      const Center(child: Text('Modul Materi')),
+      const Center(child: Text('Modul Tugas')),
+      const Center(child: Text('Modul Nilai')),
+      const Center(child: Text('Modul Jadwal')),
+      const Center(child: Text('Modul Pengumuman')),
+      const Center(child: Text('Settings')),
+    ]);
+  }
 
   final List<NavigationDestination> _navItems = const [
     NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
