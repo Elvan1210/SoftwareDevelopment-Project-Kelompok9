@@ -25,7 +25,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   void initState() {
     super.initState();
     _views.addAll([
-      const AdminDashboardView(),
+      AdminDashboardView(token: widget.token),
       UserManagementView(token: widget.token),
       KelasManagementView(token: widget.token),
       AdminMateriView(token: widget.token),
