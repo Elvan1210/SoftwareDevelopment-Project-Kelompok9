@@ -33,7 +33,8 @@ class _NotificationBellState extends State<NotificationBell> {
       );
 
       if (response.statusCode == 200) {
-        List allData = jsonDecode(response.body);
+        final _dec_allData = jsonDecode(response.body);
+        List allData = _dec_allData is List ? _dec_allData : [];
         
         // Filter notifikasi yang ditujukan untuk user ini
         List myNotifs = allData.where((n) {
@@ -157,7 +158,7 @@ class _NotificationBellState extends State<NotificationBell> {
                               String formattedTime = DateFormat('dd MMM yyyy, HH:mm').format(t);
 
                               return Container(
-                                color: isRead ? Colors.transparent : Colors.blue.shade50.withOpacity(0.5),
+                                color: isRead ? Colors.transparent : Colors.blue.shade50.withAlpha(127),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                                   leading: CircleAvatar(

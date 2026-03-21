@@ -4,6 +4,7 @@ import 'screens/dashboard/siswa/siswa_main_layout.dart';
 import 'screens/dashboard/guru/guru_main_layout.dart';
 import 'screens/dashboard/admin/admin_main_layout.dart';
 import 'services/auth_service.dart';
+import 'config/theme.dart';
 
 void main() {
   runApp(const MyPSKDApp());
@@ -17,7 +18,9 @@ class MyPSKDApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'MyPSKD',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Supports automatic dark/light toggling
       home: const SplashScreen(),
     );
   }
@@ -64,16 +67,27 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.school, size: 72, color: Colors.blue),
-            SizedBox(height: 16),
-            Text('MyPSKD', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            CircularProgressIndicator(),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withAlpha(40),
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withAlpha(60), blurRadius: 40)],
+              ),
+              child: const Icon(Icons.school_rounded, size: 80, color: Color(0xFF3B82F6)),
+            ),
+            const SizedBox(height: 32),
+            const Text('MyPSKD', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
+            const SizedBox(height: 8),
+            Text('Academic Portal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white.withAlpha(150), letterSpacing: 2)),
+            const SizedBox(height: 48),
+            const CircularProgressIndicator(color: Color(0xFF3B82F6), strokeWidth: 3),
           ],
         ),
       ),
