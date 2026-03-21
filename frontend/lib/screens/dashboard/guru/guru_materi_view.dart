@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -25,7 +26,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/materi'),
+        Uri.parse('$baseUrl/api/materi'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -61,7 +62,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
     if (confirm == true) {
       try {
         await http.delete(
-          Uri.parse('http://localhost:3000/api/materi/$id'),
+          Uri.parse('$baseUrl/api/materi/$id'),
           headers: {'Authorization': 'Bearer ${widget.token}'},
         );
         _fetchMateri();
@@ -153,13 +154,13 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               try {
                 if (isEditing) {
                   await http.put(
-                    Uri.parse('http://localhost:3000/api/materi/${materi['id']}'),
+                    Uri.parse('$baseUrl/api/materi/${materi['id']}'),
                     headers: headers,
                     body: jsonEncode(body),
                   );
                 } else {
                   await http.post(
-                    Uri.parse('http://localhost:3000/api/materi'),
+                    Uri.parse('$baseUrl/api/materi'),
                     headers: headers,
                     body: jsonEncode(body),
                   );

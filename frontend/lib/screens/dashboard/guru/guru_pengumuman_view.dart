@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -25,7 +26,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/pengumuman'),
+        Uri.parse('$baseUrl/api/pengumuman'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -40,7 +41,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
   Future<void> _deletePengumuman(String id) async {
     try {
       await http.delete(
-        Uri.parse('http://localhost:3000/api/pengumuman/$id'),
+        Uri.parse('$baseUrl/api/pengumuman/$id'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       _fetchPengumuman();
@@ -87,9 +88,9 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
               final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
               try {
                 if (isEditing) {
-                  await http.put(Uri.parse('http://localhost:3000/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
+                  await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
-                  await http.post(Uri.parse('http://localhost:3000/api/pengumuman'), headers: headers, body: jsonEncode(body));
+                  await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchPengumuman();

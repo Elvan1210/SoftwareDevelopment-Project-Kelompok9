@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -26,8 +27,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resNilai = await http.get(Uri.parse('http://localhost:3000/api/nilai'), headers: headers);
-      final resUsers = await http.get(Uri.parse('http://localhost:3000/api/users'), headers: headers);
+      final resNilai = await http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers);
+      final resUsers = await http.get(Uri.parse('$baseUrl/api/users'), headers: headers);
 
       if (resNilai.statusCode == 200) {
         List data = jsonDecode(resNilai.body);
@@ -50,7 +51,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   Future<void> _deleteNilai(String id) async {
     try {
       await http.delete(
-        Uri.parse('http://localhost:3000/api/nilai/$id'),
+        Uri.parse('$baseUrl/api/nilai/$id'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       _fetchData();
@@ -112,9 +113,9 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
                 try {
                   if (isEditing) {
-                    await http.put(Uri.parse('http://localhost:3000/api/nilai/${nilai['id']}'), headers: headers, body: jsonEncode(body));
+                    await http.put(Uri.parse('$baseUrl/api/nilai/${nilai['id']}'), headers: headers, body: jsonEncode(body));
                   } else {
-                    await http.post(Uri.parse('http://localhost:3000/api/nilai'), headers: headers, body: jsonEncode(body));
+                    await http.post(Uri.parse('$baseUrl/api/nilai'), headers: headers, body: jsonEncode(body));
                   }
                   if (ctx.mounted) Navigator.pop(ctx);
                   _fetchData();

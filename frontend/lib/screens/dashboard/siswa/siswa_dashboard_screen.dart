@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../auth/login_screen.dart';
@@ -29,8 +30,8 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resTugas = await http.get(Uri.parse('http://localhost:3000/api/tugas'), headers: headers);
-      final resPengumuman = await http.get(Uri.parse('http://localhost:3000/api/pengumuman'), headers: headers);
+      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers);
+      final resPengumuman = await http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers);
 
       if (resTugas.statusCode == 200) {
         List allTugas = jsonDecode(resTugas.body);

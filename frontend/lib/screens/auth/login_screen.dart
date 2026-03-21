@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../config/api_config.dart';
+import '../../services/auth_service.dart';
 import '../dashboard/siswa/siswa_main_layout.dart';
 import '../dashboard/admin/admin_main_layout.dart';
 import '../dashboard/guru/guru_main_layout.dart';
@@ -21,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     setState(() => _isLoading = true);
-    final url = Uri.parse('http://localhost:3000/api/login');
+    final url = Uri.parse('$baseUrl/api/login');
 
     try {
       final response = await http.post(
@@ -37,10 +39,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         if (!mounted) return;
-        
+
         final String token = data['token'];
         String userRole = data['user']['role'];
         Map<String, dynamic> userData = data['user'];
+
+        // Simpan session supaya tidak perlu login ulang saat app di-restart
+        await AuthService.saveSession(token, userData);
 
         if (userRole == 'Admin') {
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminMainLayout(token: token)));
