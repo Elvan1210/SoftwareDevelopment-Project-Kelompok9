@@ -19,7 +19,7 @@ const createCrudController = (collectionName) => ({
                                 .get();
       const data = [];
       snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
-      res.status(200).json({ data, limit, offset });
+      res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ message: 'Error server', error: error.message });
     }
