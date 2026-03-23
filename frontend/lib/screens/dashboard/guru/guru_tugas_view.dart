@@ -124,6 +124,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     pesan: 'Guru ${widget.userData['nama']} membuat tugas: ${judulCtrl.text}',
                     token: widget.token,
                     targetKelas: kelasCtrl.text,
+                    targetRole: 'Siswa',
                   );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);

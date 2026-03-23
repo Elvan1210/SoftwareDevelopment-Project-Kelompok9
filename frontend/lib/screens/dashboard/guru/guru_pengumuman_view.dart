@@ -101,7 +101,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                   await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
                 } else {
                   await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
-                  NotifikasiService.kirimNotifikasi(judul: 'Pengumuman: ${judulCtrl.text}', pesan: isiCtrl.text, token: widget.token, targetRole: 'Semua');
+                  NotifikasiService.kirimNotifikasi(judul: 'Pengumuman: ${judulCtrl.text}', pesan: isiCtrl.text, token: widget.token, targetRole: 'Siswa');
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchPengumuman();
