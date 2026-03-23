@@ -32,19 +32,16 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final kelasParam = Uri.encodeComponent(widget.userData['kelas'] ?? '');
+      final siswaId = Uri.encodeComponent(widget.userData['id'].toString());
       final results = await Future.wait([
-        http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/tugas?kelas_or_mapel=$kelasParam'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
-        http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$siswaId'), headers: headers),
       ]);
       if (results[0].statusCode == 200) {
         final dec = jsonDecode(results[0].body);
-        List all = dec is List ? dec : [];
-        _tugasList = all
-            .where((t) =>
-                t['mapel'] == widget.userData['kelas'] ||
-                t['kelas'] == widget.userData['kelas'])
-            .toList();
+        _tugasList = dec is List ? dec : [];
       }
       if (results[1].statusCode == 200) {
         final dec = jsonDecode(results[1].body);
@@ -52,8 +49,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       }
       if (results[2].statusCode == 200) {
         final dec = jsonDecode(results[2].body);
-        List all = dec is List ? dec : [];
-        _pengumpulanList = all.where((p) => p['siswa_id'] == widget.userData['id']).toList();
+        _pengumpulanList = dec is List ? dec : [];
       }
     } catch (e) {
       debugPrint(e.toString());

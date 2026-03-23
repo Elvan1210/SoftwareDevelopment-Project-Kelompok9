@@ -30,15 +30,15 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   Future<void> _fetchTugas() async {
     setState(() => _isLoading = true);
     try {
+      final gid = Uri.encodeComponent(widget.userData['id'].toString());
       final response = await http.get(
-        Uri.parse('$baseUrl/api/tugas'),
+        Uri.parse('$baseUrl/api/tugas?guru_id=$gid'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);
-        List data = dec is List ? dec : [];
         setState(() {
-          _tugasList = data.where((t) => t['guru_id'].toString() == widget.userData['id'].toString()).toList();
+          _tugasList = dec is List ? dec : [];
         });
       }
     } catch (e) {

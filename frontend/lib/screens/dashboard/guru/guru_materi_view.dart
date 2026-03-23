@@ -30,15 +30,15 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   Future<void> _fetchMateri() async {
     setState(() => _isLoading = true);
     try {
+      final gid = Uri.encodeComponent(widget.userData['id'].toString());
       final response = await http.get(
-        Uri.parse('$baseUrl/api/materi'),
+        Uri.parse('$baseUrl/api/materi?guru_id=$gid'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);
-        List data = dec is List ? dec : [];
         setState(() {
-          _materiList = data.where((m) => m['guru_id'].toString() == widget.userData['id'].toString()).toList();
+          _materiList = dec is List ? dec : [];
         });
       }
     } catch (e) {

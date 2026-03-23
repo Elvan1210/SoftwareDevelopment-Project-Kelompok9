@@ -38,21 +38,21 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers);
-      final resPengumpulan = await http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers);
+      final kls = Uri.encodeComponent(widget.userData['kelas'] ?? '');
+      final sid = Uri.encodeComponent(widget.userData['id'].toString());
+      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas?kelas_or_mapel=$kls'), headers: headers);
+      final resPengumpulan = await http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$sid'), headers: headers);
 
       if (resTugas.statusCode == 200) {
         final dec = jsonDecode(resTugas.body);
-        List all = dec is List ? dec : [];
         setState(() {
-          _allTugas = all.where((t) => t['kelas'] == widget.userData['kelas'] || t['mapel'] == widget.userData['kelas']).toList();
+          _allTugas = dec is List ? dec : [];
         });
       }
       if (resPengumpulan.statusCode == 200) {
         final dec = jsonDecode(resPengumpulan.body);
-        List all = dec is List ? dec : [];
         setState(() {
-          _pengumpulan = all.where((p) => p['siswa_id'] == widget.userData['id']).toList();
+          _pengumpulan = dec is List ? dec : [];
         });
       }
     } catch (e) {
