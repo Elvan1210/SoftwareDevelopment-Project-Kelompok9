@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../services/notifikasi_service.dart';
 
@@ -21,12 +22,24 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   bool _isTurnedIn = false;
   String? _pengumpulanId;
   int? _nilaiSiswa;
+  bool _isPastDeadline = false;
+  String _formattedDeadline = '';
   List<String> _attachments = [];
 
   @override
   void initState() {
     super.initState();
     _checkSubmissionStatus();
+    _formattedDeadline = widget.tugas['deadline'] ?? '-';
+    if (widget.tugas['deadline'] != null) {
+      final dt = DateTime.tryParse(widget.tugas['deadline']);
+      if (dt != null) {
+        _formattedDeadline = DateFormat('dd MMM yyyy, HH:mm').format(dt);
+        if (dt.isBefore(DateTime.now())) {
+          _isPastDeadline = true;
+        }
+      }
+    }
   }
 
   Future<void> _checkSubmissionStatus() async {
@@ -179,11 +192,17 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                       style: OutlinedButton.styleFrom(side: BorderSide(color: primaryColor)),
                       child: Text('Undo turn in', style: TextStyle(color: primaryColor)),
                     )
-                  : ElevatedButton(
-                      onPressed: _turnIn,
-                      style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-                      child: const Text('Turn in', style: TextStyle(color: Colors.white)),
-                    ),
+                  : _isPastDeadline
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+                          child: const Text('Tenggat Terlewat', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
+                        )
+                      : ElevatedButton(
+                          onPressed: _turnIn,
+                          style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                          child: const Text('Turn in', style: TextStyle(color: Colors.white)),
+                        ),
           )
         ],
       ),
@@ -194,7 +213,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           children: [
             Text(widget.tugas['judul'] ?? 'Tanpa Judul', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Jatuh tempo: ${widget.tugas['deadline']}', style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
+            Text('Jatuh tempo: $_formattedDeadline', style: TextStyle(fontSize: 16, color: _isPastDeadline ? Colors.red : Colors.grey.shade700)),
             const SizedBox(height: 4),
             Text('Mata Pelajaran: ${widget.tugas['mapel'] ?? widget.tugas['kelas']}', style: const TextStyle(fontSize: 16)),
             if ((widget.tugas['guru_nama'] ?? '').toString().isNotEmpty) ...[

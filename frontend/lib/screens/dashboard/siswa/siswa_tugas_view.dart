@@ -5,6 +5,7 @@ import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'siswa_tugas_detail_screen.dart';
+import 'package:intl/intl.dart';
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -248,6 +249,15 @@ class _TugasCard extends StatelessWidget {
 
   const _TugasCard({required this.tugas, required this.onTap});
 
+  String _formatDeadline(String? dl) {
+    if (dl == null || dl.isEmpty) return '-';
+    final parsed = DateTime.tryParse(dl);
+    if (parsed != null) {
+      return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
+    }
+    return dl; // Fallback untuk teks manual lama
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -290,7 +300,7 @@ class _TugasCard extends StatelessWidget {
                 color: const Color(0xFFF59E0B).withAlpha(20),
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Text(tugas['deadline'],
+              child: Text(_formatDeadline(tugas['deadline']),
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFF59E0B))),
             ),
           const SizedBox(width: 12),

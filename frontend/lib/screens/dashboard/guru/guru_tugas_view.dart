@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
 import '../../../services/notifikasi_service.dart';
+import 'package:intl/intl.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -65,52 +66,97 @@ class _GuruTugasViewState extends State<GuruTugasView> {
     final isEditing = tugas != null;
     final judulCtrl = TextEditingController(text: isEditing ? tugas['judul'] : '');
     final deskripsiCtrl = TextEditingController(text: isEditing ? (tugas['deskripsi'] ?? '') : '');
-    final deadlineCtrl = TextEditingController(text: isEditing ? (tugas['deadline'] ?? '') : '');
     final linkCtrl = TextEditingController(text: isEditing ? (tugas['link'] ?? '') : '');
     final kelasCtrl = TextEditingController(text: isEditing ? (tugas['kelas'] ?? '') : (widget.userData['kelas'] ?? ''));
 
+    DateTime? selectedDeadline;
+    if (isEditing && tugas['deadline'] != null) {
+      selectedDeadline = DateTime.tryParse(tugas['deadline']);
+    }
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
-        content: SizedBox(
-          width: 500,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                AntigravityTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
-                const SizedBox(height: 16),
-                AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
-                const SizedBox(height: 16),
-                AntigravityTextField(controller: deadlineCtrl, labelText: 'Deadline (Contoh: 24 Mar 2026)', prefixIcon: Icons.calendar_today_rounded),
-                const SizedBox(height: 16),
-                AntigravityTextField(controller: linkCtrl, labelText: 'Link Pendukung (Opsional)', prefixIcon: Icons.link_rounded),
-              ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final deadlineStr = selectedDeadline != null 
+              ? DateFormat('dd MMM yyyy, HH:mm').format(selectedDeadline!)
+              : (isEditing ? (tugas['deadline'] ?? 'Pilih Deadline') : 'Pilih Deadline');
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
+            content: SizedBox(
+              width: 500,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    AntigravityTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
+                    const SizedBox(height: 16),
+                    AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: ctx,
+                          initialDate: selectedDeadline ?? DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (date != null) {
+                          if (!ctx.mounted) return;
+                          final time = await showTimePicker(
+                            context: ctx,
+                            initialTime: TimeOfDay.fromDateTime(selectedDeadline ?? DateTime.now()),
+                          );
+                          if (time != null) {
+                            setDialogState(() {
+                              selectedDeadline = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                            });
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.calendar_today_rounded, color: Colors.grey.shade600, size: 20),
+                            const SizedBox(width: 12),
+                            Text(deadlineStr, style: TextStyle(color: selectedDeadline != null ? Colors.black : Colors.grey.shade600, fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    AntigravityTextField(controller: linkCtrl, labelText: 'Link Pendukung (Opsional)', prefixIcon: Icons.link_rounded),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            onPressed: () async {
-              final body = {
-                'judul': judulCtrl.text,
-                'deskripsi': deskripsiCtrl.text,
-                'deadline': deadlineCtrl.text,
-                'link': linkCtrl.text,
-                'mapel': widget.userData['kelas'] ?? '-',
-                'kelas': kelasCtrl.text,
-                'guru_id': widget.userData['id'],
-              };
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                onPressed: () async {
+                  final body = {
+                    'judul': judulCtrl.text,
+                    'deskripsi': deskripsiCtrl.text,
+                    'deadline': selectedDeadline?.toIso8601String() ?? (isEditing ? tugas['deadline'] : null),
+                    'link': linkCtrl.text,
+                    'mapel': widget.userData['kelas'] ?? '-',
+                    'kelas': kelasCtrl.text,
+                    'guru_id': widget.userData['id'],
+                  };
 
               final url = isEditing ? '$baseUrl/api/tugas/${tugas['id']}' : '$baseUrl/api/tugas';
               final response = await (isEditing
@@ -134,8 +180,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
             child: Text(isEditing ? 'Simpan' : 'Terbitkan', style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
-      ),
-    );
+      );
+     },
+    ),
+   );
   }
 
   @override
@@ -213,6 +261,15 @@ class _GuruTugasCard extends StatelessWidget {
 
   const _GuruTugasCard({required this.tugas, required this.onEdit, required this.onDelete, required this.onDetail});
 
+  String _formatDeadline(String? dl) {
+    if (dl == null || dl.isEmpty) return '-';
+    final parsed = DateTime.tryParse(dl);
+    if (parsed != null) {
+      return DateFormat('dd MMM yyyyy, HH:mm').format(parsed);
+    }
+    return dl; // Fallback untuk teks manual lama
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -267,7 +324,7 @@ class _GuruTugasCard extends StatelessWidget {
                   children: [
                     Icon(Icons.timer_outlined, size: 14, color: const Color(0xFFF59E0B).withAlpha(180)),
                     const SizedBox(width: 6),
-                    Text(tugas['deadline'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B))),
+                    Text(_formatDeadline(tugas['deadline']), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B))),
                   ],
                 ),
               Text('Detail >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: accent.withAlpha(200))),
