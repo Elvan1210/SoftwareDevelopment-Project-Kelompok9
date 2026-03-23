@@ -5,6 +5,7 @@ import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'siswa_tugas_detail_screen.dart';
+import 'package:intl/intl.dart';
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -38,21 +39,21 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers);
-      final resPengumpulan = await http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers);
+      final kls = Uri.encodeComponent(widget.userData['kelas'] ?? '');
+      final sid = Uri.encodeComponent(widget.userData['id'].toString());
+      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas?kelas_or_mapel=$kls'), headers: headers);
+      final resPengumpulan = await http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$sid'), headers: headers);
 
       if (resTugas.statusCode == 200) {
         final dec = jsonDecode(resTugas.body);
-        List all = dec is List ? dec : [];
         setState(() {
-          _allTugas = all.where((t) => t['kelas'] == widget.userData['kelas'] || t['mapel'] == widget.userData['kelas']).toList();
+          _allTugas = dec is List ? dec : [];
         });
       }
       if (resPengumpulan.statusCode == 200) {
         final dec = jsonDecode(resPengumpulan.body);
-        List all = dec is List ? dec : [];
         setState(() {
-          _pengumpulan = all.where((p) => p['siswa_id'] == widget.userData['id']).toList();
+          _pengumpulan = dec is List ? dec : [];
         });
       }
     } catch (e) {
@@ -248,6 +249,15 @@ class _TugasCard extends StatelessWidget {
 
   const _TugasCard({required this.tugas, required this.onTap});
 
+  String _formatDeadline(String? dl) {
+    if (dl == null || dl.isEmpty) return '-';
+    final parsed = DateTime.tryParse(dl);
+    if (parsed != null) {
+      return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
+    }
+    return dl; // Fallback untuk teks manual lama
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -290,7 +300,7 @@ class _TugasCard extends StatelessWidget {
                 color: const Color(0xFFF59E0B).withAlpha(20),
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Text(tugas['deadline'],
+              child: Text(_formatDeadline(tugas['deadline']),
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFF59E0B))),
             ),
           const SizedBox(width: 12),

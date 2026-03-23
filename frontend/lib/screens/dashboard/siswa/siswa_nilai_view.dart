@@ -27,14 +27,14 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
   Future<void> _fetchNilai() async {
     setState(() => _isLoading = true);
     try {
+      final sid = Uri.encodeComponent(widget.userData['id'].toString());
       final response = await http.get(
-          Uri.parse('$baseUrl/api/nilai'),
+          Uri.parse('$baseUrl/api/nilai?siswa_id=$sid'),
           headers: {'Authorization': 'Bearer ${widget.token}'});
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);
-        List data = dec is List ? dec : [];
         setState(() {
-          _nilaiList = data.where((n) => n['siswa_id'] == widget.userData['id']).toList();
+          _nilaiList = dec is List ? dec : [];
         });
       }
     } catch (e) {

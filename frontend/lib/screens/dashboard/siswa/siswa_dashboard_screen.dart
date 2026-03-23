@@ -4,6 +4,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'siswa_tugas_detail_screen.dart';
 
 class SiswaDashboardScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   bool _isLoading = true;
   List<dynamic> _tugasList = [];
   List<dynamic> _pengumumanList = [];
+  List<dynamic> _pengumpulanList = [];
 
   @override
   void initState() {
@@ -31,22 +33,24 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final kelasParam = Uri.encodeComponent(widget.userData['kelas'] ?? '');
+      final siswaId = Uri.encodeComponent(widget.userData['id'].toString());
       final results = await Future.wait([
-        http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/tugas?kelas_or_mapel=$kelasParam'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$siswaId'), headers: headers),
       ]);
       if (results[0].statusCode == 200) {
         final dec = jsonDecode(results[0].body);
-        List all = dec is List ? dec : [];
-        _tugasList = all
-            .where((t) =>
-                t['mapel'] == widget.userData['kelas'] ||
-                t['kelas'] == widget.userData['kelas'])
-            .toList();
+        _tugasList = dec is List ? dec : [];
       }
       if (results[1].statusCode == 200) {
         final dec = jsonDecode(results[1].body);
         _pengumumanList = dec is List ? dec : [];
+      }
+      if (results[2].statusCode == 200) {
+        final dec = jsonDecode(results[2].body);
+        _pengumpulanList = dec is List ? dec : [];
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -123,11 +127,16 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   }
 
   Widget _buildStatCards(double w, ThemeData theme, bool isDark) {
-    const stats = [
-      _StatData(Icons.assignment_outlined, 'Total Tugas', '0', Color(0xFF3B82F6)), // Assuming 0 if data not loaded yet or similar
-      _StatData(Icons.pending_actions_outlined, 'Belum Dikumpul', '0', Color(0xFFF59E0B)),
-      _StatData(Icons.campaign_outlined, 'Pengumuman', '0', Color(0xFF10B981)),
-      _StatData(Icons.task_alt_outlined, 'Selesai', '0', Color(0xFF8B5CF6)),
+    int totalTugas = _tugasList.length;
+    int selesai = _tugasList.where((t) => _pengumpulanList.any((p) => p['tugas_id'].toString() == t['id'].toString())).length;
+    int belum = totalTugas - selesai;
+    int pengumumanLength = _pengumumanList.length;
+
+    final stats = [
+      _StatData(Icons.assignment_outlined, 'Total Tugas', totalTugas.toString(), const Color(0xFF3B82F6)),
+      _StatData(Icons.pending_actions_outlined, 'Belum Dikumpul', belum.toString(), const Color(0xFFF59E0B)),
+      _StatData(Icons.campaign_outlined, 'Pengumuman', pengumumanLength.toString(), const Color(0xFF10B981)),
+      _StatData(Icons.task_alt_outlined, 'Selesai', selesai.toString(), const Color(0xFF8B5CF6)),
     ];
 
     final crossCount = w > 800 ? 4 : (w > 500 ? 2 : 2);
@@ -331,6 +340,15 @@ class _TugasCard extends StatelessWidget {
 
   const _TugasCard({required this.tugas, required this.onTap});
 
+  String _formatDeadline(String? dl) {
+    if (dl == null || dl.isEmpty) return '-';
+    final parsed = DateTime.tryParse(dl);
+    if (parsed != null) {
+      return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
+    }
+    return dl;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -373,7 +391,7 @@ class _TugasCard extends StatelessWidget {
                 color: const Color(0xFFF59E0B).withAlpha(20),
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Text(tugas['deadline'],
+              child: Text(_formatDeadline(tugas['deadline']),
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B))),
             ),
           const SizedBox(width: 8),

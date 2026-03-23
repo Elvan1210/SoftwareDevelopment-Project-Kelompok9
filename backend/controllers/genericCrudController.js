@@ -13,7 +13,29 @@ const createCrudController = (collectionName) => ({
       const limit = parseInt(req.query.limit) || 50;
       const offset = parseInt(req.query.offset) || 0;
       
-      const snapshot = await db.collection(collectionName)
+      let queryRef = db.collection(collectionName);
+      
+      const filters = { ...req.query };
+      delete filters.limit;
+      delete filters.offset;
+      
+      // Dukungan untuk OR query pada 'kelas' dan 'mapel'
+      if (filters.kelas_or_mapel) {
+        const { Filter } = require('firebase-admin/firestore');
+        queryRef = queryRef.where(
+          Filter.or(
+            Filter.where('kelas', '==', filters.kelas_or_mapel),
+            Filter.where('mapel', '==', filters.kelas_or_mapel)
+          )
+        );
+        delete filters.kelas_or_mapel;
+      }
+      
+      for (const key in filters) {
+        queryRef = queryRef.where(key, '==', filters[key]);
+      }
+
+      const snapshot = await queryRef
                                 .limit(limit)
                                 .offset(offset)
                                 .get();
