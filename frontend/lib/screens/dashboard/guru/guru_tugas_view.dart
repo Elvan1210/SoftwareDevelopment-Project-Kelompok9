@@ -217,29 +217,79 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     final padding = Breakpoints.screenPadding(w);
                     final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
+                    // Sorting
+                    final sortedTasks = List<dynamic>.from(_tugasList);
+                    sortedTasks.sort((a, b) {
+                      final dA = a['deadline'];
+                      final dB = b['deadline'];
+                      if (dA == null && dB == null) return 0;
+                      if (dA == null) return 1;
+                      if (dB == null) return -1;
+                      final dtA = DateTime.tryParse(dA);
+                      final dtB = DateTime.tryParse(dB);
+                      if (dtA != null && dtB != null) return dtA.compareTo(dtB);
+                      return dA.toString().compareTo(dB.toString());
+                    });
+
+                    // Grouping
+                    final Map<String, List<dynamic>> groups = {};
+                    for (final t in sortedTasks) {
+                      String dateLabel = 'Tanpa Tenggat Waktu';
+                      if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
+                        final dt = DateTime.tryParse(t['deadline']);
+                        if (dt != null) {
+                          dateLabel = DateFormat('MMM d, EEEE').format(dt);
+                        } else {
+                          dateLabel = t['deadline'];
+                        }
+                      }
+                      groups.putIfAbsent(dateLabel, () => []).add(t);
+                    }
+                    final groupKeys = groups.keys.toList();
+
                     return RepaintBoundary(
-                      child: GridView.builder(
+                      child: ListView.builder(
                         padding: padding,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossCount,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
-                        ),
-                        itemCount: _tugasList.length,
+                        itemCount: groupKeys.length,
                         itemBuilder: (_, i) {
-                          final t = _tugasList[i];
-                          return _GuruTugasCard(
-                            tugas: t,
-                            onEdit: () => _showTugasForm(t),
-                            onDelete: () => _deleteTugas(t['id'].toString()),
-                            onDetail: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GuruTugasDetailScreen(tugas: t, token: widget.token),
+                          final key = groupKeys[i];
+                          final items = groups[key]!;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
+                                child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
                               ),
-                            ),
-                          ).animate(delay: (i * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
+                                ),
+                                itemCount: items.length,
+                                itemBuilder: (_, j) {
+                                  final t = items[j];
+                                  return _GuruTugasCard(
+                                    tugas: t,
+                                    onEdit: () => _showTugasForm(t),
+                                    onDelete: () => _deleteTugas(t['id'].toString()),
+                                    onDetail: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => GuruTugasDetailScreen(tugas: t, token: widget.token),
+                                      ),
+                                    ),
+                                  ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              if (i < groupKeys.length - 1) const Divider(color: Colors.white24, height: 1),
+                            ],
+                          );
                         },
                       ),
                     );
