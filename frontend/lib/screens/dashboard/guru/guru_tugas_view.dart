@@ -109,6 +109,13 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                           final time = await showTimePicker(
                             context: ctx,
                             initialTime: TimeOfDay.fromDateTime(selectedDeadline ?? DateTime.now()),
+                            initialEntryMode: TimePickerEntryMode.input, // Biar bisa ngetik langsung kayak di SS
+                            builder: (BuildContext context, Widget? child) {
+                              return MediaQuery(
+                                data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                                child: child!,
+                              );
+                            },
                           );
                           if (time != null) {
                             setDialogState(() {
