@@ -53,6 +53,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
 
   void _showNilaiDialog(Map<String, dynamic> pengumpulan, Map<String, dynamic>? existingNilai) {
     final ctrl = TextEditingController(text: existingNilai != null ? existingNilai['nilai'].toString() : '');
+    final feedbackCtrl = TextEditingController(text: existingNilai != null ? existingNilai['feedback']?.toString() ?? '' : '');
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -68,6 +69,15 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Nilai (0-100)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: feedbackCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Komentar / Feedback Opsional',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -89,6 +99,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 'tugas_id': widget.tugas['id'],
                 'tugas_judul': widget.tugas['judul'],
                 'nilai': nilaiVal,
+                'feedback': feedbackCtrl.text.trim(),
                 'waktu_dinilai': DateTime.now().toIso8601String(),
               };
 
@@ -243,9 +254,19 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             isGraded
-                                ? Text(
-                                    'Nilai: ${existingNilai['nilai']}',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Nilai: ${existingNilai['nilai']}',
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                                      ),
+                                      if (existingNilai['feedback'] != null && existingNilai['feedback'].toString().isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4.0),
+                                          child: Text('"${existingNilai['feedback']}"', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12)),
+                                        )
+                                    ],
                                   )
                                 : const SizedBox.shrink(),
                             ElevatedButton.icon(
