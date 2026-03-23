@@ -1,0 +1,26 @@
+remote: error: GH013: Repository rule violations found for refs/heads/arya.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       ÔÇöÔÇö Google Cloud Service Account Credentials ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö        
+remote:        locations:        
+remote:          - commit: 2d9a367a2a1d6d45f0ce9652b0b9b268094dc691        
+remote:            path: backend/firebase-key.json:1        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/Elvan1210/SoftwareDevelopment-Project-Kelompok9/security/secret-scanning/unblock-secret/3BGK6u8c5Tfgdh9MaR4WJkahYNP        
+remote:             
+remote: 
+remote: 
+To https://github.com/Elvan1210/SoftwareDevelopment-Project-Kelompok9.git
+ ! [remote rejected] arya -> arya (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/Elvan1210/SoftwareDevelopment-Project-Kelompok9.git'

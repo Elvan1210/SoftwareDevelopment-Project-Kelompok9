@@ -1,15 +1,16 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
+import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../auth/login_screen.dart';
 import 'siswa_tugas_detail_screen.dart';
-import '../../../widgets/notification_bell.dart';
 
 class SiswaDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const SiswaDashboardScreen({super.key, required this.userData, required this.token});
+  const SiswaDashboardScreen(
+      {super.key, required this.userData, required this.token});
 
   @override
   State<SiswaDashboardScreen> createState() => _SiswaDashboardScreenState();
@@ -19,7 +20,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   bool _isLoading = true;
   List<dynamic> _tugasList = [];
   List<dynamic> _pengumumanList = [];
-  int _pendingTasks = 0;
 
   @override
   void initState() {
@@ -31,187 +31,407 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers);
-      final resPengumuman = await http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers);
-
-      if (resTugas.statusCode == 200) {
-        List allTugas = jsonDecode(resTugas.body);
-        _tugasList = allTugas.where((t) => t['mapel'] == widget.userData['kelas'] || t['kelas'] == widget.userData['kelas']).toList();
-        _pendingTasks = _tugasList.length;
+      final results = await Future.wait([
+        http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
+      ]);
+      if (results[0].statusCode == 200) {
+        final dec = jsonDecode(results[0].body);
+        List all = dec is List ? dec : [];
+        _tugasList = all
+            .where((t) =>
+                t['mapel'] == widget.userData['kelas'] ||
+                t['kelas'] == widget.userData['kelas'])
+            .toList();
       }
-
-      if (resPengumuman.statusCode == 200) {
-        _pengumumanList = jsonDecode(resPengumuman.body);
+      if (results[1].statusCode == 200) {
+        final dec = jsonDecode(results[1].body);
+        _pengumumanList = dec is List ? dec : [];
       }
     } catch (e) {
       debugPrint(e.toString());
     }
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
+    if (mounted) setState(() => _isLoading = false);
   }
-
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Colors.blue.shade800;
-    final Color secondaryColor = Colors.purple.shade600;
-    final Color cardBackgroundColor = Colors.white;
-    final Color shadowColor = Colors.grey.withOpacity(0.1);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final nama = widget.userData['nama'] ?? 'Siswa';
+    final kelas = widget.userData['kelas'] ?? '-';
+    final initials = nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
 
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: _buildAppBar(primaryColor, context),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+    if (_isLoading) {
+      return AppShell(
+        child: _buildSkeleton(theme),
+      );
+    }
+
+    return AppShell(
+      child: RefreshIndicator(
+        onRefresh: _fetchData,
+        child: LayoutBuilder(
+          builder: (ctx, constraints) {
+            final w = constraints.maxWidth;
+            final padding = Breakpoints.screenPadding(w);
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: padding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildOverviewSection(primaryColor, secondaryColor),
+                  // ── Hero Greeting ──────────────────────────
+                  _HeroGreeting(
+                    initials: initials,
+                    nama: nama,
+                    kelas: kelas,
+                    isDark: isDark,
+                    primaryColor: theme.primaryColor,
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ── Stat Cards ─────────────────────────────
+                  _buildStatCards(w, theme, isDark),
+                  const SizedBox(height: 32),
+
+                  // ── Tugas Section ──────────────────────────
+                  SectionHeader(
+                    title: 'Tugas Aktif',
+                    subtitle: '${_tugasList.length} tugas di kelasmu',
+                    action: null,
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildTugasSection(theme, isDark),
+                  const SizedBox(height: 32),
+
+                  // ── Pengumuman Section ─────────────────────
+                  const SectionHeader(
+                    title: 'Pengumuman',
+                    subtitle: 'Info terbaru untuk kamu',
+                  ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildPengumumanSection(theme, isDark),
                   const SizedBox(height: 24),
-                  _buildSectionTitle(context, "Tugas Kelas", Icons.assignment),
-                  const SizedBox(height: 12),
-                  _buildAssignmentsSection(cardBackgroundColor, shadowColor),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle(context, "Pengumuman", Icons.announcement),
-                  const SizedBox(height: 12),
-                  _buildAnnouncementsSection(cardBackgroundColor, shadowColor),
                 ],
               ),
-            ),
+            );
+          },
+        ),
+      ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(Color primaryColor, BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      title: Row(
+  Widget _buildStatCards(double w, ThemeData theme, bool isDark) {
+    const stats = [
+      _StatData(Icons.assignment_outlined, 'Total Tugas', '0', Color(0xFF3B82F6)), // Assuming 0 if data not loaded yet or similar
+      _StatData(Icons.pending_actions_outlined, 'Belum Dikumpul', '0', Color(0xFFF59E0B)),
+      _StatData(Icons.campaign_outlined, 'Pengumuman', '0', Color(0xFF10B981)),
+      _StatData(Icons.task_alt_outlined, 'Selesai', '0', Color(0xFF8B5CF6)),
+    ];
+
+    final crossCount = w > 800 ? 4 : (w > 500 ? 2 : 2);
+
+    return RepaintBoundary(
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossCount,
+          childAspectRatio: w > 800 ? 1.6 : 1.5,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: stats.length,
+        itemBuilder: (ctx, i) {
+          final s = stats[i];
+          return StatCard(
+            icon: s.icon,
+            label: s.label,
+            value: s.value,
+            color: s.color,
+          )
+              .animate(delay: (200 + i * 80).ms)
+              .fadeIn(duration: 400.ms)
+              .slideY(begin: 0.15, curve: Curves.easeOutQuart);
+        },
+      ),
+    );
+  }
+
+  Widget _buildTugasSection(ThemeData theme, bool isDark) {
+    if (_tugasList.isEmpty) {
+      return const EmptyState(
+        icon: Icons.assignment_turned_in_outlined,
+        message: 'Tidak ada tugas aktif\ndi kelasmu.',
+        color: Color(0xFF3B82F6),
+      );
+    }
+    return RepaintBoundary(
+      child: Column(
+        children: List.generate(
+          _tugasList.length.clamp(0, 5),
+          (i) {
+            final t = _tugasList[i];
+            return _TugasCard(
+              tugas: t,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SiswaTugasDetailScreen(
+                    tugas: t,
+                    userData: widget.userData,
+                    token: widget.token,
+                  ),
+                ),
+              ),
+            )
+                .animate(delay: (300 + i * 80).ms)
+                .fadeIn(duration: 400.ms)
+                .slideX(begin: -0.05, curve: Curves.easeOutQuart);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPengumumanSection(ThemeData theme, bool isDark) {
+    if (_pengumumanList.isEmpty) {
+      return const EmptyState(
+        icon: Icons.campaign_outlined,
+        message: 'Belum ada pengumuman.',
+        color: Color(0xFF10B981),
+      );
+    }
+    return Column(
+      children: List.generate(
+        _pengumumanList.length.clamp(0, 3),
+        (i) {
+          final p = _pengumumanList[i];
+          return _PengumumanCard(pengumuman: p)
+              .animate(delay: (400 + i * 80).ms)
+              .fadeIn(duration: 400.ms)
+              .slideX(begin: -0.05, curve: Curves.easeOutQuart);
+        },
+      ),
+    );
+  }
+
+  Widget _buildSkeleton(ThemeData theme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      child: Column(children: [
+        const SkeletonLoader(height: 100, radius: 24),
+        const SizedBox(height: 24),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          childAspectRatio: 1.5,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: List.generate(4, (_) => const SkeletonLoader(radius: 24)),
+        ),
+        const SizedBox(height: 24),
+        ...List.generate(3, (_) => const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: SkeletonLoader(height: 80, radius: 20),
+        )),
+      ]),
+    );
+  }
+}
+
+// ── Sub Widgets ─────────────────────────────────────────────────────────────
+
+class _StatData {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+  const _StatData(this.icon, this.label, this.value, this.color);
+}
+
+class _HeroGreeting extends StatelessWidget {
+  final String initials, nama, kelas;
+  final bool isDark;
+  final Color primaryColor;
+
+  const _HeroGreeting({
+    required this.initials,
+    required this.nama,
+    required this.kelas,
+    required this.isDark,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: PremiumCard(
+        accentColor: primaryColor,
+        padding: const EdgeInsets.all(24),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [primaryColor, primaryColor.withAlpha(180)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: primaryColor.withAlpha(80), blurRadius: 20, offset: const Offset(0, 8))],
+              ),
+              child: Center(
+                child: Text(initials,
+                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
+              ),
+            ).animate().scale(delay: 100.ms, curve: Curves.easeOutBack),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Selamat datang 👋',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+                          letterSpacing: 0.5)),
+                  const SizedBox(height: 4),
+                  Text(nama,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withAlpha(20),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text('Kelas $kelas',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primaryColor)),
+                  ),
+                ],
+              ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
+            ),
+          ],
+        ),
+      ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.05),
+    );
+  }
+}
+
+class _TugasCard extends StatelessWidget {
+  final dynamic tugas;
+  final VoidCallback onTap;
+
+  const _TugasCard({required this.tugas, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const color = Color(0xFF3B82F6);
+
+    return PremiumCard(
+      onTap: onTap,
+      accentColor: color,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: primaryColor,
-            radius: 20,
-            child: const Icon(Icons.person, color: Colors.white),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withAlpha(20),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.assignment_outlined, color: color, size: 22),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Selamat Datang,", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-              Text(widget.userData['nama'] ?? 'Siswa', style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16)),
-            ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tugas['judul'] ?? '-',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Text('Mapel: ${tugas['mapel'] ?? '-'}',
+                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150))),
+              ],
+            ),
+          ),
+          if (tugas['deadline'] != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withAlpha(20),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Text(tugas['deadline'],
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B))),
+            ),
+          const SizedBox(width: 8),
+          Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withAlpha(100)),
+        ],
+      ),
+    );
+  }
+}
+
+class _PengumumanCard extends StatelessWidget {
+  final dynamic pengumuman;
+  const _PengumumanCard({required this.pengumuman});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const color = Color(0xFF10B981);
+
+    return PremiumCard(
+      accentColor: color,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withAlpha(20),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.campaign_rounded, color: color, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(pengumuman['judul'] ?? '-',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 6),
+                Text(pengumuman['isi'] ?? '-',
+                    style: TextStyle(fontSize: 13, height: 1.5, color: theme.colorScheme.onSurface.withAlpha(170)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
+                if (pengumuman['tanggal'] != null) ...[
+                  const SizedBox(height: 8),
+                  Text(pengumuman['tanggal'],
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(120))),
+                ],
+              ],
+            ),
           ),
         ],
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.logout, color: Colors.red.shade400),
-          onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-          },
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  Widget _buildOverviewSection(Color primaryColor, Color secondaryColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildOverviewCard("Tugas Kelas", _pendingTasks.toString(), Icons.pending_actions, primaryColor),
-        _buildOverviewCard("Pengumuman", _pengumumanList.length.toString(), Icons.campaign, Colors.orange.shade600),
-        _buildOverviewCard("Kelas", widget.userData['kelas'] ?? '-', Icons.class_, secondaryColor),
-      ],
-    );
-  }
-
-  Widget _buildOverviewCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Card(
-        elevation: 0,
-        color: color.withOpacity(0.1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
-              Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-              Text(title, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8)), overflow: TextOverflow.ellipsis),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(BuildContext context, String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey.shade600, size: 20),
-        const SizedBox(width: 8),
-        Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18)),
-      ],
-    );
-  }
-
-  Widget _buildAssignmentsSection(Color cardColor, Color shadowColor) {
-    if (_tugasList.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: Text("Belum ada tugas untuk kelas ini.")));
-    }
-    return Card(
-      elevation: 2,
-      color: cardColor,
-      shadowColor: shadowColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: _tugasList.map((task) {
-          return ListTile(
-            leading: const Icon(Icons.radio_button_unchecked, color: Colors.orange),
-            title: Text(task["judul"] ?? '-', style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text("Deadline: ${task['deadline'] ?? '-'}"),
-            trailing: ElevatedButton(
-              onPressed: () async {
-                await Navigator.push(context, MaterialPageRoute(builder: (context) => SiswaTugasDetailScreen(tugas: task, userData: widget.userData, token: widget.token)));
-                _fetchData();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade800,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text("Detail", style: TextStyle(color: Colors.white)),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildAnnouncementsSection(Color cardColor, Color shadowColor) {
-    if (_pengumumanList.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: Text("Belum ada pengumuman.")));
-    }
-    return Column(
-      children: _pengumumanList.map((pengumuman) {
-        return Card(
-          elevation: 2,
-          color: cardColor,
-          shadowColor: shadowColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: const Icon(Icons.campaign_outlined, color: Colors.orange),
-            title: Text(pengumuman["judul"] ?? '-', style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(pengumuman["isi"] ?? '-'),
-          ),
-        );
-      }).toList(),
     );
   }
 }

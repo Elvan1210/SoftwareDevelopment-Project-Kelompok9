@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
+import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../services/notifikasi_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GuruMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -32,11 +35,10 @@ class _GuruMateriViewState extends State<GuruMateriView> {
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
-        List data = jsonDecode(response.body);
+        final dec = jsonDecode(response.body);
+        List data = dec is List ? dec : [];
         setState(() {
-          _materiList = data
-              .where((m) => m['guru_id'] == widget.userData['id'])
-              .toList();
+          _materiList = data.where((m) => m['guru_id'].toString() == widget.userData['id'].toString()).toList();
         });
       }
     } catch (e) {
@@ -46,27 +48,9 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   }
 
   Future<void> _deleteMateri(String id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Materi'),
-        content: const Text('Yakin ingin menghapus materi ini?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-    if (confirm == true) {
+    if (await confirmDelete(context, pesan: 'Yakin hapus materi ini?')) {
       try {
-        await http.delete(
-          Uri.parse('$baseUrl/api/materi/$id'),
-          headers: {'Authorization': 'Bearer ${widget.token}'},
-        );
+        await http.delete(Uri.parse('$baseUrl/api/materi/$id'), headers: {'Authorization': 'Bearer ${widget.token}'});
         _fetchMateri();
       } catch (e) {
         debugPrint('Error: $e');
@@ -80,63 +64,42 @@ class _GuruMateriViewState extends State<GuruMateriView> {
     final mapelCtrl = TextEditingController(text: isEditing ? materi['mapel'] : widget.userData['kelas'] ?? '');
     final kelasCtrl = TextEditingController(text: isEditing ? (materi['kelas'] ?? '') : '');
     final deskripsiCtrl = TextEditingController(text: isEditing ? (materi['deskripsi'] ?? '') : '');
-    final linkCtrl = TextEditingController(text: isEditing ? (materi['link'] ?? '') : '');
+    final linkCtrl = TextEditingController(text: isEditing ? (materi['file_url'] ?? materi['link'] ?? '') : '');
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isEditing ? 'Edit Materi' : 'Tambah Materi Baru'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: judulCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Judul Materi *',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: mapelCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Mata Pelajaran *',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: kelasCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Kelas (cth: XII IPA 1)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: deskripsiCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi / Isi Materi',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: linkCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Link Materi / Google Drive (opsional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.link),
-                ),
-              ),
-            ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(isEditing ? 'Edit Materi' : 'Tambah Materi Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
+        content: SizedBox(
+          width: 500,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                AntigravityTextField(controller: judulCtrl, labelText: 'Judul Materi *', prefixIcon: Icons.title_rounded),
+                const SizedBox(height: 16),
+                AntigravityTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran *', prefixIcon: Icons.book_outlined),
+                const SizedBox(height: 16),
+                AntigravityTextField(controller: kelasCtrl, labelText: 'Kelas (cth: XII IPA 1)', prefixIcon: Icons.class_outlined),
+                const SizedBox(height: 16),
+                AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi / Isi Materi', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                const SizedBox(height: 16),
+                AntigravityTextField(controller: linkCtrl, labelText: 'Link Materi (Drive/YouTube)', prefixIcon: Icons.link_rounded),
+              ],
+            ),
           ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             onPressed: () async {
               if (judulCtrl.text.isEmpty || mapelCtrl.text.isEmpty) return;
               final body = {
@@ -144,44 +107,29 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                 'mapel': mapelCtrl.text,
                 'kelas': kelasCtrl.text,
                 'deskripsi': deskripsiCtrl.text,
-                'link': linkCtrl.text,
+                'file_url': linkCtrl.text,
                 'guru_id': widget.userData['id'],
-                'guru_nama': widget.userData['nama'],
-                'tanggal': DateTime.now().toIso8601String(),
               };
-              final headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ${widget.token}',
-              };
-              try {
-                if (isEditing) {
-                  await http.put(
-                    Uri.parse('$baseUrl/api/materi/${materi['id']}'),
-                    headers: headers,
-                    body: jsonEncode(body),
-                  );
-                } else {
-                  await http.post(
-                    Uri.parse('$baseUrl/api/materi'),
-                    headers: headers,
-                    body: jsonEncode(body),
-                  );
-                  // Kirim Notifikasi
+
+              final url = isEditing ? '$baseUrl/api/materi/${materi['id']}' : '$baseUrl/api/materi';
+              final response = await (isEditing
+                  ? http.put(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
+                  : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
+
+              if (response.statusCode == 200 || response.statusCode == 201) {
+                if (!isEditing) {
                   NotifikasiService.kirimNotifikasi(
-                    judul: 'Materi Baru: ${judulCtrl.text}',
-                    pesan: 'Materi baru telah ditambahkan oleh ${widget.userData['nama']} untuk mapel ${mapelCtrl.text}',
+                    judul: 'Materi Baru',
+                    pesan: 'Guru ${widget.userData['nama']} mengunggah materi: ${judulCtrl.text}',
                     token: widget.token,
-                    targetRole: 'Siswa',
-                    targetKelas: kelasCtrl.text.isNotEmpty ? kelasCtrl.text : null,
+                    targetKelas: kelasCtrl.text,
                   );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _fetchMateri();
-              } catch (e) {
-                debugPrint('Error saving: $e');
               }
             },
-            child: const Text('Simpan'),
+            child: Text(isEditing ? 'Simpan' : 'Tambah', style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -190,86 +138,139 @@ class _GuruMateriViewState extends State<GuruMateriView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
+    if (_isLoading) {
+      return AppShell(child: _buildSkeleton());
+    }
 
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showMateriForm(),
-        backgroundColor: Colors.teal.shade700,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Tambah Materi', style: TextStyle(color: Colors.white)),
-      ),
-      body: _materiList.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.menu_book_outlined, size: 80, color: Colors.grey.shade300),
-                  const SizedBox(height: 16),
-                  Text('Belum ada materi.', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text('Tekan tombol + untuk tambah materi baru', style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _fetchMateri,
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                itemCount: _materiList.length,
-                itemBuilder: (context, index) {
-                  final m = _materiList[index];
-                  final colors = [Colors.teal, Colors.blue, Colors.purple, Colors.orange, Colors.green];
-                  final color = colors[index % colors.length];
-                  return Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-                      leading: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: color.shade50,
-                          borderRadius: BorderRadius.circular(10),
+    return AppShell(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: AntigravityFAB(
+          onPressed: () => _showMateriForm(),
+          icon: Icons.add_rounded,
+          label: 'Materi Baru',
+        ),
+        body: _materiList.isEmpty
+            ? const EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\nyang kamu unggah.', color: Color(0xFF10B981))
+            : RefreshIndicator(
+                onRefresh: _fetchMateri,
+                child: LayoutBuilder(
+                  builder: (ctx, c) {
+                    final w = c.maxWidth;
+                    final padding = Breakpoints.screenPadding(w);
+                    final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+
+                    return RepaintBoundary(
+                      child: GridView.builder(
+                        padding: padding,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossCount,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: crossCount == 1 ? 2.8 : 1.3,
                         ),
-                        child: Icon(Icons.menu_book, color: color.shade700, size: 26),
+                        itemCount: _materiList.length,
+                        itemBuilder: (_, i) {
+                          final m = _materiList[i];
+                          return _GuruMateriCard(
+                            materi: m,
+                            onEdit: () => _showMateriForm(m),
+                            onDelete: () => _deleteMateri(m['id'].toString()),
+                            onView: () => _launchURL(m['file_url'] ?? m['link']),
+                          ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                        },
                       ),
-                      title: Text(m['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Text('${m['mapel'] ?? '-'} • ${m['kelas'] ?? 'Semua Kelas'}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                          if ((m['deskripsi'] ?? '').toString().isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(m['deskripsi'], style: TextStyle(fontSize: 12, color: Colors.grey.shade500), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
-                          if ((m['link'] ?? '').toString().isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(Icons.link, size: 12, color: Colors.blue.shade600),
-                                const SizedBox(width: 4),
-                                Text('Ada link materi', style: TextStyle(fontSize: 11, color: Colors.blue.shade600)),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(icon: const Icon(Icons.edit, color: Colors.orange), onPressed: () => _showMateriForm(m)),
-                          IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () async { if (await confirmDelete(context, pesan: 'Yakin hapus materi ini?')) _deleteMateri(m['id']); }),
-                        ],
-                      ),
-                    ),
+                    );
+                  },
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return GridView.count(
+      padding: const EdgeInsets.all(24),
+      crossAxisCount: 2,
+      childAspectRatio: 1.3,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
+    );
+  }
+
+  Future<void> _launchURL(String? url) async {
+    if (url == null || url.isEmpty) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+}
+
+class _GuruMateriCard extends StatelessWidget {
+  final dynamic materi;
+  final VoidCallback onEdit, onDelete, onView;
+
+  const _GuruMateriCard({required this.materi, required this.onEdit, required this.onDelete, required this.onView});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const accent = Color(0xFF10B981);
+
+    return PremiumCard(
+      accentColor: accent,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.description_outlined, color: accent, size: 20)),
+              const SizedBox(width: 12),
+              Expanded(child: Text(materi['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              IconButton(
+                onPressed: () {
+                  final renderBox = context.findRenderObject() as RenderBox;
+                  final offset = renderBox.localToGlobal(Offset.zero);
+                  showMenu(
+                    context: context,
+                    position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    items: [
+                      PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
+                      PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                    ],
                   );
                 },
+                icon: Icon(Icons.more_vert_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
               ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(materi['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 4),
+              Text('Kelas: ${materi['kelas'] ?? '-'}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150))),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: onView,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: accent,
+                side: BorderSide(color: accent.withAlpha(80)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.open_in_new_rounded, size: 16),
+              label: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
             ),
+          ),
+        ],
+      ),
     );
   }
 }
