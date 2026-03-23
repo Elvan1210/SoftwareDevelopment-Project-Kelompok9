@@ -22,6 +22,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   bool _isTurnedIn = false;
   String? _pengumpulanId;
   int? _nilaiSiswa;
+  String? _feedbackSiswa;
   bool _isPastDeadline = false;
   String _formattedDeadline = '';
   List<String> _attachments = [];
@@ -73,6 +74,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           }
           if (nilaiMilikSiswa.isNotEmpty) {
             _nilaiSiswa = nilaiMilikSiswa[0]['nilai'];
+            _feedbackSiswa = nilaiMilikSiswa[0]['feedback'];
           }
         });
       }
@@ -272,6 +274,34 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                   ],
                 ),
               ),
+              if (_feedbackSiswa != null && _feedbackSiswa!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade100),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.format_quote, color: Colors.blue.shade400, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Komentar Guru:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
+                            const SizedBox(height: 4),
+                            Text(_feedbackSiswa!, style: TextStyle(color: Colors.blue.shade900, fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
             ],
 

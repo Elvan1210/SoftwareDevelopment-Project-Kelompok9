@@ -211,30 +211,72 @@ class _TugasList extends StatelessWidget {
           final padding = Breakpoints.screenPadding(w);
           final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
-          return GridView.builder(
+          // Sorting
+          final sortedTasks = List<dynamic>.from(tugasList);
+          sortedTasks.sort((a, b) {
+            final dA = a['deadline'];
+            final dB = b['deadline'];
+            if (dA == null && dB == null) return 0;
+            if (dA == null) return 1;
+            if (dB == null) return -1;
+            final dtA = DateTime.tryParse(dA);
+            final dtB = DateTime.tryParse(dB);
+            if (dtA != null && dtB != null) return dtA.compareTo(dtB);
+            return dA.toString().compareTo(dB.toString());
+          });
+
+          // Grouping
+          final Map<String, List<dynamic>> groups = {};
+          for (final t in sortedTasks) {
+            String dateLabel = 'Tanpa Tenggat Waktu';
+            if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
+              final dt = DateTime.tryParse(t['deadline']);
+              if (dt != null) {
+                dateLabel = DateFormat('MMM d, EEEE').format(dt);
+              } else {
+                dateLabel = t['deadline'];
+              }
+            }
+            groups.putIfAbsent(dateLabel, () => []).add(t);
+          }
+          final groupKeys = groups.keys.toList();
+
+          return ListView.builder(
             padding: padding,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossCount,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: crossCount == 1 ? 3.8 : 2.0,
-            ),
-            itemCount: tugasList.length,
+            itemCount: groupKeys.length,
             itemBuilder: (_, i) {
-              final t = tugasList[i];
-              return _TugasCard(
-                tugas: t,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SiswaTugasDetailScreen(
-                      tugas: t,
-                      userData: userData,
-                      token: token,
-                    ),
+              final key = groupKeys[i];
+              final items = groups[key]!;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
+                    child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
                   ),
-                ),
-              ).animate(delay: (i * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossCount,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: crossCount == 1 ? 3.8 : 2.0,
+                    ),
+                    itemCount: items.length,
+                    itemBuilder: (_, j) {
+                      final t = items[j];
+                      return _TugasCard(
+                        tugas: t,
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: userData, token: token))),
+                      ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  if (i < groupKeys.length - 1) const Divider(color: Colors.white24, height: 1),
+                ],
+              );
             },
           );
         },
