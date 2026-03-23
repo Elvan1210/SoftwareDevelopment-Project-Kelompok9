@@ -123,6 +123,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     pesan: 'Guru ${widget.userData['nama']} mengunggah materi: ${judulCtrl.text}',
                     token: widget.token,
                     targetKelas: kelasCtrl.text,
+                    targetRole: 'Siswa',
                   );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
