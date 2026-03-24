@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
@@ -106,7 +106,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                   const SizedBox(height: 32),
 
                   // ── Your Classes Grid ──────────────────────
-                  SectionHeader(
+                  const SectionHeader(
                     title: 'Kelas Kamu',
                     subtitle: 'Akses cepat ke materi & tugas mata pelajaran',
                     action: null,

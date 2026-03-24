@@ -121,7 +121,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                   const SizedBox(height: 32),
 
                   // ── Your Classes Grid ──────────────────────
-                  SectionHeader(
+                  const SectionHeader(
                     title: 'Kelas Ampuan',
                     subtitle: 'Kelola materi, tugas, dan nilai siswa',
                     action: null,
