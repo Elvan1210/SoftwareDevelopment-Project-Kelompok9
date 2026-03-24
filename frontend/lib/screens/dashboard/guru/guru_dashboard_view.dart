@@ -19,11 +19,35 @@ class GuruDashboardView extends StatefulWidget {
 class _GuruDashboardViewState extends State<GuruDashboardView> {
   int _totalTugas = 0, _totalMateri = 0, _totalNilai = 0, _totalPengumuman = 0;
   bool _isLoading = true;
+  List<dynamic> _kelasList = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchStats();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    setState(() => _isLoading = true);
+    await Future.wait([
+      _fetchStats(),
+      _fetchKelasGuru(),
+    ]);
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _fetchKelasGuru() async {
+    try {
+      final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final guruId = Uri.encodeComponent(widget.userData['id'].toString());
+      final resp = await http.get(Uri.parse('$baseUrl/api/kelas?guru_id=$guruId'), headers: headers);
+      if (resp.statusCode == 200) {
+        final dec = jsonDecode(resp.body);
+        _kelasList = dec is List ? dec : [];
+      }
+    } catch (e) {
+      debugPrint('Error fetch kelas: $e');
+    }
   }
 
   Future<void> _fetchStats() async {
@@ -35,30 +59,30 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
       ]);
+      // ... same logic as before for stats filtering ...
       if (results[0].statusCode == 200) {
         final dec = jsonDecode(results[0].body);
         List d = dec is List ? dec : [];
-        _totalTugas = d.where((t) => t['guru_id'] == widget.userData['id']).length;
+        _totalTugas = d.where((t) => t['guru_id'].toString() == widget.userData['id'].toString()).length;
       }
       if (results[1].statusCode == 200) {
         final dec = jsonDecode(results[1].body);
         List d = dec is List ? dec : [];
-        _totalMateri = d.where((m) => m['guru_id'] == widget.userData['id']).length;
+        _totalMateri = d.where((m) => m['guru_id'].toString() == widget.userData['id'].toString()).length;
       }
       if (results[2].statusCode == 200) {
         final dec = jsonDecode(results[2].body);
         List d = dec is List ? dec : [];
-        _totalNilai = d.where((n) => n['guru_id'] == widget.userData['id']).length;
+        _totalNilai = d.where((n) => n['guru_id'].toString() == widget.userData['id'].toString()).length;
       }
       if (results[3].statusCode == 200) {
         final dec = jsonDecode(results[3].body);
         List d = dec is List ? dec : [];
-        _totalPengumuman = d.where((p) => p['guru_id'] == widget.userData['id']).length;
+        _totalPengumuman = d.where((p) => p['guru_id'].toString() == widget.userData['id'].toString()).length;
       }
     } catch (e) {
       debugPrint('Error: $e');
     }
-    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
@@ -66,7 +90,6 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final nama = widget.userData['nama'] ?? 'Guru';
-    final kelas = widget.userData['kelas'] ?? '-';
     final initials = nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
 
     if (_isLoading) {
@@ -75,7 +98,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
 
     return AppShell(
       child: RefreshIndicator(
-        onRefresh: _fetchStats,
+        onRefresh: _fetchInitialData,
         child: LayoutBuilder(
           builder: (ctx, constraints) {
             final w = constraints.maxWidth;
@@ -86,25 +109,40 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Hero Greeting
+                   // Hero Greeting
                   _HeroGreeting(
                     initials: initials,
                     nama: nama,
-                    kelas: kelas,
+                    kelas: widget.userData['kelas'] ?? '-',
                     isDark: isDark,
                     primaryColor: const Color(0xFF10B981),
                     role: 'Guru',
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
-                  // Stat Cards
+                  // ── Your Classes Grid ──────────────────────
+                  SectionHeader(
+                    title: 'Kelas Ampuan',
+                    subtitle: 'Kelola materi, tugas, dan nilai siswa',
+                    action: null,
+                  ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildClassGrid(w, theme, isDark),
+                  const SizedBox(height: 40),
+
+                  // ── Stats Section ──────────────────────────
+                  const SectionHeader(
+                    title: 'Statistik Konten',
+                    subtitle: 'Ringkasan distribusi pembelajaran kamu',
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
                   _buildStatGrid(w),
                   const SizedBox(height: 32),
 
                   // Chart
                   const SectionHeader(
-                    title: 'Ringkasan Aktivitas',
-                    subtitle: 'Semua kontribusi kamu di platform',
+                    title: 'Grafik Aktivitas',
+                    subtitle: 'Visualisasi kontribusi mengajar',
                   ).animate().fadeIn(delay: 300.ms),
                   const SizedBox(height: 16),
                   _buildChart(theme, isDark),
@@ -115,6 +153,37 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildClassGrid(double w, ThemeData theme, bool isDark) {
+    if (_kelasList.isEmpty) {
+      return const EmptyState(
+        icon: Icons.grid_view_rounded,
+        message: 'Kamu belum ditugaskan ke kelas manapun.',
+        color: Colors.teal,
+      );
+    }
+
+    final crossCount = w > 1200 ? 4 : (w > 800 ? 3 : (w > 500 ? 2 : 1));
+    
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossCount,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.6,
+      ),
+      itemCount: _kelasList.length,
+      itemBuilder: (ctx, i) {
+        final k = _kelasList[i];
+        return _GuruClassCard(kelas: k)
+            .animate(delay: (200 + i * 50).ms)
+            .fadeIn()
+            .scale(begin: const Offset(0.95, 0.95));
+      },
     );
   }
 
@@ -256,6 +325,107 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         const SkeletonLoader(height: 220, radius: 24),
       ]),
     );
+  }
+}
+
+class _GuruClassCard extends StatelessWidget {
+  final dynamic kelas;
+  const _GuruClassCard({required this.kelas});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = Color(int.parse(kelas['warna_card'] ?? '4282032886'));
+    
+    String initials = "??";
+    final nama = (kelas['nama_kelas'] as String? ?? "").trim();
+    if (nama.isNotEmpty) {
+      final parts = nama.split(' ');
+      if (parts.length >= 2) {
+        initials = (parts[0][0] + parts[1][0]).toUpperCase();
+      } else {
+        initials = parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+      }
+    }
+
+    return PremiumCard(
+      accentColor: color,
+      padding: EdgeInsets.zero,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Mengelola kelas: ${kelas['nama_kelas']}'), behavior: SnackBarBehavior.floating)
+        );
+      },
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                   Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${kelas['kode_kelas'] ?? ''}',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color),
+                        ),
+                        Text(
+                          kelas['nama_kelas'] ?? '-',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, height: 1.2),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa Terdaftar',
+                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(120)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(30))),
+            ),
+            child: Row(
+              children: [
+                _buildMiniIcon(Icons.assignment_outlined),
+                const SizedBox(width: 12),
+                _buildMiniIcon(Icons.menu_book_outlined),
+                const SizedBox(width: 12),
+                _buildMiniIcon(Icons.grade_outlined),
+                const Spacer(),
+                const Icon(Icons.settings_outlined, size: 14, color: Colors.grey),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniIcon(IconData icon) {
+    return Icon(icon, size: 14, color: Colors.grey);
   }
 }
 
