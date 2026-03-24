@@ -4,7 +4,12 @@ const db = require('../config/db');
 // GET /api/users
 exports.getAll = async (req, res) => {
   try {
-    const snapshot = await db.collection('users').get();
+    const { role } = req.query;
+    let queryRef = db.collection('users');
+    if (role) {
+      queryRef = queryRef.where('role', '==', role);
+    }
+    const snapshot = await queryRef.get();
     const users = [];
     snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
     res.status(200).json(users);

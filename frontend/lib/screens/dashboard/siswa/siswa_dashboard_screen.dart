@@ -22,6 +22,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   List<dynamic> _tugasList = [];
   List<dynamic> _pengumumanList = [];
   List<dynamic> _pengumpulanList = [];
+  List<dynamic> _kelasList = [];
 
   @override
   void initState() {
@@ -33,16 +34,28 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final kelasParam = Uri.encodeComponent(widget.userData['kelas'] ?? '');
       final siswaId = Uri.encodeComponent(widget.userData['id'].toString());
+      
       final results = await Future.wait([
-        http.get(Uri.parse('$baseUrl/api/tugas?kelas_or_mapel=$kelasParam'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/kelas?siswa_id=$siswaId'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$siswaId'), headers: headers),
       ]);
+
       if (results[0].statusCode == 200) {
         final dec = jsonDecode(results[0].body);
-        _tugasList = dec is List ? dec : [];
+        _kelasList = dec is List ? dec : [];
+        
+        // Fetch all tugas for all joined classes
+        List<dynamic> allTugas = [];
+        for (var k in _kelasList) {
+           final tResp = await http.get(Uri.parse('$baseUrl/api/tugas?kelas=${Uri.encodeComponent(k['nama_kelas'])}'), headers: headers);
+           if (tResp.statusCode == 200) {
+             final tDec = jsonDecode(tResp.body);
+             if (tDec is List) allTugas.addAll(tDec);
+           }
+        }
+        _tugasList = allTugas;
       }
       if (results[1].statusCode == 200) {
         final dec = jsonDecode(results[1].body);
@@ -63,13 +76,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final nama = widget.userData['nama'] ?? 'Siswa';
-    final kelas = widget.userData['kelas'] ?? '-';
     final initials = nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
 
     if (_isLoading) {
-      return AppShell(
-        child: _buildSkeleton(theme),
-      );
+      return AppShell(child: _buildSkeleton(theme));
     }
 
     return AppShell(
@@ -85,24 +95,34 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Hero Greeting ──────────────────────────
+                   // ── Hero Greeting ──────────────────────────
                   _HeroGreeting(
                     initials: initials,
                     nama: nama,
-                    kelas: kelas,
+                    kelas: widget.userData['kelas'] ?? '-',
                     isDark: isDark,
                     primaryColor: theme.primaryColor,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
+
+                  // ── Your Classes Grid ──────────────────────
+                  SectionHeader(
+                    title: 'Kelas Kamu',
+                    subtitle: 'Akses cepat ke materi & tugas mata pelajaran',
+                    action: null,
+                  ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildClassGrid(w, theme, isDark),
+                  const SizedBox(height: 40),
 
                   // ── Stat Cards ─────────────────────────────
                   _buildStatCards(w, theme, isDark),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
 
                   // ── Tugas Section ──────────────────────────
                   SectionHeader(
-                    title: 'Tugas Aktif',
-                    subtitle: '${_tugasList.length} tugas di kelasmu',
+                    title: 'Tugas Mendatang',
+                    subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
                     action: null,
                   ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
                   const SizedBox(height: 16),
@@ -123,6 +143,37 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildClassGrid(double w, ThemeData theme, bool isDark) {
+    if (_kelasList.isEmpty) {
+      return const EmptyState(
+        icon: Icons.grid_view_rounded,
+        message: 'Kamu belum terdaftar di kelas manapun.\nHubungi Admin.',
+        color: Colors.blueGrey,
+      );
+    }
+
+    final crossCount = w > 1200 ? 4 : (w > 800 ? 3 : (w > 500 ? 2 : 1));
+    
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossCount,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.6,
+      ),
+      itemCount: _kelasList.length,
+      itemBuilder: (ctx, i) {
+        final k = _kelasList[i];
+        return _SiswaClassCard(kelas: k)
+            .animate(delay: (200 + i * 50).ms)
+            .fadeIn()
+            .scale(begin: const Offset(0.95, 0.95));
+      },
     );
   }
 
@@ -445,6 +496,101 @@ class _PengumumanCard extends StatelessWidget {
                   Text(pengumuman['tanggal'],
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(120))),
                 ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SiswaClassCard extends StatelessWidget {
+  final dynamic kelas;
+  const _SiswaClassCard({required this.kelas});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = Color(int.parse(kelas['warna_card'] ?? '4282032886'));
+    
+    String initials = "??";
+    final nama = (kelas['nama_kelas'] as String? ?? "").trim();
+    if (nama.isNotEmpty) {
+      final parts = nama.split(' ');
+      if (parts.length >= 2) {
+        initials = (parts[0][0] + parts[1][0]).toUpperCase();
+      } else {
+        initials = parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+      }
+    }
+
+    return PremiumCard(
+      accentColor: color,
+      padding: EdgeInsets.zero,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Membuka kelas: ${kelas['nama_kelas']}'), behavior: SnackBarBehavior.floating)
+        );
+      },
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${kelas['kode_kelas'] ?? ''}',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color),
+                        ),
+                        Text(
+                          kelas['nama_kelas'] ?? '-',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, height: 1.2),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Guru: ${kelas['guru_nama'] ?? '-'}',
+                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(120)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(30))),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.assignment_outlined, size: 14, color: Colors.grey),
+                SizedBox(width: 12),
+                Icon(Icons.folder_open_outlined, size: 14, color: Colors.grey),
+                Spacer(),
+                Icon(Icons.chevron_right_rounded, size: 16, color: Colors.grey),
               ],
             ),
           ),
