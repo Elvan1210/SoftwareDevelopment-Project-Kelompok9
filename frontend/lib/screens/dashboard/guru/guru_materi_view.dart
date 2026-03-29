@@ -11,7 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 class GuruMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const GuruMateriView({super.key, required this.userData, required this.token});
+  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
+
+  const GuruMateriView({
+    super.key, 
+    required this.userData, 
+    required this.token,
+    required this.teamData, // Wajib diisi
+  });
 
   @override
   State<GuruMateriView> createState() => _GuruMateriViewState();
@@ -30,9 +37,10 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   Future<void> _fetchMateri() async {
     setState(() => _isLoading = true);
     try {
-      final gid = Uri.encodeComponent(widget.userData['id'].toString());
+      // UBAHAN: Fetch hanya materi yang memiliki kelas_id sesuai dengan tim ini
+      final kelasId = widget.teamData['id'];
       final response = await http.get(
-        Uri.parse('$baseUrl/api/materi?guru_id=$gid'),
+        Uri.parse('$baseUrl/api/materi?kelas_id=$kelasId'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -61,8 +69,6 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   void _showMateriForm([Map<String, dynamic>? materi]) {
     final isEditing = materi != null;
     final judulCtrl = TextEditingController(text: isEditing ? materi['judul'] : '');
-    final mapelCtrl = TextEditingController(text: isEditing ? materi['mapel'] : widget.userData['kelas'] ?? '');
-    final kelasCtrl = TextEditingController(text: isEditing ? (materi['kelas'] ?? '') : '');
     final deskripsiCtrl = TextEditingController(text: isEditing ? (materi['deskripsi'] ?? '') : '');
     final linkCtrl = TextEditingController(text: isEditing ? (materi['file_url'] ?? materi['link'] ?? '') : '');
 
@@ -78,11 +84,20 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
+                // Info Kelas Otomatis
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: const Color(0xFF10B981).withAlpha(20), borderRadius: BorderRadius.circular(12)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.class_, color: Color(0xFF10B981), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text('Materi ini akan dibagikan ke kelas: ${widget.teamData['nama_kelas']}', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12))),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 AntigravityTextField(controller: judulCtrl, labelText: 'Judul Materi *', prefixIcon: Icons.title_rounded),
-                const SizedBox(height: 16),
-                AntigravityTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran *', prefixIcon: Icons.book_outlined),
-                const SizedBox(height: 16),
-                AntigravityTextField(controller: kelasCtrl, labelText: 'Kelas (cth: XII IPA 1)', prefixIcon: Icons.class_outlined),
                 const SizedBox(height: 16),
                 AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi / Isi Materi', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
                 const SizedBox(height: 16),
@@ -101,11 +116,14 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: () async {
-              if (judulCtrl.text.isEmpty || mapelCtrl.text.isEmpty) return;
+              if (judulCtrl.text.isEmpty) return;
+              
+              // UBAHAN: Sisipkan ID dan Nama Kelas secara otomatis
               final body = {
                 'judul': judulCtrl.text,
-                'mapel': mapelCtrl.text,
-                'kelas': kelasCtrl.text,
+                'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
+                'kelas': widget.teamData['nama_kelas'],
+                'kelas_id': widget.teamData['id'],
                 'deskripsi': deskripsiCtrl.text,
                 'file_url': linkCtrl.text,
                 'guru_id': widget.userData['id'],
@@ -120,9 +138,9 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                 if (!isEditing) {
                   NotifikasiService.kirimNotifikasi(
                     judul: 'Materi Baru',
-                    pesan: 'Guru ${widget.userData['nama']} mengunggah materi: ${judulCtrl.text}',
+                    pesan: 'Materi baru: ${judulCtrl.text} diunggah di kelas ${widget.teamData['nama_kelas']}',
                     token: widget.token,
-                    targetKelas: kelasCtrl.text,
+                    targetKelas: widget.teamData['nama_kelas'],
                     targetRole: 'Siswa',
                   );
                 }
@@ -152,7 +170,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
           label: 'Materi Baru',
         ),
         body: _materiList.isEmpty
-            ? const EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\nyang kamu unggah.', color: Color(0xFF10B981))
+            ? const EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\ndi kelas ini.', color: Color(0xFF10B981))
             : RefreshIndicator(
                 onRefresh: _fetchMateri,
                 child: LayoutBuilder(

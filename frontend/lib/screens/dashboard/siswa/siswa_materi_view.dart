@@ -9,7 +9,14 @@ import 'package:url_launcher/url_launcher.dart';
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const SiswaMateriView({super.key, required this.userData, required this.token});
+  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
+
+  const SiswaMateriView({
+    super.key, 
+    required this.userData, 
+    required this.token,
+    required this.teamData, // Wajib diisi
+  });
 
   @override
   State<SiswaMateriView> createState() => _SiswaMateriViewState();
@@ -29,12 +36,19 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
   Future<void> _fetchMateri() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/materi'), headers: {'Authorization': 'Bearer ${widget.token}'});
+      // UBAHAN: Fetch HANYA materi dari kelas ini berdasarkan ID-nya
+      final kelasId = widget.teamData['id'];
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/materi?kelas_id=$kelasId'), 
+        headers: {'Authorization': 'Bearer ${widget.token}'}
+      );
+      
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);
         List all = dec is List ? dec : [];
         setState(() {
-          _materiList = all.where((m) => m['kelas'] == widget.userData['kelas'] || m['kelas'] == null || (m['kelas'] ?? '').toString().isEmpty).toList();
+          // UBAHAN: Tidak perlu difilter secara manual lagi, semua data yang masuk sudah pasti milik kelas ini
+          _materiList = all; 
         });
       }
     } catch (e) {
@@ -76,7 +90,7 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
               child: _filtered.isEmpty
                   ? EmptyState(
                       icon: Icons.library_books_rounded,
-                      message: _searchQuery.isEmpty ? 'Belum ada materi.' : 'Materi tidak ditemukan.',
+                      message: _searchQuery.isEmpty ? 'Belum ada materi\ndi kelas ini.' : 'Materi tidak ditemukan.',
                       color: const Color(0xFF10B981))
                   : RefreshIndicator(
                       onRefresh: _fetchMateri,
