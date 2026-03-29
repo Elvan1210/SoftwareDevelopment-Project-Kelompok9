@@ -12,7 +12,14 @@ import 'package:intl/intl.dart';
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const GuruTugasView({super.key, required this.userData, required this.token});
+  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
+
+  const GuruTugasView({
+    super.key, 
+    required this.userData, 
+    required this.token,
+    required this.teamData, // Wajib diisi
+  });
 
   @override
   State<GuruTugasView> createState() => _GuruTugasViewState();
@@ -31,9 +38,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   Future<void> _fetchTugas() async {
     setState(() => _isLoading = true);
     try {
-      final gid = Uri.encodeComponent(widget.userData['id'].toString());
+      // UBAHAN: Fetch hanya tugas yang memiliki kelas_id sesuai dengan tim ini
+      final kelasId = widget.teamData['id'];
       final response = await http.get(
-        Uri.parse('$baseUrl/api/tugas?guru_id=$gid'),
+        Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
       if (response.statusCode == 200) {
@@ -67,7 +75,6 @@ class _GuruTugasViewState extends State<GuruTugasView> {
     final judulCtrl = TextEditingController(text: isEditing ? tugas['judul'] : '');
     final deskripsiCtrl = TextEditingController(text: isEditing ? (tugas['deskripsi'] ?? '') : '');
     final linkCtrl = TextEditingController(text: isEditing ? (tugas['link'] ?? '') : '');
-    final kelasCtrl = TextEditingController(text: isEditing ? (tugas['kelas'] ?? '') : (widget.userData['kelas'] ?? ''));
 
     DateTime? selectedDeadline;
     if (isEditing && tugas['deadline'] != null) {
@@ -91,7 +98,19 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 8),
+                    // Info Kelas Otomatis
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Colors.blue.withAlpha(20), borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.class_, color: Colors.blue, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text('Tugas ini akan diterbitkan di kelas: ${widget.teamData['nama_kelas']}', style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12))),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     AntigravityTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
                     const SizedBox(height: 16),
                     AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
@@ -109,7 +128,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                           final time = await showTimePicker(
                             context: ctx,
                             initialTime: TimeOfDay.fromDateTime(selectedDeadline ?? DateTime.now()),
-                            initialEntryMode: TimePickerEntryMode.input, // Biar bisa ngetik langsung kayak di SS
+                            initialEntryMode: TimePickerEntryMode.input,
                             builder: (BuildContext context, Widget? child) {
                               return MediaQuery(
                                 data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
@@ -155,42 +174,44 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () async {
+                  // UBAHAN: Sisipkan ID dan Nama Kelas secara otomatis
                   final body = {
                     'judul': judulCtrl.text,
                     'deskripsi': deskripsiCtrl.text,
                     'deadline': selectedDeadline?.toIso8601String() ?? (isEditing ? tugas['deadline'] : null),
                     'link': linkCtrl.text,
-                    'mapel': widget.userData['kelas'] ?? '-',
-                    'kelas': kelasCtrl.text,
+                    'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
+                    'kelas': widget.teamData['nama_kelas'], // Nama kelas otomatis
+                    'kelas_id': widget.teamData['id'], // ID kelas otomatis
                     'guru_id': widget.userData['id'],
                   };
 
-              final url = isEditing ? '$baseUrl/api/tugas/${tugas['id']}' : '$baseUrl/api/tugas';
-              final response = await (isEditing
-                  ? http.put(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
-                  : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
+                  final url = isEditing ? '$baseUrl/api/tugas/${tugas['id']}' : '$baseUrl/api/tugas';
+                  final response = await (isEditing
+                      ? http.put(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
+                      : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
 
-              if (response.statusCode == 200 || response.statusCode == 201) {
-                if (!isEditing) {
-                  NotifikasiService.kirimNotifikasi(
-                    judul: 'Tugas Baru', 
-                    pesan: 'Guru ${widget.userData['nama']} membuat tugas: ${judulCtrl.text}',
-                    token: widget.token,
-                    targetKelas: kelasCtrl.text,
-                    targetRole: 'Siswa',
-                  );
-                }
-                if (ctx.mounted) Navigator.pop(ctx);
-                _fetchTugas();
-              }
-            },
-            child: Text(isEditing ? 'Simpan' : 'Terbitkan', style: const TextStyle(fontWeight: FontWeight.w800)),
-          ),
-        ],
-      );
-     },
-    ),
-   );
+                  if (response.statusCode == 200 || response.statusCode == 201) {
+                    if (!isEditing) {
+                      NotifikasiService.kirimNotifikasi(
+                        judul: 'Tugas Baru', 
+                        pesan: 'Tugas baru: ${judulCtrl.text} ditambahkan di kelas ${widget.teamData['nama_kelas']}',
+                        token: widget.token,
+                        targetKelas: widget.teamData['nama_kelas'],
+                        targetRole: 'Siswa',
+                      );
+                    }
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    _fetchTugas();
+                  }
+                },
+                child: Text(isEditing ? 'Simpan' : 'Terbitkan', style: const TextStyle(fontWeight: FontWeight.w800)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -208,7 +229,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
           label: 'Buat Tugas',
         ),
         body: _tugasList.isEmpty
-            ? const EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas yang kamu buat.', color: Color(0xFF3B82F6))
+            ? const EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas di kelas ini.', color: Color(0xFF3B82F6))
             : RefreshIndicator(
                 onRefresh: _fetchTugas,
                 child: LayoutBuilder(
@@ -217,7 +238,6 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     final padding = Breakpoints.screenPadding(w);
                     final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
-                    // Sorting
                     final sortedTasks = List<dynamic>.from(_tugasList);
                     sortedTasks.sort((a, b) {
                       final dA = a['deadline'];
@@ -231,7 +251,6 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       return dA.toString().compareTo(dB.toString());
                     });
 
-                    // Grouping
                     final Map<String, List<dynamic>> groups = {};
                     for (final t in sortedTasks) {
                       String dateLabel = 'Tanpa Tenggat Waktu';
@@ -324,7 +343,7 @@ class _GuruTugasCard extends StatelessWidget {
     if (parsed != null) {
       return DateFormat('dd MMM yyyyy, HH:mm').format(parsed);
     }
-    return dl; // Fallback untuk teks manual lama
+    return dl; 
   }
 
   @override

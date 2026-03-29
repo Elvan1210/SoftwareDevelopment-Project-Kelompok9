@@ -10,7 +10,14 @@ import 'package:intl/intl.dart';
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const SiswaTugasView({super.key, required this.userData, required this.token});
+  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
+
+  const SiswaTugasView({
+    super.key, 
+    required this.userData, 
+    required this.token,
+    required this.teamData, // Wajib diisi
+  });
 
   @override
   State<SiswaTugasView> createState() => _SiswaTugasViewState();
@@ -39,9 +46,13 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final kls = Uri.encodeComponent(widget.userData['kelas'] ?? '');
       final sid = Uri.encodeComponent(widget.userData['id'].toString());
-      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas?kelas_or_mapel=$kls'), headers: headers);
+      
+      // UBAHAN: Ambil kelas_id spesifik
+      final kelasId = widget.teamData['id'];
+
+      // UBAHAN: Fetch hanya tugas milik kelas/tim ini saja!
+      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'), headers: headers);
       final resPengumpulan = await http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$sid'), headers: headers);
 
       if (resTugas.statusCode == 200) {
@@ -83,9 +94,7 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
         backgroundColor: Colors.transparent,
         body: Column(
           children: [
-            // ── Premium Tab Bar ────────────────────────────────────
             _buildTabBar(theme, isDark),
-
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -211,7 +220,6 @@ class _TugasList extends StatelessWidget {
           final padding = Breakpoints.screenPadding(w);
           final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
-          // Sorting
           final sortedTasks = List<dynamic>.from(tugasList);
           sortedTasks.sort((a, b) {
             final dA = a['deadline'];
@@ -225,7 +233,6 @@ class _TugasList extends StatelessWidget {
             return dA.toString().compareTo(dB.toString());
           });
 
-          // Grouping
           final Map<String, List<dynamic>> groups = {};
           for (final t in sortedTasks) {
             String dateLabel = 'Tanpa Tenggat Waktu';
@@ -297,7 +304,7 @@ class _TugasCard extends StatelessWidget {
     if (parsed != null) {
       return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
     }
-    return dl; // Fallback untuk teks manual lama
+    return dl; 
   }
 
   @override
