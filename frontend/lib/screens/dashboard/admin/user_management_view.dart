@@ -130,6 +130,31 @@ class _UserManagementViewState extends State<UserManagementView> {
                 if (response.statusCode == 200 || response.statusCode == 201) {
                   if (ctx.mounted) Navigator.pop(ctx);
                   _fetchUsers();
+                  
+                  // Notifikasi sukses (opsional, agar lebih bagus)
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('User berhasil disimpan!'),
+                        backgroundColor: const Color(0xFF10B981),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    );
+                  }
+                } else {
+                  // Jika ada error dari backend (termasuk duplikat email)
+                  final data = jsonDecode(response.body);
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(
+                        content: Text(data['message'] ?? 'Gagal menyimpan user'),
+                        backgroundColor: const Color(0xFFEF4444),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    );
+                  }
                 }
               },
               child: const Text('Simpan User', style: TextStyle(fontWeight: FontWeight.w800)),

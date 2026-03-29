@@ -22,9 +22,26 @@ exports.getAll = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const { nama, email, password, role, kelas } = req.body;
+
+    // --- TAMBAHAN BARU: Cek apakah email sudah terdaftar ---
+    const existingUser = await db.collection('users').where('email', '==', email).get();
+    
+    if (!existingUser.empty) {
+      return res.status(400).json({ message: 'email telah terdaftar, silahkan gunakan email lain' });
+    }
+    // -------------------------------------------------------
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const newUser = { nama, email, password: hashedPassword, role, kelas: kelas || '', waktu_daftar: new Date() };
+    const newUser = { 
+        nama, 
+        email, 
+        password: hashedPassword, 
+        role, 
+        kelas: kelas || '', 
+        waktu_daftar: new Date() 
+    };
+    
     const docRef = await db.collection('users').add(newUser);
     res.status(201).json({ message: 'User dibuat', id: docRef.id });
   } catch (error) {
