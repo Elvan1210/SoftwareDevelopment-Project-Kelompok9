@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
+import '../../dashboard/kelas_detail_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+/// Layar "Kelas Saya" untuk Siswa: menampilkan daftar kelas yang diikuti.
+/// Klik kelas → buka KelasDetailScreen di tab Nilai (index 2) untuk lihat nilai,
+/// atau tab Tugas (index 0) untuk mengerjakan tugas.
 class SiswaNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -15,115 +19,83 @@ class SiswaNilaiView extends StatefulWidget {
 }
 
 class _SiswaNilaiViewState extends State<SiswaNilaiView> {
-  List<dynamic> _nilaiList = [];
+  List<dynamic> _kelasList = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchNilai();
+    _fetchKelas();
   }
 
-  Future<void> _fetchNilai() async {
+  Future<void> _fetchKelas() async {
     setState(() => _isLoading = true);
     try {
       final sid = Uri.encodeComponent(widget.userData['id'].toString());
-      final response = await http.get(
-          Uri.parse('$baseUrl/api/nilai?siswa_id=$sid'),
-          headers: {'Authorization': 'Bearer ${widget.token}'});
-      if (response.statusCode == 200) {
-        final dec = jsonDecode(response.body);
-        setState(() {
-          _nilaiList = dec is List ? dec : [];
-        });
+      final resp = await http.get(
+        Uri.parse('$baseUrl/api/kelas?siswa_id=$sid'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (resp.statusCode == 200) {
+        final dec = jsonDecode(resp.body);
+        setState(() => _kelasList = dec is List ? dec : []);
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      debugPrint('Error fetch kelas siswa: $e');
     }
     if (mounted) setState(() => _isLoading = false);
-  }
-
-  Color _gradeColor(dynamic nilai) {
-    final v = double.tryParse(nilai.toString()) ?? 0;
-    if (v >= 80) return const Color(0xFF10B981);
-    if (v >= 60) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return AppShell(
-        child: _buildSkeleton(),
+        child: GridView.count(
+          padding: const EdgeInsets.all(24),
+          crossAxisCount: 2,
+          childAspectRatio: 1.6,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: List.generate(4, (_) => const SkeletonLoader(radius: 20)),
+        ),
       );
     }
 
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: _nilaiList.isEmpty
+        body: _kelasList.isEmpty
             ? const EmptyState(
-                icon: Icons.workspace_premium_rounded,
-                message: 'Belum ada nilai\nyang diinput guru.',
-                color: Color(0xFF3B82F6))
+                icon: Icons.school_outlined,
+                message: 'Kamu belum terdaftar di kelas manapun.\nHubungi Admin untuk bergabung.',
+                color: Color(0xFF3B82F6),
+              )
             : RefreshIndicator(
-                onRefresh: _fetchNilai,
+                onRefresh: _fetchKelas,
                 child: LayoutBuilder(
                   builder: (ctx, c) {
-                    final crossCount = c.maxWidth > 900 ? 3 : (c.maxWidth > 500 ? 2 : 1);
-                    final padding = Breakpoints.screenPadding(c.maxWidth);
+                    final w = c.maxWidth;
+                    final padding = Breakpoints.screenPadding(w);
+                    final crossCount = w >= Breakpoints.desktop
+                        ? 4
+                        : (w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1));
+
                     return GridView.builder(
                       padding: padding,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossCount,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossCount == 1 ? 3.5 : 1.8,
+                        childAspectRatio: 1.6,
                       ),
-                      itemCount: _nilaiList.length,
-                      itemBuilder: (_, i) {
-                        final n = _nilaiList[i];
-                        final color = _gradeColor(n['nilai']);
-                        return RepaintBoundary(
-                          child: PremiumCard(
-                            accentColor: color,
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(color: color.withAlpha(20), borderRadius: BorderRadius.circular(10)),
-                                      child: Icon(Icons.grade_rounded, color: color, size: 20),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(n['mapel'] ?? '-',
-                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(n['nilai']?.toString() ?? '-',
-                                        style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-                                    if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
-                                      Text(n['keterangan'],
-                                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ).animate(delay: (i * 60).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
-                        );
+                      itemCount: _kelasList.length,
+                      itemBuilder: (context, i) {
+                        final k = _kelasList[i];
+                        return _SiswaKelasCard(
+                          kelas: k,
+                          userData: widget.userData,
+                          token: widget.token,
+                        ).animate(delay: (i * 50).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.9, 0.9));
                       },
                     );
                   },
@@ -132,15 +104,116 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
       ),
     );
   }
+}
 
-  Widget _buildSkeleton() {
-    return GridView.count(
-      padding: const EdgeInsets.all(24),
-      crossAxisCount: 2,
-      childAspectRatio: 1.8,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
+class _SiswaKelasCard extends StatelessWidget {
+  final dynamic kelas;
+  final Map<String, dynamic> userData;
+  final String token;
+  const _SiswaKelasCard({required this.kelas, required this.userData, required this.token});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = Color(int.parse(kelas['warna_card'] ?? '4282032886'));
+
+    String initials = '??';
+    final nama = (kelas['nama_kelas'] as String? ?? '').trim();
+    if (nama.isNotEmpty) {
+      final parts = nama.split(' ');
+      initials = parts.length >= 2
+          ? (parts[0][0] + parts[1][0]).toUpperCase()
+          : nama.substring(0, nama.length >= 2 ? 2 : 1).toUpperCase();
+    }
+
+    return PremiumCard(
+      accentColor: color,
+      padding: EdgeInsets.zero,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => KelasDetailScreen(
+            kelas: kelas,
+            userData: userData,
+            token: token,
+            initialTab: 0, // mulai dari tab Tugas
+          ),
+        ),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 12, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [BoxShadow(color: color.withAlpha(80), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Center(
+                      child: Text(initials,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          kelas['nama_kelas'] ?? '-',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, height: 1.2),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        if ((kelas['mapel'] ?? '').toString().isNotEmpty)
+                          Text(
+                            kelas['mapel'],
+                            style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(130)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        if ((kelas['tahun_ajaran'] ?? '').toString().isNotEmpty)
+                          Text(
+                            kelas['tahun_ajaran'],
+                            style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(100)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(50))),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.assignment_outlined, size: 14, color: color),
+                const SizedBox(width: 6),
+                Text('Tugas & Materi',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+                const Spacer(),
+                Icon(Icons.grade_outlined, size: 14, color: color.withAlpha(180)),
+                const SizedBox(width: 4),
+                Text('Nilai',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color.withAlpha(180))),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

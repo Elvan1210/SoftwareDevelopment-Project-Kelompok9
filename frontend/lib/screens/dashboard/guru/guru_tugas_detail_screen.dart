@@ -17,7 +17,6 @@ class GuruTugasDetailScreen extends StatefulWidget {
 class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
   bool _isLoading = true;
   List<dynamic> _pengumpulanList = [];
-  List<dynamic> _nilaiList = [];
 
   @override
   void initState() {
@@ -29,20 +28,14 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final results = await Future.wait([
-        http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers),
-        http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
-      ]);
+      // Nilai sekarang tersimpan langsung di dokumen pengumpulan (field: nilai, feedback, waktu_dinilai)
+      final result = await http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers);
 
-      if (results[0].statusCode == 200 && results[1].statusCode == 200) {
-        final decAllPengumpulan = jsonDecode(results[0].body);
-        List allPengumpulan = decAllPengumpulan is List ? decAllPengumpulan : [];
-        final decAllNilai = jsonDecode(results[1].body);
-        List allNilai = decAllNilai is List ? decAllNilai : [];
-
+      if (result.statusCode == 200) {
+        final dec = jsonDecode(result.body);
+        List all = dec is List ? dec : [];
         setState(() {
-          _pengumpulanList = allPengumpulan.where((p) => p['tugas_id'] == widget.tugas['id']).toList();
-          _nilaiList = allNilai.where((n) => n['tugas_id'] == widget.tugas['id']).toList();
+          _pengumpulanList = all.where((p) => p['tugas_id'] == widget.tugas['id']).toList();
         });
       }
     } catch (e) {
@@ -51,18 +44,26 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  void _showNilaiDialog(Map<String, dynamic> pengumpulan, Map<String, dynamic>? existingNilai) {
-    final ctrl = TextEditingController(text: existingNilai != null ? existingNilai['nilai'].toString() : '');
-    final feedbackCtrl = TextEditingController(text: existingNilai != null ? existingNilai['feedback']?.toString() ?? '' : '');
+  void _showNilaiDialog(Map<String, dynamic> pengumpulan) {
+    // Ambil nilai existing dari dokumen pengumpulan itu sendiri
+    final existingNilai = pengumpulan['nilai'];
+    final ctrl = TextEditingController(
+        text: existingNilai != null ? existingNilai.toString() : '');
+    final feedbackCtrl = TextEditingController(
+        text: pengumpulan['feedback']?.toString() ?? '');
+    final isEdit = existingNilai != null;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(existingNilai != null ? 'Edit Nilai' : 'Beri Nilai'),
+        title: Text(isEdit ? 'Edit Nilai' : 'Beri Nilai',
+            style: const TextStyle(fontWeight: FontWeight.w900)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Siswa: ${pengumpulan['siswa_nama']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('Siswa: ${pengumpulan['siswa_nama']}',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
@@ -77,7 +78,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               controller: feedbackCtrl,
               maxLines: 3,
               decoration: const InputDecoration(
-                labelText: 'Komentar / Feedback Opsional',
+                labelText: 'Komentar / Feedback (Opsional)',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -89,58 +90,39 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
             onPressed: () async {
               if (ctrl.text.isEmpty) return;
               final nilaiVal = int.tryParse(ctrl.text) ?? 0;
-              
-              final body = {
-                'siswa_id': pengumpulan['siswa_id'],
-                'siswa_nama': pengumpulan['siswa_nama'],
-                'guru_id': widget.tugas['guru_id'],
-                'guru_nama': widget.tugas['guru_nama'],
-                'mapel': widget.tugas['mapel'] ?? widget.tugas['kelas'] ?? 'Umum',
-                'tugas_id': widget.tugas['id'],
-                'tugas_judul': widget.tugas['judul'],
-                'nilai': nilaiVal,
-                'feedback': feedbackCtrl.text.trim(),
-                'waktu_dinilai': DateTime.now().toIso8601String(),
+              final headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${widget.token}',
               };
-
-              final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
-              
               try {
-                if (existingNilai != null) {
-                  await http.put(Uri.parse('$baseUrl/api/nilai/${existingNilai['id']}'), headers: headers, body: jsonEncode(body));
-                } else {
-                  await http.post(Uri.parse('$baseUrl/api/nilai'), headers: headers, body: jsonEncode(body));
+                // Nilai disimpan langsung ke dokumen pengumpulan — bukan ke collection nilai terpisah
+                await http.put(
+                  Uri.parse('$baseUrl/api/pengumpulan/${pengumpulan['id']}'),
+                  headers: headers,
+                  body: jsonEncode({
+                    'nilai': nilaiVal,
+                    'feedback': feedbackCtrl.text.trim(),
+                    'waktu_dinilai': DateTime.now().toIso8601String(),
+                    'status': 'Dinilai',
+                  }),
+                );
+                if (!isEdit) {
                   NotifikasiService.kirimNotifikasi(
                     judul: 'Nilai Tugas Keluar!',
-                    pesan: 'Tugas "${widget.tugas['judul']}" kamu dapat nilai $nilaiVal dari ${widget.tugas['guru_nama']}',
-                    token: widget.token,
-                    targetUserId: pengumpulan['siswa_id'],
-                  );
-                  // Pilihan opsional: update API pengumpulan agar statusnya 'Dinilai'
-                  // Karena struktur db kita bebas, kita bisa pass saja update statusnya:
-                  await http.put(
-                    Uri.parse('$baseUrl/api/pengumpulan/${pengumpulan['id']}'), 
-                    headers: headers, 
-                    body: jsonEncode({
-                      ...pengumpulan,
-                      'status': 'Dinilai'
-                    })
-                  );
-                  // Kirim Notifikasi Nilai
-                  NotifikasiService.kirimNotifikasi(
-                    judul: 'Nilai Tugas Keluar!',
-                    pesan: 'Tugas "${widget.tugas['judul']}" kamu dapat nilai $nilaiVal dari ${widget.tugas['guru_nama']}',
+                    pesan:
+                        'Tugas "${widget.tugas['judul']}" kamu dapat nilai $nilaiVal',
                     token: widget.token,
                     targetUserId: pengumpulan['siswa_id'],
                   );
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
-                _fetchData(); 
+                _fetchData();
               } catch (e) {
                 debugPrint('Error saving nilai: $e');
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple, foregroundColor: Colors.white),
             child: const Text('Simpan'),
           ),
         ],
@@ -184,16 +166,9 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               itemBuilder: (context, index) {
                 final p = _pengumpulanList[index];
                 final List<dynamic> files = p['files'] ?? [];
-                
-                // Cari apakah sudah ada nilai untuk siswa ini di tugas ini
-                Map<String, dynamic>? existingNilai;
-                try {
-                  existingNilai = _nilaiList.firstWhere((n) => n['siswa_id'] == p['siswa_id'] && n['tugas_id'] == widget.tugas['id']);
-                } catch (e) {
-                  existingNilai = null;
-                }
 
-                final isGraded = existingNilai != null;
+                // Nilai sekarang ada langsung di dokumen pengumpulan
+                final isGraded = p['nilai'] != null;
 
                 return Card(
                   elevation: 2,
@@ -215,7 +190,8 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                   child: Icon(Icons.person, size: 16, color: Colors.white),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(p['siswa_nama'] ?? 'Siswa Tidak Diketahui', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                Text(p['siswa_nama'] ?? 'Siswa Tidak Diketahui',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                               ],
                             ),
                             Container(
@@ -226,18 +202,24 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                               ),
                               child: Text(
                                 isGraded ? 'Dinilai' : 'Diserahkan',
-                                style: TextStyle(color: isGraded ? Colors.green.shade700 : Colors.blue.shade700, fontWeight: FontWeight.bold, fontSize: 12),
+                                style: TextStyle(
+                                    color: isGraded ? Colors.green.shade700 : Colors.blue.shade700,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('Waktu: ${_formatDate(p['waktu_pengumpulan'])}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                        Text('Waktu: ${_formatDate(p['waktu_pengumpulan'])}',
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                         const Divider(height: 24),
-                        const Text('File Terlampir:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        const Text('File Terlampir:',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                         const SizedBox(height: 8),
                         if (files.isEmpty)
-                          const Text('- Tidak ada file', style: TextStyle(fontStyle: FontStyle.italic))
+                          const Text('- Tidak ada file',
+                              style: TextStyle(fontStyle: FontStyle.italic))
                         else
                           ...files.map((file) => Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
@@ -245,7 +227,9 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                   children: [
                                     const Icon(Icons.attachment, size: 16, color: Colors.grey),
                                     const SizedBox(width: 8),
-                                    Expanded(child: Text(file.toString(), style: const TextStyle(color: Colors.blue))),
+                                    Expanded(
+                                        child: Text(file.toString(),
+                                            style: const TextStyle(color: Colors.blue))),
                                   ],
                                 ),
                               )),
@@ -253,34 +237,43 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            isGraded
-                                ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Nilai: ${existingNilai['nilai']}',
-                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700),
-                                      ),
-                                      if (existingNilai['feedback'] != null && existingNilai['feedback'].toString().isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 4.0),
-                                          child: Text('"${existingNilai['feedback']}"', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12)),
-                                        )
-                                    ],
-                                  )
-                                : const SizedBox.shrink(),
+                            if (isGraded)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Nilai: ${p['nilai']}',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green.shade700)),
+                                  if ((p['feedback'] ?? '').toString().isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text('"${p['feedback']}"',
+                                          style: const TextStyle(
+                                              fontStyle: FontStyle.italic,
+                                              color: Colors.grey,
+                                              fontSize: 12)),
+                                    ),
+                                ],
+                              )
+                            else
+                              const SizedBox.shrink(),
                             ElevatedButton.icon(
-                              onPressed: () => _showNilaiDialog(p, existingNilai),
+                              onPressed: () => _showNilaiDialog(p),
                               icon: Icon(isGraded ? Icons.edit : Icons.grade, size: 18),
                               label: Text(isGraded ? 'Edit Nilai' : 'Beri Nilai'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isGraded ? Colors.orange.shade600 : Colors.purple.shade600,
+                                backgroundColor: isGraded
+                                    ? Colors.orange.shade600
+                                    : Colors.purple.shade600,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                               ),
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),

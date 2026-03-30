@@ -2,10 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'siswa_dashboard_screen.dart';
-import 'siswa_tugas_view.dart';
 import 'siswa_nilai_view.dart';
 import 'siswa_pengumuman_view.dart';
-import 'siswa_materi_view.dart';
 import 'siswa_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
 
@@ -24,9 +22,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
 
   final List<String> _titles = [
     'Dashboard Overview',
-    'Tugas Saya',
-    'Materi Belajar',
-    'Nilai Akademik',
+    'Kelas Saya',
     'Pengumuman Sekolah',
     'Profil Siswa',
   ];
@@ -36,8 +32,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     super.initState();
     _views = [
       SiswaDashboardScreen(userData: widget.userData, token: widget.token),
-      SiswaTugasView(userData: widget.userData, token: widget.token),
-      SiswaMateriView(userData: widget.userData, token: widget.token),
       SiswaNilaiView(userData: widget.userData, token: widget.token),
       SiswaPengumumanView(userData: widget.userData, token: widget.token),
       SiswaProfilView(userData: widget.userData),
@@ -105,9 +99,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                             onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
                             destinations: const [
                               NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: Text('Dashboard')),
-                              NavigationRailDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: Text('Tugas Saya')),
-                              NavigationRailDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: Text('Materi Belajar')),
-                              NavigationRailDestination(icon: Icon(Icons.grade_outlined), selectedIcon: Icon(Icons.grade), label: Text('Nilai Saya')),
+                              NavigationRailDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: Text('Kelas Saya')),
                               NavigationRailDestination(icon: Icon(Icons.campaign_outlined), selectedIcon: Icon(Icons.campaign), label: Text('Pengumuman')),
                               NavigationRailDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: Text('Profil Siswa')),
                             ],
@@ -265,9 +257,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
               onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
               destinations: const [
                 NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
-                NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Tugas'),
-                NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Materi'),
-                NavigationDestination(icon: Icon(Icons.grade_outlined), selectedIcon: Icon(Icons.grade), label: 'Nilai'),
+                NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Kelas Saya'),
                 NavigationDestination(icon: Icon(Icons.campaign_outlined), selectedIcon: Icon(Icons.campaign), label: 'Info'),
                 NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
               ],

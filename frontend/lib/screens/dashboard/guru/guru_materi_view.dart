@@ -37,8 +37,17 @@ class _GuruMateriViewState extends State<GuruMateriView> {
       );
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);
+        final list = dec is List ? List<dynamic>.from(dec) : <dynamic>[];
+        list.sort((a, b) {
+          final tA = (a['tanggal'] ?? a['created_at']) as String?;
+          final tB = (b['tanggal'] ?? b['created_at']) as String?;
+          if (tA == null && tB == null) return 0;
+          if (tA == null) return 1;
+          if (tB == null) return -1;
+          return tB.compareTo(tA); // descending: newest first
+        });
         setState(() {
-          _materiList = dec is List ? dec : [];
+          _materiList = list;
         });
       }
     } catch (e) {

@@ -46,35 +46,33 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   Future<void> _checkSubmissionStatus() async {
     setState(() => _isLoading = true);
     try {
-      final responses = await Future.wait([
-        http.get(
-          Uri.parse('$baseUrl/api/pengumpulan'),
-          headers: {'Authorization': 'Bearer ${widget.token}'},
-        ),
-        http.get(
-          Uri.parse('$baseUrl/api/nilai'),
-          headers: {'Authorization': 'Bearer ${widget.token}'},
-        ),
-      ]);
+      // Nilai sekarang tersimpan langsung di dokumen pengumpulan — 1 request saja
+      final resp = await http.get(
+        Uri.parse('$baseUrl/api/pengumpulan'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
 
-      if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
-        final decAllPengumpulan = jsonDecode(responses[0].body);
-        List allPengumpulan = decAllPengumpulan is List ? decAllPengumpulan : [];
-        final decAllNilai = jsonDecode(responses[1].body);
-        List allNilai = decAllNilai is List ? decAllNilai : [];
+      if (resp.statusCode == 200) {
+        final dec = jsonDecode(resp.body);
+        List all = dec is List ? dec : [];
 
-        var submission = allPengumpulan.where((p) => p['tugas_id'] == widget.tugas['id'] && p['siswa_id'] == widget.userData['id']).toList();
-        var nilaiMilikSiswa = allNilai.where((n) => n['tugas_id'] == widget.tugas['id'] && n['siswa_id'] == widget.userData['id']).toList();
+        final submission = all
+            .where((p) =>
+                p['tugas_id'] == widget.tugas['id'] &&
+                p['siswa_id'] == widget.userData['id'])
+            .toList();
 
         setState(() {
           if (submission.isNotEmpty) {
+            final s = submission[0];
             _isTurnedIn = true;
-            _pengumpulanId = submission[0]['id'];
-            _attachments = List<String>.from(submission[0]['files'] ?? []);
-          }
-          if (nilaiMilikSiswa.isNotEmpty) {
-            _nilaiSiswa = nilaiMilikSiswa[0]['nilai'];
-            _feedbackSiswa = nilaiMilikSiswa[0]['feedback'];
+            _pengumpulanId = s['id'];
+            _attachments = List<String>.from(s['files'] ?? []);
+            // Nilai & feedback ada langsung di dokumen pengumpulan
+            if (s['nilai'] != null) {
+              _nilaiSiswa = (s['nilai'] as num).toInt();
+              _feedbackSiswa = s['feedback']?.toString();
+            }
           }
         });
       }
@@ -104,11 +102,6 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   }
 
   Future<void> _turnIn() async {
-    if (_attachments.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih file terlebih dahulu sebelum Turn In!'), backgroundColor: Colors.orange));
-      return;
-    }
-
     setState(() => _isLoading = true);
     try {
       final body = {
@@ -116,6 +109,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         'siswa_id': widget.userData['id'],
         'siswa_nama': widget.userData['nama'],
         'files': _attachments,
+        'submission_url': _attachments.isEmpty ? null : _attachments.first,
         'waktu_pengumpulan': DateTime.now().toIso8601String(),
         'status': 'Diserahkan'
       };

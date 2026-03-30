@@ -4,6 +4,21 @@ const db = require('../config/db');
  * Controller khusus untuk entitas 'Kelas'
  * Menangani logika relasional Guru & Siswa mirip Microsoft Teams.
  */
+
+// Generate kode kelas unik 7 karakter (huruf besar + angka), mirip Google Classroom
+const generateKodeKelas = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({ length: 7 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
+
+// Tentukan tahun ajaran otomatis: Juli-Des = tahun ini/tahun depan, Jan-Jun = tahun lalu/tahun ini
+const getCurrentTahunAjaran = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-12
+  return month >= 7 ? `${year}/${year + 1}` : `${year - 1}/${year}`;
+};
+
 const kelasController = {
   // GET /api/kelas (dengan filter guru_id atau siswa_id)
   getAll: async (req, res) => {
@@ -29,9 +44,17 @@ const kelasController = {
   // POST /api/kelas
   create: async (req, res) => {
     try {
-      // Body example: { nama_kelas, kode_kelas, mapel, guru_id, guru_nama, siswa_ids: [], warna_card }
-      const docRef = await db.collection('kelas').add(req.body);
-      res.status(201).json({ message: 'Kelas berhasil dibuat', id: docRef.id });
+      const body = { ...req.body };
+      // Auto-generate kode_kelas jika tidak disediakan atau kosong
+      if (!body.kode_kelas || body.kode_kelas.trim() === '') {
+        body.kode_kelas = generateKodeKelas();
+      }
+      // Auto-set tahun_ajaran berdasarkan kalender sekolah jika tidak disediakan
+      if (!body.tahun_ajaran || body.tahun_ajaran.trim() === '') {
+        body.tahun_ajaran = getCurrentTahunAjaran();
+      }
+      const docRef = await db.collection('kelas').add(body);
+      res.status(201).json({ message: 'Kelas berhasil dibuat', id: docRef.id, kode_kelas: body.kode_kelas, tahun_ajaran: body.tahun_ajaran });
     } catch (error) {
       res.status(500).json({ message: 'Error server', error: error.message });
     }

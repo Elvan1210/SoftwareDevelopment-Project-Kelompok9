@@ -2,8 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'guru_dashboard_view.dart';
-import 'guru_tugas_view.dart';
-import 'guru_materi_view.dart';
 import 'guru_nilai_view.dart';
 import 'guru_pengumuman_view.dart';
 import 'guru_profil_view.dart';
@@ -27,9 +25,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
   final List<String> _titles = [
     'Dashboard Overview',
     'Presensi Digital',
-    'Kelola Tugas',
-    'Materi Pembelajaran',
-    'Rekapitulasi Nilai',
+    'Kelas Saya',
     'Pengumuman Sekolah',
     'Profil Pengajar',
   ];
@@ -40,8 +36,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     _views = [
       GuruDashboardView(userData: widget.userData, token: widget.token),
       GuruPresensiView(userData: widget.userData, token: widget.token),
-      GuruTugasView(userData: widget.userData, token: widget.token),
-      GuruMateriView(userData: widget.userData, token: widget.token),
       GuruNilaiView(userData: widget.userData, token: widget.token),
       GuruPengumumanView(userData: widget.userData, token: widget.token),
       GuruProfilView(userData: widget.userData),
@@ -133,17 +127,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                                   selectedIcon: Icon(Icons.how_to_reg),
                                   label: Text('Presensi')),
                               NavigationRailDestination(
-                                  icon: Icon(Icons.assignment_outlined),
-                                  selectedIcon: Icon(Icons.assignment),
-                                  label: Text('Tugas')),
-                              NavigationRailDestination(
-                                  icon: Icon(Icons.menu_book_outlined),
-                                  selectedIcon: Icon(Icons.menu_book),
-                                  label: Text('Materi')),
-                              NavigationRailDestination(
-                                  icon: Icon(Icons.grade_outlined),
-                                  selectedIcon: Icon(Icons.grade),
-                                  label: Text('Nilai')),
+                                  icon: Icon(Icons.school_outlined),
+                                  selectedIcon: Icon(Icons.school),
+                                  label: Text('Kelas Saya')),
                               NavigationRailDestination(
                                   icon: Icon(Icons.campaign_outlined),
                                   selectedIcon: Icon(Icons.campaign),
@@ -364,17 +350,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     selectedIcon: Icon(Icons.how_to_reg),
                     label: 'Presensi'),
                 NavigationDestination(
-                    icon: Icon(Icons.assignment_outlined),
-                    selectedIcon: Icon(Icons.assignment),
-                    label: 'Tugas'),
-                NavigationDestination(
-                    icon: Icon(Icons.menu_book_outlined),
-                    selectedIcon: Icon(Icons.menu_book),
-                    label: 'Materi'),
-                NavigationDestination(
-                    icon: Icon(Icons.grade_outlined),
-                    selectedIcon: Icon(Icons.grade),
-                    label: 'Nilai'),
+                    icon: Icon(Icons.school_outlined),
+                    selectedIcon: Icon(Icons.school),
+                    label: 'Kelas Saya'),
                 NavigationDestination(
                     icon: Icon(Icons.campaign_outlined),
                     selectedIcon: Icon(Icons.campaign),

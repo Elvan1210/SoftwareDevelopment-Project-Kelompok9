@@ -33,8 +33,17 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);
         List all = dec is List ? dec : [];
+        final filtered = all.where((m) => m['kelas'] == widget.userData['kelas'] || m['kelas'] == null || (m['kelas'] ?? '').toString().isEmpty).toList();
+        filtered.sort((a, b) {
+          final tA = (a['tanggal'] ?? a['created_at']) as String?;
+          final tB = (b['tanggal'] ?? b['created_at']) as String?;
+          if (tA == null && tB == null) return 0;
+          if (tA == null) return 1;
+          if (tB == null) return -1;
+          return tB.compareTo(tA); // descending: newest first
+        });
         setState(() {
-          _materiList = all.where((m) => m['kelas'] == widget.userData['kelas'] || m['kelas'] == null || (m['kelas'] ?? '').toString().isEmpty).toList();
+          _materiList = filtered;
         });
       }
     } catch (e) {

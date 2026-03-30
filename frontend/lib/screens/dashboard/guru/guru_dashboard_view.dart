@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
+import '../../dashboard/kelas_detail_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -17,7 +18,7 @@ class GuruDashboardView extends StatefulWidget {
 }
 
 class _GuruDashboardViewState extends State<GuruDashboardView> {
-  int _totalTugas = 0, _totalMateri = 0, _totalNilai = 0, _totalPengumuman = 0;
+  int _totalTugas = 0, _totalMateri = 0, _totalPengumpulan = 0, _totalPengumuman = 0;
   bool _isLoading = true;
   List<dynamic> _kelasList = [];
 
@@ -53,32 +54,31 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   Future<void> _fetchStats() async {
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final gid = widget.userData['id'].toString();
       final results = await Future.wait([
-        http.get(Uri.parse('$baseUrl/api/tugas'), headers: headers),
-        http.get(Uri.parse('$baseUrl/api/materi'), headers: headers),
-        http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/tugas?guru_id=${Uri.encodeComponent(gid)}'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/materi?guru_id=${Uri.encodeComponent(gid)}'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/pengumpulan'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
       ]);
-      // ... same logic as before for stats filtering ...
       if (results[0].statusCode == 200) {
         final dec = jsonDecode(results[0].body);
-        List d = dec is List ? dec : [];
-        _totalTugas = d.where((t) => t['guru_id'].toString() == widget.userData['id'].toString()).length;
+        _totalTugas = dec is List ? dec.length : 0;
       }
       if (results[1].statusCode == 200) {
         final dec = jsonDecode(results[1].body);
-        List d = dec is List ? dec : [];
-        _totalMateri = d.where((m) => m['guru_id'].toString() == widget.userData['id'].toString()).length;
+        _totalMateri = dec is List ? dec.length : 0;
       }
       if (results[2].statusCode == 200) {
+        // Hitung pengumpulan yang sudah dinilai untuk tugas-tugas guru ini
         final dec = jsonDecode(results[2].body);
         List d = dec is List ? dec : [];
-        _totalNilai = d.where((n) => n['guru_id'].toString() == widget.userData['id'].toString()).length;
+        _totalPengumpulan = d.where((p) => p['nilai'] != null).length;
       }
       if (results[3].statusCode == 200) {
         final dec = jsonDecode(results[3].body);
         List d = dec is List ? dec : [];
-        _totalPengumuman = d.where((p) => p['guru_id'].toString() == widget.userData['id'].toString()).length;
+        _totalPengumuman = d.where((p) => p['guru_id'].toString() == gid).length;
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -179,8 +179,11 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       itemCount: _kelasList.length,
       itemBuilder: (ctx, i) {
         final k = _kelasList[i];
-        return _GuruClassCard(kelas: k)
-            .animate(delay: (200 + i * 50).ms)
+        return _GuruClassCard(
+          kelas: k,
+          userData: widget.userData,
+          token: widget.token,
+        ).animate(delay: (200 + i * 50).ms)
             .fadeIn()
             .scale(begin: const Offset(0.95, 0.95));
       },
@@ -191,7 +194,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     final stats = [
       _StatData(Icons.assignment_outlined, 'Tugas Dibuat', '$_totalTugas', const Color(0xFF3B82F6)),
       _StatData(Icons.menu_book_outlined, 'Materi Dibuat', '$_totalMateri', const Color(0xFF10B981)),
-      _StatData(Icons.grade_outlined, 'Nilai Input', '$_totalNilai', const Color(0xFF8B5CF6)),
+      _StatData(Icons.grade_outlined, 'Tugas Dinilai', '$_totalPengumpulan', const Color(0xFF8B5CF6)),
       _StatData(Icons.campaign_outlined, 'Pengumuman', '$_totalPengumuman', const Color(0xFFF59E0B)),
     ];
 
@@ -221,7 +224,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     final vals = [
       _totalTugas.toDouble(),
       _totalMateri.toDouble(),
-      _totalNilai.toDouble(),
+      _totalPengumpulan.toDouble(),
       _totalPengumuman.toDouble(),
     ];
     final maxVal = vals.reduce((a, b) => a > b ? a : b);
@@ -232,7 +235,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       const Color(0xFF8B5CF6),
       const Color(0xFFF59E0B),
     ];
-    final labels = ['Tugas', 'Materi', 'Nilai', 'Pengumuman'];
+    final labels = ['Tugas', 'Materi', 'Dinilai', 'Pengumuman'];
 
     return PremiumCard(
       padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
@@ -330,7 +333,9 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
 
 class _GuruClassCard extends StatelessWidget {
   final dynamic kelas;
-  const _GuruClassCard({required this.kelas});
+  final Map<String, dynamic> userData;
+  final String token;
+  const _GuruClassCard({required this.kelas, required this.userData, required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -351,11 +356,16 @@ class _GuruClassCard extends StatelessWidget {
     return PremiumCard(
       accentColor: color,
       padding: EdgeInsets.zero,
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Mengelola kelas: ${kelas['nama_kelas']}'), behavior: SnackBarBehavior.floating)
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => KelasDetailScreen(
+            kelas: kelas,
+            userData: userData,
+            token: token,
+          ),
+        ),
+      ),
       child: Column(
         children: [
           Expanded(

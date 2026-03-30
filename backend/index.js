@@ -23,10 +23,10 @@ const userRoutes        = require('./routes/userRoutes');
 const kelasRoutes       = require('./routes/kelasRoutes');
 const tugasRoutes       = require('./routes/tugasRoutes');
 const materiRoutes      = require('./routes/materiRoutes');
-const nilaiRoutes       = require('./routes/nilaiRoutes');
 const pengumumanRoutes  = require('./routes/pengumumanRoutes');
 const pengumpulanRoutes = require('./routes/pengumpulanRoutes');
 const notifikasiRoutes  = require('./routes/notifikasiRoutes');
+const absensiRoutes     = require('./routes/absensiRoutes');
 
 // ─── Register Routes ────────────────────────────────────────────────────────
 app.use('/api',             authRoutes);
@@ -34,10 +34,10 @@ app.use('/api/users',       userRoutes);
 app.use('/api/kelas',       kelasRoutes);
 app.use('/api/tugas',       tugasRoutes);
 app.use('/api/materi',      materiRoutes);
-app.use('/api/nilai',       nilaiRoutes);
 app.use('/api/pengumuman',  pengumumanRoutes);
 app.use('/api/pengumpulan', pengumpulanRoutes);
 app.use('/api/notifikasi',  notifikasiRoutes);
+app.use('/api/absensi',    absensiRoutes);
 
 // ─── Global Error Handling ──────────────────────────────────────────────────
 app.use((err, req, res, next) => {

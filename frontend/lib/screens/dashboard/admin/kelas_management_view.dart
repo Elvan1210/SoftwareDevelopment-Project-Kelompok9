@@ -81,11 +81,32 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     }
   }
 
+  /// Generate kode kelas 7 karakter acak di sisi client (preview saja;
+  /// backend akan regenerate jika field kosong saat POST).
+  String _generateKode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final rand = List.generate(7, (_) {
+      final idx = DateTime.now().microsecondsSinceEpoch % chars.length;
+      return chars[(idx + _.hashCode).abs() % chars.length];
+    }).join();
+    return rand;
+  }
+
+  String _defaultTahunAjaran() {
+    final now = DateTime.now();
+    return now.month >= 7
+        ? '${now.year}/${now.year + 1}'
+        : '${now.year - 1}/${now.year}';
+  }
+
   void _showKelasForm([Map<String, dynamic>? kelas]) {
     final isEditing = kelas != null;
     final namaCtrl = TextEditingController(text: isEditing ? kelas['nama_kelas'] : '');
-    final kodeCtrl = TextEditingController(text: isEditing ? (kelas['kode_kelas'] ?? '') : '');
+    final kodeCtrl = TextEditingController(
+        text: isEditing ? (kelas['kode_kelas'] ?? '') : _generateKode());
     final mapelCtrl = TextEditingController(text: isEditing ? (kelas['mapel'] ?? '') : '');
+    final tahunCtrl = TextEditingController(
+        text: isEditing ? (kelas['tahun_ajaran'] ?? _defaultTahunAjaran()) : _defaultTahunAjaran());
     
     String? selectedGuruId = isEditing ? kelas['guru_id'] : null;
     List<String> selectedSiswaIds = isEditing ? List<String>.from(kelas['siswa_ids'] ?? []) : [];
@@ -116,11 +137,30 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 8),
-                    AntigravityTextField(controller: kodeCtrl, labelText: 'Kode Kelas (cth: GN2526 - SI13038)', prefixIcon: Icons.qr_code_rounded),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AntigravityTextField(
+                            controller: kodeCtrl,
+                            labelText: 'Kode Kelas (auto-generate)',
+                            prefixIcon: Icons.qr_code_rounded,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          tooltip: 'Generate ulang kode',
+                          icon: const Icon(Icons.refresh_rounded),
+                          onPressed: () => setDialogState(
+                              () => kodeCtrl.text = _generateKode()),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     AntigravityTextField(controller: namaCtrl, labelText: 'Nama Kelas (cth: Sistem Operasi (A))', prefixIcon: Icons.class_outlined),
                     const SizedBox(height: 16),
                     AntigravityTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.subject_rounded),
+                    const SizedBox(height: 16),
+                    AntigravityTextField(controller: tahunCtrl, labelText: 'Tahun Ajaran (cth: 2024/2025)', prefixIcon: Icons.calendar_today_rounded),
                     const SizedBox(height: 24),
                     
                     // Guru Selection
@@ -189,8 +229,9 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                   
                   final body = {
                     'nama_kelas': namaCtrl.text,
-                    'kode_kelas': kodeCtrl.text,
+                    'kode_kelas': kodeCtrl.text.trim(),
                     'mapel': mapelCtrl.text,
+                    'tahun_ajaran': tahunCtrl.text.trim(),
                     'guru_id': selectedGuruId,
                     'guru_nama': guruObj['nama'],
                     'siswa_ids': selectedSiswaIds,

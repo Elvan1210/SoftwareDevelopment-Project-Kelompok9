@@ -2,6 +2,7 @@
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
+import '../../dashboard/kelas_detail_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -55,6 +56,17 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
              if (tDec is List) allTugas.addAll(tDec);
            }
         }
+        allTugas.sort((a, b) {
+          final dA = a['deadline'] as String?;
+          final dB = b['deadline'] as String?;
+          if (dA == null && dB == null) return 0;
+          if (dA == null) return 1;
+          if (dB == null) return -1;
+          final dtA = DateTime.tryParse(dA);
+          final dtB = DateTime.tryParse(dB);
+          if (dtA != null && dtB != null) return dtA.compareTo(dtB);
+          return dA.compareTo(dB);
+        });
         _tugasList = allTugas;
       }
       if (results[1].statusCode == 200) {
@@ -169,8 +181,11 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       itemCount: _kelasList.length,
       itemBuilder: (ctx, i) {
         final k = _kelasList[i];
-        return _SiswaClassCard(kelas: k)
-            .animate(delay: (200 + i * 50).ms)
+        return _SiswaClassCard(
+          kelas: k,
+          userData: widget.userData,
+          token: widget.token,
+        ).animate(delay: (200 + i * 50).ms)
             .fadeIn()
             .scale(begin: const Offset(0.95, 0.95));
       },
@@ -507,7 +522,9 @@ class _PengumumanCard extends StatelessWidget {
 
 class _SiswaClassCard extends StatelessWidget {
   final dynamic kelas;
-  const _SiswaClassCard({required this.kelas});
+  final Map<String, dynamic> userData;
+  final String token;
+  const _SiswaClassCard({required this.kelas, required this.userData, required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -528,11 +545,16 @@ class _SiswaClassCard extends StatelessWidget {
     return PremiumCard(
       accentColor: color,
       padding: EdgeInsets.zero,
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Membuka kelas: ${kelas['nama_kelas']}'), behavior: SnackBarBehavior.floating)
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => KelasDetailScreen(
+            kelas: kelas,
+            userData: userData,
+            token: token,
+          ),
+        ),
+      ),
       child: Column(
         children: [
           Expanded(
