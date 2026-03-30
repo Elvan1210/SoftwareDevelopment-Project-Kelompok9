@@ -6,6 +6,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'guru_team_detail_layout.dart';
 
 class GuruDashboardView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -60,7 +61,6 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
       ]);
-      // ... same logic as before for stats filtering ...
       if (results[0].statusCode == 200) {
         final dec = jsonDecode(results[0].body);
         List d = dec is List ? dec : [];
@@ -90,8 +90,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final nama = widget.userData['nama'] ?? 'Guru';
-    final initials = nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
+    // Name and Role are now in Navbar
 
     if (_isLoading) {
       return AppShell(child: _buildSkeleton());
@@ -111,16 +110,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                   padding: padding,
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // Hero Greeting
-                      _HeroGreeting(
-                        initials: initials,
-                        nama: nama,
-                        kelas: widget.userData['kelas'] ?? '-',
-                        isDark: isDark,
-                        primaryColor: const Color(0xFF10B981),
-                        role: 'Guru',
-                      ),
-                      const SizedBox(height: 32),
+                      // ── Hero Greeting is now in Navbar ──
 
                       // ── Your Classes Grid ──────────────────────
                       const SectionHeader(
@@ -130,7 +120,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                       ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
                       const SizedBox(height: 16),
                       _buildClassGrid(w, theme, isDark),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 32),
 
                       // ── Stats Section ──────────────────────────
                       const SectionHeader(
@@ -184,9 +174,9 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       itemBuilder: (ctx, i) {
         final k = _kelasList[i];
         return _GuruClassCard(kelas: k)
-            .animate(delay: (200 + i * 50).ms)
-            .fadeIn()
-            .scale(begin: const Offset(0.95, 0.95));
+            .animate(delay: (200 + i * 80).ms)
+            .fadeIn(duration: 400.ms)
+            .scale(begin: const Offset(0.9, 0.9), curve: Curves.elasticOut, duration: 800.ms);
       },
     );
   }
@@ -196,17 +186,18 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       _StatData(Icons.assignment_outlined, 'Tugas Dibuat', '$_totalTugas', AppTheme.getAdaptiveTeal(context)),
       _StatData(Icons.menu_book_outlined, 'Materi Dibuat', '$_totalMateri', const Color(0xFFF27F33)),
       _StatData(Icons.grade_outlined, 'Nilai Input', '$_totalNilai', const Color(0xFF76AFB8)),
-      _StatData(Icons.campaign_outlined, 'Pengumuman', '$_totalPengumuman', AppTheme.getAdaptiveTeal(context)),
+      _StatData(Icons.campaign_outlined, 'Pengumuman', '$_totalPengumuman', AppTheme.primaryTeal),
     ];
 
-    final crossCount = w > 800 ? 4 : 2;
+    final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossCount,
-        childAspectRatio: w > 800 ? 1.6 : 1.5,
+        childAspectRatio: w > 1100 ? 2.5 : 2.0,
+
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -214,12 +205,15 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       itemBuilder: (_, i) {
         final s = stats[i];
         return StatCard(icon: s.icon, label: s.label, value: s.value, color: s.color)
-            .animate(delay: (200 + i * 80).ms)
+            .animate(delay: (300 + i * 100).ms)
             .fadeIn(duration: 400.ms)
-            .slideY(begin: 0.15, curve: Curves.easeOutQuart);
+            .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut, duration: 800.ms)
+            .slideY(begin: 0.2, curve: Curves.easeOutCubic);
       },
     );
   }
+
+
 
   Widget _buildChart(ThemeData theme, bool isDark) {
     final vals = [
@@ -307,7 +301,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
           ),
         ),
       ),
-    ).animate(delay: 400.ms).fadeIn(duration: 600.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+    ).animate(delay: 600.ms).fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
   }
 
   Widget _buildSkeleton() {
@@ -356,8 +350,15 @@ class _GuruClassCard extends StatelessWidget {
       accentColor: color,
       padding: EdgeInsets.zero,
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Mengelola kelas: ${kelas['nama_kelas']}'), behavior: SnackBarBehavior.floating)
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => GuruTeamDetailLayout(
+              userData: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.userData,
+              token: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.token,
+              teamData: kelas,
+            ),
+          ),
         );
       },
       child: Column(
@@ -442,75 +443,27 @@ class _StatData {
   const _StatData(this.icon, this.label, this.value, this.color);
 }
 
-class _HeroGreeting extends StatelessWidget {
-  final String initials, nama, kelas, role;
-  final bool isDark;
-  final Color primaryColor;
-
-  const _HeroGreeting({
-    required this.initials,
-    required this.nama,
-    required this.kelas,
-    required this.isDark,
-    required this.primaryColor,
-    required this.role,
-  });
+class SectionHeader extends StatelessWidget {
+  final String title, subtitle;
+  final Widget? action;
+  const SectionHeader({super.key, required this.title, required this.subtitle, this.action});
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: PremiumCard(
-        accentColor: primaryColor,
-        padding: const EdgeInsets.all(24),
-        child: Row(
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, primaryColor.withAlpha(180)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: primaryColor.withAlpha(80), blurRadius: 20, offset: const Offset(0, 8))],
-              ),
-              child: Center(
-                child: Text(initials,
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
-              ),
-            ).animate().scale(delay: 100.ms, curve: Curves.easeOutBack),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Halo, $role 👋',
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
-                          letterSpacing: 0.5)),
-                  const SizedBox(height: 4),
-                  Text(nama,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withAlpha(20),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text('Mapel $kelas',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primaryColor)),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
-            ),
+            Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+            const SizedBox(height: 4),
+            Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w500)),
           ],
         ),
-      ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.05),
+        if (action != null) action!,
+      ],
     );
   }
 }

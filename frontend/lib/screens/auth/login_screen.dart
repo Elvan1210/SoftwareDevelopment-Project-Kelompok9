@@ -265,7 +265,7 @@ class _LoginCard extends StatelessWidget {
             const SizedBox(height: 36),
 
             // Email Field
-            AntigravityTextField(
+            AppTextField(
               controller: emailController,
               hintText: 'Email address',
               prefixIcon: Icons.email_outlined,
@@ -276,11 +276,11 @@ class _LoginCard extends StatelessWidget {
                 if (!v.contains('@')) return 'Email tidak valid';
                 return null;
               },
-            ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+            ).animate().fadeIn(delay: 400.ms, duration: 600.ms).slideY(begin: 0.2, curve: Curves.easeOutQuart),
             const SizedBox(height: 16),
 
             // Password Field
-            AntigravityTextField(
+            AppTextField(
               controller: passwordController,
               hintText: 'Password',
               prefixIcon: Icons.lock_outlined,
@@ -296,7 +296,7 @@ class _LoginCard extends StatelessWidget {
                 if (v == null || v.isEmpty) return 'Password tidak boleh kosong';
                 return null;
               },
-            ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.1),
+            ).animate().fadeIn(delay: 500.ms, duration: 600.ms).slideY(begin: 0.2, curve: Curves.easeOutQuart),
             const SizedBox(height: 28),
 
             // Login Button

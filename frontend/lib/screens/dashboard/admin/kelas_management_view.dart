@@ -66,6 +66,7 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     final namaCtrl = TextEditingController(text: isEditing ? kelas['nama_kelas'] : '');
     final kodeCtrl = TextEditingController(text: isEditing ? (kelas['kode_kelas'] ?? '') : '');
     final mapelCtrl = TextEditingController(text: isEditing ? (kelas['mapel'] ?? '') : '');
+    final tahunAjaranCtrl = TextEditingController(text: isEditing ? (kelas['tahun_ajaran'] ?? '') : '');
     
     // Antigravity Strict Colors
     final List<Color> cardColors = [
@@ -112,11 +113,13 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    AntigravityTextField(controller: kodeCtrl, labelText: 'Kode Kelas (cth: GN2526)', prefixIcon: Icons.qr_code_rounded),
+                    AppTextField(controller: kodeCtrl, labelText: 'Kode Kelas (cth: GN2526)', prefixIcon: Icons.qr_code_rounded),
                     const SizedBox(height: 16),
-                    AntigravityTextField(controller: namaCtrl, labelText: 'Nama Tim (cth: Sistem Operasi (A))', prefixIcon: Icons.class_outlined),
+                    AppTextField(controller: namaCtrl, labelText: 'Nama Tim (cth: Sistem Operasi (A))', prefixIcon: Icons.class_outlined),
                     const SizedBox(height: 16),
-                    AntigravityTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.subject_rounded),
+                    AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.subject_rounded),
+                    const SizedBox(height: 16),
+                    AppTextField(controller: tahunAjaranCtrl, labelText: 'Tahun Ajaran (cth: 2024/2025 Ganjil)', prefixIcon: Icons.calendar_today_rounded),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -138,7 +141,8 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                     'nama_kelas': namaCtrl.text,
                     'kode_kelas': kodeCtrl.text,
                     'mapel': mapelCtrl.text,
-                    'warna_card': selectedColor.value.toString(),
+                    'tahun_ajaran': tahunAjaranCtrl.text,
+                    'warna_card': selectedColor.toARGB32().toString(),
                   };
 
                   if (!isEditing) {
@@ -174,7 +178,7 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
+        floatingActionButton: AppFAB(
           onPressed: () => _showKelasForm(),
           icon: Icons.add_rounded,
           label: 'Buat Tim/Kelas',
@@ -330,6 +334,17 @@ class _TeamsClassCard extends StatelessWidget {
                         ),
                         
                         const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.history_rounded, size: 10, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              'TA: ${kelas['tahun_ajaran'] ?? '-'}',
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
                         Text(
                           'Guru: ${kelas['guru_nama'] ?? 'Belum ada'}',
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150)),

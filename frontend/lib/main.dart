@@ -6,6 +6,7 @@ import 'screens/dashboard/admin/admin_main_layout.dart';
 import 'services/auth_service.dart';
 import 'services/theme_provider.dart';
 import 'config/theme.dart';
+import 'widgets/smooth_scroll.dart';
 
 void main() {
   runApp(const MyPSKDApp());
@@ -25,6 +26,7 @@ class MyPSKDApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeProvider().themeMode, // Tracks theme choice dynamically
+          scrollBehavior: AppScrollBehavior(),
           home: const SplashScreen(),
         );
       },

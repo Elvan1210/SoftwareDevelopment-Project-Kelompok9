@@ -3,9 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../services/theme_provider.dart';
 
 class ThemeToggle extends StatelessWidget {
-  final Color iconColor;
+  final Color? iconColor;
 
-  const ThemeToggle({super.key, required this.iconColor});
+  const ThemeToggle({super.key, this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class ThemeToggle extends StatelessWidget {
         key: isDark ? const ValueKey('icon_dark') : const ValueKey('icon_light'),
         icon: Icon(
           isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          color: iconColor,
+          color: iconColor ?? (isDark ? Colors.white : Colors.black87),
         ),
         tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
         onPressed: () {
@@ -38,3 +38,4 @@ class ThemeToggle extends StatelessWidget {
     ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.8, 0.8));
   }
 }
+

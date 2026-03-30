@@ -61,7 +61,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
               children: [
                 const Text('Masukkan 8 karakter kode akses kelas untuk bergabung.'),
                 const SizedBox(height: 16),
-                AntigravityTextField(
+                AppTextField(
                   controller: codeCtrl,
                   labelText: 'Kode Akses',
                   prefixIcon: Icons.vpn_key_rounded,
@@ -136,7 +136,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: AntigravityFAB(
+      floatingActionButton: AppFAB(
         onPressed: _showJoinDialog,
         icon: Icons.add_moderator_rounded,
         label: 'Gabung dengan Kode',

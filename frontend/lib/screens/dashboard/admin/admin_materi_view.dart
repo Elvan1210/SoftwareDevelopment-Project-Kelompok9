@@ -75,7 +75,7 @@ class _AdminMateriViewState extends State<AdminMateriView> {
             // ── Admin Explorer Header ──────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: AntigravityTextField(
+              child: AppTextField(
                 hintText: 'Cari materi, guru, atau mapel...',
                 prefixIcon: Icons.search_rounded,
                 onChanged: (val) => setState(() => _searchQuery = val),
@@ -104,10 +104,10 @@ class _AdminMateriViewState extends State<AdminMateriView> {
                             itemCount: _filtered.length,
                             itemBuilder: (_, i) {
                               final m = _filtered[i];
-                              return _AdminMateriCard(
-                                materi: m,
-                                onDelete: () => _deleteMateri(m['id'].toString()),
-                              ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                return _AdminMateriCard(
+                                  materi: m,
+                                  onDelete: () => _deleteMateri(m['id'].toString()),
+                                ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
                             },
                           );
                         },
@@ -197,3 +197,4 @@ class _AdminMateriCard extends StatelessWidget {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 }
+

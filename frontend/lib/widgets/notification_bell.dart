@@ -9,7 +9,12 @@ class NotificationBell extends StatefulWidget {
   final String token;
   final Color iconColor;
 
-  const NotificationBell({super.key, required this.userData, required this.token, this.iconColor = Colors.white});
+  const NotificationBell({
+    super.key, 
+    required this.userData, 
+    required this.token, 
+    required this.iconColor,
+  });
 
   @override
   State<NotificationBell> createState() => _NotificationBellState();
@@ -240,3 +245,4 @@ class _NotificationBellState extends State<NotificationBell> {
     );
   }
 }
+

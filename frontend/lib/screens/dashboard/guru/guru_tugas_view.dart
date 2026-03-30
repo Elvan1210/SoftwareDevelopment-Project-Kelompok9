@@ -110,9 +110,9 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    AntigravityTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
+                    AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
                     const SizedBox(height: 16),
-                    AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                    AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
                     const SizedBox(height: 16),
                     InkWell(
                       onTap: () async {
@@ -158,7 +158,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    AntigravityTextField(controller: linkCtrl, labelText: 'Link Pendukung (Opsional)', prefixIcon: Icons.link_rounded),
+                    AppTextField(controller: linkCtrl, labelText: 'Link Pendukung (Opsional)', prefixIcon: Icons.link_rounded),
                   ],
                 ),
               ),
@@ -215,112 +215,110 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
-          onPressed: () => _showTugasForm(),
-          icon: Icons.add_task_rounded,
-          label: 'Buat Tugas',
-        ),
-        body: _tugasList.isEmpty
-            ? EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas di kelas ini.', color: AppTheme.getAdaptiveTeal(context))
-            : RepaintBoundary(
-                child: RefreshIndicator(
-                  onRefresh: _fetchTugas,
-                  child: LayoutBuilder(
-                    builder: (ctx, c) {
-                      final w = c.maxWidth;
-                      final padding = Breakpoints.screenPadding(w);
-                      final crossCount = w >= Breakpoints.tablet ? 2 : 1;
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: AppFAB(
+        onPressed: () => _showTugasForm(),
+        icon: Icons.add_task_rounded,
+        label: 'Buat Tugas',
+      ),
+      body: _tugasList.isEmpty
+          ? EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas di kelas ini.', color: AppTheme.getAdaptiveTeal(context))
+          : RepaintBoundary(
+              child: RefreshIndicator(
+                onRefresh: _fetchTugas,
+                child: LayoutBuilder(
+                  builder: (ctx, c) {
+                    final w = c.maxWidth;
+                    final padding = Breakpoints.screenPadding(w);
+                    final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
-                      final sortedTasks = List<dynamic>.from(_tugasList);
-                      sortedTasks.sort((a, b) {
-                        final dA = a['deadline'];
-                        final dB = b['deadline'];
-                        if (dA == null && dB == null) return 0;
-                        if (dA == null) return 1;
-                        if (dB == null) return -1;
-                        final dtA = DateTime.tryParse(dA);
-                        final dtB = DateTime.tryParse(dB);
-                        if (dtA != null && dtB != null) return dtA.compareTo(dtB);
-                        return dA.toString().compareTo(dB.toString());
-                      });
+                    final sortedTasks = List<dynamic>.from(_tugasList);
+                    sortedTasks.sort((a, b) {
+                      final dA = a['deadline'];
+                      final dB = b['deadline'];
+                      if (dA == null && dB == null) return 0;
+                      if (dA == null) return 1;
+                      if (dB == null) return -1;
+                      final dtA = DateTime.tryParse(dA);
+                      final dtB = DateTime.tryParse(dB);
+                      if (dtA != null && dtB != null) return dtA.compareTo(dtB);
+                      return dA.toString().compareTo(dB.toString());
+                    });
 
-                      final Map<String, List<dynamic>> groups = {};
-                      for (final t in sortedTasks) {
-                        String dateLabel = 'Tanpa Tenggat Waktu';
-                        if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
-                          final dt = DateTime.tryParse(t['deadline']);
-                          if (dt != null) {
-                            dateLabel = DateFormat('MMM d, EEEE').format(dt);
-                          } else {
-                            dateLabel = t['deadline'];
-                          }
+                    final Map<String, List<dynamic>> groups = {};
+                    for (final t in sortedTasks) {
+                      String dateLabel = 'Tanpa Tenggat Waktu';
+                      if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
+                        final dt = DateTime.tryParse(t['deadline']);
+                        if (dt != null) {
+                          dateLabel = DateFormat('MMM d, EEEE').format(dt);
+                        } else {
+                          dateLabel = t['deadline'];
                         }
-                        groups.putIfAbsent(dateLabel, () => []).add(t);
                       }
-                      final groupKeys = groups.keys.toList();
+                      groups.putIfAbsent(dateLabel, () => []).add(t);
+                    }
+                    final groupKeys = groups.keys.toList();
 
-                      // Build the Slivers Array
-                      List<Widget> slivers = [];
-                      for (int i = 0; i < groupKeys.length; i++) {
-                        final key = groupKeys[i];
-                        final items = groups[key]!;
-                        
-                        slivers.add(
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.fromLTRB(padding.left, 24, padding.right, 16),
-                              child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
-                            ),
-                          )
-                        );
-                        
-                        slivers.add(
-                          SliverPadding(
-                            padding: EdgeInsets.fromLTRB(padding.left, 0, padding.right, i < groupKeys.length - 1 ? 24 : padding.bottom),
-                            sliver: SliverGrid(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, j) {
-                                  final t = items[j];
-                                  return _GuruTugasCard(
-                                    tugas: t,
-                                    onEdit: () => _showTugasForm(t),
-                                    onDelete: () => _deleteTugas(t['id'].toString()),
-                                    onDetail: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => GuruTugasDetailScreen(tugas: t, token: widget.token),
-                                      ),
-                                    ),
-                                  ).animate(delay: (j * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                                },
-                                childCount: items.length,
-                              ),
-                            ),
-                          )
-                        );
-                      }
-
-                      return CustomScrollView(
-                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                        slivers: slivers,
+                    // Build the Slivers Array
+                    List<Widget> slivers = [];
+                    for (int i = 0; i < groupKeys.length; i++) {
+                      final key = groupKeys[i];
+                      final items = groups[key]!;
+                      
+                      slivers.add(
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(padding.left, 24, padding.right, 16),
+                            child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
+                          ),
+                        )
                       );
-                    },
-                  ),
+                      
+                      slivers.add(
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(padding.left, 0, padding.right, i < groupKeys.length - 1 ? 24 : padding.bottom),
+                          sliver: SliverGrid(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossCount,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, j) {
+                                final t = items[j];
+                                return _GuruTugasCard(
+                                  tugas: t,
+                                  onEdit: () => _showTugasForm(t),
+                                  onDelete: () => _deleteTugas(t['id'].toString()),
+                                  onDetail: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => GuruTugasDetailScreen(tugas: t, token: widget.token),
+                                    ),
+                                  ),
+                                ).animate(delay: (j * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                              },
+                              childCount: items.length,
+                            ),
+                          ),
+                        )
+                      );
+                    }
+
+                    return CustomScrollView(
+                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      slivers: slivers,
+                    );
+                  },
                 ),
               ),
-      ),
+            ),
     );
   }
 

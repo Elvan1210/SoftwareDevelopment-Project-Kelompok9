@@ -96,11 +96,11 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                AntigravityTextField(controller: judulCtrl, labelText: 'Judul Materi *', prefixIcon: Icons.title_rounded),
+                AppTextField(controller: judulCtrl, labelText: 'Judul Materi *', prefixIcon: Icons.title_rounded),
                 const SizedBox(height: 16),
-                AntigravityTextField(controller: deskripsiCtrl, labelText: 'Deskripsi / Isi Materi', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi / Isi Materi', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
                 const SizedBox(height: 16),
-                AntigravityTextField(controller: linkCtrl, labelText: 'Link Materi (Drive/YouTube)', prefixIcon: Icons.link_rounded),
+                AppTextField(controller: linkCtrl, labelText: 'Link Materi (Drive/YouTube)', prefixIcon: Icons.link_rounded),
               ],
             ),
           ),
@@ -156,61 +156,59 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
-          onPressed: () => _showMateriForm(),
-          icon: Icons.add_rounded,
-          label: 'Materi Baru',
-        ),
-        body: _materiList.isEmpty
-            ? EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\ndi kelas ini.', color: AppTheme.getAdaptiveTeal(context))
-            : RepaintBoundary(
-                child: RefreshIndicator(
-                  onRefresh: _fetchMateri,
-                  child: LayoutBuilder(
-                    builder: (ctx, c) {
-                      final w = c.maxWidth;
-                      final padding = Breakpoints.screenPadding(w);
-                      final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: AppFAB(
+        onPressed: () => _showMateriForm(),
+        icon: Icons.add_rounded,
+        label: 'Materi Baru',
+      ),
+      body: _materiList.isEmpty
+          ? EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\ndi kelas ini.', color: AppTheme.getAdaptiveTeal(context))
+          : RepaintBoundary(
+              child: RefreshIndicator(
+                onRefresh: _fetchMateri,
+                child: LayoutBuilder(
+                  builder: (ctx, c) {
+                    final w = c.maxWidth;
+                    final padding = Breakpoints.screenPadding(w);
+                    final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
 
-                      return CustomScrollView(
-                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                        slivers: [
-                          SliverPadding(
-                            padding: padding,
-                            sliver: SliverGrid(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: crossCount == 1 ? 2.8 : 1.3,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, i) {
-                                  final m = _materiList[i];
-                                  return _GuruMateriCard(
-                                    materi: m,
-                                    onEdit: () => _showMateriForm(m),
-                                    onDelete: () => _deleteMateri(m['id'].toString()),
-                                    onView: () => _launchURL(m['file_url'] ?? m['link']),
-                                  ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                                },
-                                childCount: _materiList.length,
-                              ),
+                    return CustomScrollView(
+                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      slivers: [
+                        SliverPadding(
+                          padding: padding,
+                          sliver: SliverGrid(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossCount,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: crossCount == 1 ? 2.8 : 1.3,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, i) {
+                                final m = _materiList[i];
+                                return _GuruMateriCard(
+                                  materi: m,
+                                  onEdit: () => _showMateriForm(m),
+                                  onDelete: () => _deleteMateri(m['id'].toString()),
+                                  onView: () => _launchURL(m['file_url'] ?? m['link']),
+                                ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                              },
+                              childCount: _materiList.length,
                             ),
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-      ),
+            ),
     );
   }
 

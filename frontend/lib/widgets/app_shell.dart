@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'smooth_scroll.dart';
 
 // ─── Breakpoints ────────────────────────────────────────────────────────────
 /// Single source of truth for all responsive breakpoints.
@@ -37,70 +37,172 @@ class Breakpoints {
 }
 
 // ─── AppShell ───────────────────────────────────────────────────────────────
-/// Gradient background wrapper for inner screens.
-/// On web (>= tablet) it passes through transparent so the parent glass card shows.
-/// On mobile it paints its own gradient to match the Antigravity theme.
+/// The main structural wrapper for most screens.
+/// Features a static high-performance background and ensures responsive padding.
 class AppShell extends StatelessWidget {
   final Widget child;
   final bool transparent;
+  final bool useScroll;
+  final List<Widget>? backgroundDecorations;
 
-  const AppShell({super.key, required this.child, this.transparent = false});
+  const AppShell({
+    super.key, 
+    required this.child, 
+    this.transparent = false,
+    this.useScroll = false,
+    this.backgroundDecorations,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final isWide = MediaQuery.of(context).size.width >= Breakpoints.tablet;
 
-    if (transparent || isWide) return child;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-              : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 88),
+    Widget content = child;
+    if (useScroll && !isWide) {
+      content = SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: child,
+      );
+    }
+
+    if (transparent) return content;
+
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white,
+      body: Stack(
+        children: [
+          // 1. Foundation Background
+          const AppBackground(),
+          
+          // 2. Custom Decorations
+          if (backgroundDecorations != null) ...backgroundDecorations!,
+
+          // 3. Main Content
+          SafeArea(
+            bottom: !isWide,
+            child: SmoothScrollWrapper(child: content),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ─── ResponsiveLayout ───────────────────────────────────────────────────────
-/// Convenience widget to build different layouts per breakpoint.
-class ResponsiveLayout extends StatelessWidget {
-  final Widget Function(BuildContext, BoxConstraints) mobile;
-  final Widget Function(BuildContext, BoxConstraints)? tablet;
-  final Widget Function(BuildContext, BoxConstraints)? desktop;
+// ─── AppBackground ──────────────────────────────────────────────────
+/// Elite backdrop with 'Mathematical Pulse' (Grid + Animated Blobs).
+class AppBackground extends StatefulWidget {
+  const AppBackground({super.key});
 
-  const ResponsiveLayout({
-    super.key,
-    required this.mobile,
-    this.tablet,
-    this.desktop,
-  });
+  @override
+  State<AppBackground> createState() => _AppBackgroundState();
+}
+
+class _AppBackgroundState extends State<AppBackground> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (ctx, c) {
-      if (c.maxWidth >= Breakpoints.tablet && desktop != null) {
-        return desktop!(ctx, c);
-      }
-      if (c.maxWidth >= Breakpoints.mobile && tablet != null) {
-        return tablet!(ctx, c);
-      }
-      return mobile(ctx, c);
-    });
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return RepaintBoundary(
+      child: Stack(
+        children: [
+          // 1. Foundation Base
+          Container(color: isDark ? const Color(0xFF020617) : const Color(0xFFF8FAFC)),
+
+          // 2. Mathematical Grid
+          Positioned.fill(
+            child: Opacity(
+              opacity: isDark ? 0.05 : 0.03,
+              child: CustomPaint(painter: _GridPainter(isDark: isDark)),
+            ),
+          ),
+
+          // 3. Animated Glow Blobs (Hardware Accelerated)
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return Stack(
+                children: [
+                   _buildBlob(
+                    top: -200 + (50 * _controller.value),
+                    left: -100 + (20 * _controller.value),
+                    color: (isDark ? const Color(0xFF0D9488) : const Color(0xFF99F6E4)).withAlpha(40),
+                    size: 0.7,
+                  ),
+                  _buildBlob(
+                    bottom: -200 - (30 * _controller.value),
+                    right: -100 - (40 * _controller.value),
+                    color: (isDark ? const Color(0xFF4338CA) : const Color(0xFFC7D2FE)).withAlpha(30),
+                    size: 0.6,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlob({double? top, double? left, double? right, double? bottom, required Color color, required double size}) {
+    return Positioned(
+      top: top, left: left, right: right, bottom: bottom,
+      child: Container(
+        width: MediaQuery.of(context).size.width * size,
+        height: MediaQuery.of(context).size.height * size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [color, color.withAlpha(0)]),
+        ),
+      ),
+    );
   }
 }
 
+class _GridPainter extends CustomPainter {
+  final bool isDark;
+  _GridPainter({required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(20)
+      ..strokeWidth = 0.5;
+
+    const step = 40.0;
+    for (double i = 0; i < size.width; i += step) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += step) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 // ─── GlassCard ──────────────────────────────────────────────────────────────
-/// Standard frosted-glass card used across the design system.
+/// High-performance frosted-glass card with Static Dual-Layer Border.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -114,7 +216,7 @@ class GlassCard extends StatelessWidget {
     required this.child,
     this.padding,
     this.radius = 24,
-    this.blurSigma = 12,
+    this.blurSigma = 0, // Performance: Default to 0 unless needed
     this.overrideColor,
     this.shadows,
   });
@@ -123,30 +225,34 @@ class GlassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: overrideColor ??
-                theme.colorScheme.surface.withAlpha(isDark ? 150 : 220),
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(
-              color: Colors.white.withAlpha(isDark ? 25 : 100),
-              width: 1.5,
+    
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: overrideColor ??
+                  theme.colorScheme.surface.withAlpha(isDark ? 230 : 255),
+              borderRadius: BorderRadius.circular(radius),
+              // Pro-Static Dual Border
+              border: Border.all(
+                color: isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(10),
+                width: 1.5,
+              ),
+              boxShadow: shadows ??
+                  [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(isDark ? 100 : 20),
+                      blurRadius: 30,
+                      offset: const Offset(0, 15),
+                    ),
+                  ],
             ),
-            boxShadow: shadows ??
-                [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(isDark ? 30 : 10),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+            child: child,
           ),
-          child: child,
         ),
       ),
     );
@@ -154,8 +260,7 @@ class GlassCard extends StatelessWidget {
 }
 
 // ─── PremiumCard ────────────────────────────────────────────────────────────
-/// Hover-lift interactive card with smooth shadow/scale transition.
-/// On mobile, taps provide a subtle ink ripple instead.
+/// Next-Gen spatial card with subtle hover translation (no performance-heavy blurs).
 class PremiumCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -187,65 +292,91 @@ class _PremiumCardState extends State<PremiumCard> {
     final isDark = theme.brightness == Brightness.dark;
     final accent = widget.accentColor ?? theme.primaryColor;
 
-    return RepaintBoundary(
-      child: MouseRegion(
-        cursor: widget.onTap != null
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.basic,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCirc,
+    return MouseRegion(
+      cursor: widget.onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutBack,
         margin: widget.margin,
-        transform: Matrix4.translationValues(0.0, _hovered ? -4.0 : 0.0, 0.0),
+        transform: Matrix4.identity()
+          ..setTranslationRaw(0.0, _hovered ? -6.0 : 0.0, 0.0),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withAlpha(isDark ? 180 : 245),
+          color: theme.colorScheme.surface.withAlpha(isDark ? 230 : 255),
           borderRadius: BorderRadius.circular(widget.radius),
+          // ── Twin Borders ──
           border: Border.all(
-            color: _hovered
-                ? accent.withAlpha(120)
-                : Colors.white.withAlpha(isDark ? 20 : 80),
+            color: _hovered ? accent.withAlpha(180) : (isDark ? Colors.white.withAlpha(25) : Colors.black.withAlpha(15)),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: _hovered
-                  ? accent.withAlpha(isDark ? 40 : 25)
-                  : Colors.black.withAlpha(isDark ? 20 : 6),
-              blurRadius: _hovered ? 40 : 16,
-              spreadRadius: _hovered ? 2 : 0,
-              offset: const Offset(0, 10),
+              color: accent.withAlpha(isDark ? 40 : 10),
+              blurRadius: _hovered ? 40 : 15,
+              offset: Offset(0, _hovered ? 12 : 6),
             ),
-            if (!_hovered)
-              BoxShadow(
-                color: Colors.black.withAlpha(isDark ? 10 : 3),
-                blurRadius: 40,
-                offset: const Offset(0, 24),
-              ),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(widget.radius),
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(widget.radius),
-            splashColor: accent.withAlpha(30),
-            highlightColor: accent.withAlpha(15),
-            child: Padding(
-              padding: widget.padding ?? const EdgeInsets.all(20),
-              child: widget.child,
+        child: Stack(
+          children: [
+            // Inner Glow Border
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.radius),
+                  border: Border.all(
+                    color: isDark ? Colors.white.withAlpha(10) : Colors.white.withAlpha(60),
+                    width: 0.5,
+                  ),
+                ),
+              ),
             ),
-          ),
+            
+            // Texture Layer (Subtle Dotted Pattern)
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.02,
+                child: CustomPaint(painter: _DotPatternPainter()),
+              ),
+            ),
+
+            ClipRRect(
+              borderRadius: BorderRadius.circular(widget.radius),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onTap,
+                  splashColor: accent.withAlpha(40),
+                  child: Padding(
+                    padding: widget.padding ?? const EdgeInsets.all(24),
+                    child: widget.child,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-    ),);
+    );
   }
 }
 
+class _DotPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.grey;
+    for (double i = 0; i < size.width; i += 12) {
+      for (double j = 0; j < size.height; j += 12) {
+        canvas.drawCircle(Offset(i, j), 1, paint);
+      }
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 // ─── StatCard ───────────────────────────────────────────────────────────────
-/// A KPI stat card with icon, label, value and accent color.
 class StatCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -285,6 +416,7 @@ class StatCard extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(label,
                     style: TextStyle(
@@ -311,7 +443,6 @@ class StatCard extends StatelessWidget {
 }
 
 // ─── SkeletonLoader ─────────────────────────────────────────────────────────
-/// Shimmer-style loading placeholder. Drop-in for any content.
 class SkeletonLoader extends StatelessWidget {
   final double width;
   final double height;
@@ -336,20 +467,12 @@ class SkeletonLoader extends StatelessWidget {
             : Colors.black.withAlpha(8),
         borderRadius: BorderRadius.circular(radius),
       ),
-    )
-        .animate(onPlay: (c) => c.repeat())
-        .shimmer(
-          duration: 2000.ms,
-          color: isDark
-              ? Colors.white.withAlpha(20)
-              : Colors.white.withAlpha(120),
-        );
+    );
   }
 }
 
-// ─── AntigravityTextField ───────────────────────────────────────────────────
-/// Premium input field with focus glow effect.
-class AntigravityTextField extends StatefulWidget {
+// ─── AppTextField ───────────────────────────────────────────────────
+class AppTextField extends StatefulWidget {
   final TextEditingController? controller;
   final String? hintText;
   final String? labelText;
@@ -363,7 +486,7 @@ class AntigravityTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
 
-  const AntigravityTextField({
+  const AppTextField({
     super.key,
     this.controller,
     this.hintText,
@@ -380,10 +503,10 @@ class AntigravityTextField extends StatefulWidget {
   });
 
   @override
-  State<AntigravityTextField> createState() => _AntigravityTextFieldState();
+  State<AppTextField> createState() => _AppTextFieldState();
 }
 
-class _AntigravityTextFieldState extends State<AntigravityTextField> {
+class _AppTextFieldState extends State<AppTextField> {
   bool _focused = false;
   late FocusNode _node;
 
@@ -413,7 +536,7 @@ class _AntigravityTextFieldState extends State<AntigravityTextField> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: _focused
-            ? [BoxShadow(color: accent.withAlpha(80), blurRadius: 20, spreadRadius: 2)]
+            ? [BoxShadow(color: accent.withAlpha(60), blurRadius: 15, spreadRadius: 1)]
             : [],
       ),
       child: TextFormField(
@@ -441,11 +564,11 @@ class _AntigravityTextFieldState extends State<AntigravityTextField> {
           suffixIcon: widget.suffix,
           filled: true,
           fillColor: theme.colorScheme.surface
-              .withAlpha(isDark ? 180 : 255),
+              .withAlpha(isDark ? 220 : 255),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(
-                color: Colors.white.withAlpha(isDark ? 20 : 80)),
+                color: theme.colorScheme.onSurface.withAlpha(20)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -465,7 +588,6 @@ class _AntigravityTextFieldState extends State<AntigravityTextField> {
 }
 
 // ─── SectionHeader ──────────────────────────────────────────────────────────
-/// Consistent section title + optional action button.
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -509,15 +631,14 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-// ─── AntigravityFAB ─────────────────────────────────────────────────────────
-/// Premium Floating Action Button with glow shadow.
-class AntigravityFAB extends StatelessWidget {
+// ─── AppFAB ─────────────────────────────────────────────────────────
+class AppFAB extends StatelessWidget {
   final VoidCallback onPressed;
   final IconData icon;
   final String label;
   final Color? color;
 
-  const AntigravityFAB({
+  const AppFAB({
     super.key,
     required this.onPressed,
     required this.icon,
@@ -536,15 +657,11 @@ class AntigravityFAB extends StatelessWidget {
       foregroundColor: Colors.white,
       icon: Icon(icon),
       label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-    )
-        .animate()
-        .scale(delay: 400.ms, curve: Curves.easeOutBack)
-        .fadeIn();
+    );
   }
 }
 
 // ─── EmptyState ─────────────────────────────────────────────────────────────
-/// Consistent empty state placeholder widget.
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
@@ -581,7 +698,35 @@ class EmptyState extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurface.withAlpha(170),
               )),
         ],
-      ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
+      ),
     );
   }
 }
+
+// ─── ResponsiveLayout ───────────────────────────────────────────────────────
+class ResponsiveLayout extends StatelessWidget {
+  final Widget Function(BuildContext, BoxConstraints) mobile;
+  final Widget Function(BuildContext, BoxConstraints)? tablet;
+  final Widget Function(BuildContext, BoxConstraints)? desktop;
+
+  const ResponsiveLayout({
+    super.key,
+    required this.mobile,
+    this.tablet,
+    this.desktop,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (ctx, c) {
+      if (c.maxWidth >= Breakpoints.desktop && desktop != null) {
+        return desktop!(ctx, c);
+      }
+      if (c.maxWidth >= Breakpoints.tablet && tablet != null) {
+        return tablet!(ctx, c);
+      }
+      return mobile(ctx, c);
+    });
+  }
+}
+

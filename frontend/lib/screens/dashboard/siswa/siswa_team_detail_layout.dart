@@ -1,10 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'siswa_tugas_view.dart';
 import 'siswa_materi_view.dart';
 import 'siswa_nilai_view.dart';
 import '../../../widgets/notification_bell.dart';
+import '../../../widgets/app_shell.dart';
+import '../../../widgets/theme_toggle.dart';
 
 class SiswaTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -24,7 +25,7 @@ class SiswaTeamDetailLayout extends StatefulWidget {
 
 class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   int _selectedIndex = 0;
-  late List<Widget> _views;
+  // Views are now initialized in _getViews() to prevent context-related lifecycle errors.
 
   final List<String> _titles = [
     'Dashboard Tim',
@@ -38,8 +39,11 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   @override
   void initState() {
     super.initState();
-    _views = [
-      Center(child: Text('Dashboard ${widget.teamData['nama_kelas']}\n(Ringkasan akan muncul di sini)', textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+  }
+
+  List<Widget> _getViews() {
+    return [
+      _buildDashboardView(),
       const Center(child: Text('Saluran Diskusi Sedang Dibangun...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
       const Center(child: Text('Modul Presensi Siswa Sedang Dibangun...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
       SiswaTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
@@ -48,128 +52,226 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     ];
   }
 
+  Widget _buildDashboardView() {
+    return Center(
+      child: GlassCard(
+        blurSigma: 24,
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.dashboard_customize_rounded, size: 64, color: Theme.of(context).primaryColor),
+            const SizedBox(height: 24),
+            Text(
+              'Dashboard ${widget.teamData['nama_kelas']}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Ringkasan aktivitas akan muncul di sini',
+              style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildWebLayout(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark ? [Colors.black, Colors.black] : [Colors.white, Colors.white],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Row(
-            children: [
-              Container(
-                width: 260,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withAlpha(isDark ? 150 : 180),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: Colors.white.withAlpha(isDark ? 20 : 100), width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 40, offset: const Offset(0, 20))],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-                          child: InkWell(
-                            onTap: () => Navigator.pop(context),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(color: theme.primaryColor.withAlpha(20), borderRadius: BorderRadius.circular(12)),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.arrow_back_rounded, color: theme.primaryColor),
-                                  const SizedBox(width: 8),
-                                  Text('Kembali ke Menu Utama', style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 11)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Text(
-                            widget.teamData['nama_kelas'] ?? 'Ruang Kelas',
-                            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: theme.primaryColor, height: 1.2),
-                            maxLines: 2, overflow: TextOverflow.ellipsis,
-                          ).animate().fadeIn().slideX(),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                          child: Text(widget.teamData['guru_nama'] ?? 'Guru Belum Ditugaskan', style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
-                        ),
-                        const Divider(height: 32),
-                        Expanded(
-                          child: NavigationRail(
-                            extended: true,
-                            backgroundColor: Colors.transparent,
-                            minExtendedWidth: 260,
-                            indicatorColor: theme.primaryColor.withAlpha(40),
-                            unselectedLabelTextStyle: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                            selectedLabelTextStyle: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800, color: theme.primaryColor),
-                            selectedIndex: _selectedIndex,
-                            onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
-                            destinations: const [
-                              NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: Text('Dashboard')),
-                              NavigationRailDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: Text('Saluran')),
-                              NavigationRailDestination(icon: Icon(Icons.how_to_reg_outlined), selectedIcon: Icon(Icons.how_to_reg), label: Text('Presensi')),
-                              NavigationRailDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: Text('Tugas Saya')),
-                              NavigationRailDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: Text('Materi Belajar')),
-                              NavigationRailDestination(icon: Icon(Icons.grade_outlined), selectedIcon: Icon(Icons.grade), label: Text('Nilai Saya')),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 32),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 220),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.white.withAlpha(isDark ? 10 : 150), width: 1),
-                    boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 40, offset: const Offset(0, 10))],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(32),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                      child: Scaffold(
-                        backgroundColor: Colors.transparent,
-                        appBar: AppBar(
-                          backgroundColor: Colors.transparent,
-                          title: Text(_titles[_selectedIndex]).animate(key: ValueKey(_selectedIndex)).fade(),
-                          actions: [
-                            NotificationBell(userData: widget.userData, token: widget.token, iconColor: theme.iconTheme.color ?? Colors.black87),
-                            const SizedBox(width: 24),
-                          ],
-                        ),
-                        body: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: KeyedSubtree(key: ValueKey(_selectedIndex), child: _views[_selectedIndex]),
-                        ),
+    return AppShell(
+      child: Padding(
+        padding: const EdgeInsets.all(28.0),
+        child: Row(
+          children: [
+            // ── Sidebar ──
+            SizedBox(
+              width: 280,
+              child: GlassCard(
+                blurSigma: 24,
+                padding: EdgeInsets.zero,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSidebarHeader(context, theme),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: [
+                          _buildSidebarItem(0, Icons.dashboard_customize_outlined, 'Dashboard'),
+                          _buildSidebarItem(1, Icons.forum_outlined, 'Saluran'),
+                          _buildSidebarItem(2, Icons.how_to_reg_outlined, 'Presensi'),
+                          _buildSidebarItem(3, Icons.assignment_outlined, 'Tugas Saya'),
+                          _buildSidebarItem(4, Icons.auto_stories_outlined, 'Materi'),
+                          _buildSidebarItem(5, Icons.military_tech_outlined, 'Nilai'),
+                        ],
                       ),
                     ),
+                    _buildSidebarFooter(theme),
+                  ],
+                ),
+              ),
+            ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.05),
+
+            const SizedBox(width: 28),
+
+            // ── Main Content Area ──
+            Expanded(
+              child: GlassCard(
+                blurSigma: 16,
+                padding: EdgeInsets.zero,
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  appBar: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    leading: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                    ),
+                    title: Text(
+                      _titles[_selectedIndex],
+                      style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                    ).animate(key: ValueKey(_selectedIndex)).fade(duration: 400.ms).slideX(begin: -0.05),
+                    actions: [
+                      const ThemeToggle(),
+                      const SizedBox(width: 8),
+                      NotificationBell(
+                        userData: widget.userData, 
+                        token: widget.token,
+                        iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
+                      ),
+                      const SizedBox(width: 28),
+                    ],
+                  ),
+                  body: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    switchInCurve: Curves.easeOutQuart,
+                    switchOutCurve: Curves.easeInQuart,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(begin: const Offset(0, 0.02), end: Offset.zero).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey(_selectedIndex),
+                      child: _getViews()[_selectedIndex],
+                    ),
                   ),
                 ),
               ),
+            ).animate().fadeIn(duration: 800.ms, delay: 150.ms).slideX(begin: 0.02),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSidebarHeader(BuildContext context, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withAlpha(20),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(Icons.school_rounded, color: theme.primaryColor, size: 28),
+          ).animate().scale(delay: 200.ms, curve: Curves.easeOutBack),
+          const SizedBox(height: 24),
+          Text(
+            widget.teamData['nama_kelas'] ?? 'Mata Pelajaran',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: theme.primaryColor,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+              letterSpacing: -0.8,
+            ),
+          ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.2),
+          const SizedBox(height: 8),
+          Text(
+            widget.teamData['guru_nama'] ?? 'Pengajar',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarItem(int index, IconData icon, String label) {
+    final theme = Theme.of(context);
+    final isSelected = _selectedIndex == index;
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(120);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: InkWell(
+        onTap: () => setState(() => _selectedIndex = index),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.primaryColor.withAlpha(isSelected ? 30 : 0) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? theme.primaryColor.withAlpha(60) : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(width: 16),
+              Text(
+                label, 
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: color, 
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                ),
+              ),
+              if (isSelected) const Spacer(),
+              if (isSelected) 
+                Container(
+                  width: 6, height: 6, 
+                  decoration: BoxDecoration(color: theme.primaryColor, shape: BoxShape.circle),
+                ).animate().scale(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSidebarFooter(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: GlassCard(
+        radius: 16,
+        blurSigma: 0, 
+        padding: const EdgeInsets.all(12),
+        overrideColor: theme.primaryColor.withAlpha(15),
+        child: Row(
+          children: [
+            Icon(Icons.auto_awesome_rounded, color: theme.primaryColor, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              'Premium Access', 
+              style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w900, fontSize: 12),
+            ),
+          ],
         ),
       ),
     );
@@ -179,58 +281,105 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface.withAlpha(isDark ? 200 : 240),
-        elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.teamData['nama_kelas'] ?? 'Tim', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(_titles[_selectedIndex], style: TextStyle(fontSize: 12, color: theme.primaryColor, fontWeight: FontWeight.w600)),
-          ],
-        ),
-        actions: [
-          NotificationBell(userData: widget.userData, token: widget.token, iconColor: theme.iconTheme.color ?? Colors.black87),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Container(
-        padding: const EdgeInsets.only(top: 100),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark ? [Colors.black, Colors.black] : [Colors.white, Colors.white],
-          ),
-        ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: KeyedSubtree(key: ValueKey(_selectedIndex), child: _views[_selectedIndex]),
-        ),
-      ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: NavigationBar(
-            backgroundColor: theme.colorScheme.surface.withAlpha(isDark ? 180 : 220),
-            indicatorColor: theme.primaryColor.withAlpha(40),
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
-            destinations: const [
-              NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dasbor'),
-              NavigationDestination(icon: Icon(Icons.chat_bubble_outline), selectedIcon: Icon(Icons.chat_bubble), label: 'Chat'),
-              NavigationDestination(icon: Icon(Icons.how_to_reg_outlined), selectedIcon: Icon(Icons.how_to_reg), label: 'Hadir'),
-              NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Tugas'),
-              NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Materi'),
-              NavigationDestination(icon: Icon(Icons.grade_outlined), selectedIcon: Icon(Icons.grade), label: 'Nilai'),
+    return AppShell(
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              // ── Custom Floating AppBar ──
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: GlassCard(
+                  radius: 20,
+                  blurSigma: 20,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _titles[_selectedIndex],
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w900, 
+                            letterSpacing: -0.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ).animate(key: ValueKey(_selectedIndex)).fade().slideX(begin: -0.1),
+                      ),
+                      NotificationBell(
+                        userData: widget.userData, 
+                        token: widget.token,
+                        iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // ── Animated Body Content ──
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  child: KeyedSubtree(
+                    key: ValueKey(_selectedIndex),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 80),
+                      child: _getViews()[_selectedIndex],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
+
+          // ── Bottom Navigation Bar ──
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: GlassCard(
+              radius: 24,
+              blurSigma: 24,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildMobileNavItem(0, Icons.dashboard_customize_outlined),
+                  _buildMobileNavItem(1, Icons.forum_outlined),
+                  _buildMobileNavItem(2, Icons.how_to_reg_outlined),
+                  _buildMobileNavItem(3, Icons.assignment_outlined),
+                  _buildMobileNavItem(4, Icons.auto_stories_outlined),
+                  _buildMobileNavItem(5, Icons.military_tech_outlined),
+                ],
+              ),
+            ),
+          ).animate().slideY(begin: 1.0, duration: 600.ms, curve: Curves.easeOutQuart),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileNavItem(int index, IconData icon) {
+    final theme = Theme.of(context);
+    final isSelected = _selectedIndex == index;
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100);
+
+    return InkWell(
+      onTap: () => setState(() => _selectedIndex = index),
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
         ),
+        child: Icon(icon, color: color, size: 24),
       ),
     );
   }
@@ -238,7 +387,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth > 900) return _buildWebLayout(context);
+      if (constraints.maxWidth > 1100) return _buildWebLayout(context);
       return _buildMobileLayout(context);
     });
   }

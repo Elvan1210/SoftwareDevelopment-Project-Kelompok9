@@ -73,9 +73,9 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
-                AntigravityTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: Icons.campaign_rounded),
+                AppTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: Icons.campaign_rounded),
                 const SizedBox(height: 16),
-                AntigravityTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                AppTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
               ],
             ),
           ),
@@ -132,7 +132,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
+        floatingActionButton: AppFAB(
           onPressed: () => _showPengumumanForm(),
           icon: Icons.campaign_rounded,
           label: 'Buat Pengumuman',
@@ -141,7 +141,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: AntigravityTextField(
+              child: AppTextField(
                 hintText: 'Cari pengumuman...',
                 prefixIcon: Icons.search_rounded,
                 onChanged: (val) => setState(() => _searchQuery = val),
@@ -256,3 +256,4 @@ class _AdminPengumumanCard extends StatelessWidget {
     );
   }
 }
+

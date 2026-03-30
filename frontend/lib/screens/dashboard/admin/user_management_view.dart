@@ -79,11 +79,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  AntigravityTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: Icons.person_outline_rounded),
+                  AppTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: Icons.person_outline_rounded),
                   const SizedBox(height: 16),
-                  AntigravityTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+                  AppTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
                   const SizedBox(height: 16),
-                  AntigravityTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: Icons.lock_outline_rounded, obscureText: true),
+                  AppTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: Icons.lock_outline_rounded, obscureText: true),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: role,
@@ -98,7 +98,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     onChanged: (val) => setDialogState(() => role = val!),
                   ),
                   const SizedBox(height: 16),
-                  AntigravityTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: Icons.class_outlined),
+                  AppTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: Icons.class_outlined),
                 ],
               ),
             ),
@@ -133,10 +133,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                   _fetchUsers();
                   
                   if (ctx.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(ctx).showSnackBar(
                       SnackBar(
                         content: const Text('User berhasil disimpan!'),
-                        backgroundColor: AppTheme.getAdaptiveTeal(context),
+                        backgroundColor: AppTheme.getAdaptiveTeal(ctx),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -191,7 +191,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
+        floatingActionButton: AppFAB(
           onPressed: () => _showUserForm(),
           icon: Icons.person_add_rounded,
           label: 'Tambah User',
@@ -240,11 +240,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     delegate: SliverChildBuilderDelegate(
                                       (context, index) {
                                         final u = _filteredUsers[index];
-                                        return _UserCard(
-                                          user: u,
-                                          onEdit: () => _showUserForm(u),
-                                          onDelete: () => _deleteUser(u['id'].toString()),
-                                        ).animate(delay: (index * 30).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                          return _UserCard(
+                                            user: u,
+                                            onEdit: () => _showUserForm(u),
+                                            onDelete: () => _deleteUser(u['id'].toString()),
+                                          ).animate(delay: (index * 40).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutCubic);
                                       },
                                       childCount: _filteredUsers.length,
                                     ),
@@ -285,7 +285,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       child: Column(
         children: [
-          AntigravityTextField(
+          AppTextField(
             hintText: 'Cari nama, email, role...',
             prefixIcon: Icons.search_rounded,
             onChanged: (val) => setState(() => _searchQuery = val),

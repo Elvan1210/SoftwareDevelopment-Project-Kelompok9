@@ -73,7 +73,7 @@ class _AdminTugasViewState extends State<AdminTugasView> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: AntigravityTextField(
+              child: AppTextField(
                 hintText: 'Cari tugas, guru, atau mapel...',
                 prefixIcon: Icons.search_rounded,
                 onChanged: (val) => setState(() => _searchQuery = val),
@@ -190,3 +190,4 @@ class _AdminTugasCard extends StatelessWidget {
     );
   }
 }
+

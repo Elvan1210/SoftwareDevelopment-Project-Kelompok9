@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'siswa_tugas_detail_screen.dart';
+import 'siswa_team_detail_layout.dart';
 
 class SiswaDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -76,8 +77,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final nama = widget.userData['nama'] ?? 'Siswa';
-    final initials = nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
+    // Name and Role are now in Navbar
 
     if (_isLoading) {
       return AppShell(child: _buildSkeleton(theme));
@@ -97,15 +97,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                   padding: padding,
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // ── Hero Greeting ──────────────────────────
-                      _HeroGreeting(
-                        initials: initials,
-                        nama: nama,
-                        kelas: widget.userData['kelas'] ?? '-',
-                        isDark: isDark,
-                        primaryColor: theme.primaryColor,
-                      ),
-                      const SizedBox(height: 32),
+                      // ── Hero Greeting is now in Navbar ──
 
                       // ── Your Classes Grid ──────────────────────
                       const SectionHeader(
@@ -115,9 +107,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                       ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
                       const SizedBox(height: 16),
                       _buildClassGrid(w, theme, isDark),
-                      const SizedBox(height: 40),
-
+                      const SizedBox(height: 32),
                       // ── Stat Cards ─────────────────────────────
+
                       _buildStatCards(w, theme, isDark),
                       const SizedBox(height: 40),
 
@@ -174,27 +166,41 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       itemBuilder: (ctx, i) {
         final k = _kelasList[i];
         return _SiswaClassCard(kelas: k)
-            .animate(delay: (200 + i * 50).ms)
-            .fadeIn()
-            .scale(begin: const Offset(0.95, 0.95));
+            .animate(delay: (200 + i * 80).ms)
+            .fadeIn(duration: 400.ms)
+            .scale(begin: const Offset(0.9, 0.9), curve: Curves.elasticOut, duration: 800.ms);
       },
     );
   }
 
   Widget _buildStatCards(double w, ThemeData theme, bool isDark) {
-    int totalTugas = _tugasList.length;
-    int selesai = _tugasList.where((t) => _pengumpulanList.any((p) => p['tugas_id'].toString() == t['id'].toString())).length;
-    int belum = totalTugas - selesai;
-    int pengumumanLength = _pengumumanList.length;
+    int lewatDeadline = 0;
+    int belum = 0;
+    int selesai = 0;
+
+    for (var t in _tugasList) {
+      if (_pengumpulanList.any((p) => p['tugas_id'].toString() == t['id'].toString())) {
+        selesai++;
+        continue;
+      }
+      final dlStr = t['deadline'];
+      if (dlStr != null && dlStr.toString().isNotEmpty) {
+        final dl = DateTime.tryParse(dlStr.toString());
+        if (dl != null && dl.isBefore(DateTime.now())) {
+          lewatDeadline++;
+          continue;
+        }
+      }
+      belum++;
+    }
 
     final stats = [
-      _StatData(Icons.assignment_outlined, 'Total Tugas', totalTugas.toString(), AppTheme.getAdaptiveTeal(context)),
       _StatData(Icons.pending_actions_outlined, 'Belum Dikumpul', belum.toString(), const Color(0xFFF27F33)),
-      _StatData(Icons.campaign_outlined, 'Pengumuman', pengumumanLength.toString(), AppTheme.getAdaptiveTeal(context)),
-      _StatData(Icons.task_alt_outlined, 'Selesai', selesai.toString(), const Color(0xFF76AFB8)),
+      _StatData(Icons.warning_amber_rounded, 'Lewat Deadline', lewatDeadline.toString(), Colors.redAccent),
+      _StatData(Icons.task_alt_outlined, 'Selesai', selesai.toString(), const Color(0xFF10B981)),
     ];
 
-    final crossCount = w > 800 ? 4 : (w > 500 ? 2 : 2);
+    final crossCount = w > 800 ? 3 : 1;
 
     return RepaintBoundary(
       child: GridView.builder(
@@ -202,7 +208,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossCount,
-          childAspectRatio: w > 800 ? 1.6 : 1.5,
+          childAspectRatio: w > 800 ? 2.5 : 2.0,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -215,13 +221,15 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
             value: s.value,
             color: s.color,
           )
-              .animate(delay: (200 + i * 80).ms)
+              .animate(delay: (300 + i * 100).ms)
               .fadeIn(duration: 400.ms)
-              .slideY(begin: 0.15, curve: Curves.easeOutQuart);
+              .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut, duration: 800.ms)
+              .slideY(begin: 0.2, curve: Curves.easeOutCubic);
         },
       ),
     );
   }
+
 
   Widget _buildTugasSection(ThemeData theme, bool isDark) {
     if (_tugasList.isEmpty) {
@@ -250,9 +258,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                 ),
               ),
             )
-                .animate(delay: (300 + i * 80).ms)
+                .animate(delay: (400 + i * 80).ms)
                 .fadeIn(duration: 400.ms)
-                .slideX(begin: -0.05, curve: Curves.easeOutQuart);
+                .slideX(begin: -0.1, curve: Curves.easeOutQuart);
           },
         ),
       ),
@@ -273,9 +281,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
         (i) {
           final p = _pengumumanList[i];
           return _PengumumanCard(pengumuman: p)
-              .animate(delay: (400 + i * 80).ms)
+              .animate(delay: (500 + i * 80).ms)
               .fadeIn(duration: 400.ms)
-              .slideX(begin: -0.05, curve: Curves.easeOutQuart);
+              .slideX(begin: -0.1, curve: Curves.easeOutQuart);
         },
       ),
     );
@@ -316,78 +324,7 @@ class _StatData {
   const _StatData(this.icon, this.label, this.value, this.color);
 }
 
-class _HeroGreeting extends StatelessWidget {
-  final String initials, nama, kelas;
-  final bool isDark;
-  final Color primaryColor;
 
-  const _HeroGreeting({
-    required this.initials,
-    required this.nama,
-    required this.kelas,
-    required this.isDark,
-    required this.primaryColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: PremiumCard(
-        accentColor: primaryColor,
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            // Avatar
-            Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, primaryColor.withAlpha(180)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: primaryColor.withAlpha(80), blurRadius: 20, offset: const Offset(0, 8))],
-              ),
-              child: Center(
-                child: Text(initials,
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
-              ),
-            ).animate().scale(delay: 100.ms, curve: Curves.easeOutBack),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Selamat datang 👋',
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
-                          letterSpacing: 0.5)),
-                  const SizedBox(height: 4),
-                  Text(nama,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withAlpha(20),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text('Kelas $kelas',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primaryColor)),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
-            ),
-          ],
-        ),
-      ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.05),
-    );
-  }
-}
 
 class _TugasCard extends StatelessWidget {
   final dynamic tugas;
@@ -533,8 +470,15 @@ class _SiswaClassCard extends StatelessWidget {
       accentColor: color,
       padding: EdgeInsets.zero,
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Membuka kelas: ${kelas['nama_kelas']}'), behavior: SnackBarBehavior.floating)
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SiswaTeamDetailLayout(
+              userData: (context.findAncestorStateOfType<_SiswaDashboardScreenState>()!).widget.userData,
+              token: (context.findAncestorStateOfType<_SiswaDashboardScreenState>()!).widget.token,
+              teamData: kelas,
+            ),
+          ),
         );
       },
       child: Column(
@@ -603,3 +547,4 @@ class _SiswaClassCard extends StatelessWidget {
     );
   }
 }
+
