@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../config/api_config.dart';
@@ -103,52 +104,55 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
           builder: (ctx, constraints) {
             final w = constraints.maxWidth;
             final padding = Breakpoints.screenPadding(w);
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: padding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   // Hero Greeting
-                  _HeroGreeting(
-                    initials: initials,
-                    nama: nama,
-                    kelas: widget.userData['kelas'] ?? '-',
-                    isDark: isDark,
-                    primaryColor: const Color(0xFF10B981),
-                    role: 'Guru',
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: padding,
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      // Hero Greeting
+                      _HeroGreeting(
+                        initials: initials,
+                        nama: nama,
+                        kelas: widget.userData['kelas'] ?? '-',
+                        isDark: isDark,
+                        primaryColor: const Color(0xFF10B981),
+                        role: 'Guru',
+                      ),
+                      const SizedBox(height: 32),
+
+                      // ── Your Classes Grid ──────────────────────
+                      const SectionHeader(
+                        title: 'Kelas Ampuan',
+                        subtitle: 'Kelola materi, tugas, dan nilai siswa',
+                        action: null,
+                      ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
+                      const SizedBox(height: 16),
+                      _buildClassGrid(w, theme, isDark),
+                      const SizedBox(height: 40),
+
+                      // ── Stats Section ──────────────────────────
+                      const SectionHeader(
+                        title: 'Statistik Konten',
+                        subtitle: 'Ringkasan distribusi pembelajaran kamu',
+                      ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
+                      const SizedBox(height: 16),
+                      _buildStatGrid(w),
+                      const SizedBox(height: 32),
+
+                      // Chart
+                      const SectionHeader(
+                        title: 'Grafik Aktivitas',
+                        subtitle: 'Visualisasi kontribusi mengajar',
+                      ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
+                      const SizedBox(height: 16),
+                      _buildChart(theme, isDark),
+                      const SizedBox(height: 24),
+                    ]),
                   ),
-                  const SizedBox(height: 32),
-
-                  // ── Your Classes Grid ──────────────────────
-                  const SectionHeader(
-                    title: 'Kelas Ampuan',
-                    subtitle: 'Kelola materi, tugas, dan nilai siswa',
-                    action: null,
-                  ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
-                  const SizedBox(height: 16),
-                  _buildClassGrid(w, theme, isDark),
-                  const SizedBox(height: 40),
-
-                  // ── Stats Section ──────────────────────────
-                  const SectionHeader(
-                    title: 'Statistik Konten',
-                    subtitle: 'Ringkasan distribusi pembelajaran kamu',
-                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
-                  const SizedBox(height: 16),
-                  _buildStatGrid(w),
-                  const SizedBox(height: 32),
-
-                  // Chart
-                  const SectionHeader(
-                    title: 'Grafik Aktivitas',
-                    subtitle: 'Visualisasi kontribusi mengajar',
-                  ).animate().fadeIn(delay: 300.ms),
-                  const SizedBox(height: 16),
-                  _buildChart(theme, isDark),
-                  const SizedBox(height: 24),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),
@@ -189,10 +193,10 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
 
   Widget _buildStatGrid(double w) {
     final stats = [
-      _StatData(Icons.assignment_outlined, 'Tugas Dibuat', '$_totalTugas', const Color(0xFF3B82F6)),
-      _StatData(Icons.menu_book_outlined, 'Materi Dibuat', '$_totalMateri', const Color(0xFF10B981)),
-      _StatData(Icons.grade_outlined, 'Nilai Input', '$_totalNilai', const Color(0xFF8B5CF6)),
-      _StatData(Icons.campaign_outlined, 'Pengumuman', '$_totalPengumuman', const Color(0xFFF59E0B)),
+      _StatData(Icons.assignment_outlined, 'Tugas Dibuat', '$_totalTugas', AppTheme.getAdaptiveTeal(context)),
+      _StatData(Icons.menu_book_outlined, 'Materi Dibuat', '$_totalMateri', const Color(0xFFF27F33)),
+      _StatData(Icons.grade_outlined, 'Nilai Input', '$_totalNilai', const Color(0xFF76AFB8)),
+      _StatData(Icons.campaign_outlined, 'Pengumuman', '$_totalPengumuman', AppTheme.getAdaptiveTeal(context)),
     ];
 
     final crossCount = w > 800 ? 4 : 2;
@@ -227,10 +231,10 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     final maxVal = vals.reduce((a, b) => a > b ? a : b);
     final maxY = (maxVal * 1.15).clamp(5.0, 1000.0);
     final colors = [
-      const Color(0xFF3B82F6),
-      const Color(0xFF10B981),
-      const Color(0xFF8B5CF6),
-      const Color(0xFFF59E0B),
+      AppTheme.getAdaptiveTeal(context),
+      const Color(0xFFF27F33),
+      const Color(0xFF76AFB8),
+      AppTheme.getAdaptiveTeal(context),
     ];
     final labels = ['Tugas', 'Materi', 'Nilai', 'Pengumuman'];
 
