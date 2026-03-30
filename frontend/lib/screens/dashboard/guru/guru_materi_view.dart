@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
@@ -12,13 +11,13 @@ import 'package:url_launcher/url_launcher.dart';
 class GuruMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  final dynamic teamData;
+  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
 
   const GuruMateriView({
     super.key, 
     required this.userData, 
     required this.token,
-    required this.teamData,
+    required this.teamData, // Wajib diisi
   });
 
   @override
@@ -38,6 +37,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   Future<void> _fetchMateri() async {
     setState(() => _isLoading = true);
     try {
+      // UBAHAN: Fetch hanya materi yang memiliki kelas_id sesuai dengan tim ini
       final kelasId = widget.teamData['id'];
       final response = await http.get(
         Uri.parse('$baseUrl/api/materi?kelas_id=$kelasId'),
@@ -84,14 +84,15 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
+                // Info Kelas Otomatis
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: AppTheme.getAdaptiveTeal(context).withAlpha(20), borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(color: const Color(0xFF10B981).withAlpha(20), borderRadius: BorderRadius.circular(12)),
                   child: Row(
                     children: [
-                      Icon(Icons.class_, color: AppTheme.getAdaptiveTeal(context), size: 20),
+                      const Icon(Icons.class_, color: Color(0xFF10B981), size: 20),
                       const SizedBox(width: 8),
-                      Expanded(child: Text('Materi ini akan dibagikan ke kelas: ${widget.teamData['nama_kelas']}', style: TextStyle(color: AppTheme.getAdaptiveTeal(context), fontWeight: FontWeight.bold, fontSize: 12))),
+                      Expanded(child: Text('Materi ini akan dibagikan ke kelas: ${widget.teamData['nama_kelas']}', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12))),
                     ],
                   ),
                 ),
@@ -109,7 +110,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF27F33),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -117,6 +118,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
             onPressed: () async {
               if (judulCtrl.text.isEmpty) return;
               
+              // UBAHAN: Sisipkan ID dan Nama Kelas secara otomatis
               final body = {
                 'judul': judulCtrl.text,
                 'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
@@ -168,46 +170,37 @@ class _GuruMateriViewState extends State<GuruMateriView> {
           label: 'Materi Baru',
         ),
         body: _materiList.isEmpty
-            ? EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\ndi kelas ini.', color: AppTheme.getAdaptiveTeal(context))
-            : RepaintBoundary(
-                child: RefreshIndicator(
-                  onRefresh: _fetchMateri,
-                  child: LayoutBuilder(
-                    builder: (ctx, c) {
-                      final w = c.maxWidth;
-                      final padding = Breakpoints.screenPadding(w);
-                      final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+            ? const EmptyState(icon: Icons.library_books_rounded, message: 'Belum ada materi\ndi kelas ini.', color: Color(0xFF10B981))
+            : RefreshIndicator(
+                onRefresh: _fetchMateri,
+                child: LayoutBuilder(
+                  builder: (ctx, c) {
+                    final w = c.maxWidth;
+                    final padding = Breakpoints.screenPadding(w);
+                    final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
 
-                      return CustomScrollView(
-                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                        slivers: [
-                          SliverPadding(
-                            padding: padding,
-                            sliver: SliverGrid(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: crossCount == 1 ? 2.8 : 1.3,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, i) {
-                                  final m = _materiList[i];
-                                  return _GuruMateriCard(
-                                    materi: m,
-                                    onEdit: () => _showMateriForm(m),
-                                    onDelete: () => _deleteMateri(m['id'].toString()),
-                                    onView: () => _launchURL(m['file_url'] ?? m['link']),
-                                  ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                                },
-                                childCount: _materiList.length,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                    return RepaintBoundary(
+                      child: GridView.builder(
+                        padding: padding,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossCount,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: crossCount == 1 ? 2.8 : 1.3,
+                        ),
+                        itemCount: _materiList.length,
+                        itemBuilder: (_, i) {
+                          final m = _materiList[i];
+                          return _GuruMateriCard(
+                            materi: m,
+                            onEdit: () => _showMateriForm(m),
+                            onDelete: () => _deleteMateri(m['id'].toString()),
+                            onView: () => _launchURL(m['file_url'] ?? m['link']),
+                          ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
       ),
@@ -241,7 +234,7 @@ class _GuruMateriCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = AppTheme.getAdaptiveTeal(context);
+    const accent = Color(0xFF10B981);
 
     return PremiumCard(
       accentColor: accent,
@@ -252,7 +245,7 @@ class _GuruMateriCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(12)), child: Icon(Icons.description_outlined, color: accent, size: 20)),
+              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.description_outlined, color: accent, size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Text(materi['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
               IconButton(

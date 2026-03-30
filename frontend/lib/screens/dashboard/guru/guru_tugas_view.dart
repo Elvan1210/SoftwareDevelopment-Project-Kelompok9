@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
@@ -13,13 +12,13 @@ import 'package:intl/intl.dart';
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  final dynamic teamData; 
+  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
 
   const GuruTugasView({
     super.key, 
     required this.userData, 
     required this.token,
-    required this.teamData, 
+    required this.teamData, // Wajib diisi
   });
 
   @override
@@ -39,6 +38,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
   Future<void> _fetchTugas() async {
     setState(() => _isLoading = true);
     try {
+      // UBAHAN: Fetch hanya tugas yang memiliki kelas_id sesuai dengan tim ini
       final kelasId = widget.teamData['id'];
       final response = await http.get(
         Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'),
@@ -98,14 +98,15 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Info Kelas Otomatis
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: const Color(0xFF76AFB8).withAlpha(20), borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: Colors.blue.withAlpha(20), borderRadius: BorderRadius.circular(12)),
                       child: Row(
                         children: [
-                          const Icon(Icons.class_, color: Color(0xFF76AFB8), size: 20),
+                          const Icon(Icons.class_, color: Colors.blue, size: 20),
                           const SizedBox(width: 8),
-                          Expanded(child: Text('Tugas ini akan diterbitkan di kelas: ${widget.teamData['nama_kelas']}', style: const TextStyle(color: Color(0xFF76AFB8), fontWeight: FontWeight.bold, fontSize: 12))),
+                          Expanded(child: Text('Tugas ini akan diterbitkan di kelas: ${widget.teamData['nama_kelas']}', style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12))),
                         ],
                       ),
                     ),
@@ -167,20 +168,21 @@ class _GuruTugasViewState extends State<GuruTugasView> {
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF27F33),
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () async {
+                  // UBAHAN: Sisipkan ID dan Nama Kelas secara otomatis
                   final body = {
                     'judul': judulCtrl.text,
                     'deskripsi': deskripsiCtrl.text,
                     'deadline': selectedDeadline?.toIso8601String() ?? (isEditing ? tugas['deadline'] : null),
                     'link': linkCtrl.text,
                     'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
-                    'kelas': widget.teamData['nama_kelas'], 
-                    'kelas_id': widget.teamData['id'], 
+                    'kelas': widget.teamData['nama_kelas'], // Nama kelas otomatis
+                    'kelas_id': widget.teamData['id'], // ID kelas otomatis
                     'guru_id': widget.userData['id'],
                   };
 
@@ -227,71 +229,68 @@ class _GuruTugasViewState extends State<GuruTugasView> {
           label: 'Buat Tugas',
         ),
         body: _tugasList.isEmpty
-            ? EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas di kelas ini.', color: AppTheme.getAdaptiveTeal(context))
-            : RepaintBoundary(
-                child: RefreshIndicator(
-                  onRefresh: _fetchTugas,
-                  child: LayoutBuilder(
-                    builder: (ctx, c) {
-                      final w = c.maxWidth;
-                      final padding = Breakpoints.screenPadding(w);
-                      final crossCount = w >= Breakpoints.tablet ? 2 : 1;
+            ? const EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas di kelas ini.', color: Color(0xFF3B82F6))
+            : RefreshIndicator(
+                onRefresh: _fetchTugas,
+                child: LayoutBuilder(
+                  builder: (ctx, c) {
+                    final w = c.maxWidth;
+                    final padding = Breakpoints.screenPadding(w);
+                    final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
-                      final sortedTasks = List<dynamic>.from(_tugasList);
-                      sortedTasks.sort((a, b) {
-                        final dA = a['deadline'];
-                        final dB = b['deadline'];
-                        if (dA == null && dB == null) return 0;
-                        if (dA == null) return 1;
-                        if (dB == null) return -1;
-                        final dtA = DateTime.tryParse(dA);
-                        final dtB = DateTime.tryParse(dB);
-                        if (dtA != null && dtB != null) return dtA.compareTo(dtB);
-                        return dA.toString().compareTo(dB.toString());
-                      });
+                    final sortedTasks = List<dynamic>.from(_tugasList);
+                    sortedTasks.sort((a, b) {
+                      final dA = a['deadline'];
+                      final dB = b['deadline'];
+                      if (dA == null && dB == null) return 0;
+                      if (dA == null) return 1;
+                      if (dB == null) return -1;
+                      final dtA = DateTime.tryParse(dA);
+                      final dtB = DateTime.tryParse(dB);
+                      if (dtA != null && dtB != null) return dtA.compareTo(dtB);
+                      return dA.toString().compareTo(dB.toString());
+                    });
 
-                      final Map<String, List<dynamic>> groups = {};
-                      for (final t in sortedTasks) {
-                        String dateLabel = 'Tanpa Tenggat Waktu';
-                        if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
-                          final dt = DateTime.tryParse(t['deadline']);
-                          if (dt != null) {
-                            dateLabel = DateFormat('MMM d, EEEE').format(dt);
-                          } else {
-                            dateLabel = t['deadline'];
-                          }
+                    final Map<String, List<dynamic>> groups = {};
+                    for (final t in sortedTasks) {
+                      String dateLabel = 'Tanpa Tenggat Waktu';
+                      if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
+                        final dt = DateTime.tryParse(t['deadline']);
+                        if (dt != null) {
+                          dateLabel = DateFormat('MMM d, EEEE').format(dt);
+                        } else {
+                          dateLabel = t['deadline'];
                         }
-                        groups.putIfAbsent(dateLabel, () => []).add(t);
                       }
-                      final groupKeys = groups.keys.toList();
+                      groups.putIfAbsent(dateLabel, () => []).add(t);
+                    }
+                    final groupKeys = groups.keys.toList();
 
-                      // Build the Slivers Array
-                      List<Widget> slivers = [];
-                      for (int i = 0; i < groupKeys.length; i++) {
-                        final key = groupKeys[i];
-                        final items = groups[key]!;
-                        
-                        slivers.add(
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.fromLTRB(padding.left, 24, padding.right, 16),
-                              child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
-                            ),
-                          )
-                        );
-                        
-                        slivers.add(
-                          SliverPadding(
-                            padding: EdgeInsets.fromLTRB(padding.left, 0, padding.right, i < groupKeys.length - 1 ? 24 : padding.bottom),
-                            sliver: SliverGrid(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
+                    return RepaintBoundary(
+                      child: ListView.builder(
+                        padding: padding,
+                        itemCount: groupKeys.length,
+                        itemBuilder: (_, i) {
+                          final key = groupKeys[i];
+                          final items = groups[key]!;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
+                                child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
                               ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, j) {
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
+                                ),
+                                itemCount: items.length,
+                                itemBuilder: (_, j) {
                                   final t = items[j];
                                   return _GuruTugasCard(
                                     tugas: t,
@@ -303,21 +302,17 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                         builder: (_) => GuruTugasDetailScreen(tugas: t, token: widget.token),
                                       ),
                                     ),
-                                  ).animate(delay: (j * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                  ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
                                 },
-                                childCount: items.length,
                               ),
-                            ),
-                          )
-                        );
-                      }
-
-                      return CustomScrollView(
-                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                        slivers: slivers,
-                      );
-                    },
-                  ),
+                              const SizedBox(height: 20),
+                              if (i < groupKeys.length - 1) const Divider(color: Colors.white24, height: 1),
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
       ),
@@ -354,7 +349,7 @@ class _GuruTugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = AppTheme.getAdaptiveTeal(context);
+    const accent = Color(0xFF3B82F6);
 
     return PremiumCard(
       accentColor: accent,
@@ -369,7 +364,7 @@ class _GuruTugasCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(12)),
-                child: Icon(Icons.assignment_rounded, color: accent, size: 22),
+                child: const Icon(Icons.assignment_rounded, color: accent, size: 22),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -403,9 +398,9 @@ class _GuruTugasCard extends StatelessWidget {
               if (tugas['deadline'] != null)
                 Row(
                   children: [
-                    Icon(Icons.timer_outlined, size: 14, color: const Color(0xFFF27F33).withAlpha(180)),
+                    Icon(Icons.timer_outlined, size: 14, color: const Color(0xFFF59E0B).withAlpha(180)),
                     const SizedBox(width: 6),
-                    Text(_formatDeadline(tugas['deadline']), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFF27F33))),
+                    Text(_formatDeadline(tugas['deadline']), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B))),
                   ],
                 ),
               Text('Detail >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: accent.withAlpha(200))),

@@ -10,7 +10,6 @@ import 'admin_nilai_view.dart';
 import 'admin_pengumuman_view.dart';
 import 'admin_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
-import '../../../widgets/theme_toggle.dart';
 
 class AdminMainLayout extends StatefulWidget {
   final String token;
@@ -68,8 +67,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark 
-              ? [Colors.black, Colors.black]
-              : [Colors.white, Colors.white],
+              ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+              : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: Padding(
@@ -153,7 +152,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                           backgroundColor: Colors.transparent,
                           title: Text(_titles[_selectedIndex]).animate(key: ValueKey(_selectedIndex)).fade().slideX(begin: -0.1),
                           actions: [
-                            ThemeToggle(iconColor: theme.iconTheme.color ?? Colors.black87),
                             NotificationBell(userData: _adminUserData, token: widget.token, iconColor: theme.iconTheme.color ?? Colors.black87),
                             const SizedBox(width: 24),
                           ],
@@ -201,8 +199,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark 
-              ? [Colors.black, Colors.black]
-              : [Colors.white, Colors.white],
+              ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+              : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -235,7 +233,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                               overflow: TextOverflow.ellipsis,
                             ).animate(key: ValueKey(_selectedIndex)).fade().slideX(begin: -0.1),
                           ),
-                          ThemeToggle(iconColor: theme.iconTheme.color ?? Colors.black87),
                           NotificationBell(userData: _adminUserData, token: widget.token, iconColor: theme.iconTheme.color ?? Colors.black87),
                         ],
                       ),

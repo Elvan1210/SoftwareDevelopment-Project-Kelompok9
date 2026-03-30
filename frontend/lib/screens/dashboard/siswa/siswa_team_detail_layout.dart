@@ -58,7 +58,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark ? [Colors.black, Colors.black] : [Colors.white, Colors.white],
+            colors: isDark ? [const Color(0xFF0F172A), const Color(0xFF020617)] : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: Padding(
@@ -204,7 +204,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark ? [Colors.black, Colors.black] : [Colors.white, Colors.white],
+            colors: isDark ? [const Color(0xFF0F172A), const Color(0xFF020617)] : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: AnimatedSwitcher(

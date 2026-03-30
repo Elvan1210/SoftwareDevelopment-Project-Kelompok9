@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
@@ -90,59 +89,56 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           builder: (ctx, constraints) {
             final w = constraints.maxWidth;
             final padding = Breakpoints.screenPadding(w);
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: padding,
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // ── Hero Greeting ──────────────────────────
-                      _HeroGreeting(
-                        initials: initials,
-                        nama: nama,
-                        kelas: widget.userData['kelas'] ?? '-',
-                        isDark: isDark,
-                        primaryColor: theme.primaryColor,
-                      ),
-                      const SizedBox(height: 32),
-
-                      // ── Your Classes Grid ──────────────────────
-                      const SectionHeader(
-                        title: 'Kelas Kamu',
-                        subtitle: 'Akses cepat ke materi & tugas mata pelajaran',
-                        action: null,
-                      ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
-                      _buildClassGrid(w, theme, isDark),
-                      const SizedBox(height: 40),
-
-                      // ── Stat Cards ─────────────────────────────
-                      _buildStatCards(w, theme, isDark),
-                      const SizedBox(height: 40),
-
-                      // ── Tugas Section ──────────────────────────
-                      SectionHeader(
-                        title: 'Tugas Mendatang',
-                        subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
-                        action: null,
-                      ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
-                      _buildTugasSection(theme, isDark),
-                      const SizedBox(height: 32),
-
-                      // ── Pengumuman Section ─────────────────────
-                      const SectionHeader(
-                        title: 'Pengumuman',
-                        subtitle: 'Info terbaru untuk kamu',
-                      ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
-                      _buildPengumumanSection(theme, isDark),
-                      const SizedBox(height: 24),
-                    ]),
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: padding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   // ── Hero Greeting ──────────────────────────
+                  _HeroGreeting(
+                    initials: initials,
+                    nama: nama,
+                    kelas: widget.userData['kelas'] ?? '-',
+                    isDark: isDark,
+                    primaryColor: theme.primaryColor,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 32),
+
+                  // ── Your Classes Grid ──────────────────────
+                  const SectionHeader(
+                    title: 'Kelas Kamu',
+                    subtitle: 'Akses cepat ke materi & tugas mata pelajaran',
+                    action: null,
+                  ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildClassGrid(w, theme, isDark),
+                  const SizedBox(height: 40),
+
+                  // ── Stat Cards ─────────────────────────────
+                  _buildStatCards(w, theme, isDark),
+                  const SizedBox(height: 40),
+
+                  // ── Tugas Section ──────────────────────────
+                  SectionHeader(
+                    title: 'Tugas Mendatang',
+                    subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
+                    action: null,
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildTugasSection(theme, isDark),
+                  const SizedBox(height: 32),
+
+                  // ── Pengumuman Section ─────────────────────
+                  const SectionHeader(
+                    title: 'Pengumuman',
+                    subtitle: 'Info terbaru untuk kamu',
+                  ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 16),
+                  _buildPengumumanSection(theme, isDark),
+                  const SizedBox(height: 24),
+                ],
+              ),
             );
           },
         ),
@@ -188,10 +184,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     int pengumumanLength = _pengumumanList.length;
 
     final stats = [
-      _StatData(Icons.assignment_outlined, 'Total Tugas', totalTugas.toString(), AppTheme.getAdaptiveTeal(context)),
-      _StatData(Icons.pending_actions_outlined, 'Belum Dikumpul', belum.toString(), const Color(0xFFF27F33)),
-      _StatData(Icons.campaign_outlined, 'Pengumuman', pengumumanLength.toString(), AppTheme.getAdaptiveTeal(context)),
-      _StatData(Icons.task_alt_outlined, 'Selesai', selesai.toString(), const Color(0xFF76AFB8)),
+      _StatData(Icons.assignment_outlined, 'Total Tugas', totalTugas.toString(), const Color(0xFF3B82F6)),
+      _StatData(Icons.pending_actions_outlined, 'Belum Dikumpul', belum.toString(), const Color(0xFFF59E0B)),
+      _StatData(Icons.campaign_outlined, 'Pengumuman', pengumumanLength.toString(), const Color(0xFF10B981)),
+      _StatData(Icons.task_alt_outlined, 'Selesai', selesai.toString(), const Color(0xFF8B5CF6)),
     ];
 
     final crossCount = w > 800 ? 4 : (w > 500 ? 2 : 2);
@@ -228,7 +224,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       return const EmptyState(
         icon: Icons.assignment_turned_in_outlined,
         message: 'Tidak ada tugas aktif\ndi kelasmu.',
-        color: Color(0xFF76AFB8),
+        color: Color(0xFF3B82F6),
       );
     }
     return RepaintBoundary(
@@ -407,7 +403,7 @@ class _TugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = AppTheme.getAdaptiveTeal(context);
+    const color = Color(0xFF3B82F6);
 
     return PremiumCard(
       onTap: onTap,
@@ -422,7 +418,7 @@ class _TugasCard extends StatelessWidget {
               color: color.withAlpha(20),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.assignment_outlined, color: color, size: 22),
+            child: const Icon(Icons.assignment_outlined, color: color, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -443,11 +439,11 @@ class _TugasCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: const Color(0xFFF27F33).withAlpha(20),
+                color: const Color(0xFFF59E0B).withAlpha(20),
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Text(_formatDeadline(tugas['deadline']),
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF27F33))),
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF59E0B))),
             ),
           const SizedBox(width: 8),
           Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withAlpha(100)),
@@ -464,7 +460,7 @@ class _PengumumanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = AppTheme.getAdaptiveTeal(context);
+    const color = Color(0xFF10B981);
 
     return PremiumCard(
       accentColor: color,
@@ -479,7 +475,7 @@ class _PengumumanCard extends StatelessWidget {
               color: color.withAlpha(20),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.campaign_rounded, color: color, size: 22),
+            child: const Icon(Icons.campaign_rounded, color: color, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(

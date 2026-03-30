@@ -1,8 +1,0 @@
-Analyzing frontend...                                           
-
-  error - Invalid constant value - lib\screens\dashboard\admin\admin_dashboard_view.dart:339:121 - invalid_constant
-  error - Methods can't be invoked in constant expressions - lib\screens\dashboard\admin\kelas_management_view.dart:103:59 - const_eval_method_invocation
-   info - 'value' is deprecated and shouldn't be used. Use component accessors like .r or .g, or toARGB32 for an explicit conversion - lib\screens\dashboard\admin\kelas_management_view.dart:141:49 - deprecated_member_use
-   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\dashboard\admin\user_management_view.dart:136:42 - use_build_context_synchronously
-   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\dashboard\admin\user_management_view.dart:139:67 - use_build_context_synchronously
-

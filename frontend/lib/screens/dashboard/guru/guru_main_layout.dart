@@ -60,8 +60,8 @@
 // //             begin: Alignment.topLeft,
 // //             end: Alignment.bottomRight,
 // //             colors: isDark
-// //                 ? [Colors.black, Colors.black]
-// //                 : [Colors.white, Colors.white],
+// //                 ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+// //                 : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
 // //           ),
 // //         ),
 // //         child: Padding(
@@ -254,8 +254,8 @@
 // //             begin: Alignment.topLeft,
 // //             end: Alignment.bottomRight,
 // //             colors: isDark
-// //                 ? [Colors.black, Colors.black]
-// //                 : [Colors.white, Colors.white],
+// //                 ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+// //                 : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
 // //           ),
 // //         ),
 // //         child: SafeArea(
@@ -466,8 +466,8 @@
 //             begin: Alignment.topLeft,
 //             end: Alignment.bottomRight,
 //             colors: isDark
-//                 ? [Colors.black, Colors.black]
-//                 : [Colors.white, Colors.white],
+//                 ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+//                 : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
 //           ),
 //         ),
 //         child: Padding(
@@ -647,8 +647,8 @@
 //             begin: Alignment.topLeft,
 //             end: Alignment.bottomRight,
 //             colors: isDark
-//                 ? [Colors.black, Colors.black]
-//                 : [Colors.white, Colors.white],
+//                 ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+//                 : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
 //           ),
 //         ),
 //         child: SafeArea(
@@ -794,7 +794,6 @@ import 'guru_teams_view.dart'; // <-- Import halaman Teams Guru
 import 'guru_pengumuman_view.dart';
 import 'guru_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
-import '../../../widgets/theme_toggle.dart';
 
 // Catatan: Import untuk Tugas, Materi, Presensi, dan Nilai sudah dihapus 
 // karena nanti akan dimasukkan ke dalam modul Teams.
@@ -844,8 +843,8 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? [Colors.black, Colors.black]
-                : [Colors.white, Colors.white],
+                ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+                : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: Padding(
@@ -968,7 +967,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                               .fade()
                               .slideX(begin: -0.1),
                           actions: [
-                            ThemeToggle(iconColor: theme.iconTheme.color ?? Colors.black87),
                             NotificationBell(
                                 userData: widget.userData,
                                 token: widget.token,
@@ -1026,8 +1024,8 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? [Colors.black, Colors.black]
-                : [Colors.white, Colors.white],
+                ? [const Color(0xFF0F172A), const Color(0xFF020617)]
+                : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -1072,7 +1070,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                                 .fade()
                                 .slideX(begin: -0.1),
                           ),
-                          ThemeToggle(iconColor: theme.iconTheme.color ?? Colors.black87),
                           NotificationBell(
                               userData: widget.userData,
                               token: widget.token,
