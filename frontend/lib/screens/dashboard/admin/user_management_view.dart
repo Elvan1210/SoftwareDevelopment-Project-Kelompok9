@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
@@ -106,7 +107,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: AppTheme.getAdaptiveTeal(context),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -131,25 +132,23 @@ class _UserManagementViewState extends State<UserManagementView> {
                   if (ctx.mounted) Navigator.pop(ctx);
                   _fetchUsers();
                   
-                  // Notifikasi sukses (opsional, agar lebih bagus)
                   if (ctx.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('User berhasil disimpan!'),
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppTheme.getAdaptiveTeal(context),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     );
                   }
                 } else {
-                  // Jika ada error dari backend (termasuk duplikat email)
                   final data = jsonDecode(response.body);
                   if (ctx.mounted) {
                     ScaffoldMessenger.of(ctx).showSnackBar(
                       SnackBar(
                         content: Text(data['message'] ?? 'Gagal menyimpan user'),
-                        backgroundColor: const Color(0xFFEF4444),
+                        backgroundColor: const Color(0xFFF27F33),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -199,53 +198,62 @@ class _UserManagementViewState extends State<UserManagementView> {
         ),
         body: Column(
           children: [
-            // ── KPI Stats Row ──────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Row(
                 children: [
-                  _buildStatCard('Total User', totalUsers.toString(), Colors.blue),
+                  _buildStatCard('Total User', totalUsers.toString(), AppTheme.getAdaptiveTeal(context)),
                   const SizedBox(width: 16),
-                  _buildStatCard('Guru', totalTeachers.toString(), Colors.purple),
+                  _buildStatCard('Guru', totalTeachers.toString(), const Color(0xFFF27F33)),
                   const SizedBox(width: 16),
-                  _buildStatCard('Siswa', totalStudents.toString(), const Color(0xFF10B981)),
+                  _buildStatCard('Siswa', totalStudents.toString(), const Color(0xFF76AFB8)),
                 ],
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
 
-            // ── Search & Filter Action Bar ────────────────
-            _buildHeader(),
+            RepaintBoundary(child: _buildHeader()),
 
             Expanded(
               child: _filteredUsers.isEmpty
-                  ? const EmptyState(icon: Icons.person_search_rounded, message: 'Tidak ada user ditemukan.', color: Colors.blue)
-                  : RefreshIndicator(
-                      onRefresh: _fetchUsers,
-                      child: LayoutBuilder(
-                        builder: (ctx, c) {
-                          final w = c.maxWidth;
-                          final padding = Breakpoints.screenPadding(w);
-                          final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+                  ? EmptyState(icon: Icons.person_search_rounded, message: 'Tidak ada user ditemukan.', color: AppTheme.getAdaptiveTeal(context))
+                  : RepaintBoundary(
+                      child: RefreshIndicator(
+                        onRefresh: _fetchUsers,
+                        child: LayoutBuilder(
+                          builder: (ctx, c) {
+                            final w = c.maxWidth;
+                            final padding = Breakpoints.screenPadding(w);
+                            final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
 
-                          return GridView.builder(
-                            padding: padding,
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossCount,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              childAspectRatio: crossCount == 1 ? 3.0 : 1.4,
-                            ),
-                            itemCount: _filteredUsers.length,
-                            itemBuilder: (_, i) {
-                              final u = _filteredUsers[i];
-                              return _UserCard(
-                                user: u,
-                                onEdit: () => _showUserForm(u),
-                                onDelete: () => _deleteUser(u['id'].toString()),
-                              ).animate(delay: (i * 30).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                            },
-                          );
-                        },
+                            return CustomScrollView(
+                              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                              slivers: [
+                                SliverPadding(
+                                  padding: padding,
+                                  sliver: SliverGrid(
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: crossCount,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      childAspectRatio: crossCount == 1 ? 3.0 : 1.4,
+                                    ),
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) {
+                                        final u = _filteredUsers[index];
+                                        return _UserCard(
+                                          user: u,
+                                          onEdit: () => _showUserForm(u),
+                                          onDelete: () => _deleteUser(u['id'].toString()),
+                                        ).animate(delay: (index * 30).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                      },
+                                      childCount: _filteredUsers.length,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
             ),
@@ -265,7 +273,7 @@ class _UserManagementViewState extends State<UserManagementView> {
           children: [
             Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color.withAlpha(180))),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white)),
           ],
         ),
       ),
@@ -297,9 +305,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                       selected: isSelected,
                       onSelected: (val) => setState(() => _selectedRole = r),
                       backgroundColor: Colors.transparent,
-                      selectedColor: Theme.of(context).primaryColor.withAlpha(isSelected ? 40 : 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withAlpha(50))),
-                      labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? Theme.of(context).primaryColor : Colors.grey),
+                      selectedColor: AppTheme.getAdaptiveTeal(context).withAlpha(isSelected ? 40 : 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? AppTheme.getAdaptiveTeal(context) : Colors.grey.withAlpha(50))),
+                      labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? AppTheme.getAdaptiveTeal(context) : Colors.grey),
                       showCheckmark: false,
                     ),
                   ),
@@ -342,7 +350,7 @@ class _UserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final String role = user['role'] ?? 'Siswa';
-    final roleColor = role == 'Guru' ? Colors.purple : (role == 'Admin' ? Colors.orange : Colors.blue);
+    final roleColor = role == 'Guru' ? const Color(0xFFF27F33) : (role == 'Admin' ? AppTheme.getAdaptiveTeal(context) : const Color(0xFF76AFB8));
 
     return PremiumCard(
       accentColor: roleColor,
@@ -356,7 +364,7 @@ class _UserCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [roleColor.withAlpha(100), roleColor.withAlpha(40)]),
+                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [roleColor, roleColor.withAlpha(80)]),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(

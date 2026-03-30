@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../config/api_config.dart';
@@ -72,33 +73,34 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           builder: (ctx, constraints) {
             final w = constraints.maxWidth;
             final padding = Breakpoints.screenPadding(w);
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: padding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Hero Banner
-                  _AdminHeroBanner(isDark: isDark)
-                      .animate()
-                      .fadeIn(duration: 600.ms)
-                      .slideY(begin: -0.05),
-                  const SizedBox(height: 28),
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: padding,
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _AdminHeroBanner(isDark: isDark)
+                          .animate()
+                          .fadeIn(duration: 600.ms)
+                          .slideY(begin: -0.05, curve: Curves.easeOutQuart),
+                      const SizedBox(height: 28),
 
-                  // KPI Stat Cards
-                  _buildStatGrid(w),
-                  const SizedBox(height: 32),
+                      _buildStatGrid(w),
+                      const SizedBox(height: 32),
 
-                  // Charts Row
-                  const SectionHeader(
-                    title: 'Statistik Sekolah',
-                    subtitle: 'Distribusi pengguna dan kelas',
-                  ).animate().fadeIn(delay: 300.ms),
-                  const SizedBox(height: 16),
-                  _buildChartsSection(theme, isDark, w),
-                  const SizedBox(height: 24),
-                ],
-              ),
+                      const SectionHeader(
+                        title: 'Statistik Sekolah',
+                        subtitle: 'Distribusi pengguna dan kelas',
+                      ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
+                      const SizedBox(height: 16),
+
+                      _buildChartsSection(theme, isDark, w),
+                      const SizedBox(height: 24),
+                    ]),
+                  ),
+                ),
+              ],
             );
           },
         ),
@@ -108,10 +110,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
   Widget _buildStatGrid(double w) {
     final stats = [
-      _StatData(Icons.school_outlined, 'Total Siswa', '$_totalSiswa', const Color(0xFF3B82F6)),
-      _StatData(Icons.person_outlined, 'Total Guru', '$_totalGuru', const Color(0xFF10B981)),
-      _StatData(Icons.class_outlined, 'Total Kelas', '$_totalKelas', const Color(0xFF8B5CF6)),
-      _StatData(Icons.book_outlined, 'Mata Pelajaran', '$_totalMapel', const Color(0xFFF59E0B)),
+      _StatData(Icons.school_outlined, 'Total Siswa', '$_totalSiswa', AppTheme.getAdaptiveTeal(context)),
+      _StatData(Icons.person_outlined, 'Total Guru', '$_totalGuru', const Color(0xFFF27F33)),
+      _StatData(Icons.class_outlined, 'Total Kelas', '$_totalKelas', const Color(0xFF76AFB8)),
+      _StatData(Icons.book_outlined, 'Mata Pelajaran', '$_totalMapel', AppTheme.getAdaptiveTeal(context)),
     ];
     final crossCount = w > 800 ? 4 : 2;
     return GridView.builder(
@@ -156,13 +158,13 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final sections = [
       PieChartSectionData(
           value: _totalSiswa.toDouble(),
-          color: const Color(0xFF3B82F6),
+          color: AppTheme.getAdaptiveTeal(context),
           title: 'Siswa',
           radius: 60,
           titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
       PieChartSectionData(
           value: _totalGuru.toDouble(),
-          color: const Color(0xFF10B981),
+          color: const Color(0xFFF27F33),
           title: 'Guru',
           radius: 60,
           titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
@@ -237,10 +239,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: [
-                  _bar(0, _totalSiswa.toDouble(), const Color(0xFF3B82F6), maxY, isDark),
-                  _bar(1, _totalGuru.toDouble(), const Color(0xFF10B981), maxY, isDark),
-                  _bar(2, _totalKelas.toDouble(), const Color(0xFF8B5CF6), maxY, isDark),
-                  _bar(3, _totalMapel.toDouble(), const Color(0xFFF59E0B), maxY, isDark),
+                  _bar(0, _totalSiswa.toDouble(), AppTheme.getAdaptiveTeal(context), maxY, isDark),
+                  _bar(1, _totalGuru.toDouble(), const Color(0xFFF27F33), maxY, isDark),
+                  _bar(2, _totalKelas.toDouble(), const Color(0xFF76AFB8), maxY, isDark),
+                  _bar(3, _totalMapel.toDouble(), AppTheme.getAdaptiveTeal(context), maxY, isDark),
                 ],
               )),
             ),
@@ -301,7 +303,7 @@ class _AdminHeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primary = Color(0xFF8B5CF6);
+    final primary = AppTheme.getAdaptiveTeal(context);
     return PremiumCard(
       accentColor: primary,
       padding: const EdgeInsets.all(24),
@@ -311,8 +313,8 @@ class _AdminHeroBanner extends StatelessWidget {
             width: 68,
             height: 68,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [primary, Color(0xFF6D28D9)],
+              gradient: LinearGradient(
+                colors: [primary, const Color(0xFF76AFB8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -334,7 +336,7 @@ class _AdminHeroBanner extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: primary.withAlpha(20), borderRadius: BorderRadius.circular(100)),
-                  child: const Text('Administrator', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primary)),
+                  child: Text('Administrator', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primary)),
                 ),
               ],
             ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),

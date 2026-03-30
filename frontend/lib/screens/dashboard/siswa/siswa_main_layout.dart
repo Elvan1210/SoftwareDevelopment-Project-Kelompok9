@@ -55,8 +55,8 @@
 // //             begin: Alignment.topLeft,
 // //             end: Alignment.bottomRight,
 // //             colors: isDark 
-// //               ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-// //               : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+// //               ? [Colors.black, Colors.black]
+// //               : [Colors.white, Colors.white],
 // //           ),
 // //         ),
 // //         child: Padding(
@@ -142,6 +142,7 @@
 // //                           backgroundColor: Colors.transparent,
 // //                           title: Text(_titles[_selectedIndex]).animate(key: ValueKey(_selectedIndex)).fade().slideX(begin: -0.1),
 // //                           actions: [
+// //                             ThemeToggle(iconColor: theme.iconTheme.color ?? Colors.black87),
 // //                             NotificationBell(userData: widget.userData, token: widget.token, iconColor: theme.iconTheme.color ?? Colors.black87),
 // //                             const SizedBox(width: 24),
 // //                           ],
@@ -189,8 +190,8 @@
 // //             begin: Alignment.topLeft,
 // //             end: Alignment.bottomRight,
 // //             colors: isDark 
-// //               ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-// //               : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+// //               ? [Colors.black, Colors.black]
+// //               : [Colors.white, Colors.white],
 // //           ),
 // //         ),
 // //         child: SafeArea(
@@ -351,8 +352,8 @@
 //             begin: Alignment.topLeft,
 //             end: Alignment.bottomRight,
 //             colors: isDark 
-//               ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-//               : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+//               ? [Colors.black, Colors.black]
+//               : [Colors.white, Colors.white],
 //           ),
 //         ),
 //         child: Padding(
@@ -500,8 +501,8 @@
 //             begin: Alignment.topLeft,
 //             end: Alignment.bottomRight,
 //             colors: isDark 
-//               ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-//               : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+//               ? [Colors.black, Colors.black]
+//               : [Colors.white, Colors.white],
 //           ),
 //         ),
 //         child: SafeArea(
@@ -609,6 +610,7 @@ import 'siswa_teams_view.dart'; // <-- Import halaman Teams Siswa
 import 'siswa_pengumuman_view.dart';
 import 'siswa_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
+import '../../../widgets/theme_toggle.dart';
 
 // Catatan: Import untuk Tugas, Materi, dan Nilai sudah dihapus 
 // karena nanti akan dimasukkan ke dalam modul Teams.
@@ -657,8 +659,8 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark 
-              ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-              : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+              ? [Colors.black, Colors.black]
+              : [Colors.white, Colors.white],
           ),
         ),
         child: Padding(
@@ -759,6 +761,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                           backgroundColor: Colors.transparent,
                           title: Text(_titles[_selectedIndex]).animate(key: ValueKey(_selectedIndex)).fade().slideX(begin: -0.1),
                           actions: [
+                            ThemeToggle(iconColor: theme.iconTheme.color ?? Colors.black87),
                             NotificationBell(userData: widget.userData, token: widget.token, iconColor: theme.iconTheme.color ?? Colors.black87),
                             const SizedBox(width: 24),
                           ],
@@ -806,8 +809,8 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark 
-              ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-              : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+              ? [Colors.black, Colors.black]
+              : [Colors.white, Colors.white],
           ),
         ),
         child: SafeArea(

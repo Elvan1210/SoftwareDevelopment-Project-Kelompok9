@@ -211,11 +211,18 @@ class _PremiumCardState extends State<PremiumCard> {
           boxShadow: [
             BoxShadow(
               color: _hovered
-                  ? accent.withAlpha(isDark ? 50 : 30)
-                  : Colors.black.withAlpha(isDark ? 25 : 8),
-              blurRadius: _hovered ? 32 : 16,
-              offset: const Offset(0, 8),
+                  ? accent.withAlpha(isDark ? 40 : 25)
+                  : Colors.black.withAlpha(isDark ? 20 : 6),
+              blurRadius: _hovered ? 40 : 16,
+              spreadRadius: _hovered ? 2 : 0,
+              offset: const Offset(0, 10),
             ),
+            if (!_hovered)
+              BoxShadow(
+                color: Colors.black.withAlpha(isDark ? 10 : 3),
+                blurRadius: 40,
+                offset: const Offset(0, 24),
+              ),
           ],
         ),
         child: Material(
