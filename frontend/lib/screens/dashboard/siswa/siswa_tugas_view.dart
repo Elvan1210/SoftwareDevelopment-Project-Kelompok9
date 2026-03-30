@@ -86,14 +86,13 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
     final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
             _buildTabBar(theme, isDark),
             Expanded(
               child: TabBarView(
@@ -124,7 +123,6 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
               ),
             ),
           ],
-        ),
       ),
     );
   }

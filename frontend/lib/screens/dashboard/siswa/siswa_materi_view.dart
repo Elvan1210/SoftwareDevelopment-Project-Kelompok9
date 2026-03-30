@@ -68,18 +68,17 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
             // ── Antigravity Search Bar ──────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: AntigravityTextField(
+              child: AppTextField(
                 hintText: 'Cari materi pelajaran...',
                 prefixIcon: Icons.search_rounded,
                 onChanged: (val) => setState(() => _searchQuery = val),
@@ -124,7 +123,6 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
                     ),
             ),
           ],
-        ),
       ),
     );
   }
@@ -159,7 +157,7 @@ class _MateriCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Color(0xFF10B981);
+    const accent = Color(0xFF76AFB8); // Light Teal
     final theme = Theme.of(context);
 
     return PremiumCard(

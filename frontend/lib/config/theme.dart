@@ -19,6 +19,19 @@ class AppTheme {
   // Strict light mode palette
   static const Color _lightBackground = Colors.white;
   static const Color _lightSurface = Colors.white;
+
+  // Premium design tokens
+  static Color getGlassColor(BuildContext context) => Theme.of(context).brightness == Brightness.dark 
+      ? Colors.white.withAlpha(15) 
+      : Colors.black.withAlpha(5);
+  
+  static Color getGlassBorder(BuildContext context) => Theme.of(context).brightness == Brightness.dark 
+      ? Colors.white.withAlpha(30) 
+      : Colors.black.withAlpha(15);
+
+  static Color getInnerGlow(BuildContext context) => Theme.of(context).brightness == Brightness.dark 
+      ? Colors.white.withAlpha(20) 
+      : Colors.white.withAlpha(80);
   
   // Text Colors
   static const Color _textLight = Color(0xFF0F172A); // High contrast slate-900 per Pro Max rule
@@ -117,3 +130,4 @@ class AppTheme {
     );
   }
 }
+

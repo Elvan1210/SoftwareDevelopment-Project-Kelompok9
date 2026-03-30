@@ -63,47 +63,45 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: RefreshIndicator(
-        onRefresh: _fetchStats,
-        child: LayoutBuilder(
-          builder: (ctx, constraints) {
-            final w = constraints.maxWidth;
-            final padding = Breakpoints.screenPadding(w);
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: padding,
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _AdminHeroBanner(isDark: isDark)
-                          .animate()
-                          .fadeIn(duration: 600.ms)
-                          .slideY(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 28),
+    return RefreshIndicator(
+      onRefresh: _fetchStats,
+      child: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final w = constraints.maxWidth;
+          final padding = Breakpoints.screenPadding(w);
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: padding,
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // ── Hero Banner is now in Navbar ──
 
-                      _buildStatGrid(w),
-                      const SizedBox(height: 32),
+                    // ── Quick Actions (Top Emphasized) ──
+                    _buildQuickActions(theme, isDark),
+                    const SizedBox(height: 24),
 
-                      const SectionHeader(
-                        title: 'Statistik Sekolah',
-                        subtitle: 'Distribusi pengguna dan kelas',
-                      ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
+                    _buildStatGrid(w),
+                    const SizedBox(height: 32),
 
-                      _buildChartsSection(theme, isDark, w),
-                      const SizedBox(height: 24),
-                    ]),
-                  ),
+                    const SectionHeader(
+                      title: 'Statistik Sekolah',
+                      subtitle: 'Distribusi pengguna dan kelas',
+                    ).animate().fadeIn(delay: 500.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
+                    const SizedBox(height: 16),
+
+                    _buildChartsSection(theme, isDark, w),
+                    const SizedBox(height: 24),
+                  ]),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -113,15 +111,15 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       _StatData(Icons.school_outlined, 'Total Siswa', '$_totalSiswa', AppTheme.getAdaptiveTeal(context)),
       _StatData(Icons.person_outlined, 'Total Guru', '$_totalGuru', const Color(0xFFF27F33)),
       _StatData(Icons.class_outlined, 'Total Kelas', '$_totalKelas', const Color(0xFF76AFB8)),
-      _StatData(Icons.book_outlined, 'Mata Pelajaran', '$_totalMapel', AppTheme.getAdaptiveTeal(context)),
+      _StatData(Icons.book_outlined, 'Mata Pelajaran', '$_totalMapel', AppTheme.primaryTeal),
     ];
-    final crossCount = w > 800 ? 4 : 2;
+    final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossCount,
-        childAspectRatio: w > 800 ? 1.6 : 1.5,
+        childAspectRatio: w > 1100 ? 2.5 : 2.0, // Flatter/smaller aspect ratio
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -129,12 +127,69 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       itemBuilder: (_, i) {
         final s = stats[i];
         return StatCard(icon: s.icon, label: s.label, value: s.value, color: s.color)
-            .animate(delay: (200 + i * 80).ms)
+            .animate(delay: (100 + i * 80).ms)
             .fadeIn(duration: 400.ms)
-            .slideY(begin: 0.15, curve: Curves.easeOutQuart);
+            ..scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut, duration: 800.ms)
+            .slideY(begin: 0.2, curve: Curves.easeOutCubic);
       },
     );
   }
+
+  Widget _buildQuickActions(ThemeData theme, bool isDark) {
+    return PremiumCard(
+      padding: const EdgeInsets.all(24),
+      accentColor: theme.primaryColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Aksi Cepat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: theme.primaryColor.withAlpha(20), borderRadius: BorderRadius.circular(100)),
+                child: Text('ADMIN ONLY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.primaryColor)),
+              )
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: _actionBtn(Icons.person_add_outlined, 'Tambah User', Colors.blue)),
+              const SizedBox(width: 12),
+              Expanded(child: _actionBtn(Icons.add_business_outlined, 'Buka Kelas', Colors.purple)),
+              const SizedBox(width: 12),
+              Expanded(child: _actionBtn(Icons.campaign_outlined, 'Broadcast', Colors.orange)),
+              const SizedBox(width: 12),
+              Expanded(child: _actionBtn(Icons.settings_suggest_outlined, 'Preferensi', Colors.teal)),
+            ],
+          ),
+        ],
+      ),
+    ).animate(delay: 200.ms).fadeIn().slideY(begin: -0.1);
+  }
+
+  Widget _actionBtn(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: color.withAlpha(15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withAlpha(30)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 12),
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildChartsSection(ThemeData theme, bool isDark, double w) {
     final isWide = w > 700;
@@ -190,7 +245,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           ),
         ],
       ),
-    ).animate(delay: 400.ms).fadeIn(duration: 600.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+    ).animate(delay: 600.ms).fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
   }
 
   Widget _buildBarChart(ThemeData theme, bool isDark) {
@@ -249,7 +304,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           ),
         ],
       ),
-    ).animate(delay: 500.ms).fadeIn(duration: 600.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+    ).animate(delay: 700.ms).fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
   }
 
   BarChartGroupData _bar(int x, double y, Color color, double maxY, bool isDark) {
@@ -297,52 +352,5 @@ class _StatData {
   const _StatData(this.icon, this.label, this.value, this.color);
 }
 
-class _AdminHeroBanner extends StatelessWidget {
-  final bool isDark;
-  const _AdminHeroBanner({required this.isDark});
 
-  @override
-  Widget build(BuildContext context) {
-    final primary = AppTheme.getAdaptiveTeal(context);
-    return PremiumCard(
-      accentColor: primary,
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [primary, const Color(0xFF76AFB8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: primary.withAlpha(80), blurRadius: 20, offset: const Offset(0, 8))],
-            ),
-            child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 32),
-          ).animate().scale(delay: 100.ms, curve: Curves.easeOutBack),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Admin Portal',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(150), letterSpacing: 0.5)),
-                const SizedBox(height: 4),
-                const Text('Panel Manajemen', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: primary.withAlpha(20), borderRadius: BorderRadius.circular(100)),
-                  child: Text('Administrator', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: primary)),
-                ),
-              ],
-            ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// StatData and Chart logic remains below

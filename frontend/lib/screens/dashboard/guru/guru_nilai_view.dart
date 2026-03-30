@@ -100,11 +100,11 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     onChanged: (val) => setDialogState(() => selectedSiswaId = val),
                   ),
                   const SizedBox(height: 16),
-                  AntigravityTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.book_outlined),
+                  AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.book_outlined),
                   const SizedBox(height: 16),
-                  AntigravityTextField(controller: nilaiCtrl, labelText: 'Nilai (0-100)', prefixIcon: Icons.grade_rounded, keyboardType: TextInputType.number),
+                  AppTextField(controller: nilaiCtrl, labelText: 'Nilai (0-100)', prefixIcon: Icons.grade_rounded, keyboardType: TextInputType.number),
                   const SizedBox(height: 16),
-                  AntigravityTextField(controller: keteranganCtrl, labelText: 'Keterangan / Catatan', prefixIcon: Icons.speaker_notes_outlined, keyboardType: TextInputType.multiline),
+                  AppTextField(controller: keteranganCtrl, labelText: 'Keterangan / Catatan', prefixIcon: Icons.speaker_notes_outlined, keyboardType: TextInputType.multiline),
                 ],
               ),
             ),
@@ -157,7 +157,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
+        floatingActionButton: AppFAB(
           onPressed: () => _showNilaiForm(),
           icon: Icons.add_chart_rounded,
           label: 'Input Nilai',
@@ -270,3 +270,4 @@ class _GuruNilaiCard extends StatelessWidget {
     );
   }
 }
+

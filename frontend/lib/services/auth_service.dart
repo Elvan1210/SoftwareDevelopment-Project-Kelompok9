@@ -39,3 +39,4 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 }
+

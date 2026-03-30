@@ -267,3 +267,4 @@ class _ActionSection extends StatelessWidget {
     ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1);
   }
 }
+

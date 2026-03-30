@@ -62,7 +62,7 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
             // ── Admin Explorer Header ──────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: AntigravityTextField(
+              child: AppTextField(
                 hintText: 'Cari siswa, mapel, atau guru...',
                 prefixIcon: Icons.search_rounded,
                 onChanged: (val) => setState(() => _searchQuery = val),
@@ -169,3 +169,4 @@ class _AdminNilaiCard extends StatelessWidget {
     );
   }
 }
+

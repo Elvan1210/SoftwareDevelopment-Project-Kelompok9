@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../services/notifikasi_service.dart';
+import '../../../widgets/app_shell.dart';
+import '../../../config/theme.dart';
 
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -175,175 +177,200 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.deepPurple.shade700;
+    final theme = Theme.of(context);
+    final primaryColor = AppTheme.getAdaptiveTeal(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detail Tugas', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-        elevation: 1,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _isLoading
-              ? const Center(child: Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))))
-              : _isTurnedIn
-                  ? OutlinedButton(
-                      onPressed: _undoTurnIn,
-                      style: OutlinedButton.styleFrom(side: BorderSide(color: primaryColor)),
-                      child: Text('Undo turn in', style: TextStyle(color: primaryColor)),
-                    )
-                  : _isPastDeadline
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
-                          child: const Text('Tenggat Terlewat', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
-                        )
-                      : ElevatedButton(
-                          onPressed: _turnIn,
-                          style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-                          child: const Text('Turn in', style: TextStyle(color: Colors.white)),
+    return AppShell(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Detail Penugasan', style: TextStyle(fontWeight: FontWeight.w900)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            if (!_isLoading) 
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: _isTurnedIn
+                    ? OutlinedButton.icon(
+                        onPressed: _undoTurnIn,
+                        icon: const Icon(Icons.undo_rounded, size: 18),
+                        label: const Text('Batalkan'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.tugas['judul'] ?? 'Tanpa Judul', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Jatuh tempo: $_formattedDeadline', style: TextStyle(fontSize: 16, color: _isPastDeadline ? Colors.red : Colors.grey.shade700)),
-            const SizedBox(height: 4),
-            Text('Mata Pelajaran: ${widget.tugas['mapel'] ?? widget.tugas['kelas']}', style: const TextStyle(fontSize: 16)),
-            if ((widget.tugas['guru_nama'] ?? '').toString().isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text('Guru: ${widget.tugas['guru_nama']}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-            ],
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-            
-            // Menampilkan Deskripsi bila ada
-            if ((widget.tugas['deskripsi'] ?? '').toString().isNotEmpty) ...[
-              const Text('Deskripsi:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text(
-                widget.tugas['deskripsi'],
-                style: const TextStyle(fontSize: 16, height: 1.5),
+                      )
+                    : _isPastDeadline
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(color: Colors.red.withAlpha(30), borderRadius: BorderRadius.circular(12)),
+                            child: const Text('Terlewat', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                          )
+                        : ElevatedButton.icon(
+                            onPressed: _turnIn,
+                            icon: const Icon(Icons.send_rounded, size: 18),
+                            label: const Text('Turn In'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentOrange,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                            ),
+                          ),
               ),
-              const SizedBox(height: 24),
-            ],
-
-            // Menampilkan Link bila ada
-            if ((widget.tugas['link'] ?? '').toString().isNotEmpty) ...[
-              const Text('Link Pendukung:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              SelectableText(
-                widget.tugas['link'],
-                style: const TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline),
-              ),
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
-            ],
-
-            // Menampilkan Nilai jika sudah dinilai
-            if (_nilaiSiswa != null) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.shade200),
-                ),
-                child: Row(
+          ],
+        ),
+        body: SingleChildScrollView(
+          padding: Breakpoints.screenPadding(MediaQuery.of(context).size.width),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ─── Task Info Card ──────────────────────────────────────────
+              PremiumCard(
+                accentColor: primaryColor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.stars, color: Colors.green.shade700, size: 32),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Text('Tugas Dinilai', style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(height: 2),
-                        Text('Nilai kamu: $_nilaiSiswa / 100', style: TextStyle(color: Colors.green.shade700, fontSize: 14)),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: primaryColor.withAlpha(30), borderRadius: BorderRadius.circular(16)),
+                          child: Icon(Icons.assignment_rounded, color: primaryColor, size: 28),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(widget.tugas['judul'] ?? 'Task', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, height: 1.1)),
+                              const SizedBox(height: 4),
+                              Text('Jatuh tempo: $_formattedDeadline', style: TextStyle(fontWeight: FontWeight.w600, color: _isPastDeadline ? Colors.red : primaryColor)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
+                    const Divider(height: 40),
+                    _buildInfoRow(Icons.account_circle_outlined, 'Pengajar', widget.tugas['guru_nama'] ?? 'Guru'),
+                    const SizedBox(height: 12),
+                    _buildInfoRow(Icons.book_outlined, 'Mata Pelajaran', widget.tugas['mapel'] ?? '-'),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 24),
+
+              // ─── Description Section ─────────────────────────────────────
+              if ((widget.tugas['deskripsi'] ?? '').isNotEmpty) ...[
+                const SectionHeader(title: 'Instruksi'),
+                const SizedBox(height: 12),
+                PremiumCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(widget.tugas['deskripsi'], style: const TextStyle(fontSize: 16, height: 1.6)),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // ─── Submission Area ─────────────────────────────────────────
+              Row(
+                children: [
+                  const Expanded(child: SectionHeader(title: 'Pekerjaan Saya')),
+                  if (_nilaiSiswa != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(color: Colors.green.withAlpha(30), borderRadius: BorderRadius.circular(12)),
+                      child: Text('Nilai: $_nilaiSiswa', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w900)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              PremiumCard(
+                accentColor: _isTurnedIn ? Colors.green : AppTheme.accentOrange,
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  children: [
+                    if (_attachments.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: EmptyState(icon: Icons.upload_file_rounded, message: 'Belum ada file yang diunggah'),
+                      ),
+                    
+                    ...List.generate(_attachments.length, (index) {
+                      return ListTile(
+                        leading: const Icon(Icons.insert_drive_file_rounded, color: AppTheme.secondaryTeal),
+                        title: Text(_attachments[index], style: const TextStyle(fontWeight: FontWeight.w600)),
+                        trailing: !_isTurnedIn 
+                          ? IconButton(icon: const Icon(Icons.close_rounded, color: Colors.red), onPressed: () => _removeFile(index))
+                          : null,
+                      );
+                    }),
+
+                    if (!_isTurnedIn)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: InkWell(
+                          onTap: _pickFiles,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor.withAlpha(15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_circle_outline_rounded, color: theme.primaryColor),
+                                const SizedBox(width: 12),
+                                Text('Unggah Materi', style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w800)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // ─── Feedback Area ───────────────────────────────────────────
               if (_feedbackSiswa != null && _feedbackSiswa!.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.shade100),
-                  ),
+                const SizedBox(height: 24),
+                const SectionHeader(title: 'Feedback Pengajar'),
+                const SizedBox(height: 12),
+                PremiumCard(
+                  accentColor: Colors.blue,
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.format_quote, color: Colors.blue.shade400, size: 28),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Komentar Guru:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
-                            const SizedBox(height: 4),
-                            Text(_feedbackSiswa!, style: TextStyle(color: Colors.blue.shade900, fontSize: 14)),
-                          ],
-                        ),
-                      ),
+                      const Icon(Icons.chat_bubble_outline_rounded, color: Colors.blue),
+                      const SizedBox(width: 16),
+                      Expanded(child: Text(_feedbackSiswa!, style: const TextStyle(fontSize: 15, fontStyle: FontStyle.italic))),
                     ],
                   ),
                 ),
               ],
-              const SizedBox(height: 24),
-            ],
 
-            const Text('My work', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            if (_attachments.isNotEmpty)
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _attachments.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 0,
-                    color: Colors.grey.shade100,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: const Icon(Icons.insert_drive_file, color: Colors.blue),
-                      title: Text(_attachments[index]),
-                      trailing: _isTurnedIn
-                          ? null
-                          : IconButton(icon: const Icon(Icons.close), onPressed: () => _removeFile(index)),
-                    ),
-                  );
-                },
-              ),
-            if (!_isTurnedIn)
-              InkWell(
-                onTap: _pickFiles,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.add, color: primaryColor),
-                      const SizedBox(width: 8),
-                      Text('Add work', style: TextStyle(color: primaryColor, fontSize: 16, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.grey),
+        const SizedBox(width: 12),
+        Text('$label: ', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ],
     );
   }
 }

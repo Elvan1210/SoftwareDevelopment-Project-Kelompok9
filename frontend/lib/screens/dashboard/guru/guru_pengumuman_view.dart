@@ -70,9 +70,9 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
-                AntigravityTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: Icons.campaign_rounded),
+                AppTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: Icons.campaign_rounded),
                 const SizedBox(height: 16),
-                AntigravityTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                AppTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
               ],
             ),
           ),
@@ -125,7 +125,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: AntigravityFAB(
+        floatingActionButton: AppFAB(
           onPressed: () => _showPengumumanForm(),
           icon: Icons.campaign_rounded,
           label: 'Buat Baru',
@@ -236,3 +236,4 @@ class _GuruPengumumanCard extends StatelessWidget {
     );
   }
 }
+
