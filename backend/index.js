@@ -28,6 +28,7 @@ const pengumumanRoutes  = require('./routes/pengumumanRoutes');
 const pengumpulanRoutes = require('./routes/pengumpulanRoutes');
 const notifikasiRoutes  = require('./routes/notifikasiRoutes');
 const presensiRoutes    = require('./routes/presensiRoutes');
+const saluranRoutes     = require('./routes/saluranRoutes');
 
 // ─── Register Routes ────────────────────────────────────────────────────────
 app.use('/api',             authRoutes);
@@ -40,6 +41,7 @@ app.use('/api/pengumuman',  pengumumanRoutes);
 app.use('/api/pengumpulan', pengumpulanRoutes);
 app.use('/api/notifikasi',  notifikasiRoutes);
 app.use('/api/presensi',    presensiRoutes);
+app.use('/api/saluran',     saluranRoutes);
 
 // ─── Global Error Handling ──────────────────────────────────────────────────
 app.use((err, req, res, next) => {

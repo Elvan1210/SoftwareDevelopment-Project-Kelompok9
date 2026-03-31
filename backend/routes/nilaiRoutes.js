@@ -1,12 +1,16 @@
 const router = require('express').Router();
 const verifyToken = require('../middleware/auth');
+const { requireRole } = require('../middleware/rbac');
 const createCrudController = require('../controllers/genericCrudController');
 
 const ctrl = createCrudController('nilai');
 
+// GET — semua role yang sudah login bisa membaca nilai
 router.get('/', verifyToken, ctrl.getAll);
-router.post('/', verifyToken, ctrl.create);
-router.put('/:id', verifyToken, ctrl.update);
-router.delete('/:id', verifyToken, ctrl.remove);
+
+// POST/PUT/DELETE — hanya Guru dan Admin yang boleh mengelola nilai
+router.post('/', verifyToken, requireRole('Guru', 'Admin'), ctrl.create);
+router.put('/:id', verifyToken, requireRole('Guru', 'Admin'), ctrl.update);
+router.delete('/:id', verifyToken, requireRole('Guru', 'Admin'), ctrl.remove);
 
 module.exports = router;

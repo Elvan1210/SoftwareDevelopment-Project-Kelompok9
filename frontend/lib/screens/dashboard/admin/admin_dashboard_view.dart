@@ -9,7 +9,8 @@ import 'dart:convert';
 
 class AdminDashboardView extends StatefulWidget {
   final String token;
-  const AdminDashboardView({super.key, required this.token});
+  final Function(int)? onNavigate;
+  const AdminDashboardView({super.key, required this.token, this.onNavigate});
 
   @override
   State<AdminDashboardView> createState() => _AdminDashboardViewState();
@@ -157,13 +158,21 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _actionBtn(Icons.person_add_outlined, 'Tambah User', Colors.blue)),
+              Expanded(child: _actionBtn(Icons.person_add_outlined, 'Tambah User', Colors.blue, () {
+                if (widget.onNavigate != null) widget.onNavigate!(1);
+              })),
               const SizedBox(width: 12),
-              Expanded(child: _actionBtn(Icons.add_business_outlined, 'Buka Kelas', Colors.purple)),
+              Expanded(child: _actionBtn(Icons.add_business_outlined, 'Buka Kelas', Colors.purple, () {
+                if (widget.onNavigate != null) widget.onNavigate!(2);
+              })),
               const SizedBox(width: 12),
-              Expanded(child: _actionBtn(Icons.campaign_outlined, 'Broadcast', Colors.orange)),
+              Expanded(child: _actionBtn(Icons.campaign_outlined, 'Broadcast', Colors.orange, () {
+                if (widget.onNavigate != null) widget.onNavigate!(6);
+              })),
               const SizedBox(width: 12),
-              Expanded(child: _actionBtn(Icons.settings_suggest_outlined, 'Preferensi', Colors.teal)),
+              Expanded(child: _actionBtn(Icons.settings_suggest_outlined, 'Preferensi', Colors.teal, () {
+                if (widget.onNavigate != null) widget.onNavigate!(7);
+              })),
             ],
           ),
         ],
@@ -171,21 +180,31 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     ).animate(delay: 200.ms).fadeIn().slideY(begin: -0.1);
   }
 
-  Widget _actionBtn(IconData icon, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      decoration: BoxDecoration(
-        color: color.withAlpha(15),
+  Widget _actionBtn(IconData icon, String label, Color color, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withAlpha(30)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 12),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
-        ],
+        hoverColor: color.withAlpha(30),
+        splashColor: color.withAlpha(50),
+        highlightColor: color.withAlpha(20),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          decoration: BoxDecoration(
+            color: color.withAlpha(15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withAlpha(30)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 12),
+              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+            ],
+          ),
+        ),
       ),
     );
   }

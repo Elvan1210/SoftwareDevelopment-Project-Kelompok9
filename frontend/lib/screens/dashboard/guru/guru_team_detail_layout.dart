@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'guru_tugas_view.dart';
 import 'guru_materi_view.dart';
 import 'guru_presensi_view.dart';
+import '../shared/saluran_view.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
@@ -43,7 +44,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   List<Widget> _getViews() {
     return [
       _buildDashboardView(),
-      const Center(child: Text('Fitur Saluran Sedang Dibangun...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+      SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruPresensiView(userData: widget.userData, token: widget.token),
       GuruTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),

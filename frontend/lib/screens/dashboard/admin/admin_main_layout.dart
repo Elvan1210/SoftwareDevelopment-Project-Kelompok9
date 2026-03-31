@@ -41,7 +41,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   void initState() {
     super.initState();
     _views = [
-      AdminDashboardView(token: widget.token),
+      AdminDashboardView(
+        token: widget.token,
+        onNavigate: (index) {
+          setState(() => _selectedIndex = index);
+        },
+      ),
       UserManagementView(token: widget.token),
       KelasManagementView(token: widget.token),
       AdminMateriView(token: widget.token),

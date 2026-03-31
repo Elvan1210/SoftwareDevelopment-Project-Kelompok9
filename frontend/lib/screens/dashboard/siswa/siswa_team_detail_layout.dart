@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'siswa_tugas_view.dart';
 import 'siswa_materi_view.dart';
 import 'siswa_nilai_view.dart';
+import 'siswa_presensi_view.dart';
+import '../shared/saluran_view.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
@@ -29,8 +31,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
 
   final List<String> _titles = [
     'Dashboard Tim',
-    'Saluran (Channels)',
-    'Presensi Kelas',
+    'Saluran Diskusi',
+    'Presensi Saya',
     'Tugas Saya',
     'Materi Belajar',
     'Nilai Saya',
@@ -44,8 +46,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   List<Widget> _getViews() {
     return [
       _buildDashboardView(),
-      const Center(child: Text('Saluran Diskusi Sedang Dibangun...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-      const Center(child: Text('Modul Presensi Siswa Sedang Dibangun...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+      SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
+      SiswaPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       SiswaTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       SiswaMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       SiswaNilaiView(userData: widget.userData, token: widget.token),
