@@ -1,10 +1,12 @@
 const router = require('express').Router();
 const verifyToken = require('../middleware/auth');
+const { requireRole } = require('../middleware/rbac');
 const userController = require('../controllers/userController');
 
-router.get('/', verifyToken, userController.getAll);
-router.post('/', verifyToken, userController.create);
-router.put('/:id', verifyToken, userController.update);
-router.delete('/:id', verifyToken, userController.remove);
+// Semua operasi user management hanya untuk Admin
+router.get('/', verifyToken, requireRole('Admin'), userController.getAll);
+router.post('/', verifyToken, requireRole('Admin'), userController.create);
+router.put('/:id', verifyToken, requireRole('Admin'), userController.update);
+router.delete('/:id', verifyToken, requireRole('Admin'), userController.remove);
 
 module.exports = router;
