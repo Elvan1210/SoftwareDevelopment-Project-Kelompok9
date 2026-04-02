@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
+import 'package:flutter/foundation.dart';
 
 class UploadService {
   static Future<String?> uploadFile({
@@ -27,7 +28,7 @@ class UploadService {
       }
       return null;
     } catch (e) {
-      print('Error Upload: $e');
+      debugPrint('Error Upload: $e');
       return null;
     }
   }
