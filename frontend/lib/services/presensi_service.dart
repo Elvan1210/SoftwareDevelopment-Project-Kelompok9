@@ -20,6 +20,21 @@ class PresensiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getPresensiByRange(String token, String kelasId, String startDate, String endDate) async {
+    final url = Uri.parse('$_baseUrl?kelas_id=$kelasId&start_date=$startDate&end_date=$endDate');
+    final response = await http.get(url, headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    });
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      return List<Map<String, dynamic>>.from(decoded);
+    } else {
+      throw Exception('Gagal memuat rekap presensi');
+    }
+  }
+
   static Future<void> upsertPresensi(String token, Map<String, dynamic> data) async {
     final url = data.containsKey('id') 
         ? Uri.parse('$_baseUrl/${data['id']}') 
