@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
 import '../../../services/notifikasi_service.dart';
+import '../../../services/upload_service.dart'; // Import service upload yang baru kita buat
 import 'package:intl/intl.dart';
 
 class GuruTugasView extends StatefulWidget {
@@ -81,6 +83,8 @@ class _GuruTugasViewState extends State<GuruTugasView> {
       selectedDeadline = DateTime.tryParse(tugas['deadline']);
     }
 
+    bool isUploading = false; // State untuk loading upload
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -88,6 +92,33 @@ class _GuruTugasViewState extends State<GuruTugasView> {
           final deadlineStr = selectedDeadline != null 
               ? DateFormat('dd MMM yyyy, HH:mm').format(selectedDeadline!)
               : (isEditing ? (tugas['deadline'] ?? 'Pilih Deadline') : 'Pilih Deadline');
+
+          Future<void> handleUploadFile() async {
+            FilePickerResult? result = await FilePicker.platform.pickFiles(
+              type: FileType.custom,
+              allowedExtensions: ['jpg', 'png', 'pdf', 'doc', 'docx'],
+              withData: true, 
+            );
+
+            if (result != null && result.files.single.bytes != null) {
+              setDialogState(() => isUploading = true);
+              
+              String? url = await UploadService.uploadFile(
+                fileBytes: result.files.single.bytes!,
+                fileName: result.files.single.name,
+                token: widget.token,
+              );
+
+              setDialogState(() => isUploading = false);
+
+              if (url != null) {
+                linkCtrl.text = url; // Isi kolom link secara otomatis!
+                if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('File terunggah!'), backgroundColor: Colors.green));
+              } else {
+                if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Gagal upload!'), backgroundColor: Colors.red));
+              }
+            }
+          }
 
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -98,67 +129,55 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: const Color(0xFF76AFB8).withAlpha(20), borderRadius: BorderRadius.circular(12)),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.class_, color: Color(0xFF76AFB8), size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text('Tugas ini akan diterbitkan di kelas: ${widget.teamData['nama_kelas']}', style: const TextStyle(color: Color(0xFF76AFB8), fontWeight: FontWeight.bold, fontSize: 12))),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
                     const SizedBox(height: 16),
                     AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
                     const SizedBox(height: 16),
+                    // TOMBOL DEADLINE...
                     InkWell(
                       onTap: () async {
-                        final date = await showDatePicker(
-                          context: ctx,
-                          initialDate: selectedDeadline ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2100),
-                        );
+                        final date = await showDatePicker(context: ctx, initialDate: selectedDeadline ?? DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2100));
                         if (date != null) {
                           if (!ctx.mounted) return;
-                          final time = await showTimePicker(
-                            context: ctx,
-                            initialTime: TimeOfDay.fromDateTime(selectedDeadline ?? DateTime.now()),
-                            initialEntryMode: TimePickerEntryMode.input,
-                            builder: (BuildContext context, Widget? child) {
-                              return MediaQuery(
-                                data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                                child: child!,
-                              );
-                            },
-                          );
+                          final time = await showTimePicker(context: ctx, initialTime: TimeOfDay.fromDateTime(selectedDeadline ?? DateTime.now()));
                           if (time != null) {
-                            setDialogState(() {
-                              selectedDeadline = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                            });
+                            setDialogState(() => selectedDeadline = DateTime(date.year, date.month, date.day, time.hour, time.minute));
                           }
                         }
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade400),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.calendar_today_rounded, color: Colors.grey.shade600, size: 20),
-                            const SizedBox(width: 12),
-                            Text(deadlineStr, style: TextStyle(color: selectedDeadline != null ? Colors.black : Colors.grey.shade600, fontSize: 16)),
-                          ],
-                        ),
+                        decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(12)),
+                        child: Row(children: [
+                          Icon(Icons.calendar_today_rounded, color: Colors.grey.shade600, size: 20),
+                          const SizedBox(width: 12),
+                          Text(deadlineStr, style: TextStyle(color: selectedDeadline != null ? Colors.black : Colors.grey.shade600, fontSize: 16)),
+                        ]),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    AppTextField(controller: linkCtrl, labelText: 'Link Pendukung (Opsional)', prefixIcon: Icons.link_rounded),
+                    
+                    // TOMBOL UPLOAD FILE
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF76AFB8),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                            ),
+                            onPressed: isUploading ? null : handleUploadFile,
+                            icon: isUploading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.upload_file),
+                            label: Text(isUploading ? 'Mengunggah...' : 'Upload Lampiran (PDF/Foto)'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Tampilkan link jika sudah ada
+                    AppTextField(controller: linkCtrl, labelText: 'Link File (Terisi Otomatis/Manual)', prefixIcon: Icons.link_rounded),
                   ],
                 ),
               ),
@@ -166,44 +185,29 @@ class _GuruTugasViewState extends State<GuruTugasView> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF27F33),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF27F33), foregroundColor: Colors.white),
                 onPressed: () async {
                   final body = {
                     'judul': judulCtrl.text,
                     'deskripsi': deskripsiCtrl.text,
                     'deadline': selectedDeadline?.toIso8601String() ?? (isEditing ? tugas['deadline'] : null),
-                    'link': linkCtrl.text,
+                    'link': linkCtrl.text, // Link tersimpan di database
                     'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
                     'kelas': widget.teamData['nama_kelas'], 
                     'kelas_id': widget.teamData['id'], 
                     'guru_id': widget.userData['id'],
                   };
-
                   final url = isEditing ? '$baseUrl/api/tugas/${tugas['id']}' : '$baseUrl/api/tugas';
                   final response = await (isEditing
                       ? http.put(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
                       : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
 
                   if (response.statusCode == 200 || response.statusCode == 201) {
-                    if (!isEditing) {
-                      NotifikasiService.kirimNotifikasi(
-                        judul: 'Tugas Baru', 
-                        pesan: 'Tugas baru: ${judulCtrl.text} ditambahkan di kelas ${widget.teamData['nama_kelas']}',
-                        token: widget.token,
-                        targetKelas: widget.teamData['nama_kelas'],
-                        targetRole: 'Siswa',
-                      );
-                    }
                     if (ctx.mounted) Navigator.pop(ctx);
                     _fetchTugas();
                   }
                 },
-                child: Text(isEditing ? 'Simpan' : 'Terbitkan', style: const TextStyle(fontWeight: FontWeight.w800)),
+                child: const Text('Simpan'),
               ),
             ],
           );
@@ -264,7 +268,6 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     }
                     final groupKeys = groups.keys.toList();
 
-                    // Build the Slivers Array
                     List<Widget> slivers = [];
                     for (int i = 0; i < groupKeys.length; i++) {
                       final key = groupKeys[i];
