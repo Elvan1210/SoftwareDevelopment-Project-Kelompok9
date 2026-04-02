@@ -133,10 +133,15 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     int hadir = 0, izin = 0, sakit = 0, alpa = 0;
     for (var s in _students) {
       final status = _attendanceRecords[s['id']]?['status'] ?? 'Belum Absen';
-      if (status == 'Hadir') hadir++;
-      else if (status == 'Izin') izin++;
-      else if (status == 'Sakit') sakit++;
-      else if (status == 'Alpa') alpa++;
+      if (status == 'Hadir') {
+        hadir++;
+      } else if (status == 'Izin') {
+        izin++;
+      } else if (status == 'Sakit') {
+        sakit++;
+      } else if (status == 'Alpa') {
+        alpa++;
+      }
     }
     return {'Hadir': hadir, 'Izin': izin, 'Sakit': sakit, 'Alpa': alpa};
   }
