@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
@@ -308,29 +309,57 @@ class _TeamsClassCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF76AFB8).withAlpha(20),
-                            border: Border.all(color: const Color(0xFF76AFB8).withAlpha(50)),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.vpn_key_rounded, size: 14, color: Color(0xFF76AFB8)),
-                              const SizedBox(width: 6),
-                              Text(
-                                kelas['kode_akses'] ?? 'Generating...',
-                                style: const TextStyle(
-                                  fontSize: 12, 
-                                  fontWeight: FontWeight.bold, 
-                                  letterSpacing: 1.2,
-                                  color: Color(0xFF76AFB8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF76AFB8).withAlpha(20),
+                                border: Border.all(color: const Color(0xFF76AFB8).withAlpha(50)),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.vpn_key_rounded, size: 14, color: Color(0xFF76AFB8)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    kelas['kode_akses'] ?? 'Generating...',
+                                    style: const TextStyle(
+                                      fontSize: 12, 
+                                      fontWeight: FontWeight.bold, 
+                                      letterSpacing: 1.2,
+                                      color: Color(0xFF76AFB8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            if (kelas['kode_akses'] != null)
+                              InkWell(
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: kelas['kode_akses']));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Kode akses "${kelas['kode_akses']}" berhasil disalin! 📋'),
+                                      backgroundColor: AppTheme.getAdaptiveTeal(context),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.copy_rounded,
+                                    size: 14,
+                                    color: const Color(0xFF76AFB8).withAlpha(180),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                          ],
                         ),
                         
                         const SizedBox(height: 6),

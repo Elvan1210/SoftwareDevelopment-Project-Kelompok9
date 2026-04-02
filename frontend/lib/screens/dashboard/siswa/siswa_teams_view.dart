@@ -99,11 +99,22 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                     if (response.statusCode == 200) {
                       if (ctx.mounted) {
                         Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(resBody['message'] ?? 'Berhasil bergabung!'), backgroundColor: Colors.green),
-                        );
+                        final status = resBody['status'] ?? 'pending';
+                        if (status == 'accepted') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Berhasil bergabung ke kelas! 🎉'), backgroundColor: Colors.green),
+                          );
+                          _fetchMyTeams(); // Refresh daftar tim
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(resBody['message'] ?? 'Permintaan bergabung telah dikirim. Menunggu persetujuan guru.'),
+                              backgroundColor: Colors.orange.shade700,
+                              duration: const Duration(seconds: 4),
+                            ),
+                          );
+                        }
                       }
-                      _fetchMyTeams(); // Refresh daftar tim
                     } else {
                       if (ctx.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(

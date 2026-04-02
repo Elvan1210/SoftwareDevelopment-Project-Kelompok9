@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'guru_tugas_view.dart';
 import 'guru_materi_view.dart';
 import 'guru_presensi_view.dart';
+import 'guru_pending_requests_view.dart';
 import '../shared/saluran_view.dart';
+import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
@@ -26,11 +30,12 @@ class GuruTeamDetailLayout extends StatefulWidget {
 
 class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   int _selectedIndex = 0;
-  // Views are now initialized in _getViews() to prevent context-related lifecycle errors.
+  int _pendingCount = 0;
 
   final List<String> _titles = [
     'Dashboard Tim',
     'Saluran (Channels)',
+    'Permintaan Bergabung',
     'Presensi Kelas',
     'Tugas & Nilai',
     'Materi ajar',
@@ -39,12 +44,39 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   @override
   void initState() {
     super.initState();
+    _fetchPendingCount();
+  }
+
+  Future<void> _fetchPendingCount() async {
+    try {
+      final kelasId = widget.teamData['id'];
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/kelas/$kelasId/pending'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final pending = data['pending_requests'] as List? ?? [];
+        if (mounted) {
+          setState(() => _pendingCount = pending.length);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching pending count: $e');
+    }
   }
 
   List<Widget> _getViews() {
     return [
       _buildDashboardView(),
       SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
+      GuruPendingRequestsView(
+        userData: widget.userData,
+        token: widget.token,
+        teamData: widget.teamData,
+        onRequestsChanged: _fetchPendingCount,
+      ),
       GuruPresensiView(userData: widget.userData, token: widget.token),
       GuruTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
@@ -104,9 +136,10 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                         children: [
                           _buildSidebarItem(0, Icons.hub_outlined, 'Dashboard'),
                           _buildSidebarItem(1, Icons.forum_outlined, 'Saluran'),
-                          _buildSidebarItem(2, Icons.how_to_reg_outlined, 'Presensi'),
-                          _buildSidebarItem(3, Icons.assignment_outlined, 'Tugas & Nilai'),
-                          _buildSidebarItem(4, Icons.auto_stories_outlined, 'Materi'),
+                          _buildSidebarItem(2, Icons.person_add_alt_rounded, 'Permintaan', badgeCount: _pendingCount),
+                          _buildSidebarItem(3, Icons.how_to_reg_outlined, 'Presensi'),
+                          _buildSidebarItem(4, Icons.assignment_outlined, 'Tugas & Nilai'),
+                          _buildSidebarItem(5, Icons.auto_stories_outlined, 'Materi'),
                         ],
                       ),
                     ),
@@ -209,7 +242,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     );
   }
 
-  Widget _buildSidebarItem(int index, IconData icon, String label) {
+  Widget _buildSidebarItem(int index, IconData icon, String label, {int badgeCount = 0}) {
     final theme = Theme.of(context);
     final isSelected = _selectedIndex == index;
     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(120);
@@ -234,15 +267,32 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
             children: [
               Icon(icon, color: color, size: 22),
               const SizedBox(width: 16),
-              Text(
-                label, 
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: color, 
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              Expanded(
+                child: Text(
+                  label, 
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: color, 
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  ),
                 ),
               ),
-              if (isSelected) const Spacer(),
-              if (isSelected) 
+              if (badgeCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF27F33),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    '$badgeCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ).animate().scale(curve: Curves.easeOutBack)
+              else if (isSelected)
                 Container(
                   width: 6, height: 6, 
                   decoration: BoxDecoration(color: theme.primaryColor, shape: BoxShape.circle),
@@ -350,9 +400,10 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 children: [
                   _buildMobileNavItem(0, Icons.hub_outlined),
                   _buildMobileNavItem(1, Icons.forum_outlined),
-                  _buildMobileNavItem(2, Icons.how_to_reg_outlined),
-                  _buildMobileNavItem(3, Icons.assignment_outlined),
-                  _buildMobileNavItem(4, Icons.auto_stories_outlined),
+                  _buildMobileNavItem(2, Icons.person_add_alt_rounded, badgeCount: _pendingCount),
+                  _buildMobileNavItem(3, Icons.how_to_reg_outlined),
+                  _buildMobileNavItem(4, Icons.assignment_outlined),
+                  _buildMobileNavItem(5, Icons.auto_stories_outlined),
                 ],
               ),
             ),
@@ -362,7 +413,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     );
   }
 
-  Widget _buildMobileNavItem(int index, IconData icon) {
+  Widget _buildMobileNavItem(int index, IconData icon, {int badgeCount = 0}) {
     final theme = Theme.of(context);
     final isSelected = _selectedIndex == index;
     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100);
@@ -377,7 +428,34 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
           color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Icon(icon, color: color, size: 24),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(icon, color: color, size: 24),
+            if (badgeCount > 0)
+              Positioned(
+                right: -8,
+                top: -8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF27F33),
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  child: Text(
+                    '$badgeCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ).animate().scale(curve: Curves.easeOutBack),
+              ),
+          ],
+        ),
       ),
     );
   }
