@@ -146,12 +146,15 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     for (var r in _recapRecords) {
       if (r['user_id'] == studentId) {
         final status = r['status'] ?? '';
-        if (status == 'Hadir') hadir++;
-        else if (status == 'Izin') izin++;
-        else if (status == 'Sakit') sakit++;
-        else {
+        if (status == 'Hadir') {
+          hadir++;
+        } else if (status == 'Izin') {
+          izin++;
+        } else if (status == 'Sakit') {
+          sakit++;
+        } else {
           alpa++;
-        } // termasuk Alpa
+        }
       }
     }
     return {'Hadir': hadir, 'Izin': izin, 'Sakit': sakit, 'Alpa': alpa};
