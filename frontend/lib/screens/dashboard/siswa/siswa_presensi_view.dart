@@ -6,10 +6,6 @@ import 'package:intl/intl.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 
-/// SiswaPresensiView — View read-only untuk siswa melihat riwayat kehadiran mereka sendiri.
-///
-/// Siswa hanya bisa MELIHAT riwayat presensi (tidak bisa mengubah).
-/// Data diambil dari `/api/presensi?kelas_id=<id>&user_id=<siswa_id>`.
 class SiswaPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -30,7 +26,6 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
   List<Map<String, dynamic>> _riwayat = [];
   bool _isLoading = true;
 
-  // Statistik ringkasan
   int _hadir = 0;
   int _izin = 0;
   int _sakit = 0;
@@ -58,14 +53,12 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
             .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e))
             .toList();
 
-        // Sort descending berdasarkan tanggal (terbaru di atas)
         raw.sort((a, b) {
           final ta = DateTime.tryParse(a['tanggal'] ?? '') ?? DateTime(2000);
           final tb = DateTime.tryParse(b['tanggal'] ?? '') ?? DateTime(2000);
           return tb.compareTo(ta);
         });
 
-        // Hitung statistik
         int h = 0, iz = 0, sk = 0, al = 0;
         for (final r in raw) {
           switch ((r['status'] ?? '').toLowerCase()) {
@@ -95,137 +88,180 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    if (_isLoading) {
-      return _buildSkeleton();
-    }
-
-    return RefreshIndicator(
-      onRefresh: _fetchRiwayat,
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Riwayat Kehadiran',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${widget.teamData['nama_kelas'] ?? 'Kelas'} · ${_riwayat.length} catatan',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withAlpha(120),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // ── Summary Cards ──
-                  _buildSummaryRow(theme),
-                  const SizedBox(height: 24),
-                ],
-              ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05),
-            ),
-          ),
-          if (_riwayat.isEmpty)
-            SliverFillRemaining(
-              child: Center(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.event_available_outlined, size: 72, color: theme.colorScheme.onSurface.withAlpha(60)),
-                    const SizedBox(height: 16),
                     Text(
-                      'Belum ada catatan presensi.',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(120)),
+                      'Riwayat Kehadiran',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${widget.teamData['nama_kelas'] ?? 'Kelas'} · ${_riwayat.length} catatan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withAlpha(150),
+                      ),
                     ),
                   ],
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final record = _riwayat[i];
-                    return _buildRiwayatTile(record, theme, i)
-                        .animate(delay: Duration(milliseconds: i * 40))
-                        .fadeIn(duration: 350.ms)
-                        .slideY(begin: 0.08, curve: Curves.easeOutQuart);
-                  },
-                  childCount: _riwayat.length,
+              GlassCard(
+                radius: 14,
+                padding: const EdgeInsets.all(12),
+                child: InkWell(
+                  onTap: _fetchRiwayat,
+                  child: Icon(Icons.refresh_rounded, color: theme.primaryColor, size: 24),
                 ),
               ),
+            ],
+          ).animate().fadeIn().slideY(begin: -0.05),
+
+          const SizedBox(height: 24),
+
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else ...[
+            // ── Visual Progress & Stats Dashboard ──
+            _buildVisualDashboard(theme, isDark).animate().fadeIn(delay: 100.ms).scale(),
+
+            const SizedBox(height: 28),
+            Text(
+              'Detail Riwayat',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: theme.colorScheme.onSurface),
+            ).animate().fadeIn(delay: 200.ms),
+            const SizedBox(height: 12),
+
+            // ── Riwayat List ──
+            Expanded(
+              child: _riwayat.isEmpty
+                  ? const EmptyState(
+                      icon: Icons.event_available_outlined,
+                      message: 'Belum ada catatan presensi.',
+                    )
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 24),
+                      itemCount: _riwayat.length,
+                      itemBuilder: (context, index) {
+                        return _buildRiwayatCard(_riwayat[index], theme, isDark)
+                            .animate(delay: (index * 40).ms)
+                            .fadeIn()
+                            .slideX(begin: 0.05, curve: Curves.easeOutQuart);
+                      },
+                    ),
             ),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(ThemeData theme) {
+  Widget _buildVisualDashboard(ThemeData theme, bool isDark) {
     final total = _riwayat.length;
-    final pct = total > 0 ? (_hadir / total * 100).toStringAsFixed(0) : '0';
+    final pct = total > 0 ? (_hadir / total) : 0.0;
+    
+    // Gradasi progres bar berdasarkan persentase
+    Color pctColor = const Color(0xFF22C55E); // Hijau
+    if (pct < 0.75) pctColor = const Color(0xFFF59E0B); // Kuning/Orange
+    if (pct < 0.50) pctColor = const Color(0xFFEF4444); // Merah
 
-    return Row(
-      children: [
-        _statChip(theme, 'Hadir', _hadir, const Color(0xFF22C55E)),
-        const SizedBox(width: 10),
-        _statChip(theme, 'Izin', _izin, const Color(0xFF3B82F6)),
-        const SizedBox(width: 10),
-        _statChip(theme, 'Sakit', _sakit, const Color(0xFFF59E0B)),
-        const SizedBox(width: 10),
-        _statChip(theme, 'Alpha', _alpha, const Color(0xFFEF4444)),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF22C55E).withAlpha(20),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF22C55E).withAlpha(40)),
-          ),
-          child: Column(
+    return GlassCard(
+      radius: 20,
+      padding: const EdgeInsets.all(24),
+      overrideColor: theme.primaryColor.withAlpha(isDark ? 30 : 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('$pct%', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFF22C55E))),
-              const Text('Kehadiran', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF22C55E))),
+              Text(
+                'Persentase Kehadiran',
+                style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w800, fontSize: 16),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: pctColor.withAlpha(30),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  '${(pct * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(color: pctColor, fontWeight: FontWeight.w900, fontSize: 14),
+                ),
+              ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _statChip(ThemeData theme, String label, int count, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withAlpha(15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withAlpha(40)),
-        ),
-        child: Column(
-          children: [
-            Text('$count', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: color)),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color.withAlpha(200))),
-          ],
-        ),
+          const SizedBox(height: 16),
+          // Progress Bar
+          Container(
+            height: 12,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(isDark ? 20 : 60),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Stack(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 1000),
+                  curve: Curves.easeOutQuart,
+                  width: MediaQuery.of(context).size.width * pct,
+                  decoration: BoxDecoration(
+                    color: pctColor,
+                    borderRadius: BorderRadius.circular(100),
+                    boxShadow: [BoxShadow(color: pctColor.withAlpha(100), blurRadius: 10)],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Stats Row
+          Row(
+            children: [
+              _buildStatDetail('Hadir', _hadir, const Color(0xFF22C55E)),
+              _buildStatDetail('Izin', _izin, const Color(0xFF3B82F6)),
+              _buildStatDetail('Sakit', _sakit, const Color(0xFFF59E0B)),
+              _buildStatDetail('Alpa', _alpha, const Color(0xFFEF4444)),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildRiwayatTile(Map<String, dynamic> record, ThemeData theme, int index) {
-    final status = record['status'] ?? 'Alpha';
+  Widget _buildStatDetail(String label, int count, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(count.toString(), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: color)),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color.withAlpha(200))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiwayatCard(Map<String, dynamic> record, ThemeData theme, bool isDark) {
+    final status = record['status'] ?? 'Alpa';
     final tanggal = DateTime.tryParse(record['tanggal'] ?? '');
     final tanggalStr = tanggal != null
         ? DateFormat('EEEE, d MMMM yyyy', 'id').format(tanggal)
@@ -234,81 +270,74 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
 
     final statusConfig = _getStatusConfig(status);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: statusConfig.color.withAlpha(10),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusConfig.color.withAlpha(40)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: statusConfig.color.withAlpha(20),
-              borderRadius: BorderRadius.circular(12),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassCard(
+        radius: 16,
+        padding: const EdgeInsets.all(16),
+        overrideColor: statusConfig.color.withAlpha(isDark ? 15 : 10),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: statusConfig.color.withAlpha(30),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(statusConfig.icon, color: statusConfig.color, size: 24),
             ),
-            child: Icon(statusConfig.icon, color: statusConfig.color, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tanggalStr,
-                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Pukul $waktu',
-                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: statusConfig.color.withAlpha(25),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: statusConfig.color,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tanggalStr,
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(120)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Pukul $waktu',
+                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: statusConfig.color.withAlpha(isDark ? 30 : 20),
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(color: statusConfig.color.withAlpha(60)),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: statusConfig.color,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   _StatusConfig _getStatusConfig(String status) {
     switch (status.toLowerCase()) {
-      case 'hadir':
-        return const _StatusConfig(Color(0xFF22C55E), Icons.check_circle_outline_rounded);
-      case 'izin':
-        return const _StatusConfig(Color(0xFF3B82F6), Icons.insert_drive_file_outlined);
-      case 'sakit':
-        return const _StatusConfig(Color(0xFFF59E0B), Icons.medical_services_outlined);
-      default:
-        return const _StatusConfig(Color(0xFFEF4444), Icons.cancel_outlined);
+      case 'hadir': return const _StatusConfig(Color(0xFF22C55E), Icons.check_circle_rounded);
+      case 'izin': return const _StatusConfig(Color(0xFF3B82F6), Icons.insert_drive_file_rounded);
+      case 'sakit': return const _StatusConfig(Color(0xFFF59E0B), Icons.medical_services_rounded);
+      default: return const _StatusConfig(Color(0xFFEF4444), Icons.cancel_rounded);
     }
-  }
-
-  Widget _buildSkeleton() {
-    return Column(
-      children: List.generate(5, (i) => const Padding(
-        padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
-        child: SkeletonLoader(height: 70, radius: 16),
-      )),
-    );
   }
 }
 

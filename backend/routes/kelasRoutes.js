@@ -11,6 +11,7 @@ router.post('/:id/accept', verifyToken, ctrl.acceptStudent);
 router.post('/:id/reject', verifyToken, ctrl.rejectStudent);
 router.post('/:id/accept-all', verifyToken, ctrl.acceptAllStudents);
 router.put('/:id/auto-accept', verifyToken, ctrl.toggleAutoAccept);
+router.get('/:id/members', verifyToken, ctrl.getMembers);
 
 // Rute CRUD Utama
 router.get('/', verifyToken, ctrl.getAll);

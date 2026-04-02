@@ -36,7 +36,7 @@ class PresensiService {
   }
 
   static Future<List<Map<String, dynamic>>> getStudentsByKelas(String token, String kelasId) async {
-    final url = Uri.parse('$baseUrl/api/users?kelas_id=$kelasId&role=siswa');
+    final url = Uri.parse('$baseUrl/api/kelas/$kelasId/members');
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
