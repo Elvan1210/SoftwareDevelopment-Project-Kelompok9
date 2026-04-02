@@ -77,7 +77,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
         teamData: widget.teamData,
         onRequestsChanged: _fetchPendingCount,
       ),
-      GuruPresensiView(userData: widget.userData, token: widget.token),
+      GuruPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
     ];

@@ -461,6 +461,46 @@ const kelasController = {
       res.status(500).json({ message: 'Error server', error: error.message });
     }
   },
+
+  // GET /api/kelas/:id/members — Ambil daftar anggota kelas (siswa) dengan data user
+  getMembers: async (req, res) => {
+    try {
+      const doc = await db.collection('kelas').doc(req.params.id).get();
+      if (!doc.exists) return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+
+      const kelasData = doc.data();
+      const siswaIds = kelasData.siswa_ids || [];
+
+      if (siswaIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      // Fetch user data for each siswa_id
+      const members = [];
+      for (const sid of siswaIds) {
+        try {
+          const userDoc = await db.collection('users').doc(sid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            members.push({
+              id: userDoc.id,
+              nama: userData.nama || 'Siswa',
+              email: userData.email || '',
+              role: userData.role || 'Siswa',
+            });
+          } else {
+            members.push({ id: sid, nama: 'Siswa (tidak ditemukan)', email: '', role: 'Siswa' });
+          }
+        } catch (e) {
+          members.push({ id: sid, nama: 'Siswa', email: '', role: 'Siswa' });
+        }
+      }
+
+      res.status(200).json(members);
+    } catch (error) {
+      res.status(500).json({ message: 'Error server', error: error.message });
+    }
+  },
 };
 
 module.exports = kelasController;
