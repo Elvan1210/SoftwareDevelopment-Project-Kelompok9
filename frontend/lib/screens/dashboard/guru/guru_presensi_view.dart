@@ -144,7 +144,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                       context: context,
                       initialDate: _selectedDate,
                       firstDate: DateTime(2024),
-                      lastDate: DateTime(2026),
+                      lastDate: DateTime(2030),
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(

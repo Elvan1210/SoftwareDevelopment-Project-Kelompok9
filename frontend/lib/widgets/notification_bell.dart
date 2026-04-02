@@ -120,6 +120,35 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     }
   }
 
+  Future<void> _hideNotif(Map<String, dynamic> notif) async {
+    setState(() {
+      _notifikasi.removeWhere((n) => n['id'] == notif['id']);
+    });
+    try {
+      await http.put(
+        Uri.parse('$baseUrl/api/notifikasi/${notif['id']}/hide'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+    } catch (e) {
+      debugPrint('Error hide notif: $e');
+    }
+  }
+
+  Future<void> _hideAllNotifs() async {
+    setState(() {
+      _notifikasi.clear();
+      _unreadCount = 0;
+    });
+    try {
+      await http.put(
+        Uri.parse('$baseUrl/api/notifikasi/user/hide-all'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+    } catch (e) {
+      debugPrint('Error hide all notifs: $e');
+    }
+  }
+
   // Get icon based on notification title/content
   _NotifMeta _getNotifMeta(Map<String, dynamic> notif) {
     final judul = (notif['judul'] ?? '').toString().toLowerCase();
@@ -278,40 +307,67 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                             ],
                           ),
                         ),
-                        if (_unreadCount > 0)
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                _markAllAsRead();
-                                setModalState(() {});
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.getAdaptiveTeal(context).withAlpha(15),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_unreadCount > 0)
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    _markAllAsRead();
+                                    setModalState(() {});
+                                  },
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppTheme.getAdaptiveTeal(context).withAlpha(40)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.done_all_rounded, size: 14, color: AppTheme.getAdaptiveTeal(context)),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Baca Semua',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppTheme.getAdaptiveTeal(context),
-                                      ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.getAdaptiveTeal(context).withAlpha(15),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppTheme.getAdaptiveTeal(context).withAlpha(40)),
                                     ),
-                                  ],
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.done_all_rounded, size: 14, color: AppTheme.getAdaptiveTeal(context)),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Baca Semua',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppTheme.getAdaptiveTeal(context),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                            if (_notifikasi.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    _hideAllNotifs();
+                                    setModalState(() {});
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withAlpha(15),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.red.withAlpha(40)),
+                                    ),
+                                    child: const Icon(Icons.delete_sweep_rounded, size: 16, color: Colors.red),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -516,32 +572,71 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      // Unread dot
-                      if (!isRead)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: meta.color,
-                                  shape: BoxShape.circle,
+                      // Actions Column
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          children: [
+                            if (!isRead)
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    _markAsRead(n);
+                                    setModalState(() {});
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: meta.color.withAlpha(20),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: meta.color.withAlpha(50)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.check_circle_outline_rounded, size: 12, color: meta.color),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Tandai dibaca',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: meta.color,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Belum dibaca',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: meta.color,
+                            const Spacer(),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  _hideNotif(n);
+                                  setModalState(() {});
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.onSurface.withAlpha(isDark ? 10 : 5),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 14,
+                                    color: theme.colorScheme.onSurface.withAlpha(120),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),
