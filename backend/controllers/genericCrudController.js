@@ -32,6 +32,7 @@ const createCrudController = (collectionName) => ({
       }
       
       for (const key in filters) {
+        if (key === 'start_date' || key === 'end_date') continue;
         queryRef = queryRef.where(key, '==', filters[key]);
       }
 
@@ -39,8 +40,26 @@ const createCrudController = (collectionName) => ({
                                 .limit(limit)
                                 .offset(offset)
                                 .get();
-      const data = [];
+      let data = [];
       snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+
+      // In-memory filter for start_date and end_date
+      if (req.query.start_date || req.query.end_date) {
+        data = data.filter(item => {
+          if (!item.tanggal) return true; // if no date, don't filter out or decide policy. We'll allow it.
+          const itemDate = new Date(item.tanggal);
+          if (req.query.start_date) {
+            const start = new Date(req.query.start_date);
+            if (itemDate < start) return false;
+          }
+          if (req.query.end_date) {
+            const end = new Date(req.query.end_date);
+            if (itemDate > end) return false;
+          }
+          return true;
+        });
+      }
+
       res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ message: 'Error server', error: error.message });

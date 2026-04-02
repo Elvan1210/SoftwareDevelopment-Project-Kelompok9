@@ -35,10 +35,73 @@ router.get('/', verifyToken, async (req, res) => {
       // 2. Filter berdasarkan role dan kelas
       const roleMatch = !n.target_role || n.target_role === 'Semua' || n.target_role === userRole;
       const kelasMatch = !n.target_kelas || n.target_kelas === userKelas;
-      return roleMatch && kelasMatch;
+      if (!(roleMatch && kelasMatch)) return false;
+
+      // 3. Filter jika dihapus oleh user ini (Soft delete)
+      if (n.dihapus_oleh && n.dihapus_oleh.includes(userId)) return false;
+      return true;
     });
 
     res.status(200).json(myNotifs);
+  } catch (error) {
+    res.status(500).json({ message: 'Error server', error: error.message });
+  }
+});
+
+// PUT /api/notifikasi/:id/hide — Sembunyikan notifikasi tertentu (Trash icon)
+router.put('/:id/hide', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.uid;
+    const docRef = db.collection('notifikasi').doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ message: 'Notifikasi tidak ditemukan' });
+
+    let dihapus = doc.data().dihapus_oleh || [];
+    if (!dihapus.includes(userId)) {
+      dihapus.push(userId);
+      await docRef.update({ dihapus_oleh: dihapus });
+    }
+    res.status(200).json({ message: 'Notifikasi dihapus (disembunyikan) untuk Anda' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error server', error: error.message });
+  }
+});
+
+// PUT /api/notifikasi/user/hide-all — Sembunyikan semua notifikasi yang ada
+router.put('/user/hide-all', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.uid;
+    const userRole = req.user.role;
+    const userKelas = req.user.kelas || null;
+
+    const snapshot = await db.collection('notifikasi').get();
+    
+    // Gunakan batch untuk efisiensi jika notifikasinya banyak
+    const batch = db.batch();
+    
+    snapshot.forEach(doc => {
+      const n = doc.data();
+      // Hanya sembunyikan yang targetnya sesuai dengan user
+      let isTarget = false;
+      if (n.target_user_id != null) {
+        if (n.target_user_id === userId) isTarget = true;
+      } else {
+        const roleMatch = !n.target_role || n.target_role === 'Semua' || n.target_role === userRole;
+        const kelasMatch = !n.target_kelas || n.target_kelas === userKelas;
+        if (roleMatch && kelasMatch) isTarget = true;
+      }
+
+      if (isTarget) {
+        let dihapus = n.dihapus_oleh || [];
+        if (!dihapus.includes(userId)) {
+          dihapus.push(userId);
+          batch.update(doc.ref, { dihapus_oleh: dihapus });
+        }
+      }
+    });
+
+    await batch.commit();
+    res.status(200).json({ message: 'Semua notifikasi dihapus (disembunyikan) untuk Anda' });
   } catch (error) {
     res.status(500).json({ message: 'Error server', error: error.message });
   }

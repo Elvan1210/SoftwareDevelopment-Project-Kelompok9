@@ -21,10 +21,19 @@ class GuruPresensiView extends StatefulWidget {
 }
 
 class _GuruPresensiViewState extends State<GuruPresensiView> {
+  bool _isRecapMode = false;
+
+  // Mode Harian
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _students = [];
   Map<String, dynamic> _attendanceRecords = {}; // studentId -> record
   bool _isLoading = true;
+
+  // Mode Rekap
+  DateTimeRange? _recapDateRange;
+  List<Map<String, dynamic>> _recapRecords = [];
+  bool _isLoadingRecap = false;
+  Map<String, bool> _expandedState = {};
 
   @override
   void initState() {
@@ -56,6 +65,29 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     }
   }
 
+  Future<void> _loadRecapData() async {
+    if (_recapDateRange == null) return;
+    setState(() => _isLoadingRecap = true);
+    try {
+      final kelasId = widget.teamData != null ? widget.teamData['id'] : (widget.userData['kelas_id'] ?? '-');
+      final dateAStr = DateFormat('yyyy-MM-dd').format(_recapDateRange!.start);
+      final dateBStr = DateFormat('yyyy-MM-dd').format(_recapDateRange!.end);
+      
+      final records = await PresensiService.getPresensiByRange(widget.token, kelasId, dateAStr, dateBStr);
+      
+      setState(() {
+        _recapRecords = records;
+        _isLoadingRecap = false;
+        _expandedState.clear();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal Memuat Rekap: $e'), backgroundColor: Colors.red));
+      }
+      setState(() => _isLoadingRecap = false);
+    }
+  }
+
   void _updateStatus(String studentId, String status) async {
     final existing = _attendanceRecords[studentId];
     final student = _students.firstWhere((s) => s['id'] == studentId);
@@ -82,6 +114,13 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
 
     try {
       await PresensiService.upsertPresensi(widget.token, payload);
+      // Jika mode rekap mungkin terpengaruh dan tanggalnya cocok, kita bisa refresh rekap jika rajin, 
+      // tetapi untuk kesederhanaan, biarkan rekap di-refresh manual jika mode di-switch bolak-balik.
+      if (_recapDateRange != null && 
+          !_selectedDate.isBefore(_recapDateRange!.start) && 
+          !_selectedDate.isAfter(_recapDateRange!.end)) {
+        _loadRecapData();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menyimpan'), backgroundColor: Colors.red));
@@ -102,6 +141,20 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     return {'Hadir': hadir, 'Izin': izin, 'Sakit': sakit, 'Alpa': alpa};
   }
 
+  Map<String, int> _getRecapStatsForStudent(String studentId) {
+    int hadir = 0, izin = 0, sakit = 0, alpa = 0;
+    for (var r in _recapRecords) {
+      if (r['user_id'] == studentId) {
+        final status = r['status'] ?? '';
+        if (status == 'Hadir') hadir++;
+        else if (status == 'Izin') izin++;
+        else if (status == 'Sakit') sakit++;
+        else alpa++; // termasuk Alpa
+      }
+    }
+    return {'Hadir': hadir, 'Izin': izin, 'Sakit': sakit, 'Alpa': alpa};
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -112,7 +165,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header & Date Picker ──
+          // ── Toggle Bar & Header ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -121,7 +174,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Jurnal Kehadiran',
+                      _isRecapMode ? 'Rekap Kehadiran' : 'Jurnal Kehadiran',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w900, 
                         letterSpacing: -0.5,
@@ -136,41 +189,13 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                 ),
               ),
               GlassCard(
-                radius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: InkWell(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate,
-                      firstDate: DateTime(2024),
-                      lastDate: DateTime(2026),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: isDark 
-                                ? ColorScheme.dark(primary: theme.primaryColor)
-                                : ColorScheme.light(primary: theme.primaryColor),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (date != null) {
-                      setState(() => _selectedDate = date);
-                      _loadData();
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_month_rounded, color: theme.primaryColor, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        DateFormat('dd MMM yyyy').format(_selectedDate),
-                        style: TextStyle(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface),
-                      ),
-                    ],
-                  ),
+                radius: 100,
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    _buildModeBtn('Harian', Icons.today_rounded, !_isRecapMode, theme, isDark),
+                    _buildModeBtn('Rekap', Icons.date_range_rounded, _isRecapMode, theme, isDark),
+                  ],
                 ),
               ),
             ],
@@ -178,39 +203,200 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
 
           const SizedBox(height: 24),
 
-          // ── Dashboard Stats ──
-          if (!_isLoading && _students.isNotEmpty)
-            _buildStatsDashboard(theme).animate().fadeIn(delay: 100.ms).scale(curve: Curves.easeOutBack),
+          // ── Date Pickers ──
+          if (!_isRecapMode)
+            _buildDailyHeader(theme, isDark)
+          else
+            _buildRecapHeader(theme, isDark),
 
           const SizedBox(height: 24),
 
-          // ── Student List ──
-          Expanded(
-            child: _isLoading 
-              ? Center(child: CircularProgressIndicator(color: theme.primaryColor))
-              : _students.isEmpty
-                ? const EmptyState(
-                    icon: Icons.people_alt_outlined,
-                    message: 'Belum ada siswa di kelas ini.',
-                  )
-                : ListView.builder(
-                    itemCount: _students.length,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 24),
-                    itemBuilder: (context, index) {
-                      final s = _students[index];
-                      final record = _attendanceRecords[s['id']];
-                      final currentStatus = record?['status'] ?? 'Belum Absen';
+          // ── Content ──
+          if (!_isRecapMode) ...[
+            if (!_isLoading && _students.isNotEmpty)
+              _buildStatsDashboard(theme).animate().fadeIn(delay: 50.ms).scale(curve: Curves.easeOutBack),
+            const SizedBox(height: 24),
+            Expanded(
+              child: _isLoading 
+                ? Center(child: CircularProgressIndicator(color: theme.primaryColor))
+                : _students.isEmpty
+                  ? const EmptyState(icon: Icons.people_alt_outlined, message: 'Belum ada siswa di kelas ini.')
+                  : ListView.builder(
+                      itemCount: _students.length,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 24),
+                      itemBuilder: (context, index) {
+                        final s = _students[index];
+                        final record = _attendanceRecords[s['id']];
+                        final currentStatus = record?['status'] ?? 'Belum Absen';
 
-                      return _buildStudentCard(s, currentStatus, record?['waktu'], theme, isDark)
-                          .animate(delay: (index * 40).ms)
-                          .fadeIn()
-                          .slideX(begin: 0.05, curve: Curves.easeOutQuart);
-                    },
-                  ),
-          ),
+                        return _buildStudentCard(s, currentStatus, record?['waktu'], theme, isDark)
+                            .animate(delay: (index * 40).ms)
+                            .fadeIn()
+                            .slideX(begin: 0.05, curve: Curves.easeOutQuart);
+                      },
+                    ),
+            ),
+          ] else ...[
+            Expanded(
+              child: _isLoadingRecap || _isLoading
+                ? Center(child: CircularProgressIndicator(color: theme.primaryColor))
+                : _recapDateRange == null
+                  ? const EmptyState(icon: Icons.date_range_rounded, message: 'Pilih rentang tanggal terlebih dahulu.')
+                  : _students.isEmpty
+                    ? const EmptyState(icon: Icons.people_alt_outlined, message: 'Belum ada siswa di kelas ini.')
+                    : ListView.builder(
+                        itemCount: _students.length,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 24),
+                        itemBuilder: (context, index) {
+                          final s = _students[index];
+                          return _buildRecapStudentCard(s, theme, isDark)
+                              .animate(delay: (index * 40).ms)
+                              .fadeIn()
+                              .slideX(begin: 0.05, curve: Curves.easeOutQuart);
+                        },
+                      ),
+            ),
+          ]
         ],
       ),
+    );
+  }
+
+  Widget _buildModeBtn(String label, IconData icon, bool isSelected, ThemeData theme, bool isDark) {
+    return InkWell(
+      onTap: () {
+        if (!isSelected) {
+          setState(() {
+            _isRecapMode = !_isRecapMode;
+            if (_isRecapMode && _recapDateRange == null) {
+              _recapDateRange = DateTimeRange(
+                start: DateTime.now().subtract(const Duration(days: 7)), 
+                end: DateTime.now()
+              );
+              _loadRecapData();
+            }
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(100),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.primaryColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: isSelected ? [BoxShadow(color: theme.primaryColor.withAlpha(80), blurRadius: 8, offset: const Offset(0, 2))] : [],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 14, color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(120)),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                fontSize: 12,
+                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(120),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailyHeader(ThemeData theme, bool isDark) {
+    return Row(
+      children: [
+        Text('Pencatatan Harian', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: theme.colorScheme.onSurface)),
+        const Spacer(),
+        GlassCard(
+          radius: 12,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: InkWell(
+            onTap: () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2024),
+                lastDate: DateTime(2030),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: isDark ? ColorScheme.dark(primary: theme.primaryColor) : ColorScheme.light(primary: theme.primaryColor),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (date != null) {
+                setState(() => _selectedDate = date);
+                _loadData();
+              }
+            },
+            child: Row(
+              children: [
+                Icon(Icons.calendar_month_rounded, color: theme.primaryColor, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  DateFormat('dd MMM yyyy').format(_selectedDate),
+                  style: TextStyle(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface),
+                ),
+              ],
+            ),
+          ),
+        ).animate().fadeIn(delay: 100.ms),
+      ],
+    );
+  }
+
+  Widget _buildRecapHeader(ThemeData theme, bool isDark) {
+    final startStr = _recapDateRange != null ? DateFormat('dd MMM').format(_recapDateRange!.start) : 'Pilih';
+    final endStr = _recapDateRange != null ? DateFormat('dd MMM yyyy').format(_recapDateRange!.end) : 'Tanggal';
+
+    return Row(
+      children: [
+        Text('Ringkasan Rentang Waktu', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: theme.colorScheme.onSurface)),
+        const Spacer(),
+        GlassCard(
+          radius: 12,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: InkWell(
+            onTap: () async {
+              final range = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2024),
+                lastDate: DateTime(2030),
+                initialDateRange: _recapDateRange,
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: isDark ? ColorScheme.dark(primary: theme.primaryColor) : ColorScheme.light(primary: theme.primaryColor),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (range != null) {
+                setState(() => _recapDateRange = range);
+                _loadRecapData();
+              }
+            },
+            child: Row(
+              children: [
+                Icon(Icons.date_range_outlined, color: theme.primaryColor, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  '$startStr - $endStr',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface),
+                ),
+              ],
+            ),
+          ),
+        ).animate().fadeIn(delay: 100.ms),
+      ],
     );
   }
 
@@ -338,6 +524,149 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRecapStudentCard(dynamic s, ThemeData theme, bool isDark) {
+    final stats = _getRecapStatsForStudent(s['id']);
+    final total = stats['Hadir']! + stats['Izin']! + stats['Sakit']! + stats['Alpa']!;
+    final pct = total > 0 ? (stats['Hadir']! / total) : 0.0;
+    final isExpanded = _expandedState[s['id']] ?? false;
+
+    Color pctColor = const Color(0xFF22C55E); // Hijau
+    if (pct < 0.8) pctColor = const Color(0xFFF59E0B); // Kuning/Orange
+    if (pct < 0.6) pctColor = const Color(0xFFEF4444); // Merah
+    if (total == 0) pctColor = Colors.grey;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassCard(
+        padding: EdgeInsets.zero,
+        radius: 16,
+        child: Column(
+          children: [
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _expandedState[s['id']] = !isExpanded;
+                });
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Avatar
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: pctColor.withAlpha(30),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          s['nama'].substring(0, 1).toUpperCase(),
+                          style: TextStyle(color: pctColor, fontWeight: FontWeight.w900, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Keterangan + Progress
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  s['nama'],
+                                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: theme.colorScheme.onSurface),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                total > 0 ? '${(pct * 100).toStringAsFixed(0)}%' : 'Belum ada data',
+                                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: pctColor),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // Mini Bar
+                          Container(
+                            height: 6,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.onSurface.withAlpha(20),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Stack(
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 600),
+                                  curve: Curves.easeOutQuart,
+                                  width: total > 0 ? MediaQuery.of(context).size.width * pct : 0,
+                                  decoration: BoxDecoration(
+                                    color: pctColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [BoxShadow(color: pctColor.withAlpha(100), blurRadius: 4)],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Icon(
+                      isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                      color: theme.colorScheme.onSurface.withAlpha(100),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Expanded Area
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity, height: 0),
+              secondChild: Container(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withAlpha(isDark ? 10 : 5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildRecapMiniStat('Hadir', stats['Hadir']!, const Color(0xFF10B981), total),
+                      _buildRecapMiniStat('Izin', stats['Izin']!, const Color(0xFF3B82F6), total),
+                      _buildRecapMiniStat('Sakit', stats['Sakit']!, const Color(0xFFF59E0B), total),
+                      _buildRecapMiniStat('Alpa', stats['Alpa']!, const Color(0xFFEF4444), total),
+                    ],
+                  ),
+                ),
+              ),
+              crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 250),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecapMiniStat(String label, int count, Color color, int total) {
+    return Column(
+      children: [
+        Text(count.toString(), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: color)),
+        Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color.withAlpha(200))),
+      ],
     );
   }
 
