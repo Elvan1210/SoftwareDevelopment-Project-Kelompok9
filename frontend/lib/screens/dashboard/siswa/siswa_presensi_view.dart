@@ -264,7 +264,7 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
     final status = record['status'] ?? 'Alpa';
     final tanggal = DateTime.tryParse(record['tanggal'] ?? '');
     final tanggalStr = tanggal != null
-        ? DateFormat('EEEE, d MMMM yyyy', 'id').format(tanggal)
+        ? DateFormat('EEEE, d MMMM yyyy').format(tanggal)
         : record['tanggal'] ?? '-';
     final waktu = record['waktu'] ?? '-';
 
