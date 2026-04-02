@@ -156,8 +156,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     if (judul.contains('diterima') || judul.contains('accepted') || judul.contains('✅')) {
       return const _NotifMeta(Icons.check_circle_rounded, Color(0xFF22C55E));
     }
-    if (judul.contains('ditolak') || judul.contains('rejected') || judul.conta
-    ins('❌')) {
+    if (judul.contains('ditolak') || judul.contains('rejected') || judul.contains('❌')) {
       return const _NotifMeta(Icons.cancel_rounded, Color(0xFFEF4444));
     }
     if (judul.contains('bergabung') || judul.contains('permintaan') || judul.contains('join')) {
