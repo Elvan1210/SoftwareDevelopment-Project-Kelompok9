@@ -156,7 +156,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     if (judul.contains('diterima') || judul.contains('accepted') || judul.contains('✅')) {
       return const _NotifMeta(Icons.check_circle_rounded, Color(0xFF22C55E));
     }
-    if (judul.contains('ditolak') || judul.contains('rejected') || judul.contains('❌')) {
+    if (judul.contains('ditolak') || judul.contains('rejected') || judul.conta
+    ins('❌')) {
       return const _NotifMeta(Icons.cancel_rounded, Color(0xFFEF4444));
     }
     if (judul.contains('bergabung') || judul.contains('permintaan') || judul.contains('join')) {
@@ -177,7 +178,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     if (judul.contains('presensi') || judul.contains('hadir')) {
       return const _NotifMeta(Icons.how_to_reg_rounded, Color(0xFF22C55E));
     }
-    return _NotifMeta(Icons.notifications_rounded, AppTheme.primaryTeal);
+    return const _NotifMeta(Icons.notifications_rounded, AppTheme.primaryTeal);
   }
 
   // Group notifications by date

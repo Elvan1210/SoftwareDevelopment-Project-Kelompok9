@@ -149,7 +149,9 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
         if (status == 'Hadir') hadir++;
         else if (status == 'Izin') izin++;
         else if (status == 'Sakit') sakit++;
-        else alpa++; // termasuk Alpa
+        else {
+          alpa++;
+        } // termasuk Alpa
       }
     }
     return {'Hadir': hadir, 'Izin': izin, 'Sakit': sakit, 'Alpa': alpa};
