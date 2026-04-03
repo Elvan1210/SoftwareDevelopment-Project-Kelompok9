@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
-import '../../../widgets/app_shell.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
@@ -11,12 +9,16 @@ class SaluranView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
   final dynamic teamData;
+  final String channelId;
+  final String channelName;
 
   const SaluranView({
     super.key,
     required this.userData,
     required this.token,
     required this.teamData,
+    this.channelId = 'general',
+    this.channelName = 'Saluran Utama', // Default nama untuk groupchat utama
   });
 
   @override
@@ -26,14 +28,8 @@ class SaluranView extends StatefulWidget {
 class _SaluranViewState extends State<SaluranView> {
   final TextEditingController _pesanCtrl = TextEditingController();
   final ScrollController _scrollCtrl = ScrollController();
-  final TextEditingController _channelNameCtrl = TextEditingController();
 
-  List<dynamic> _channels = [];
   List<dynamic> _pesan = [];
-  
-  String _selectedChannelId = 'general';
-  String _selectedChannelName = 'General';
-  
   bool _isLoading = true;
   bool _isSending = false;
 
@@ -50,10 +46,17 @@ class _SaluranViewState extends State<SaluranView> {
   }
 
   @override
+  void didUpdateWidget(covariant SaluranView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.channelId != widget.channelId) {
+      _fetchData();
+    }
+  }
+
+  @override
   void dispose() {
     _pesanCtrl.dispose();
     _scrollCtrl.dispose();
-    _channelNameCtrl.dispose();
     super.dispose();
   }
 
@@ -62,13 +65,7 @@ class _SaluranViewState extends State<SaluranView> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resChannel = await http.get(Uri.parse('$baseUrl/api/channels?kelas_id=$_kelasId'), headers: headers);
       final resPesan = await http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
-      
-      if (resChannel.statusCode == 200) {
-        final dec = jsonDecode(resChannel.body);
-        _channels = dec is List ? dec : [];
-      }
       
       if (resPesan.statusCode == 200) {
         final dec = jsonDecode(resPesan.body);
@@ -78,7 +75,15 @@ class _SaluranViewState extends State<SaluranView> {
           final tb = DateTime.tryParse(b['waktu'] ?? '') ?? DateTime(2000);
           return ta.compareTo(tb);
         });
-        _pesan = raw;
+        
+        // Filter by channel_id locally
+        _pesan = raw.where((msg) {
+          final cId = msg['channel_id']?.toString();
+          if (widget.channelId == 'general') {
+            return cId == null || cId == 'general' || cId == '';
+          }
+          return cId == widget.channelId;
+        }).toList();
       }
     } catch (e) {
       debugPrint('Error fetch data: $e');
@@ -87,45 +92,6 @@ class _SaluranViewState extends State<SaluranView> {
     if (mounted) {
       setState(() => _isLoading = false);
       _scrollToBottom();
-    }
-  }
-
-  List<dynamic> get _filteredPesan {
-    return _pesan.where((msg) {
-      final cId = msg['channel_id']?.toString();
-      if (_selectedChannelId == 'general') {
-        return cId == null || cId == 'general' || cId == '';
-      }
-      return cId == _selectedChannelId;
-    }).toList();
-  }
-
-  Future<void> _buatChannel() async {
-    final name = _channelNameCtrl.text.trim();
-    if (name.isEmpty) return;
-
-    final body = {
-      'kelas_id': _kelasId,
-      'nama_channel': name,
-      'created_by_id': _myId,
-      'waktu': DateTime.now().toIso8601String(),
-    };
-
-    try {
-      final res = await http.post(
-        Uri.parse('$baseUrl/api/channels'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
-        body: jsonEncode(body),
-      );
-      if (res.statusCode == 201) {
-        if (mounted) {
-          _channelNameCtrl.clear();
-          Navigator.pop(context); // Close dialog
-          _fetchData();
-        }
-      }
-    } catch (e) {
-      debugPrint('Err buat channel: $e');
     }
   }
 
@@ -138,7 +104,7 @@ class _SaluranViewState extends State<SaluranView> {
 
     final body = {
       'kelas_id': _kelasId,
-      'channel_id': _selectedChannelId,
+      'channel_id': widget.channelId,
       'pengirim_id': _myId,
       'pengirim_nama': _myNama,
       'role': _myRole,
@@ -189,238 +155,50 @@ class _SaluranViewState extends State<SaluranView> {
     });
   }
 
-  void _showCreateChannelDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Buat Channel Baru', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: TextField(
-          controller: _channelNameCtrl,
-          decoration: InputDecoration(
-            hintText: 'Misal: Praktikum 01',
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => _buatChannel(),
-            child: const Text('Buat', style: TextStyle(fontWeight: FontWeight.w800)),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final isDesktop = constraints.maxWidth > 800;
-
-      if (isDesktop) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left Panel: Channel List
-            Container(
-              width: 250,
-              decoration: BoxDecoration(
-                border: Border(right: BorderSide(color: theme.dividerColor.withAlpha(50))),
-              ),
-              child: _buildChannelList(theme),
-            ),
-            // Right Panel: Chat Room
-            Expanded(
-              child: _buildChatRoom(theme, isDark),
-            ),
-          ],
-        );
-      }
-
-      // Mobile Layout
-      return Column(
-        children: [
-          _buildMobileChannelDropdown(theme, isDark),
-          Expanded(child: _buildChatRoom(theme, isDark)),
-        ],
-      );
-    });
-  }
-
-  Widget _buildChannelList(ThemeData theme) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Channels', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
-              if (_canManage)
-                IconButton(
-                  onPressed: _showCreateChannelDialog,
-                  icon: const Icon(Icons.add_box_rounded),
-                  color: theme.primaryColor,
-                  tooltip: 'Buat Channel Baru',
-                ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            children: [
-              _buildChannelItem('general', 'General', theme),
-              for (var c in _channels) 
-                _buildChannelItem(c['id'].toString(), c['nama_channel'] ?? 'Unnamed', theme),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChannelItem(String id, String name, ThemeData theme) {
-    final isSelected = id == _selectedChannelId;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedChannelId = id;
-            _selectedChannelName = name;
-          });
-          _scrollToBottom();
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? theme.primaryColor.withAlpha(30) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                isSelected ? Icons.tag_rounded : Icons.numbers_rounded, 
-                size: 18, 
-                color: isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(200),
+        // ── Header Status Bar (menunjukkan nama channel) ──
+        if (widget.channelId != 'general')
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+              border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.tag_rounded, color: theme.primaryColor, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.channelName,
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMobileChannelDropdown(ThemeData theme, bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
-        border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.tag_rounded, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedChannelId,
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down_rounded),
-                items: [
-                  const DropdownMenuItem(value: 'general', child: Text('General', style: TextStyle(fontWeight: FontWeight.w800))),
-                  for (var c in _channels)
-                    DropdownMenuItem(value: c['id'].toString(), child: Text(c['nama_channel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800))),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    final target = val == 'general' ? 'General' : _channels.firstWhere((e) => e['id'].toString() == val, orElse: () => {'nama_channel': 'Unknown'})['nama_channel'];
-                    setState(() {
-                      _selectedChannelId = val;
-                      _selectedChannelName = target;
-                    });
-                    _scrollToBottom();
-                  }
-                },
-              ),
+              ],
             ),
           ),
-          if (_canManage)
-            IconButton(
-              icon: const Icon(Icons.add_box_rounded),
-              color: theme.primaryColor,
-              onPressed: _showCreateChannelDialog,
-            )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChatRoom(ThemeData theme, bool isDark) {
-    final msgs = _filteredPesan;
-    return Column(
-      children: [
-        // ── Header Bar ──
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
-            border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '# $_selectedChannelName',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.3),
-                ),
-              ),
-              IconButton(onPressed: _fetchData, icon: const Icon(Icons.refresh_rounded, size: 20), tooltip: 'Refresh'),
-            ],
-          ),
-        ),
 
         // ── Pesan Area ──
         Expanded(
           child: _isLoading
               ? _buildSkeleton()
-              : msgs.isEmpty
+              : _pesan.isEmpty
                   ? _buildEmpty(theme)
                   : RefreshIndicator(
                       onRefresh: _fetchData,
                       child: ListView.builder(
                         controller: _scrollCtrl,
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        itemCount: msgs.length,
+                        itemCount: _pesan.length,
                         itemBuilder: (context, i) {
-                          final msg = msgs[i];
+                          final msg = _pesan[i];
                           final isMe = msg['pengirim_id']?.toString() == _myId;
                           return _buildBubble(msg, isMe, isDark, theme)
                               .animate(delay: Duration(milliseconds: i > 10 ? 0 : i * 30))
@@ -549,7 +327,7 @@ class _SaluranViewState extends State<SaluranView> {
                       child: TextField(
                         controller: _pesanCtrl,
                         decoration: InputDecoration(
-                          hintText: 'Tulis pesan di #$_selectedChannelName...',
+                          hintText: 'Tulis pesan di ${widget.channelId == 'general' ? 'saluran utama' : '#${widget.channelName}'}...',
                           hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(100), fontSize: 14),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -598,7 +376,7 @@ class _SaluranViewState extends State<SaluranView> {
         children: [
           Icon(Icons.forum_outlined, size: 72, color: theme.colorScheme.onSurface.withAlpha(60)),
           const SizedBox(height: 16),
-          Text('Belum ada pesan di saluran ini.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(120))),
+          Text('Belum ada pesan di sini.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(120))),
         ],
       ),
     );
@@ -641,5 +419,19 @@ class _SaluranViewState extends State<SaluranView> {
         ],
       ),
     );
+  }
+
+  // Helper widget included locally
+}
+
+class SkeletonLoader extends StatelessWidget {
+  final double width, height, radius;
+  const SkeletonLoader({super.key, required this.width, required this.height, this.radius = 8});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width, height: height,
+      decoration: BoxDecoration(color: Theme.of(context).dividerColor.withAlpha(20), borderRadius: BorderRadius.circular(radius)),
+    ).animate(onPlay: (controller) => controller.repeat()).shimmer(duration: 1200.ms, color: Colors.white.withAlpha(20));
   }
 }
