@@ -4,6 +4,8 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import '../guru/guru_tugas_detail_screen.dart';
+import '../siswa/siswa_tugas_detail_screen.dart';
 
 class SaluranView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -65,26 +67,52 @@ class _SaluranViewState extends State<SaluranView> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resPesan = await http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
+      final resPesanFuture = http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
+      final resTugasFuture = http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$_kelasId'), headers: headers);
+      
+      final results = await Future.wait([resPesanFuture, resTugasFuture]);
+      final resPesan = results[0];
+      final resTugas = results[1];
+      
+      List<dynamic> raw = [];
       
       if (resPesan.statusCode == 200) {
         final dec = jsonDecode(resPesan.body);
-        final List<dynamic> raw = dec is List ? dec : [];
-        raw.sort((a, b) {
-          final ta = DateTime.tryParse(a['waktu'] ?? '') ?? DateTime(2000);
-          final tb = DateTime.tryParse(b['waktu'] ?? '') ?? DateTime(2000);
-          return ta.compareTo(tb);
-        });
-        
-        // Filter by channel_id locally
-        _pesan = raw.where((msg) {
-          final cId = msg['channel_id']?.toString();
-          if (widget.channelId == 'general') {
-            return cId == null || cId == 'general' || cId == '';
-          }
-          return cId == widget.channelId;
-        }).toList();
+        if (dec is List) {
+          raw.addAll(dec.map((e) {
+            final m = Map<String, dynamic>.from(e as Map);
+            m['_type'] = 'pesan';
+            return m;
+          }));
+        }
       }
+
+      if (resTugas.statusCode == 200) {
+        final dec = jsonDecode(resTugas.body);
+        if (dec is List) {
+          raw.addAll(dec.map((e) {
+            final m = Map<String, dynamic>.from(e as Map);
+            m['_type'] = 'tugas';
+            return m;
+          }));
+        }
+      }
+      
+      // Sort kronologis
+      raw.sort((a, b) {
+        final ta = DateTime.tryParse(a['waktu'] ?? a['deadline'] ?? '') ?? DateTime(2000);
+        final tb = DateTime.tryParse(b['waktu'] ?? b['deadline'] ?? '') ?? DateTime(2000);
+        return ta.compareTo(tb);
+      });
+      
+      // Filter by channel_id
+      _pesan = raw.where((msg) {
+        final cId = msg['channel_id']?.toString();
+        if (widget.channelId == 'general') {
+          return cId == null || cId == 'general' || cId == '';
+        }
+        return cId == widget.channelId;
+      }).toList();
     } catch (e) {
       debugPrint('Error fetch data: $e');
     }
@@ -199,6 +227,13 @@ class _SaluranViewState extends State<SaluranView> {
                         itemCount: _pesan.length,
                         itemBuilder: (context, i) {
                           final msg = _pesan[i];
+                          if (msg['_type'] == 'tugas') {
+                            return _buildTugasCard(msg, isDark, theme)
+                                .animate(delay: Duration(milliseconds: i > 10 ? 0 : i * 30))
+                                .fadeIn(duration: 300.ms)
+                                .slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                          }
+                          
                           final isMe = msg['pengirim_id']?.toString() == _myId;
                           return _buildBubble(msg, isMe, isDark, theme)
                               .animate(delay: Duration(milliseconds: i > 10 ? 0 : i * 30))
@@ -212,6 +247,89 @@ class _SaluranViewState extends State<SaluranView> {
         // ── Input Box ──
         _buildInputBar(theme, isDark),
       ],
+    );
+  }
+
+  String _formatTugasWaktu(String iso) {
+    if (iso.isEmpty) return '';
+    final dt = DateTime.tryParse(iso);
+    if (dt != null) return DateFormat('MMM d, h:mm a').format(dt);
+    return iso;
+  }
+
+  Widget _buildTugasCard(Map<String, dynamic> msg, bool isDark, ThemeData theme) {
+    final title = msg['judul'] ?? 'Untitled Assignment';
+    final due = msg['deadline'] ?? '';
+    final timeStr = _formatTugasWaktu(msg['waktu'] ?? msg['deadline'] ?? '');
+    final dueStr = _formatTugasWaktu(due);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(color: const Color(0xFF6A5ACD).withAlpha(40), borderRadius: BorderRadius.circular(6)),
+                child: const Icon(Icons.assignment_rounded, color: Color(0xFF6A5ACD), size: 14),
+              ),
+              const SizedBox(width: 8),
+              const Text('Assignments', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF6A5ACD))),
+              const SizedBox(width: 8),
+              Text(timeStr, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E1E1E) : Colors.white.withAlpha(200),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: theme.dividerColor.withAlpha(isDark ? 50 : 20)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                if (dueStr.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.timer_outlined, size: 14, color: theme.colorScheme.onSurface.withAlpha(150)),
+                      const SizedBox(width: 4),
+                      Text('Due $dueStr', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150))),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: () {
+                    if (_canManage) {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => GuruTugasDetailScreen(tugas: msg, token: widget.token)));
+                    } else {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: msg, token: widget.token, userData: widget.userData)));
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isDark ? Colors.white : theme.primaryColor,
+                    side: BorderSide(color: isDark ? Colors.white.withAlpha(50) : theme.primaryColor.withAlpha(50)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  child: const Text('View assignment', style: TextStyle(fontWeight: FontWeight.w800)),
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Divider(color: theme.dividerColor.withAlpha(40), height: 1),
+        ],
+      ),
     );
   }
 
