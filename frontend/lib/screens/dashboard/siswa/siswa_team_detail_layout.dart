@@ -30,12 +30,12 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   // Views are now initialized in _getViews() to prevent context-related lifecycle errors.
 
   final List<String> _titles = [
-    'Dashboard Tim',
+    'Dashboard Kelas',
     'Saluran Diskusi',
     'Presensi Saya',
-    'Tugas Saya',
-    'Materi Belajar',
+    'Tugas Kelas',
     'Nilai Saya',
+    'Materi Pelajaran',
   ];
 
   @override
@@ -49,8 +49,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
       SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       SiswaPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       SiswaTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
+      SiswaNilaiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       SiswaMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
-      SiswaNilaiView(userData: widget.userData, token: widget.token),
     ];
   }
 
@@ -107,9 +107,9 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                           _buildSidebarItem(0, Icons.dashboard_customize_outlined, 'Dashboard'),
                           _buildSidebarItem(1, Icons.forum_outlined, 'Saluran'),
                           _buildSidebarItem(2, Icons.how_to_reg_outlined, 'Presensi'),
-                          _buildSidebarItem(3, Icons.assignment_outlined, 'Tugas Saya'),
-                          _buildSidebarItem(4, Icons.auto_stories_outlined, 'Materi'),
-                          _buildSidebarItem(5, Icons.military_tech_outlined, 'Nilai'),
+                          _buildSidebarItem(3, Icons.assignment_outlined, 'Tugas'),
+                          _buildSidebarItem(4, Icons.military_tech_outlined, 'Nilai'),
+                          _buildSidebarItem(5, Icons.auto_stories_outlined, 'Materi'),
                         ],
                       ),
                     ),
@@ -355,8 +355,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                   _buildMobileNavItem(1, Icons.forum_outlined),
                   _buildMobileNavItem(2, Icons.how_to_reg_outlined),
                   _buildMobileNavItem(3, Icons.assignment_outlined),
-                  _buildMobileNavItem(4, Icons.auto_stories_outlined),
-                  _buildMobileNavItem(5, Icons.military_tech_outlined),
+                  _buildMobileNavItem(4, Icons.military_tech_outlined),
+                  _buildMobileNavItem(5, Icons.auto_stories_outlined),
                 ],
               ),
             ),

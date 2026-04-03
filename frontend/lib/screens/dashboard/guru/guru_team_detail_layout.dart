@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_view.dart';
+import 'guru_nilai_view.dart';
 import 'guru_materi_view.dart';
 import 'guru_presensi_view.dart';
 import 'guru_pending_requests_view.dart';
@@ -37,7 +38,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     'Saluran (Channels)',
     'Permintaan Bergabung',
     'Presensi Kelas',
-    'Tugas & Nilai',
+    'Penugasan',
+    'Nilai Siswa',
     'Materi ajar',
   ];
 
@@ -79,6 +81,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       ),
       GuruPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
+      GuruNilaiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
       GuruMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
     ];
   }
@@ -138,8 +141,9 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           _buildSidebarItem(1, Icons.forum_outlined, 'Saluran'),
                           _buildSidebarItem(2, Icons.person_add_alt_rounded, 'Permintaan', badgeCount: _pendingCount),
                           _buildSidebarItem(3, Icons.how_to_reg_outlined, 'Presensi'),
-                          _buildSidebarItem(4, Icons.assignment_outlined, 'Tugas & Nilai'),
-                          _buildSidebarItem(5, Icons.auto_stories_outlined, 'Materi'),
+                          _buildSidebarItem(4, Icons.assignment_outlined, 'Tugas'),
+                          _buildSidebarItem(5, Icons.military_tech_outlined, 'Nilai'),
+                          _buildSidebarItem(6, Icons.auto_stories_outlined, 'Materi'),
                         ],
                       ),
                     ),
@@ -403,7 +407,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   _buildMobileNavItem(2, Icons.person_add_alt_rounded, badgeCount: _pendingCount),
                   _buildMobileNavItem(3, Icons.how_to_reg_outlined),
                   _buildMobileNavItem(4, Icons.assignment_outlined),
-                  _buildMobileNavItem(5, Icons.auto_stories_outlined),
+                  _buildMobileNavItem(5, Icons.military_tech_outlined),
+                  _buildMobileNavItem(6, Icons.auto_stories_outlined),
                 ],
               ),
             ),

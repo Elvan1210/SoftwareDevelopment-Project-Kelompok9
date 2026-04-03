@@ -8,7 +8,8 @@ import 'dart:convert';
 class SiswaNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const SiswaNilaiView({super.key, required this.userData, required this.token});
+  final dynamic teamData;
+  const SiswaNilaiView({super.key, required this.userData, required this.token, required this.teamData});
 
   @override
   State<SiswaNilaiView> createState() => _SiswaNilaiViewState();
@@ -28,8 +29,9 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     setState(() => _isLoading = true);
     try {
       final sid = Uri.encodeComponent(widget.userData['id'].toString());
+      final kid = Uri.encodeComponent(widget.teamData['id'].toString());
       final response = await http.get(
-          Uri.parse('$baseUrl/api/nilai?siswa_id=$sid'),
+          Uri.parse('$baseUrl/api/nilai?siswa_id=$sid&kelas_id=$kid'),
           headers: {'Authorization': 'Bearer ${widget.token}'});
       if (response.statusCode == 200) {
         final dec = jsonDecode(response.body);

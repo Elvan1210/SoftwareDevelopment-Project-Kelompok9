@@ -9,7 +9,8 @@ import 'dart:convert';
 class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const GuruNilaiView({super.key, required this.userData, required this.token});
+  final dynamic teamData;
+  const GuruNilaiView({super.key, required this.userData, required this.token, required this.teamData});
 
   @override
   State<GuruNilaiView> createState() => _GuruNilaiViewState();
@@ -38,12 +39,25 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       if (responses[0].statusCode == 200) {
         final dec = jsonDecode(responses[0].body);
         List data = dec is List ? dec : [];
-        _nilaiList = data.where((n) => n['guru_id'].toString() == widget.userData['id'].toString()).toList();
+        _nilaiList = data.where((n) {
+          final bool isMyClass = widget.teamData['id'] != null 
+              ? n['kelas_id'].toString() == widget.teamData['id'].toString() 
+              : true;
+          return n['guru_id'].toString() == widget.userData['id'].toString() && isMyClass;
+        }).toList();
       }
       if (responses[1].statusCode == 200) {
         final dec = jsonDecode(responses[1].body);
         List users = dec is List ? dec : [];
-        _userList = users.where((u) => u['role'] == 'Siswa').toList();
+        _userList = users.where((u) {
+          // Hanya siswa yang ada di kelas ini
+          final kelasId = widget.teamData['id']?.toString() ?? '';
+          if (u['role'] != 'Siswa') return false;
+          if (u['kelas_id'] != null && u['kelas_id'].toString() == kelasId) return true;
+          // Cek array siswa_ids di kelas jika user belum set kelas_id
+          List sIds = widget.teamData['siswa_ids'] ?? [];
+          return sIds.contains(u['id']);
+        }).toList();
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -128,6 +142,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   'nilai': double.tryParse(nilaiCtrl.text) ?? 0,
                   'keterangan': keteranganCtrl.text,
                   'guru_id': widget.userData['id'],
+                  'kelas_id': widget.teamData['id'],
                 };
 
                 final url = isEditing ? '$baseUrl/api/nilai/${nilai['id']}' : '$baseUrl/api/nilai';
