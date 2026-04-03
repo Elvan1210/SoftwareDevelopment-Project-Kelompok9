@@ -33,7 +33,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
   DateTimeRange? _recapDateRange;
   List<Map<String, dynamic>> _recapRecords = [];
   bool _isLoadingRecap = false;
-  Map<String, bool> _expandedState = {};
+  final Map<String, bool> _expandedState = {};
 
   @override
   void initState() {

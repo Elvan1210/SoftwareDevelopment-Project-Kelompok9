@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'siswa_tugas_view.dart';
 import 'siswa_materi_view.dart';
 import 'siswa_nilai_view.dart';
 import 'siswa_presensi_view.dart';
 import '../shared/saluran_view.dart';
+import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
@@ -26,32 +29,56 @@ class SiswaTeamDetailLayout extends StatefulWidget {
 }
 
 class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
-  int _selectedIndex = 0;
-  // Views are now initialized in _getViews() to prevent context-related lifecycle errors.
+  String _activeTabID = 'dashboard'; 
+  String _activeTitle = 'Dashboard Kelas';
 
-  final List<String> _titles = [
-    'Dashboard Tim',
-    'Saluran Diskusi',
-    'Presensi Saya',
-    'Tugas Saya',
-    'Materi Belajar',
-    'Nilai Saya',
-  ];
+  List<dynamic> _channels = [];
+
+  String get _kelasId => widget.teamData['id']?.toString() ?? '';
 
   @override
   void initState() {
     super.initState();
+    _fetchChannels();
   }
 
-  List<Widget> _getViews() {
-    return [
-      _buildDashboardView(),
-      SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
-      SiswaPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
-      SiswaTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
-      SiswaMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData),
-      SiswaNilaiView(userData: widget.userData, token: widget.token),
-    ];
+  Future<void> _fetchChannels() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/channels?kelas_id=$_kelasId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        final dec = jsonDecode(res.body);
+        if (mounted) setState(() => _channels = dec is List ? dec : []);
+      }
+    } catch (e) {
+      debugPrint('Err fetch channel: $e');
+    }
+  }
+
+  Widget _getActiveView() {
+    if (_activeTabID.startsWith('channel_')) {
+      final cId = _activeTabID.replaceFirst('channel_', '');
+      final name = _activeTitle;
+      return SaluranView(
+        userData: widget.userData,
+        token: widget.token,
+        teamData: widget.teamData,
+        channelId: cId,
+        channelName: name,
+      );
+    }
+    
+    switch (_activeTabID) {
+      case 'dashboard': return _buildDashboardView();
+      case 'saluran': return SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData, channelId: 'general', channelName: 'Groupchat Kelas');
+      case 'presensi': return SiswaPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
+      case 'tugas': return SiswaTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
+      case 'nilai': return SiswaNilaiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
+      case 'materi': return SiswaMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
+      default: return _buildDashboardView();
+    }
   }
 
   Widget _buildDashboardView() {
@@ -104,12 +131,27 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          _buildSidebarItem(0, Icons.dashboard_customize_outlined, 'Dashboard'),
-                          _buildSidebarItem(1, Icons.forum_outlined, 'Saluran'),
-                          _buildSidebarItem(2, Icons.how_to_reg_outlined, 'Presensi'),
-                          _buildSidebarItem(3, Icons.assignment_outlined, 'Tugas Saya'),
-                          _buildSidebarItem(4, Icons.auto_stories_outlined, 'Materi'),
-                          _buildSidebarItem(5, Icons.military_tech_outlined, 'Nilai'),
+                          _buildSidebarItem('dashboard', Icons.dashboard_customize_outlined, 'Dashboard'),
+                          _buildSidebarItem('saluran', Icons.forum_outlined, 'Saluran'),
+                          _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Saya'),
+                          _buildSidebarItem('tugas', Icons.assignment_outlined, 'Tugas Kelas'),
+                          _buildSidebarItem('nilai', Icons.military_tech_outlined, 'Nilai Saya'),
+                          _buildSidebarItem('materi', Icons.auto_stories_outlined, 'Materi Pelajaran'),
+                          
+                          const SizedBox(height: 24),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 12, bottom: 8),
+                            child: Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(100), letterSpacing: 1.5)),
+                          ),
+                          if (_channels.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 14, top: 4),
+                              child: Text('Belum ada channel', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(100))),
+                            ),
+                          for (var c in _channels)
+                            _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true),
+                            
+                          const SizedBox(height: 24),
                         ],
                       ),
                     ),
@@ -137,9 +179,9 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                     ),
                     title: Text(
-                      _titles[_selectedIndex],
+                      _activeTitle,
                       style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                    ).animate(key: ValueKey(_selectedIndex)).fade(duration: 400.ms).slideX(begin: -0.05),
+                    ).animate(key: ValueKey(_activeTabID)).fade(duration: 400.ms).slideX(begin: -0.05),
                     actions: [
                       const ThemeToggle(),
                       const SizedBox(width: 8),
@@ -152,21 +194,12 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                     ],
                   ),
                   body: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 300),
                     switchInCurve: Curves.easeOutQuart,
                     switchOutCurve: Curves.easeInQuart,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(begin: const Offset(0, 0.02), end: Offset.zero).animate(animation),
-                          child: child,
-                        ),
-                      );
-                    },
                     child: KeyedSubtree(
-                      key: ValueKey(_selectedIndex),
-                      child: _getViews()[_selectedIndex],
+                      key: ValueKey(_activeTabID),
+                      child: _getActiveView(),
                     ),
                   ),
                 ),
@@ -186,21 +219,13 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.primaryColor.withAlpha(20),
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: theme.primaryColor.withAlpha(20), borderRadius: BorderRadius.circular(16)),
             child: Icon(Icons.school_rounded, color: theme.primaryColor, size: 28),
           ).animate().scale(delay: 200.ms, curve: Curves.easeOutBack),
           const SizedBox(height: 24),
           Text(
             widget.teamData['nama_kelas'] ?? 'Mata Pelajaran',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.primaryColor,
-              fontWeight: FontWeight.w900,
-              height: 1.1,
-              letterSpacing: -0.8,
-            ),
+            style: theme.textTheme.headlineSmall?.copyWith(color: theme.primaryColor, fontWeight: FontWeight.w900, height: 1.1, letterSpacing: -0.8),
           ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.2),
           const SizedBox(height: 8),
           Text(
@@ -212,40 +237,42 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     );
   }
 
-  Widget _buildSidebarItem(int index, IconData icon, String label) {
+  Widget _buildSidebarItem(String id, IconData icon, String label, {bool isChannel = false}) {
     final theme = Theme.of(context);
-    final isSelected = _selectedIndex == index;
+    final isSelected = _activeTabID == id;
     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(120);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 4),
       child: InkWell(
-        onTap: () => setState(() => _selectedIndex = index),
-        borderRadius: BorderRadius.circular(16),
+        onTap: () => setState(() {
+          _activeTabID = id;
+          _activeTitle = label;
+        }),
+        borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? theme.primaryColor.withAlpha(isSelected ? 30 : 0) : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? theme.primaryColor.withAlpha(60) : Colors.transparent,
-              width: 1.5,
-            ),
+            color: isSelected ? theme.primaryColor.withAlpha(isSelected ? 20 : 0) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isSelected ? theme.primaryColor.withAlpha(40) : Colors.transparent, width: 1.5),
           ),
           child: Row(
             children: [
-              Icon(icon, color: color, size: 22),
-              const SizedBox(width: 16),
-              Text(
-                label, 
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: color, 
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              Icon(icon, color: color, size: isChannel ? 18 : 20),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label, 
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: color, 
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  ),
                 ),
               ),
-              if (isSelected) const Spacer(),
-              if (isSelected) 
+              if (isSelected && !isChannel) const Spacer(),
+              if (isSelected && !isChannel) 
                 Container(
                   width: 6, height: 6, 
                   decoration: BoxDecoration(color: theme.primaryColor, shape: BoxShape.circle),
@@ -269,10 +296,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           children: [
             Icon(Icons.auto_awesome_rounded, color: theme.primaryColor, size: 20),
             const SizedBox(width: 12),
-            Text(
-              'Premium Access', 
-              style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w900, fontSize: 12),
-            ),
+            Text('Premium Access', style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w900, fontSize: 12)),
           ],
         ),
       ),
@@ -288,7 +312,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
         children: [
           Column(
             children: [
-              // ── Custom Floating AppBar ──
+              // Custom Floating AppBar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: GlassCard(
@@ -305,13 +329,10 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          _titles[_selectedIndex],
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w900, 
-                            letterSpacing: -0.5,
-                          ),
+                          _activeTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5),
                           overflow: TextOverflow.ellipsis,
-                        ).animate(key: ValueKey(_selectedIndex)).fade().slideX(begin: -0.1),
+                        ).animate(key: ValueKey(_activeTabID)).fade(),
                       ),
                       NotificationBell(
                         userData: widget.userData, 
@@ -323,15 +344,15 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                 ),
               ),
               
-              // ── Animated Body Content ──
+              // Animated Body Content
               Expanded(
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
+                  duration: const Duration(milliseconds: 300),
                   child: KeyedSubtree(
-                    key: ValueKey(_selectedIndex),
+                    key: ValueKey(_activeTabID),
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 80),
-                      child: _getViews()[_selectedIndex],
+                      child: _getActiveView(),
                     ),
                   ),
                 ),
@@ -339,7 +360,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             ],
           ),
 
-          // ── Bottom Navigation Bar ──
+          // ── Bottom Nav / Action Sheet for Mobile ──
           Positioned(
             left: 16,
             right: 16,
@@ -351,12 +372,14 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildMobileNavItem(0, Icons.dashboard_customize_outlined),
-                  _buildMobileNavItem(1, Icons.forum_outlined),
-                  _buildMobileNavItem(2, Icons.how_to_reg_outlined),
-                  _buildMobileNavItem(3, Icons.assignment_outlined),
-                  _buildMobileNavItem(4, Icons.auto_stories_outlined),
-                  _buildMobileNavItem(5, Icons.military_tech_outlined),
+                  _buildMobileNavItem('dashboard', Icons.dashboard_customize_outlined, 'Home'),
+                  _buildMobileNavItem('saluran', Icons.forum_outlined, 'Saluran'),
+                  _buildMobileNavItem('tugas', Icons.assignment_outlined, 'Tugas'),
+                  _buildMobileNavItem('materi', Icons.auto_stories_outlined, 'Materi'),
+                  IconButton(
+                    onPressed: () => _showMobileMenu(theme),
+                    icon: Icon(Icons.menu_rounded, color: theme.colorScheme.onSurface.withAlpha(150)),
+                  ),
                 ],
               ),
             ),
@@ -366,13 +389,51 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     );
   }
 
-  Widget _buildMobileNavItem(int index, IconData icon) {
+  void _showMobileMenu(ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => GlassCard(
+        radius: 24,
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Menu Lainnya', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 16),
+              _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Saya'),
+              _buildSidebarItem('nilai', Icons.military_tech_outlined, 'Nilai Saya'),
+              const Divider(height: 32),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(100), letterSpacing: 1.5)),
+              ),
+              if (_channels.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 14, top: 4),
+                  child: Text('Belum ada channel', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(100))),
+                ),
+              for (var c in _channels)
+                _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileNavItem(String id, IconData icon, String fallbackLabel) {
     final theme = Theme.of(context);
-    final isSelected = _selectedIndex == index;
+    final isSelected = _activeTabID == id;
     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100);
 
     return InkWell(
-      onTap: () => setState(() => _selectedIndex = index),
+      onTap: () => setState(() {
+        _activeTabID = id;
+        _activeTitle = fallbackLabel;
+      }),
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),

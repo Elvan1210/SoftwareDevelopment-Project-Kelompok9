@@ -29,12 +29,30 @@ class GuruTugasView extends StatefulWidget {
 
 class _GuruTugasViewState extends State<GuruTugasView> {
   List<dynamic> _tugasList = [];
+  List<dynamic> _channels = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _fetchChannels();
     _fetchTugas();
+  }
+
+  Future<void> _fetchChannels() async {
+    try {
+      final kelasId = widget.teamData['id'];
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/channels?kelas_id=$kelasId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        final dec = jsonDecode(res.body);
+        if (mounted) setState(() => _channels = dec is List ? dec : []);
+      }
+    } catch (e) {
+      debugPrint("Error channel: $e");
+    }
   }
 
   Future<void> _fetchTugas() async {
@@ -82,6 +100,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
       selectedDeadline = DateTime.tryParse(tugas['deadline']);
     }
 
+    String selectedChannelId = isEditing ? (tugas['channel_id'] ?? 'general') : 'general';
     bool isUploading = false; // State untuk loading upload
 
     showDialog(
@@ -131,6 +150,23 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
                     const SizedBox(height: 16),
                     AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedChannelId,
+                      decoration: InputDecoration(
+                        labelText: 'Bagikan ke Channel...',
+                        prefixIcon: const Icon(Icons.forum_outlined),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: [
+                        const DropdownMenuItem(value: 'general', child: Text('General (Seluruh Kelas)')),
+                        for (var c in _channels)
+                          DropdownMenuItem(value: c['id'].toString(), child: Text(c['nama_channel'] ?? '-')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => selectedChannelId = val);
+                      },
+                    ),
                     const SizedBox(height: 16),
                     // TOMBOL DEADLINE...
                     InkWell(
@@ -195,6 +231,8 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     'kelas': widget.teamData['nama_kelas'], 
                     'kelas_id': widget.teamData['id'], 
                     'guru_id': widget.userData['id'],
+                    'channel_id': selectedChannelId, // Menyimpan channel_id spesifik
+                    'waktu': DateTime.now().toIso8601String(), // Waktu posting untuk channel feed
                   };
                   final url = isEditing ? '$baseUrl/api/tugas/${tugas['id']}' : '$baseUrl/api/tugas';
                   final response = await (isEditing
