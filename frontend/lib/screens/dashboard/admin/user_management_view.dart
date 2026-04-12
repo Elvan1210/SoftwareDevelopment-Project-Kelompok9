@@ -235,7 +235,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       crossAxisCount: crossCount,
                                       crossAxisSpacing: 16,
                                       mainAxisSpacing: 16,
-                                      childAspectRatio: crossCount == 1 ? 3.0 : 1.4,
+                                      childAspectRatio: crossCount == 1 ? 2.2 : 1.4,
                                     ),
                                     delegate: SliverChildBuilderDelegate(
                                       (context, index) {
@@ -273,7 +273,7 @@ class _UserManagementViewState extends State<UserManagementView> {
           children: [
             Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color.withAlpha(180))),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white)),
+            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
       ),
@@ -400,7 +400,7 @@ class _UserCard extends StatelessWidget {
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 12),
           Row(
             children: [
               Icon(Icons.alternate_email_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
