@@ -51,12 +51,11 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
         body: Column(
           children: [
             // ── Admin Explorer Header ──────────────────────────────
@@ -86,7 +85,7 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
                               crossAxisCount: crossCount,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              childAspectRatio: crossCount == 1 ? 3.0 : 1.6,
+                              childAspectRatio: crossCount == 1 ? 2.0 : 1.6,
                             ),
                             itemCount: _filtered.length,
                             itemBuilder: (_, i) {
@@ -102,7 +101,6 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
             ),
           ],
         ),
-      ),
     );
   }
 

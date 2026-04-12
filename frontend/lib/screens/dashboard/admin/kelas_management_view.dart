@@ -174,11 +174,10 @@ class _KelasManagementViewState extends State<KelasManagementView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return AppShell(child: _buildSkeleton());
+    if (_isLoading) return _buildSkeleton();
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showKelasForm(),
           icon: Icons.add_rounded,
@@ -229,7 +228,6 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                   ),
                 ),
               ),
-      ),
     );
   }
 

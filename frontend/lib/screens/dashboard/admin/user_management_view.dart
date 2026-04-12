@@ -181,16 +181,15 @@ class _UserManagementViewState extends State<UserManagementView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
     final totalUsers = _users.length;
     final totalTeachers = _users.where((u) => u['role'] == 'Guru').length;
     final totalStudents = _users.where((u) => u['role'] == 'Siswa').length;
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showUserForm(),
           icon: Icons.person_add_rounded,
@@ -259,7 +258,6 @@ class _UserManagementViewState extends State<UserManagementView> {
             ),
           ],
         ),
-      ),
     );
   }
 
