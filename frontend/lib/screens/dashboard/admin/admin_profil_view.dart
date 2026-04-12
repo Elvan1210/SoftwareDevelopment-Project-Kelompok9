@@ -23,8 +23,7 @@ class AdminProfilView extends StatelessWidget {
             ? nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
             : 'AD';
 
-        return AppShell(
-          child: Scaffold(
+        return Scaffold(
             backgroundColor: Colors.transparent,
             body: LayoutBuilder(builder: (ctx, constraints) {
               final w = constraints.maxWidth;
@@ -55,7 +54,6 @@ class AdminProfilView extends StatelessWidget {
                 ]),
               );
             }),
-          ),
         );
       },
     );

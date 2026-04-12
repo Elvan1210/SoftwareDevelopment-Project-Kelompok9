@@ -64,12 +64,11 @@ class _AdminMateriViewState extends State<AdminMateriView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
         body: Column(
           children: [
             // ── Admin Explorer Header ──────────────────────────────
@@ -99,7 +98,7 @@ class _AdminMateriViewState extends State<AdminMateriView> {
                               crossAxisCount: crossCount,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              childAspectRatio: crossCount == 1 ? 2.8 : 1.4,
+                              childAspectRatio: crossCount == 1 ? 2.0 : 1.4,
                             ),
                             itemCount: _filtered.length,
                             itemBuilder: (_, i) {
@@ -116,7 +115,6 @@ class _AdminMateriViewState extends State<AdminMateriView> {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -165,14 +163,15 @@ class _AdminMateriCard extends StatelessWidget {
               IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20)),
             ],
           ),
-          Expanded(
+          Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 8),
                 Text(materi['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(150))),
-                Text('Kelas: ${materi['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120))),
+                Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('Kelas: ${materi['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120)), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),

@@ -126,12 +126,11 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showPengumumanForm(),
           icon: Icons.campaign_rounded,
@@ -175,7 +174,6 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
             ),
           ],
         ),
-      ),
     );
   }
 
