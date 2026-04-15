@@ -11,6 +11,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -89,7 +90,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.dashboard_customize_rounded, size: 64, color: Theme.of(context).primaryColor),
+            Icon(LucideIcons.layoutDashboard, size: 64, color: Theme.of(context).primaryColor),
             const SizedBox(height: 24),
             Text(
               'Dashboard ${widget.teamData['nama_kelas']}',
@@ -99,7 +100,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             const SizedBox(height: 8),
             Text(
               'Ringkasan aktivitas akan muncul di sini',
-              style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+              style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -131,12 +132,12 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          _buildSidebarItem('dashboard', Icons.dashboard_customize_outlined, 'Dashboard'),
-                          _buildSidebarItem('saluran', Icons.forum_outlined, 'Saluran'),
-                          _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Saya'),
-                          _buildSidebarItem('tugas', Icons.assignment_outlined, 'Tugas Kelas'),
-                          _buildSidebarItem('nilai', Icons.military_tech_outlined, 'Nilai Saya'),
-                          _buildSidebarItem('materi', Icons.auto_stories_outlined, 'Materi Pelajaran'),
+                          _buildSidebarItem('dashboard', LucideIcons.layoutDashboard, 'Dashboard'),
+                          _buildSidebarItem('saluran', LucideIcons.messageSquare, 'Saluran'),
+                          _buildSidebarItem('presensi', LucideIcons.userCheck, 'Presensi Saya'),
+                          _buildSidebarItem('tugas', LucideIcons.clipboardList, 'Tugas Kelas'),
+                          _buildSidebarItem('nilai', LucideIcons.award, 'Nilai Saya'),
+                          _buildSidebarItem('materi', LucideIcons.bookOpen, 'Materi Pelajaran'),
                           
                           const SizedBox(height: 24),
                           Padding(
@@ -149,7 +150,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                               child: Text('Belum ada channel', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(100))),
                             ),
                           for (var c in _channels)
-                            _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true),
+                            _buildSidebarItem('channel_${c['id']}', LucideIcons.hash, c['nama_channel'] ?? 'Unnamed', isChannel: true),
                             
                           const SizedBox(height: 24),
                         ],
@@ -176,7 +177,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                     scrolledUnderElevation: 0,
                     leading: IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                      icon: const Icon(LucideIcons.chevronLeft, size: 20),
                     ),
                     title: Text(
                       _activeTitle,
@@ -220,7 +221,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: theme.primaryColor.withAlpha(20), borderRadius: BorderRadius.circular(16)),
-            child: Icon(Icons.school_rounded, color: theme.primaryColor, size: 28),
+            child: Icon(LucideIcons.graduationCap, color: theme.primaryColor, size: 28),
           ).animate().scale(delay: 200.ms, curve: Curves.easeOutBack),
           const SizedBox(height: 24),
           Text(
@@ -230,7 +231,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           const SizedBox(height: 8),
           Text(
             widget.teamData['guru_nama'] ?? 'Pengajar',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
           ),
         ],
       ),
@@ -294,7 +295,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
         overrideColor: theme.primaryColor.withAlpha(15),
         child: Row(
           children: [
-            Icon(Icons.auto_awesome_rounded, color: theme.primaryColor, size: 20),
+            Icon(LucideIcons.sparkles, color: theme.primaryColor, size: 20),
             const SizedBox(width: 12),
             Text('Premium Access', style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w900, fontSize: 12)),
           ],
@@ -323,7 +324,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                        icon: const Icon(LucideIcons.chevronLeft, size: 18),
                         visualDensity: VisualDensity.compact,
                       ),
                       const SizedBox(width: 8),
@@ -334,6 +335,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                           overflow: TextOverflow.ellipsis,
                         ).animate(key: ValueKey(_activeTabID)).fade(),
                       ),
+                      const ThemeToggle(),
+                      const SizedBox(width: 4),
                       NotificationBell(
                         userData: widget.userData, 
                         token: widget.token,
@@ -372,13 +375,13 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildMobileNavItem('dashboard', Icons.dashboard_customize_outlined, 'Home'),
-                  _buildMobileNavItem('saluran', Icons.forum_outlined, 'Saluran'),
-                  _buildMobileNavItem('tugas', Icons.assignment_outlined, 'Tugas'),
-                  _buildMobileNavItem('materi', Icons.auto_stories_outlined, 'Materi'),
+                  _buildMobileNavItem('dashboard', LucideIcons.layoutDashboard, 'Home'),
+                  _buildMobileNavItem('saluran', LucideIcons.messageSquare, 'Saluran'),
+                  _buildMobileNavItem('tugas', LucideIcons.clipboardList, 'Tugas'),
+                  _buildMobileNavItem('materi', LucideIcons.bookOpen, 'Materi'),
                   IconButton(
                     onPressed: () => _showMobileMenu(theme),
-                    icon: Icon(Icons.menu_rounded, color: theme.colorScheme.onSurface.withAlpha(150)),
+                    icon: Icon(LucideIcons.menu, color: theme.colorScheme.onSurface.withAlpha(150)),
                   ),
                 ],
               ),
@@ -403,8 +406,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             children: [
               Text('Menu Lainnya', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
               const SizedBox(height: 16),
-              _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Saya'),
-              _buildSidebarItem('nilai', Icons.military_tech_outlined, 'Nilai Saya'),
+              _buildSidebarItem('presensi', LucideIcons.userCheck, 'Presensi Saya'),
+              _buildSidebarItem('nilai', LucideIcons.award, 'Nilai Saya'),
               const Divider(height: 32),
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -416,7 +419,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                   child: Text('Belum ada channel', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(100))),
                 ),
               for (var c in _channels)
-                _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true),
+                _buildSidebarItem('channel_${c['id']}', LucideIcons.hash, c['nama_channel'] ?? 'Unnamed', isChannel: true),
             ],
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -96,12 +97,12 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     AppTextField(
                         controller: judulCtrl,
                         labelText: 'Judul Materi',
-                        prefixIcon: Icons.title_rounded),
+                        prefixIcon: LucideIcons.type),
                     const SizedBox(height: 16),
                     AppTextField(
                         controller: deskripsiCtrl,
                         labelText: 'Deskripsi Singkat',
-                        prefixIcon: Icons.description_outlined,
+                        prefixIcon: LucideIcons.alignLeft,
                         keyboardType: TextInputType.multiline),
                     const SizedBox(height: 20),
                     
@@ -123,9 +124,10 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                           else
                             ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF76AFB8),
+                                backgroundColor: Theme.of(context).primaryColor,
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                               ),
                               onPressed: () async {
                                 FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -159,14 +161,14 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                                   }
                                 }
                               },
-                              icon: const Icon(Icons.cloud_upload_outlined),
+                              icon: const Icon(LucideIcons.uploadCloud),
                               label: Text(selectedFileName ?? 'Pilih File (PDF/Gambar)'),
                             ),
                           const SizedBox(height: 12),
                           AppTextField(
                             controller: linkCtrl,
                             labelText: 'Link File / URL Cloudinary',
-                            prefixIcon: Icons.link_rounded,
+                            prefixIcon: LucideIcons.link,
                             // Dibuat read-only jika ingin memaksa user lewat tombol upload
                           ),
                         ],
@@ -180,7 +182,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF27F33),
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -245,47 +247,53 @@ class _GuruMateriViewState extends State<GuruMateriView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF76AFB8),
+      floatingActionButton: AppFAB(
         onPressed: () => _showMateriForm(),
-        icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-        label: const Text('Materi Baru', style: TextStyle(color: Colors.white)),
+        icon: LucideIcons.plusCircle,
+        label: 'Materi Baru',
       ),
       body: _materiList.isEmpty
-          ? const Center(child: Text("Belum ada materi untuk kelas ini."))
+          ? EmptyState(icon: LucideIcons.bookOpen, message: 'Belum ada materi untuk kelas ini.', color: Theme.of(context).primaryColor)
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _materiList.length,
               itemBuilder: (_, i) {
                 final m = _materiList[i];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF76AFB8).withAlpha(30),
-                        borderRadius: BorderRadius.circular(10),
+                return PremiumCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(LucideIcons.bookOpen, color: Theme.of(context).primaryColor),
                       ),
-                      child: const Icon(Icons.menu_book_rounded, color: Color(0xFF76AFB8)),
-                    ),
-                    title: Text(m['judul'] ?? '-', 
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(m['deskripsi'] ?? (m['kelas'] ?? '-'), 
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                            icon: const Icon(Icons.open_in_new, color: Colors.blue),
-                            onPressed: () => _openFile(m['file_url'])),
-                        IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-                            onPressed: () => _deleteMateri(m['id'].toString())),
-                      ],
-                    ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(m['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                            const SizedBox(height: 4),
+                            Text(m['deskripsi'] ?? (m['kelas'] ?? '-'), style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                              icon: Icon(LucideIcons.externalLink, color: Theme.of(context).colorScheme.secondary),
+                              onPressed: () => _openFile(m['file_url'])),
+                          IconButton(
+                              icon: const Icon(LucideIcons.trash, color: Colors.red),
+                              onPressed: () => _deleteMateri(m['id'].toString())),
+                        ],
+                      ),
+                    ],
                   ),
                 ).animate().fadeIn(delay: (i * 50).ms).slideX();
               },

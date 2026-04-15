@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminDashboardView extends StatefulWidget {
   final String token;
@@ -108,11 +108,12 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   }
 
   Widget _buildStatGrid(double w) {
+    final theme = Theme.of(context);
     final stats = [
-      _StatData(Icons.school_outlined, 'Total Siswa', '$_totalSiswa', AppTheme.getAdaptiveTeal(context)),
-      _StatData(Icons.person_outlined, 'Total Guru', '$_totalGuru', const Color(0xFFF27F33)),
-      _StatData(Icons.class_outlined, 'Total Kelas', '$_totalKelas', const Color(0xFF76AFB8)),
-      _StatData(Icons.book_outlined, 'Mata Pelajaran', '$_totalMapel', AppTheme.primaryTeal),
+      _StatData(LucideIcons.graduationCap, 'Total Siswa', '$_totalSiswa', Theme.of(context).colorScheme.secondary),
+      _StatData(LucideIcons.user, 'Total Guru', '$_totalGuru', theme.colorScheme.secondary),
+      _StatData(LucideIcons.library, 'Total Kelas', '$_totalKelas', theme.colorScheme.primary),
+      _StatData(LucideIcons.bookOpen, 'Mata Pelajaran', '$_totalMapel', const Color(0xFFB84A24)),
     ];
     final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
     return GridView.builder(
@@ -120,9 +121,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossCount,
-        childAspectRatio: w > 1100 ? 2.5 : 2.0, // Flatter/smaller aspect ratio
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        // Adaptive aspect ratio: wider is flatter, narrow gets more height for content
+        childAspectRatio: w > 1100 ? 2.4 : (w > 600 ? 2.2 : 2.8),
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: stats.length,
       itemBuilder: (_, i) {
@@ -158,19 +160,19 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _actionBtn(Icons.person_add_outlined, 'Tambah User', Colors.blue, () {
+              Expanded(child: _actionBtn(LucideIcons.userPlus, 'Tambah User', theme.colorScheme.secondary, () {
                 if (widget.onNavigate != null) widget.onNavigate!(1);
               })),
               const SizedBox(width: 12),
-              Expanded(child: _actionBtn(Icons.add_business_outlined, 'Buka Kelas', Colors.purple, () {
+              Expanded(child: _actionBtn(LucideIcons.building2, 'Buka Kelas', theme.primaryColor, () {
                 if (widget.onNavigate != null) widget.onNavigate!(2);
               })),
               const SizedBox(width: 12),
-              Expanded(child: _actionBtn(Icons.campaign_outlined, 'Broadcast', Colors.orange, () {
+              Expanded(child: _actionBtn(LucideIcons.megaphone, 'Broadcast', Theme.of(context).colorScheme.secondary, () {
                 if (widget.onNavigate != null) widget.onNavigate!(6);
               })),
               const SizedBox(width: 12),
-              Expanded(child: _actionBtn(Icons.settings_suggest_outlined, 'Preferensi', Colors.teal, () {
+              Expanded(child: _actionBtn(LucideIcons.settings, 'Preferensi', theme.colorScheme.primary, () {
                 if (widget.onNavigate != null) widget.onNavigate!(7);
               })),
             ],
@@ -190,7 +192,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
         splashColor: color.withAlpha(50),
         highlightColor: color.withAlpha(20),
         child: Ink(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
           decoration: BoxDecoration(
             color: color.withAlpha(15),
             borderRadius: BorderRadius.circular(16),
@@ -199,9 +201,15 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 12),
-              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+              Icon(icon, color: color, size: 26),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
@@ -232,13 +240,13 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final sections = [
       PieChartSectionData(
           value: _totalSiswa.toDouble(),
-          color: AppTheme.getAdaptiveTeal(context),
+          color: Theme.of(context).colorScheme.secondary,
           title: 'Siswa',
           radius: 60,
           titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
       PieChartSectionData(
           value: _totalGuru.toDouble(),
-          color: const Color(0xFFF27F33),
+          color: theme.colorScheme.secondary,
           title: 'Guru',
           radius: 60,
           titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
@@ -313,10 +321,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: [
-                  _bar(0, _totalSiswa.toDouble(), AppTheme.getAdaptiveTeal(context), maxY, isDark),
-                  _bar(1, _totalGuru.toDouble(), const Color(0xFFF27F33), maxY, isDark),
-                  _bar(2, _totalKelas.toDouble(), const Color(0xFF76AFB8), maxY, isDark),
-                  _bar(3, _totalMapel.toDouble(), AppTheme.getAdaptiveTeal(context), maxY, isDark),
+                  _bar(0, _totalSiswa.toDouble(), Theme.of(context).colorScheme.secondary, maxY, isDark),
+                  _bar(1, _totalGuru.toDouble(), theme.colorScheme.secondary, maxY, isDark),
+                  _bar(2, _totalKelas.toDouble(), theme.colorScheme.primary, maxY, isDark),
+                  _bar(3, _totalMapel.toDouble(), Theme.of(context).colorScheme.secondary, maxY, isDark),
                 ],
               )),
             ),

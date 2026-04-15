@@ -332,7 +332,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
           const SizedBox(height: 8),
           Text(
             widget.teamData['kode_kelas'] ?? 'GURU-CORE',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
           ),
         ],
       ),
@@ -441,6 +441,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           overflow: TextOverflow.ellipsis,
                         ).animate(key: ValueKey(_activeTabID)).fade(),
                       ),
+                      const ThemeToggle(),
+                      const SizedBox(width: 4),
                       NotificationBell(
                         userData: widget.userData, 
                         token: widget.token,

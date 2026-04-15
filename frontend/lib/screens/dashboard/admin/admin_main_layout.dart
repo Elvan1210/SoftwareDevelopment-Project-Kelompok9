@@ -14,6 +14,7 @@ import '../../../widgets/theme_toggle.dart';
 import '../../../widgets/sidebar.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminMainLayout extends StatefulWidget {
   final String token;
@@ -87,14 +88,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               userRole: 'Admin',
               onLogout: _handleLogout,
               destinations: const [
-                SidebarItemData(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard_rounded, label: 'Dashboard'),
-                SidebarItemData(icon: Icons.people_outline_rounded, selectedIcon: Icons.people_rounded, label: 'User Management'),
-                SidebarItemData(icon: Icons.meeting_room_outlined, selectedIcon: Icons.meeting_room_rounded, label: 'Kelas Management'),
-                SidebarItemData(icon: Icons.auto_stories_outlined, selectedIcon: Icons.auto_stories_rounded, label: 'Materi'),
-                SidebarItemData(icon: Icons.assignment_outlined, selectedIcon: Icons.assignment_rounded, label: 'Tugas'),
-                SidebarItemData(icon: Icons.military_tech_outlined, selectedIcon: Icons.military_tech_rounded, label: 'Nilai Akademik'),
-                SidebarItemData(icon: Icons.campaign_outlined, selectedIcon: Icons.campaign_rounded, label: 'Pengumuman'),
-                SidebarItemData(icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: 'Profil Admin'),
+                SidebarItemData(icon: LucideIcons.layoutDashboard, selectedIcon: LucideIcons.layoutDashboard, label: 'Dashboard'),
+                SidebarItemData(icon: LucideIcons.users, selectedIcon: LucideIcons.users, label: 'User Management'),
+                SidebarItemData(icon: LucideIcons.library, selectedIcon: LucideIcons.library, label: 'Kelas Management'),
+                SidebarItemData(icon: LucideIcons.bookOpen, selectedIcon: LucideIcons.bookOpen, label: 'Materi'),
+                SidebarItemData(icon: LucideIcons.clipboardList, selectedIcon: LucideIcons.clipboardList, label: 'Tugas'),
+                SidebarItemData(icon: LucideIcons.award, selectedIcon: LucideIcons.award, label: 'Nilai Akademik'),
+                SidebarItemData(icon: LucideIcons.megaphone, selectedIcon: LucideIcons.megaphone, label: 'Pengumuman'),
+                SidebarItemData(icon: LucideIcons.user, selectedIcon: LucideIcons.user, label: 'Profil Admin'),
               ],
             ),
             const SizedBox(width: 28),
@@ -225,32 +226,32 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildMobileNavItem(
-                    icon: Icons.dashboard_outlined,
-                    selectedIcon: Icons.dashboard_rounded,
+                    icon: LucideIcons.layoutDashboard,
+                    selectedIcon: LucideIcons.layoutDashboard,
                     label: 'Dashboard',
                     isSelected: bottomNavIndex == 0,
                     onTap: () => setState(() => _selectedIndex = 0),
                     theme: theme,
                   ),
                   _buildMobileNavItem(
-                    icon: Icons.people_outline_rounded,
-                    selectedIcon: Icons.people_rounded,
+                    icon: LucideIcons.users,
+                    selectedIcon: LucideIcons.users,
                     label: 'Users',
                     isSelected: bottomNavIndex == 1,
                     onTap: () => setState(() => _selectedIndex = 1),
                     theme: theme,
                   ),
                   _buildMobileNavItem(
-                    icon: Icons.meeting_room_outlined,
-                    selectedIcon: Icons.meeting_room_rounded,
+                    icon: LucideIcons.library,
+                    selectedIcon: LucideIcons.library,
                     label: 'Kelas',
                     isSelected: bottomNavIndex == 2,
                     onTap: () => setState(() => _selectedIndex = 2),
                     theme: theme,
                   ),
                   _buildMobileNavItem(
-                    icon: Icons.person_outline_rounded,
-                    selectedIcon: Icons.person_rounded,
+                    icon: LucideIcons.user,
+                    selectedIcon: LucideIcons.user,
                     label: 'Profil',
                     isSelected: bottomNavIndex == 3,
                     onTap: () => setState(() => _selectedIndex = 7),
@@ -258,8 +259,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   ),
                   // Tombol "More" untuk menu lainnya
                   _buildMobileNavItem(
-                    icon: Icons.more_horiz_rounded,
-                    selectedIcon: Icons.more_horiz_rounded,
+                    icon: LucideIcons.moreHorizontal,
+                    selectedIcon: LucideIcons.moreHorizontal,
                     label: 'Lainnya',
                     isSelected: _selectedIndex >= 3 && _selectedIndex <= 6,
                     onTap: () => _showMobileMenu(theme, isDark),
@@ -323,14 +324,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           children: [
             Text('Menu Lainnya', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
             const SizedBox(height: 20),
-            _buildMenuTile(Icons.auto_stories_outlined, 'Materi', 3, theme, ctx),
-            _buildMenuTile(Icons.assignment_outlined, 'Tugas', 4, theme, ctx),
-            _buildMenuTile(Icons.military_tech_outlined, 'Nilai Akademik', 5, theme, ctx),
-            _buildMenuTile(Icons.campaign_outlined, 'Pengumuman', 6, theme, ctx),
+            _buildMenuTile(LucideIcons.bookOpen, 'Materi', 3, theme, ctx),
+            _buildMenuTile(LucideIcons.clipboardList, 'Tugas', 4, theme, ctx),
+            _buildMenuTile(LucideIcons.award, 'Nilai Akademik', 5, theme, ctx),
+            _buildMenuTile(LucideIcons.megaphone, 'Pengumuman', 6, theme, ctx),
             const SizedBox(height: 12),
             const Divider(),
             const SizedBox(height: 4),
-            _buildMenuTile(Icons.logout_rounded, 'Logout', -1, theme, ctx, isLogout: true),
+            _buildMenuTile(LucideIcons.logOut, 'Logout', -1, theme, ctx, isLogout: true),
           ],
         ),
       ),

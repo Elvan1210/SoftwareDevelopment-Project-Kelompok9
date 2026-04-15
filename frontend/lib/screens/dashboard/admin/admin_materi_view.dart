@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminMateriView extends StatefulWidget {
   final String token;
@@ -76,14 +77,14 @@ class _AdminMateriViewState extends State<AdminMateriView> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
                 hintText: 'Cari materi, guru, atau mapel...',
-                prefixIcon: Icons.search_rounded,
+                prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
 
             Expanded(
               child: _filtered.isEmpty
-                  ? const EmptyState(icon: Icons.library_books_rounded, message: 'Tidak ada materi ditemukan.', color: Colors.teal)
+                  ? EmptyState(icon: LucideIcons.bookOpen, message: 'Tidak ada materi ditemukan.', color: Theme.of(context).primaryColor)
                   : RefreshIndicator(
                       onRefresh: _fetchMateri,
                       child: LayoutBuilder(
@@ -145,8 +146,8 @@ class _AdminMateriCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Colors.teal;
     final theme = Theme.of(context);
+    final accent = theme.primaryColor;
 
     return PremiumCard(
       accentColor: accent,
@@ -157,10 +158,10 @@ class _AdminMateriCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: const Icon(Icons.school_rounded, color: accent, size: 20)),
+              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.graduationCap, color: accent, size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Text(materi['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-              IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20)),
+              IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: Colors.red, size: 20)),
             ],
           ),
           Flexible(
@@ -181,7 +182,7 @@ class _AdminMateriCard extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () => _launchURL(materi['file_url'] ?? materi['link']),
               style: OutlinedButton.styleFrom(foregroundColor: accent, side: BorderSide(color: accent.withAlpha(80)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              icon: const Icon(Icons.open_in_new_rounded, size: 16),
+              icon: const Icon(LucideIcons.externalLink, size: 16),
               label: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
             ),
           ),

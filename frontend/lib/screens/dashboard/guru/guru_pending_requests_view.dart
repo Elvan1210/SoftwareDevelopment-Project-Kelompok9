@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/app_shell.dart';
 
@@ -74,7 +73,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$nama berhasil diterima! ✅'),
-              backgroundColor: AppTheme.getAdaptiveTeal(context),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
             ),
           );
         }
@@ -169,7 +168,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryTeal,
+              backgroundColor: const Color(0xFFB84A24),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -199,7 +198,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(resBody['message'] ?? 'Semua siswa diterima! ✅'),
-              backgroundColor: AppTheme.getAdaptiveTeal(context),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
             ),
           );
         }
@@ -230,7 +229,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(value ? 'Auto-accept diaktifkan — siswa langsung diterima' : 'Auto-accept dinonaktifkan — siswa perlu persetujuan'),
-              backgroundColor: AppTheme.getAdaptiveTeal(context),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
             ),
           );
         }
@@ -290,19 +289,19 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
 
   Widget _buildAutoAcceptCard(ThemeData theme) {
     return PremiumCard(
-      accentColor: AppTheme.getAdaptiveTeal(context),
+      accentColor: Theme.of(context).colorScheme.secondary,
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.getAdaptiveTeal(context).withAlpha(20),
+              color: Theme.of(context).colorScheme.secondary.withAlpha(20),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.verified_user_rounded,
-              color: AppTheme.getAdaptiveTeal(context),
+              color: Theme.of(context).colorScheme.secondary,
               size: 24,
             ),
           ),
@@ -332,7 +331,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           Switch.adaptive(
             value: _autoAccept,
             onChanged: _toggleAutoAccept,
-            activeTrackColor: AppTheme.getAdaptiveTeal(context),
+            activeTrackColor: Theme.of(context).colorScheme.secondary,
           ),
         ],
       ),
@@ -372,7 +371,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
             icon: const Icon(Icons.done_all_rounded, size: 18),
             label: const Text('Terima Semua', style: TextStyle(fontWeight: FontWeight.w800)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.getAdaptiveTeal(context),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -392,7 +391,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
             Icon(
               Icons.inbox_rounded,
               size: 72,
-              color: AppTheme.getAdaptiveTeal(context).withAlpha(80),
+              color: Theme.of(context).colorScheme.secondary.withAlpha(80),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -559,11 +558,11 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.getAdaptiveTeal(context).withAlpha(15),
+                      color: Theme.of(context).colorScheme.secondary.withAlpha(15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.getAdaptiveTeal(context).withAlpha(40)),
+                      border: Border.all(color: Theme.of(context).colorScheme.secondary.withAlpha(40)),
                     ),
-                    child: Icon(Icons.check_rounded, color: AppTheme.getAdaptiveTeal(context), size: 20),
+                    child: Icon(Icons.check_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
                   ),
                 ),
               ),

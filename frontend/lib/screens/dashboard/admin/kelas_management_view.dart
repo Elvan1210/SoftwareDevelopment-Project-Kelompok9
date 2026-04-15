@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class KelasManagementView extends StatefulWidget {
   final String token;
@@ -71,9 +71,9 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     
     // Antigravity Strict Colors
     final List<Color> cardColors = [
-      AppTheme.getAdaptiveTeal(context), // Deep Teal
-      const Color(0xFFF27F33), // Orange
-      const Color(0xFF76AFB8), // Light Teal
+      Theme.of(context).colorScheme.secondary, // Deep Teal
+      Theme.of(context).colorScheme.secondary, // Orange
+      Theme.of(context).primaryColor, // Light Teal
     ];
     Color selectedColor = isEditing && kelas['warna_card'] != null 
         ? Color(int.parse(kelas['warna_card'])) 
@@ -96,31 +96,31 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.getAdaptiveTeal(context).withAlpha(20),
+                        color: Theme.of(context).colorScheme.secondary.withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.getAdaptiveTeal(context).withAlpha(50)),
+                        border: Border.all(color: Theme.of(context).colorScheme.secondary.withAlpha(50)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline, color: AppTheme.getAdaptiveTeal(context), size: 20),
+                          Icon(LucideIcons.info, color: Theme.of(context).colorScheme.secondary, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Kode Akses untuk bergabung (join code) akan digenerate secara otomatis setelah tim ini disimpan.',
-                              style: TextStyle(fontSize: 12, color: AppTheme.getAdaptiveTeal(context), fontWeight: FontWeight.w600),
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
-                    AppTextField(controller: kodeCtrl, labelText: 'Kode Kelas (cth: GN2526)', prefixIcon: Icons.qr_code_rounded),
+                    AppTextField(controller: kodeCtrl, labelText: 'Kode Kelas (cth: GN2526)', prefixIcon: LucideIcons.qrCode),
                     const SizedBox(height: 16),
-                    AppTextField(controller: namaCtrl, labelText: 'Nama Tim (cth: Sistem Operasi (A))', prefixIcon: Icons.class_outlined),
+                    AppTextField(controller: namaCtrl, labelText: 'Nama Tim (cth: Sistem Operasi (A))', prefixIcon: LucideIcons.library),
                     const SizedBox(height: 16),
-                    AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.subject_rounded),
+                    AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: LucideIcons.bookOpen),
                     const SizedBox(height: 16),
-                    AppTextField(controller: tahunAjaranCtrl, labelText: 'Tahun Ajaran (cth: 2024/2025 Ganjil)', prefixIcon: Icons.calendar_today_rounded),
+                    AppTextField(controller: tahunAjaranCtrl, labelText: 'Tahun Ajaran (cth: 2024/2025 Ganjil)', prefixIcon: LucideIcons.calendar),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -130,7 +130,7 @@ class _KelasManagementViewState extends State<KelasManagementView> {
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF27F33),
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -180,11 +180,11 @@ class _KelasManagementViewState extends State<KelasManagementView> {
       backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showKelasForm(),
-          icon: Icons.add_rounded,
+          icon: LucideIcons.plus,
           label: 'Buat Tim/Kelas',
         ),
         body: _kelasList.isEmpty
-            ? EmptyState(icon: Icons.grid_view_rounded, message: 'Belum ada tim/kelas virtual.', color: AppTheme.getAdaptiveTeal(context))
+            ? EmptyState(icon: LucideIcons.layoutGrid, message: 'Belum ada tim/kelas virtual.', color: Theme.of(context).colorScheme.secondary)
             : RepaintBoundary(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -320,7 +320,7 @@ class _TeamsClassCard extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.vpn_key_rounded, size: 14, color: Color(0xFF76AFB8)),
+                                  const Icon(LucideIcons.key, size: 14, color: Color(0xFF76AFB8)),
                                   const SizedBox(width: 6),
                                   Text(
                                     kelas['kode_akses'] ?? 'Generating...',
@@ -342,7 +342,7 @@ class _TeamsClassCard extends StatelessWidget {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('Kode akses "${kelas['kode_akses']}" berhasil disalin! 📋'),
-                                      backgroundColor: AppTheme.getAdaptiveTeal(context),
+                                      backgroundColor: Theme.of(context).colorScheme.secondary,
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
@@ -351,7 +351,7 @@ class _TeamsClassCard extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(4),
                                   child: Icon(
-                                    Icons.copy_rounded,
+                                    LucideIcons.copy,
                                     size: 14,
                                     color: const Color(0xFF76AFB8).withAlpha(180),
                                   ),
@@ -363,7 +363,7 @@ class _TeamsClassCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            const Icon(Icons.history_rounded, size: 10, color: Colors.grey),
+                            const Icon(LucideIcons.clock, size: 10, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
                               'TA: ${kelas['tahun_ajaran'] ?? '-'}',
@@ -383,11 +383,11 @@ class _TeamsClassCard extends StatelessWidget {
                   ),
                   
                   PopupMenuButton(
-                    icon: Icon(Icons.more_horiz_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                    icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     itemBuilder: (_) => [
-                      PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 12), Text('Edit Kelas')])),
-                      PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                      PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(LucideIcons.edit2, size: 18), SizedBox(width: 12), Text('Edit Kelas')])),
+                      PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 18), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
                     ],
                   ),
                 ],
@@ -402,11 +402,11 @@ class _TeamsClassCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildMiniIcon(Icons.assignment_outlined),
+                _buildMiniIcon(LucideIcons.clipboardList),
                 const SizedBox(width: 16),
-                _buildMiniIcon(Icons.backpack_outlined),
+                _buildMiniIcon(LucideIcons.briefcase),
                 const SizedBox(width: 16),
-                _buildMiniIcon(Icons.assignment_ind_outlined),
+                _buildMiniIcon(LucideIcons.userCheck),
                 const Spacer(),
                 Text('${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey)),
               ],

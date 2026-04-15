@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../services/notifikasi_service.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminPengumumanView extends StatefulWidget {
   final String token;
@@ -73,9 +74,9 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
-                AppTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: Icons.campaign_rounded),
+                AppTextField(controller: judulCtrl, labelText: 'Judul Pengumuman', prefixIcon: LucideIcons.megaphone),
                 const SizedBox(height: 16),
-                AppTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                AppTextField(controller: isiCtrl, labelText: 'Isi Pengumuman', prefixIcon: LucideIcons.alignLeft, keyboardType: TextInputType.multiline),
               ],
             ),
           ),
@@ -133,7 +134,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
       backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showPengumumanForm(),
-          icon: Icons.campaign_rounded,
+          icon: LucideIcons.megaphone,
           label: 'Buat Pengumuman',
         ),
         body: Column(
@@ -142,13 +143,13 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
                 hintText: 'Cari pengumuman...',
-                prefixIcon: Icons.search_rounded,
+                prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
             Expanded(
               child: _filtered.isEmpty
-                  ? const EmptyState(icon: Icons.campaign_rounded, message: 'Belum ada pengumuman.', color: Colors.orange)
+                  ? EmptyState(icon: LucideIcons.megaphone, message: 'Belum ada pengumuman.', color: Theme.of(context).colorScheme.secondary)
                   : RefreshIndicator(
                       onRefresh: _fetchPengumuman,
                       child: LayoutBuilder(
@@ -196,8 +197,8 @@ class _AdminPengumumanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color accent = Colors.orange;
     final theme = Theme.of(context);
+    final Color accent = theme.colorScheme.secondary;
 
     return PremiumCard(
       accentColor: accent,
@@ -209,7 +210,7 @@ class _AdminPengumumanCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(16)),
-            child: const Icon(Icons.campaign_rounded, color: accent, size: 24),
+            child: Icon(LucideIcons.megaphone, color: accent, size: 24),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -228,12 +229,12 @@ class _AdminPengumumanCard extends StatelessWidget {
                           position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           items: [
-                            PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
-                            PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                            PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
+                            PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
                           ],
                         );
                       },
-                      icon: Icon(Icons.more_vert_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                      icon: Icon(LucideIcons.moreVertical, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.zero,
                     ),

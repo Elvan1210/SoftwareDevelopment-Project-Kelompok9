@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
@@ -29,22 +30,14 @@ class Sidebar extends StatelessWidget {
     return RepaintBoundary(
       child: Container(
         width: 280,
-        margin: const EdgeInsets.all(12),
+        margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          // PERFORMANCE: No BackdropFilter. Using solid high-alpha glass.
-          color: theme.colorScheme.surface.withAlpha(isDark ? 245 : 255),
-          borderRadius: BorderRadius.circular(32),
+          color: theme.colorScheme.surface.withAlpha(isDark ? 100 : 255),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(10),
-            width: 1.5,
+            color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
+            width: 1.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 80 : 20),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
-            ),
-          ],
         ),
         child: Column(
           children: [
@@ -186,17 +179,21 @@ class _ProfileHeader extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        _HeaderBadge(
-                          label: role,
-                          color: primaryColor,
-                          isDark: isDark,
+                        Flexible(
+                          child: _HeaderBadge(
+                            label: role,
+                            color: primaryColor,
+                            isDark: isDark,
+                          ),
                         ),
                         if (kelas != null) ...[
                           const SizedBox(width: 6),
-                          _HeaderBadge(
-                            label: kelas!,
-                            color: secondaryColor,
-                            isDark: isDark,
+                          Flexible(
+                            child: _HeaderBadge(
+                              label: kelas!,
+                              color: secondaryColor,
+                              isDark: isDark,
+                            ),
                           ),
                         ],
                       ],
@@ -225,12 +222,16 @@ class _HeaderBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Contrast check: sage (#A6ACA2) on white = 2.5:1 — FAIL.
+    // In light mode, use the color darkened enough to pass WCAG AA.
+    // In dark mode, the badge sits on dark surface so the lighter color works.
+    final textColor = isDark ? color : Color.alphaBlend(color.withAlpha(220), Colors.black);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withAlpha(isDark ? 30 : 20),
+        color: color.withAlpha(isDark ? 30 : 15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withAlpha(50), width: 1),
+        border: Border.all(color: color.withAlpha(isDark ? 60 : 40), width: 1),
       ),
       child: Text(
         label.toUpperCase(),
@@ -238,8 +239,10 @@ class _HeaderBadge extends StatelessWidget {
           fontSize: 9,
           fontWeight: FontWeight.w900,
           letterSpacing: 0.5,
-          color: color,
+          color: textColor,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -362,7 +365,7 @@ class _SidebarFooter extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.logout_rounded, color: primaryColor, size: 20),
+              Icon(LucideIcons.logOut, color: primaryColor, size: 20),
               const SizedBox(width: 12),
               Text(
                 'LOGOUT',

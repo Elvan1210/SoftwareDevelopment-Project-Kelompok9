@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
@@ -96,7 +95,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                       if (ctx.mounted) {
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(resBody['message'] ?? 'Berhasil bergabung!'), backgroundColor: AppTheme.getAdaptiveTeal(context)),
+                          SnackBar(content: Text(resBody['message'] ?? 'Berhasil bergabung!'), backgroundColor: Theme.of(context).colorScheme.secondary),
                         );
                       }
                       _fetchMyTeams();
@@ -146,7 +145,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.groups_rounded, size: 80, color: AppTheme.getAdaptiveTeal(context)),
+                  Icon(Icons.groups_rounded, size: 80, color: Theme.of(context).colorScheme.secondary),
                   const SizedBox(height: 16),
                   const Text(
                     'Anda belum memiliki/masuk ke tim atau kelas.',
@@ -235,19 +234,26 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                                       color: Theme.of(context).colorScheme.surface,
                                       child: Row(
                                         children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF76AFB8).withAlpha(20),
-                                              border: Border.all(color: const Color(0xFF76AFB8).withAlpha(50)),
-                                              borderRadius: BorderRadius.circular(8),
+                                          Flexible(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF76AFB8).withAlpha(20),
+                                                border: Border.all(color: const Color(0xFF76AFB8).withAlpha(50)),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                'Kode: ${tim['kode_akses']}',
+                                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF76AFB8)),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                            child: Text('Kode: ${tim['kode_akses']}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF76AFB8))),
                                           ),
-                                          const Spacer(),
+                                          const SizedBox(width: 8),
                                           Icon(Icons.people_alt_outlined, size: 16, color: Colors.grey.shade600),
                                           const SizedBox(width: 4),
-                                          Text('${(tim['siswa_ids'] as List?)?.length ?? 0} Siswa', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                                          Text('${(tim['siswa_ids'] as List?)?.length ?? 0}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                                         ],
                                       ),
                                     ),

@@ -91,31 +91,9 @@ class AppShell extends StatelessWidget {
 }
 
 // ─── AppBackground ──────────────────────────────────────────────────
-/// Elite backdrop with 'Mathematical Pulse' (Grid + Animated Blobs).
-class AppBackground extends StatefulWidget {
+/// Minimalist atmospheric background. No flashy blobs, just deep focus.
+class AppBackground extends StatelessWidget {
   const AppBackground({super.key});
-
-  @override
-  State<AppBackground> createState() => _AppBackgroundState();
-}
-
-class _AppBackgroundState extends State<AppBackground> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 20),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,82 +101,36 @@ class _AppBackgroundState extends State<AppBackground> with SingleTickerProvider
     final isDark = theme.brightness == Brightness.dark;
     
     return RepaintBoundary(
-      child: Stack(
-        children: [
-          // 1. Foundation Base
-          Container(color: isDark ? const Color(0xFF020617) : const Color(0xFFF8FAFC)),
-
-          // 2. Mathematical Grid
-          Positioned.fill(
-            child: Opacity(
-              opacity: isDark ? 0.05 : 0.03,
-              child: CustomPaint(painter: _GridPainter(isDark: isDark)),
-            ),
-          ),
-
-          // 3. Animated Glow Blobs (Hardware Accelerated)
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return Stack(
-                children: [
-                   _buildBlob(
-                    top: -200 + (50 * _controller.value),
-                    left: -100 + (20 * _controller.value),
-                    color: (isDark ? const Color(0xFF0D9488) : const Color(0xFF99F6E4)).withAlpha(40),
-                    size: 0.7,
-                  ),
-                  _buildBlob(
-                    bottom: -200 - (30 * _controller.value),
-                    right: -100 - (40 * _controller.value),
-                    color: (isDark ? const Color(0xFF4338CA) : const Color(0xFFC7D2FE)).withAlpha(30),
-                    size: 0.6,
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBlob({double? top, double? left, double? right, double? bottom, required Color color, required double size}) {
-    return Positioned(
-      top: top, left: left, right: right, bottom: bottom,
       child: Container(
-        width: MediaQuery.of(context).size.width * size,
-        height: MediaQuery.of(context).size.height * size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: [color, color.withAlpha(0)]),
-        ),
+        color: theme.scaffoldBackgroundColor,
+        child: isDark 
+            ? Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(-0.8, -0.8),
+                    radius: 2.0,
+                    colors: [
+                      Colors.white.withAlpha(8), // Very subtle top-left light
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0, -1.0),
+                    radius: 1.5,
+                    colors: [
+                      Colors.black.withAlpha(2),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
       ),
     );
   }
-}
-
-class _GridPainter extends CustomPainter {
-  final bool isDark;
-  _GridPainter({required this.isDark});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(20)
-      ..strokeWidth = 0.5;
-
-    const step = 40.0;
-    for (double i = 0; i < size.width; i += step) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
-    }
-    for (double i = 0; i < size.height; i += step) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ─── GlassCard ──────────────────────────────────────────────────────────────
@@ -303,44 +235,23 @@ class _PremiumCardState extends State<PremiumCard> {
         transform: Matrix4.identity()
           ..setTranslationRaw(0.0, _hovered ? -6.0 : 0.0, 0.0),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withAlpha(isDark ? 230 : 255),
+          color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
           borderRadius: BorderRadius.circular(widget.radius),
-          // ── Twin Borders ──
+          // ── Minimalist Sharp Border ──
           border: Border.all(
-            color: _hovered ? accent.withAlpha(180) : (isDark ? Colors.white.withAlpha(25) : Colors.black.withAlpha(15)),
-            width: 1.5,
+            color: _hovered ? theme.colorScheme.onSurface.withAlpha(40) : (isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(8)),
+            width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: accent.withAlpha(isDark ? 40 : 10),
-              blurRadius: _hovered ? 40 : 15,
-              offset: Offset(0, _hovered ? 12 : 6),
+              color: Colors.black.withAlpha(isDark ? 50 : 5),
+              blurRadius: _hovered ? 25 : 10,
+              offset: Offset(0, _hovered ? 8 : 4),
             ),
           ],
         ),
         child: Stack(
           children: [
-            // Inner Glow Border
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(widget.radius),
-                  border: Border.all(
-                    color: isDark ? Colors.white.withAlpha(10) : Colors.white.withAlpha(60),
-                    width: 0.5,
-                  ),
-                ),
-              ),
-            ),
-            
-            // Texture Layer (Subtle Dotted Pattern)
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.02,
-                child: CustomPaint(painter: _DotPatternPainter()),
-              ),
-            ),
-
             ClipRRect(
               borderRadius: BorderRadius.circular(widget.radius),
               child: Material(
@@ -360,20 +271,6 @@ class _PremiumCardState extends State<PremiumCard> {
       ),
     );
   }
-}
-
-class _DotPatternPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.grey;
-    for (double i = 0; i < size.width; i += 12) {
-      for (double j = 0; j < size.height; j += 12) {
-        canvas.drawCircle(Offset(i, j), 1, paint);
-      }
-    }
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ─── StatCard ───────────────────────────────────────────────────────────────
@@ -401,38 +298,49 @@ class StatCard extends StatelessWidget {
     return PremiumCard(
       onTap: onTap,
       accentColor: color,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withAlpha(isDark ? 40 : 20),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label,
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface.withAlpha(160),
+                    letterSpacing: 0.3,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withAlpha(150),
-                      letterSpacing: 0.5,
-                    )),
-                const SizedBox(height: 4),
-                Text(value,
-                    style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.w900,
                       color: theme.colorScheme.onSurface,
                       letterSpacing: -0.5,
-                    )),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
