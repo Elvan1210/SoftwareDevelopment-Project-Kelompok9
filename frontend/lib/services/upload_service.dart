@@ -10,25 +10,32 @@ class UploadService {
     required String token,
   }) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/pengumpulan/upload'));
-      request.headers['Authorization'] = 'Bearer $token';
-      
-      request.files.add(http.MultipartFile.fromBytes(
-        'file', 
-        fileBytes, 
-        filename: fileName,
-      ));
+      // Endpoint ini harus bisa menerima file dari mana saja (Tugas/Materi/Profil)
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/api/pengumpulan/upload'), 
+      );
 
-      var streamedResponse = await request.send();
+      request.headers['Authorization'] = 'Bearer $token';
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          fileBytes,
+          filename: fileName,
+        ),
+      );
+
+      var streamedResponse = await request.send().timeout(const Duration(minutes: 5)); // Tambahkan durasi
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        return data['file_url']; // Akan mengembalikan URL valid dari Cloudinary
+        return data['file_url']; // URL Cloudinary
       }
       return null;
     } catch (e) {
-      debugPrint('Error Upload: $e');
+      debugPrint('Error Upload Service: $e');
       return null;
     }
   }
