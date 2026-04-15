@@ -13,26 +13,26 @@ const upload = multer({ storage: storage, limits: { fileSize: 20 * 1024 * 1024 }
 
 const uploadFile = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: 'Tidak ada file yang diunggah!' });
+    if (!req.file) return res.status(400).json({ message: 'Tidak ada file!' });
 
-    const uniqueName = 'lampiran_' + Date.now();
-    const b64 = Buffer.from(req.file.buffer).toString('base64');
-    let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
-
-    // Deteksi apakah file adalah PDF atau bukan
     const isPdf = req.file.mimetype === 'application/pdf';
+    const uniqueName = 'lampiran_' + Date.now();
 
-    const result = await cloudinary.uploader.upload(dataURI, {
-      resource_type: isPdf ? 'raw' : 'auto', // PDF harus 'raw'
-      folder: 'tugas_materi',
-      public_id: isPdf ? uniqueName + '.pdf' : uniqueName,
-      type: 'upload',
-      access_mode: 'public',
-    });
+    // Menggunakan stream lebih stabil untuk file besar daripada Base64
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'tugas_materi',
+        resource_type: isPdf ? 'raw' : 'auto',
+        public_id: isPdf ? uniqueName + '.pdf' : uniqueName,
+      },
+      (error, result) => {
+        if (error) return res.status(500).json({ message: 'Cloudinary Error', error });
+        res.status(200).json({ file_url: result.secure_url });
+      }
+    );
 
-    res.status(200).json({ file_url: result.secure_url });
+    stream.end(req.file.buffer);
   } catch (error) {
-    console.error('Upload error:', error);
     res.status(500).json({ message: 'Gagal upload', error: error.message });
   }
 };
