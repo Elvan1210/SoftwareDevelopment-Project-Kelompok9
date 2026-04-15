@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../config/api_config.dart';
@@ -7,6 +6,7 @@ import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_team_detail_layout.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruDashboardView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -153,9 +153,8 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   Widget _buildClassGrid(double w, ThemeData theme, bool isDark) {
     if (_kelasList.isEmpty) {
       return const EmptyState(
-        icon: Icons.grid_view_rounded,
+        icon: LucideIcons.layoutGrid,
         message: 'Kamu belum ditugaskan ke kelas manapun.',
-        color: Colors.teal,
       );
     }
 
@@ -182,11 +181,12 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   }
 
   Widget _buildStatGrid(double w) {
+    final theme = Theme.of(context);
     final stats = [
-      _StatData(Icons.assignment_outlined, 'Tugas Dibuat', '$_totalTugas', AppTheme.getAdaptiveTeal(context)),
-      _StatData(Icons.menu_book_outlined, 'Materi Dibuat', '$_totalMateri', const Color(0xFFF27F33)),
-      _StatData(Icons.grade_outlined, 'Nilai Input', '$_totalNilai', const Color(0xFF76AFB8)),
-      _StatData(Icons.campaign_outlined, 'Pengumuman', '$_totalPengumuman', AppTheme.primaryTeal),
+      _StatData(LucideIcons.clipboardList, 'Tugas Dibuat', '$_totalTugas', Theme.of(context).colorScheme.secondary),
+      _StatData(LucideIcons.bookOpen, 'Materi Dibuat', '$_totalMateri', theme.colorScheme.secondary),
+      _StatData(LucideIcons.award, 'Nilai Input', '$_totalNilai', theme.colorScheme.primary),
+      _StatData(LucideIcons.megaphone, 'Pengumuman', '$_totalPengumuman', theme.primaryColor),
     ];
 
     final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
@@ -196,10 +196,9 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossCount,
-        childAspectRatio: w > 1100 ? 2.5 : 2.0,
-
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        childAspectRatio: w > 1100 ? 2.4 : (w > 600 ? 2.2 : 2.8),
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: stats.length,
       itemBuilder: (_, i) {
@@ -225,10 +224,10 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     final maxVal = vals.reduce((a, b) => a > b ? a : b);
     final maxY = (maxVal * 1.15).clamp(5.0, 1000.0);
     final colors = [
-      AppTheme.getAdaptiveTeal(context),
-      const Color(0xFFF27F33),
-      const Color(0xFF76AFB8),
-      AppTheme.getAdaptiveTeal(context),
+      Theme.of(context).colorScheme.secondary,
+      theme.colorScheme.secondary,
+      theme.colorScheme.primary,
+      theme.primaryColor,
     ];
     final labels = ['Tugas', 'Materi', 'Nilai', 'Pengumuman'];
 
@@ -414,13 +413,13 @@ class _GuruClassCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildMiniIcon(Icons.assignment_outlined),
+                _buildMiniIcon(LucideIcons.clipboardList),
                 const SizedBox(width: 12),
-                _buildMiniIcon(Icons.menu_book_outlined),
+                _buildMiniIcon(LucideIcons.bookOpen),
                 const SizedBox(width: 12),
-                _buildMiniIcon(Icons.grade_outlined),
+                _buildMiniIcon(LucideIcons.award),
                 const Spacer(),
-                const Icon(Icons.settings_outlined, size: 14, color: Colors.grey),
+                const Icon(LucideIcons.settings, size: 14, color: Colors.grey),
               ],
             ),
           ),

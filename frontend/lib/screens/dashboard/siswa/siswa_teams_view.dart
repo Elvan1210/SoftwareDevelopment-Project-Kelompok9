@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'siswa_team_detail_layout.dart'; // <-- Import layout detail tim
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaTeamsView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -66,7 +67,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                   textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
                     labelText: 'Kode Akses (8 Karakter)',
-                    prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
+                    prefixIcon: const Icon(LucideIcons.scan),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -102,7 +103,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                         final status = resBody['status'] ?? 'pending';
                         if (status == 'accepted') {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Berhasil bergabung ke kelas! 🎉'), backgroundColor: Colors.green),
+                            const SnackBar(content: Text('Berhasil bergabung ke kelas!'), backgroundColor: Colors.green),
                           );
                           _fetchMyTeams(); // Refresh daftar tim
                         } else {
@@ -153,7 +154,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showJoinDialog,
-        icon: const Icon(Icons.group_add_rounded),
+        icon: const Icon(LucideIcons.userPlus),
         label: const Text('Gabung Kelas'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
@@ -163,7 +164,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.backpack_rounded, size: 80, color: Colors.grey.shade400),
+                  Icon(LucideIcons.backpack, size: 80, color: Colors.grey.shade400),
                   const SizedBox(height: 16),
                   Text(
                     'Kamu belum tergabung di kelas mana pun.',
@@ -220,7 +221,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.menu_book_rounded, color: Colors.white.withAlpha(200)),
+                                Icon(LucideIcons.bookOpen, color: Colors.white.withAlpha(200)),
                                 const Spacer(),
                                 Text(
                                   tim['nama_kelas'] ?? '-',
@@ -245,7 +246,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                                 CircleAvatar(
                                   radius: 12,
                                   backgroundColor: Colors.grey.shade200,
-                                  child: Icon(Icons.person, size: 16, color: Colors.grey.shade600),
+                                  child: Icon(LucideIcons.user, size: 16, color: Colors.grey.shade600),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminNilaiView extends StatefulWidget {
   final String token;
@@ -63,14 +64,14 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
                 hintText: 'Cari siswa, mapel, atau guru...',
-                prefixIcon: Icons.search_rounded,
+                prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
 
             Expanded(
               child: _filtered.isEmpty
-                  ? const EmptyState(icon: Icons.workspace_premium_rounded, message: 'Tidak ada data nilai.', color: Colors.blue)
+                  ? EmptyState(icon: LucideIcons.award, message: 'Tidak ada data nilai.', color: Theme.of(context).primaryColor)
                   : RefreshIndicator(
                       onRefresh: _fetchNilai,
                       child: LayoutBuilder(
@@ -142,7 +143,7 @@ class _AdminNilaiCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle), child: Icon(Icons.person_outline_rounded, color: color, size: 16)),
+              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.user, color: color, size: 16)),
               const SizedBox(width: 10),
               Expanded(child: Text(nilai['siswa_nama'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],

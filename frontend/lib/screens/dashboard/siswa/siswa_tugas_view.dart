@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'siswa_tugas_detail_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -204,9 +205,8 @@ class _TugasList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (tugasList.isEmpty) {
       return EmptyState(
-        icon: Icons.assignment_turned_in_outlined,
+        icon: LucideIcons.clipboardCheck,
         message: 'Tidak ada tugas\n$statusLabel.',
-        color: const Color(0xFF3B82F6),
       );
     }
 
@@ -258,7 +258,7 @@ class _TugasList extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
-                    child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
+                    child: Text(key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey.shade700)),
                   ),
                   GridView.builder(
                     shrinkWrap: true,
@@ -322,7 +322,7 @@ class _TugasCard extends StatelessWidget {
               color: accent.withAlpha(20),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.assignment_outlined, color: accent, size: 22),
+            child: const Icon(LucideIcons.clipboardList, color: accent, size: 22),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -341,17 +341,27 @@ class _TugasCard extends StatelessWidget {
             ),
           ),
           if (tugas['deadline'] != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withAlpha(20),
-                borderRadius: BorderRadius.circular(100),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withAlpha(20),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  _formatDeadline(tugas['deadline']),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFFF59E0B),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              child: Text(_formatDeadline(tugas['deadline']),
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFF59E0B))),
             ),
-          const SizedBox(width: 12),
-          Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withAlpha(100)),
+          const SizedBox(width: 8),
+          Icon(LucideIcons.chevronRight, color: theme.colorScheme.onSurface.withAlpha(100)),
         ],
       ),
     );

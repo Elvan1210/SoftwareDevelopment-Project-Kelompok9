@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaProfilView extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -159,11 +160,11 @@ class _InfoSection extends StatelessWidget {
           const Text('Informasi Akun',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           const SizedBox(height: 20),
-          _InfoRow(icon: Icons.email_outlined, label: 'Email', value: email),
+          _InfoRow(icon: LucideIcons.mail, label: 'Email', value: email),
           const SizedBox(height: 16),
-          _InfoRow(icon: Icons.class_outlined, label: 'Kelas', value: kelas),
+          _InfoRow(icon: LucideIcons.graduationCap, label: 'Kelas', value: kelas),
           const SizedBox(height: 16),
-          _InfoRow(icon: Icons.badge_outlined, label: 'Role', value: role),
+          _InfoRow(icon: LucideIcons.user, label: 'Role', value: role),
         ],
       ),
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
@@ -258,7 +259,7 @@ class _ActionSection extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              icon: const Icon(Icons.logout_rounded),
+              icon: const Icon(LucideIcons.logOut),
               label: const Text('Keluar dari Akun', style: TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),

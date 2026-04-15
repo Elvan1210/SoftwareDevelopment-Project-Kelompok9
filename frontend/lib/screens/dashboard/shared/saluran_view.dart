@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../guru/guru_tugas_detail_screen.dart';
 import '../siswa/siswa_tugas_detail_screen.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SaluranView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -201,7 +202,7 @@ class _SaluranViewState extends State<SaluranView> {
             ),
             child: Row(
               children: [
-                Icon(Icons.tag_rounded, color: theme.primaryColor, size: 20),
+                Icon(LucideIcons.hash, color: theme.primaryColor, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -272,11 +273,11 @@ class _SaluranViewState extends State<SaluranView> {
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: const Color(0xFF6A5ACD).withAlpha(40), borderRadius: BorderRadius.circular(6)),
-                child: const Icon(Icons.assignment_rounded, color: Color(0xFF6A5ACD), size: 14),
+                decoration: BoxDecoration(color: theme.colorScheme.secondary.withAlpha(40), borderRadius: BorderRadius.circular(6)),
+                child: Icon(LucideIcons.clipboardList, color: theme.colorScheme.secondary, size: 14),
               ),
               const SizedBox(width: 8),
-              const Text('Assignments', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF6A5ACD))),
+              Text('Assignments', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: theme.colorScheme.secondary)),
               const SizedBox(width: 8),
               Text(timeStr, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w700)),
             ],
@@ -300,7 +301,7 @@ class _SaluranViewState extends State<SaluranView> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.timer_outlined, size: 14, color: theme.colorScheme.onSurface.withAlpha(150)),
+                      Icon(LucideIcons.clock, size: 14, color: theme.colorScheme.onSurface.withAlpha(150)),
                       const SizedBox(width: 4),
                       Text('Due $dueStr', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150))),
                     ],
@@ -476,7 +477,7 @@ class _SaluranViewState extends State<SaluranView> {
                     padding: const EdgeInsets.all(12),
                     child: _isSending
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                        : const Icon(LucideIcons.send, color: Colors.white, size: 20),
                   ),
                 ),
               ),
@@ -492,7 +493,7 @@ class _SaluranViewState extends State<SaluranView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.forum_outlined, size: 72, color: theme.colorScheme.onSurface.withAlpha(60)),
+          Icon(LucideIcons.messageSquare, size: 72, color: theme.colorScheme.onSurface.withAlpha(60)),
           const SizedBox(height: 16),
           Text('Belum ada pesan di sini.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(120))),
         ],

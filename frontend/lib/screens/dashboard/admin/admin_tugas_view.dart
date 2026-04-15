@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminTugasView extends StatefulWidget {
   final String token;
@@ -74,13 +75,13 @@ class _AdminTugasViewState extends State<AdminTugasView> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
                 hintText: 'Cari tugas, guru, atau mapel...',
-                prefixIcon: Icons.search_rounded,
+                prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
             Expanded(
               child: _filtered.isEmpty
-                  ? const EmptyState(icon: Icons.assignment_rounded, message: 'Tidak ada tugas ditemukan.', color: Colors.blue)
+                  ? EmptyState(icon: LucideIcons.clipboardList, message: 'Tidak ada tugas ditemukan.', color: Theme.of(context).primaryColor)
                   : RefreshIndicator(
                       onRefresh: _fetchTugas,
                       child: LayoutBuilder(
@@ -141,8 +142,8 @@ class _AdminTugasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Colors.blue;
     final theme = Theme.of(context);
+    final accent = theme.colorScheme.secondary;
 
     return PremiumCard(
       accentColor: accent,
@@ -153,10 +154,10 @@ class _AdminTugasCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: const Icon(Icons.assignment_rounded, color: accent, size: 20)),
+              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.clipboardList, color: accent, size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Text(tugas['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-              IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20)),
+              IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: Colors.red, size: 20)),
             ],
           ),
           Flexible(
@@ -178,7 +179,7 @@ class _AdminTugasCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.class_rounded, size: 12, color: theme.colorScheme.onSurface.withAlpha(150)),
+                Icon(LucideIcons.library, size: 12, color: theme.colorScheme.onSurface.withAlpha(150)),
                 const SizedBox(width: 6),
                 Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
               ],

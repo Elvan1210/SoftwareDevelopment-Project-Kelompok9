@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
@@ -8,8 +7,9 @@ import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
-import '../../../services/upload_service.dart'; // Import service upload yang baru kita buat
+import '../../../services/upload_service.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -147,15 +147,15 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: Icons.title_rounded),
+                    AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: LucideIcons.type),
                     const SizedBox(height: 16),
-                    AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: Icons.description_outlined, keyboardType: TextInputType.multiline),
+                    AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: LucideIcons.fileText, keyboardType: TextInputType.multiline),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: selectedChannelId,
                       decoration: InputDecoration(
                         labelText: 'Bagikan ke Channel...',
-                        prefixIcon: const Icon(Icons.forum_outlined),
+                        prefixIcon: const Icon(LucideIcons.messageSquare),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       items: [
@@ -184,7 +184,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(12)),
                         child: Row(children: [
-                          Icon(Icons.calendar_today_rounded, color: Colors.grey.shade600, size: 20),
+                          Icon(LucideIcons.calendar, color: Colors.grey.shade600, size: 20),
                           const SizedBox(width: 12),
                           Text(deadlineStr, style: TextStyle(color: selectedDeadline != null ? Colors.black : Colors.grey.shade600, fontSize: 16)),
                         ]),
@@ -198,13 +198,13 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         Expanded(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF76AFB8),
+                              backgroundColor: Theme.of(context).primaryColor,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                             ),
                             onPressed: isUploading ? null : handleUploadFile,
-                            icon: isUploading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.upload_file),
+                            icon: isUploading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(LucideIcons.upload),
                             label: Text(isUploading ? 'Mengunggah...' : 'Upload Lampiran (PDF/Foto)'),
                           ),
                         ),
@@ -212,7 +212,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     ),
                     const SizedBox(height: 8),
                     // Tampilkan link jika sudah ada
-                    AppTextField(controller: linkCtrl, labelText: 'Link File (Terisi Otomatis/Manual)', prefixIcon: Icons.link_rounded),
+                    AppTextField(controller: linkCtrl, labelText: 'Link File (Terisi Otomatis/Manual)', prefixIcon: LucideIcons.link),
                   ],
                 ),
               ),
@@ -220,7 +220,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF27F33), foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondary, foregroundColor: Colors.white),
                 onPressed: () async {
                   final body = {
                     'judul': judulCtrl.text,
@@ -263,11 +263,11 @@ class _GuruTugasViewState extends State<GuruTugasView> {
       backgroundColor: Colors.transparent,
       floatingActionButton: AppFAB(
         onPressed: () => _showTugasForm(),
-        icon: Icons.add_task_rounded,
+        icon: LucideIcons.plusSquare,
         label: 'Buat Tugas',
       ),
       body: _tugasList.isEmpty
-          ? EmptyState(icon: Icons.assignment_outlined, message: 'Belum ada tugas di kelas ini.', color: AppTheme.getAdaptiveTeal(context))
+          ? EmptyState(icon: LucideIcons.clipboardList, message: 'Belum ada tugas di kelas ini.', color: Theme.of(context).colorScheme.secondary)
           : RepaintBoundary(
               child: RefreshIndicator(
                 onRefresh: _fetchTugas,
@@ -392,7 +392,7 @@ class _GuruTugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = AppTheme.getAdaptiveTeal(context);
+    final accent = Theme.of(context).colorScheme.secondary;
 
     return PremiumCard(
       accentColor: accent,
@@ -407,7 +407,7 @@ class _GuruTugasCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(12)),
-                child: Icon(Icons.assignment_rounded, color: accent, size: 22),
+                child: Icon(LucideIcons.clipboardList, color: accent, size: 22),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -425,11 +425,11 @@ class _GuruTugasCard extends StatelessWidget {
                   if (val == 'edit') onEdit();
                   if (val == 'delete') onDelete();
                 },
-                icon: Icon(Icons.more_vert_rounded, color: theme.colorScheme.onSurface.withAlpha(100)),
+                icon: Icon(LucideIcons.moreVertical, color: theme.colorScheme.onSurface.withAlpha(100)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
-                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
+                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
                 ],
               ),
             ],
@@ -441,9 +441,9 @@ class _GuruTugasCard extends StatelessWidget {
               if (tugas['deadline'] != null)
                 Row(
                   children: [
-                    Icon(Icons.timer_outlined, size: 14, color: const Color(0xFFF27F33).withAlpha(180)),
+                    Icon(LucideIcons.clock, size: 14, color: theme.colorScheme.secondary.withAlpha(180)),
                     const SizedBox(width: 6),
-                    Text(_formatDeadline(tugas['deadline']), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFF27F33))),
+                    Text(_formatDeadline(tugas['deadline']), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.secondary)),
                   ],
                 ),
               Text('Detail >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: accent.withAlpha(200))),

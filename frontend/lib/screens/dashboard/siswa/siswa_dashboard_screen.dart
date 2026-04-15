@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
@@ -344,7 +343,7 @@ class _TugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = AppTheme.getAdaptiveTeal(context);
+    final color = Theme.of(context).colorScheme.secondary;
 
     return PremiumCard(
       onTap: onTap,
@@ -401,7 +400,7 @@ class _PengumumanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = AppTheme.getAdaptiveTeal(context);
+    final color = Theme.of(context).colorScheme.secondary;
 
     return PremiumCard(
       accentColor: color,

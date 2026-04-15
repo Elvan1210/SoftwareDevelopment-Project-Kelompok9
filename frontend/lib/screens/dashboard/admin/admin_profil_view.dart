@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
 import '../../auth/login_screen.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AdminProfilView extends StatelessWidget {
   final String token;
@@ -115,9 +116,9 @@ class _InfoCard extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Informasi Akun', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
         const SizedBox(height: 20),
-        _row(context, Icons.email_outlined, 'Email', email),
+        _row(context, LucideIcons.mail, 'Email', email),
         const SizedBox(height: 16),
-        _row(context, Icons.badge_outlined, 'Role', role),
+        _row(context, LucideIcons.shieldCheck, 'Role', role),
       ]),
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
   }
@@ -180,7 +181,7 @@ class _LogoutCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
-            icon: const Icon(Icons.logout_rounded),
+            icon: const Icon(LucideIcons.logOut),
             label: const Text('Keluar dari Akun', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ),

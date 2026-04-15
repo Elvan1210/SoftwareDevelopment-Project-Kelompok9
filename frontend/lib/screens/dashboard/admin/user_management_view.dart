@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class UserManagementView extends StatefulWidget {
   final String token;
@@ -79,17 +79,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  AppTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: Icons.person_outline_rounded),
+                  AppTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: LucideIcons.user),
                   const SizedBox(height: 16),
-                  AppTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+                  AppTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: LucideIcons.mail, keyboardType: TextInputType.emailAddress),
                   const SizedBox(height: 16),
-                  AppTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: Icons.lock_outline_rounded, obscureText: true),
+                  AppTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: LucideIcons.lock, obscureText: true),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: role,
                     decoration: InputDecoration(
                       labelText: 'Role',
-                      prefixIcon: const Icon(Icons.badge_outlined),
+                      prefixIcon: const Icon(LucideIcons.shieldCheck),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -98,7 +98,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     onChanged: (val) => setDialogState(() => role = val!),
                   ),
                   const SizedBox(height: 16),
-                  AppTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: Icons.class_outlined),
+                  AppTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: LucideIcons.library),
                 ],
               ),
             ),
@@ -107,7 +107,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.getAdaptiveTeal(context),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -136,7 +136,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ScaffoldMessenger.of(ctx).showSnackBar(
                       SnackBar(
                         content: const Text('User berhasil disimpan!'),
-                        backgroundColor: AppTheme.getAdaptiveTeal(ctx),
+                        backgroundColor: Theme.of(ctx).colorScheme.secondary,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -192,7 +192,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showUserForm(),
-          icon: Icons.person_add_rounded,
+          icon: LucideIcons.userPlus,
           label: 'Tambah User',
         ),
         body: Column(
@@ -201,11 +201,11 @@ class _UserManagementViewState extends State<UserManagementView> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Row(
                 children: [
-                  _buildStatCard('Total User', totalUsers.toString(), AppTheme.getAdaptiveTeal(context)),
+                  _buildStatCard('Total User', totalUsers.toString(), Theme.of(context).colorScheme.secondary),
                   const SizedBox(width: 16),
-                  _buildStatCard('Guru', totalTeachers.toString(), const Color(0xFFF27F33)),
+                  _buildStatCard('Guru', totalTeachers.toString(), Theme.of(context).colorScheme.secondary),
                   const SizedBox(width: 16),
-                  _buildStatCard('Siswa', totalStudents.toString(), const Color(0xFF76AFB8)),
+                  _buildStatCard('Siswa', totalStudents.toString(), Theme.of(context).primaryColor),
                 ],
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
@@ -214,7 +214,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
             Expanded(
               child: _filteredUsers.isEmpty
-                  ? EmptyState(icon: Icons.person_search_rounded, message: 'Tidak ada user ditemukan.', color: AppTheme.getAdaptiveTeal(context))
+                  ? EmptyState(icon: LucideIcons.users, message: 'Tidak ada user ditemukan.', color: Theme.of(context).colorScheme.secondary)
                   : RepaintBoundary(
                       child: RefreshIndicator(
                         onRefresh: _fetchUsers,
@@ -285,7 +285,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         children: [
           AppTextField(
             hintText: 'Cari nama, email, role...',
-            prefixIcon: Icons.search_rounded,
+            prefixIcon: LucideIcons.search,
             onChanged: (val) => setState(() => _searchQuery = val),
           ),
           const SizedBox(height: 16),
@@ -303,9 +303,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                       selected: isSelected,
                       onSelected: (val) => setState(() => _selectedRole = r),
                       backgroundColor: Colors.transparent,
-                      selectedColor: AppTheme.getAdaptiveTeal(context).withAlpha(isSelected ? 40 : 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? AppTheme.getAdaptiveTeal(context) : Colors.grey.withAlpha(50))),
-                      labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? AppTheme.getAdaptiveTeal(context) : Colors.grey),
+                      selectedColor: Theme.of(context).colorScheme.secondary.withAlpha(isSelected ? 40 : 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey.withAlpha(50))),
+                      labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey),
                       showCheckmark: false,
                     ),
                   ),
@@ -348,7 +348,7 @@ class _UserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final String role = user['role'] ?? 'Siswa';
-    final roleColor = role == 'Guru' ? const Color(0xFFF27F33) : (role == 'Admin' ? AppTheme.getAdaptiveTeal(context) : const Color(0xFF76AFB8));
+    final roleColor = role == 'Guru' ? theme.colorScheme.secondary : (role == 'Admin' ? Theme.of(context).colorScheme.secondary : theme.primaryColor);
 
     return PremiumCard(
       accentColor: roleColor,
@@ -366,7 +366,7 @@ class _UserCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: Icon(role == 'Guru' ? Icons.history_edu_rounded : (role == 'Admin' ? Icons.vpn_key_rounded : Icons.face_6_rounded), color: Colors.white, size: 24),
+                  child: Icon(role == 'Guru' ? LucideIcons.penTool : (role == 'Admin' ? LucideIcons.key : LucideIcons.user), color: Colors.white, size: 24),
                 ),
               ),
               const SizedBox(width: 16),
@@ -389,11 +389,11 @@ class _UserCard extends StatelessWidget {
                   if (val == 'edit') onEdit();
                   if (val == 'delete') onDelete();
                 },
-                icon: Icon(Icons.more_horiz_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
-                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
+                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
                 ],
               ),
             ],
@@ -401,7 +401,7 @@ class _UserCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(Icons.alternate_email_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
+              Icon(LucideIcons.atSign, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
               const SizedBox(width: 8),
               Expanded(child: Text(user['email'] ?? '-', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
@@ -410,7 +410,7 @@ class _UserCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.class_outlined, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
+                Icon(LucideIcons.library, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
                 const SizedBox(width: 8),
                 Text(user['kelas'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
               ],

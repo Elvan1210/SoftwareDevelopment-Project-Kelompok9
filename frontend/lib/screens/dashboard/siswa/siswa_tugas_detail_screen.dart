@@ -8,7 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../../services/notifikasi_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../widgets/app_shell.dart';
-import '../../../config/theme.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -174,7 +174,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           decoration: const InputDecoration(
             labelText: 'https://...',
             border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.link_rounded),
+            prefixIcon: Icon(LucideIcons.link),
           ),
           keyboardType: TextInputType.url,
           autofocus: true,
@@ -183,7 +183,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryTeal,
+              backgroundColor: const Color(0xFFB84A24),
               foregroundColor: Colors.white,
             ),
             onPressed: () {
@@ -212,12 +212,12 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   IconData _getFileIcon(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('.pdf') || lower.contains('/raw/')) return Icons.picture_as_pdf_rounded;
+    if (lower.contains('.pdf') || lower.contains('/raw/')) return LucideIcons.fileText;
     if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) {
-      return Icons.image_rounded;
+      return LucideIcons.image;
     }
-    if (lower.contains('.doc')) return Icons.description_rounded;
-    return Icons.link_rounded;
+    if (lower.contains('.doc')) return LucideIcons.fileText;
+    return LucideIcons.link;
   }
 
   Color _getFileColor(String url) {
@@ -375,7 +375,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = AppTheme.getAdaptiveTeal(context);
+    final primaryColor = Theme.of(context).colorScheme.secondary;
 
     return AppShell(
       child: Scaffold(
@@ -392,7 +392,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                 child: _isTurnedIn
                     ? OutlinedButton.icon(
                         onPressed: _undoTurnIn,
-                        icon: const Icon(Icons.undo_rounded, size: 18),
+                        icon: const Icon(LucideIcons.undo, size: 18),
                         label: const Text('Batalkan'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
@@ -419,7 +419,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             icon: const Icon(Icons.send_rounded, size: 18),
                             label: const Text('Turn In'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accentOrange,
+                              backgroundColor: const Color(0xFFB84A24),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
@@ -438,9 +438,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ─── Info Tugas ───────────────────────────────────────
-                    PremiumCard(
-                      accentColor: primaryColor,
-                      child: Column(
+                      PremiumCard(
+                        accentColor: primaryColor,
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
@@ -451,7 +452,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                   color: primaryColor.withAlpha(30),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                child: Icon(Icons.assignment_rounded,
+                                child: Icon(LucideIcons.clipboardList,
                                     color: primaryColor, size: 28),
                               ),
                               const SizedBox(width: 20),
@@ -482,10 +483,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             ],
                           ),
                           const Divider(height: 40),
-                          _buildInfoRow(Icons.account_circle_outlined,
+                          _buildInfoRow(LucideIcons.userCircle,
                               'Pengajar', widget.tugas['guru_nama'] ?? 'Guru'),
                           const SizedBox(height: 12),
-                          _buildInfoRow(Icons.book_outlined, 'Mata Pelajaran',
+                          _buildInfoRow(LucideIcons.bookOpen, 'Mata Pelajaran',
                               widget.tugas['mapel'] ?? '-'),
                         ],
                       ),
@@ -525,7 +526,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.insert_drive_file_rounded,
+                              Icon(LucideIcons.file,
                                   color: primaryColor, size: 32),
                               const SizedBox(width: 16),
                               Expanded(
@@ -536,14 +537,14 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: primaryColor)),
-                                    const Text('Ketuk untuk membuka',
+                                    Text('Ketuk untuk membuka',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey)),
+                                            color: Colors.grey.shade600)),
                                   ],
                                 ),
                               ),
-                              Icon(Icons.open_in_new_rounded,
+                              Icon(LucideIcons.externalLink,
                                   color: primaryColor, size: 18),
                             ],
                           ),
@@ -578,7 +579,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
                     PremiumCard(
                       accentColor:
-                          _isTurnedIn ? Colors.green : AppTheme.accentOrange,
+                          _isTurnedIn ? Colors.green : const Color(0xFFB84A24),
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         children: [
@@ -596,7 +597,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.check_circle_rounded,
+                                  Icon(LucideIcons.checkCircle,
                                       color: Colors.green, size: 18),
                                   SizedBox(width: 8),
                                   Text('Sudah Dikumpulkan',
@@ -609,12 +610,12 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
                           // Daftar file/link
                           if (_attachments.isEmpty && !_isUploading)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
                               child: Center(
                                 child: Text(
                                     'Belum ada file atau link ditambahkan',
-                                    style: TextStyle(color: Colors.grey)),
+                                    style: TextStyle(color: Colors.grey.shade600)),
                               ),
                             ),
 
@@ -645,7 +646,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                   children: [
                                     IconButton(
                                       icon: const Icon(
-                                          Icons.open_in_new_rounded,
+                                          LucideIcons.externalLink,
                                           size: 18),
                                       onPressed: () => _openFile(url),
                                       tooltip: 'Buka',
@@ -653,7 +654,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                     if (!_isTurnedIn)
                                       IconButton(
                                         icon: const Icon(
-                                            Icons.close_rounded,
+                                            LucideIcons.x,
                                             color: Colors.red,
                                             size: 18),
                                         onPressed: () => _removeFile(i),
@@ -667,19 +668,19 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
                           // Loading indicator saat upload
                           if (_isUploading)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                           strokeWidth: 2)),
-                                  SizedBox(width: 12),
+                                  const SizedBox(width: 12),
                                   Text('Mengunggah file...',
-                                      style: TextStyle(color: Colors.grey)),
+                                      style: TextStyle(color: Colors.grey.shade600)),
                                 ],
                               ),
                             ),
@@ -695,7 +696,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                         ? null
                                         : _pickAndUploadFile,
                                     icon: const Icon(
-                                        Icons.upload_file_rounded,
+                                        LucideIcons.uploadCloud,
                                         size: 18),
                                     label: const Text('File / Foto'),
                                     style: OutlinedButton.styleFrom(
@@ -713,7 +714,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                 Expanded(
                                   child: OutlinedButton.icon(
                                     onPressed: _showAddLinkDialog,
-                                    icon: const Icon(Icons.link_rounded,
+                                    icon: const Icon(LucideIcons.link,
                                         size: 18),
                                     label: const Text('Tambah Link'),
                                     style: OutlinedButton.styleFrom(
@@ -746,7 +747,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.chat_bubble_outline_rounded,
+                            const Icon(LucideIcons.messageSquare,
                                 color: Colors.blue),
                             const SizedBox(width: 16),
                             Expanded(
@@ -767,15 +768,24 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     );
   }
 
+
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
         Icon(icon, size: 18, color: Colors.grey),
         const SizedBox(width: 12),
-        Text('$label: ',
-            style: const TextStyle(
-                color: Colors.grey, fontWeight: FontWeight.w500)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(
+          '$label: ',
+          style: const TextStyle(color: Color(0xFF595959), fontWeight: FontWeight.w500),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

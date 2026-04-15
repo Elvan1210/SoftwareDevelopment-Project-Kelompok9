@@ -5,6 +5,7 @@ import '../../../widgets/app_shell.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -103,7 +104,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     initialValue: selectedSiswaId,
                     decoration: InputDecoration(
                       labelText: 'Pilih Siswa',
-                      prefixIcon: const Icon(Icons.person_outline_rounded),
+                      prefixIcon: const Icon(LucideIcons.user),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -114,11 +115,11 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     onChanged: (val) => setDialogState(() => selectedSiswaId = val),
                   ),
                   const SizedBox(height: 16),
-                  AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: Icons.book_outlined),
+                  AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: LucideIcons.bookOpen),
                   const SizedBox(height: 16),
-                  AppTextField(controller: nilaiCtrl, labelText: 'Nilai (0-100)', prefixIcon: Icons.grade_rounded, keyboardType: TextInputType.number),
+                  AppTextField(controller: nilaiCtrl, labelText: 'Nilai (0-100)', prefixIcon: LucideIcons.award, keyboardType: TextInputType.number),
                   const SizedBox(height: 16),
-                  AppTextField(controller: keteranganCtrl, labelText: 'Keterangan / Catatan', prefixIcon: Icons.speaker_notes_outlined, keyboardType: TextInputType.multiline),
+                  AppTextField(controller: keteranganCtrl, labelText: 'Keterangan / Catatan', prefixIcon: LucideIcons.messageSquare, keyboardType: TextInputType.multiline),
                 ],
               ),
             ),
@@ -174,11 +175,11 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         backgroundColor: Colors.transparent,
         floatingActionButton: AppFAB(
           onPressed: () => _showNilaiForm(),
-          icon: Icons.add_chart_rounded,
+          icon: LucideIcons.lineChart,
           label: 'Input Nilai',
         ),
         body: _nilaiList.isEmpty
-            ? const EmptyState(icon: Icons.workspace_premium_rounded, message: 'Belum ada data nilai\nyang diinput.', color: Color(0xFF10B981))
+            ? const EmptyState(icon: LucideIcons.award, message: 'Belum ada data nilai\nyang diinput.', color: Color(0xFF10B981))
             : RefreshIndicator(
                 onRefresh: _fetchData,
                 child: LayoutBuilder(
@@ -245,7 +246,7 @@ class _GuruNilaiCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle), child: Icon(Icons.person_rounded, color: color, size: 16)),
+              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.user, color: color, size: 16)),
               const SizedBox(width: 10),
               Expanded(child: Text(nilai['siswa_nama'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
               IconButton(
@@ -257,12 +258,12 @@ class _GuruNilaiCard extends StatelessWidget {
                     position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     items: [
-                      PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(Icons.edit_outlined, size: 20), SizedBox(width: 12), Text('Edit')])),
-                      PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                      PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
+                      PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
                     ],
                   );
                 },
-                icon: Icon(Icons.more_vert_rounded, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                icon: Icon(LucideIcons.moreVertical, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
               ),
             ],
           ),

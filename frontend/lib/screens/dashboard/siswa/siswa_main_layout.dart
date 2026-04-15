@@ -166,8 +166,11 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                             fontWeight: FontWeight.w900, 
                             letterSpacing: -0.5,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const ThemeToggle(),
+                      const SizedBox(width: 4),
                       NotificationBell(
                         userData: widget.userData, 
                         token: widget.token,

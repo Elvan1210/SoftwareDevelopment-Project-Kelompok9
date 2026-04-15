@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../config/api_config.dart';
 import '../config/theme.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class NotificationBell extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -154,30 +155,30 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     final judul = (notif['judul'] ?? '').toString().toLowerCase();
     
     if (judul.contains('diterima') || judul.contains('accepted') || judul.contains('✅')) {
-      return const _NotifMeta(Icons.check_circle_rounded, Color(0xFF22C55E));
+      return const _NotifMeta(LucideIcons.checkCircle, Color(0xFF22C55E));
     }
     if (judul.contains('ditolak') || judul.contains('rejected') || judul.contains('❌')) {
-      return const _NotifMeta(Icons.cancel_rounded, Color(0xFFEF4444));
+      return const _NotifMeta(LucideIcons.xCircle, Color(0xFFEF4444));
     }
     if (judul.contains('bergabung') || judul.contains('permintaan') || judul.contains('join')) {
-      return const _NotifMeta(Icons.person_add_alt_rounded, Color(0xFFF27F33));
+      return const _NotifMeta(LucideIcons.userPlus, Color(0xFFF27F33));
     }
     if (judul.contains('tugas') || judul.contains('assignment')) {
-      return const _NotifMeta(Icons.assignment_rounded, Color(0xFF3B82F6));
+      return const _NotifMeta(LucideIcons.clipboardList, Color(0xFF3B82F6));
     }
     if (judul.contains('nilai') || judul.contains('grade')) {
-      return const _NotifMeta(Icons.military_tech_rounded, Color(0xFF8B5CF6));
+      return const _NotifMeta(LucideIcons.award, Color(0xFF8B5CF6));
     }
     if (judul.contains('materi') || judul.contains('material')) {
-      return const _NotifMeta(Icons.auto_stories_rounded, Color(0xFF0891B2));
+      return const _NotifMeta(LucideIcons.bookOpen, Color(0xFF0891B2));
     }
     if (judul.contains('pengumuman') || judul.contains('broadcast')) {
-      return const _NotifMeta(Icons.campaign_rounded, Color(0xFFEC4899));
+      return const _NotifMeta(LucideIcons.megaphone, Color(0xFFEC4899));
     }
     if (judul.contains('presensi') || judul.contains('hadir')) {
-      return const _NotifMeta(Icons.how_to_reg_rounded, Color(0xFF22C55E));
+      return const _NotifMeta(LucideIcons.userCheck, Color(0xFF22C55E));
     }
-    return const _NotifMeta(Icons.notifications_rounded, AppTheme.primaryTeal);
+    return _NotifMeta(LucideIcons.bell, AppTheme.getAccent(context));
   }
 
   // Group notifications by date
@@ -274,12 +275,12 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.getAdaptiveTeal(context).withAlpha(20),
+                            color: Theme.of(context).colorScheme.secondary.withAlpha(20),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
-                            Icons.notifications_rounded,
-                            color: AppTheme.getAdaptiveTeal(context),
+                            LucideIcons.bell,
+                            color: Theme.of(context).colorScheme.secondary,
                             size: 22,
                           ),
                         ),
@@ -301,7 +302,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: AppTheme.getAdaptiveTeal(context),
+                                    color: Theme.of(context).colorScheme.secondary,
                                   ),
                                 ),
                             ],
@@ -322,21 +323,21 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.getAdaptiveTeal(context).withAlpha(15),
+                                      color: Theme.of(context).colorScheme.secondary.withAlpha(15),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppTheme.getAdaptiveTeal(context).withAlpha(40)),
+                                      border: Border.all(color: Theme.of(context).colorScheme.secondary.withAlpha(40)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.done_all_rounded, size: 14, color: AppTheme.getAdaptiveTeal(context)),
+                                        Icon(LucideIcons.checkCheck, size: 14, color: Theme.of(context).colorScheme.secondary),
                                         const SizedBox(width: 6),
                                         Text(
                                           'Baca Semua',
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w800,
-                                            color: AppTheme.getAdaptiveTeal(context),
+                                            color: Theme.of(context).colorScheme.secondary,
                                           ),
                                         ),
                                       ],
@@ -438,13 +439,13 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.getAdaptiveTeal(context).withAlpha(15),
+              color: Theme.of(context).colorScheme.secondary.withAlpha(15),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.notifications_off_rounded,
+              LucideIcons.bellOff,
               size: 48,
-              color: AppTheme.getAdaptiveTeal(context).withAlpha(80),
+              color: Theme.of(context).colorScheme.secondary.withAlpha(80),
             ),
           ),
           const SizedBox(height: 20),
@@ -596,7 +597,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.check_circle_outline_rounded, size: 12, color: meta.color),
+                                        Icon(LucideIcons.checkCircle, size: 12, color: meta.color),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Tandai dibaca',
@@ -665,7 +666,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Icon(
-                _unreadCount > 0 ? Icons.notifications_active_rounded : Icons.notifications_outlined,
+                _unreadCount > 0 ? LucideIcons.bellRing : LucideIcons.bell,
                 color: widget.iconColor,
                 size: 24,
               ),
