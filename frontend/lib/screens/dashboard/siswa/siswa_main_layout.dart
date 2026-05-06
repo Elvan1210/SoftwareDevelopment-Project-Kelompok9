@@ -96,7 +96,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             // ── Main Content Area ──
             Expanded(
               child: GlassCard(
-                blurSigma: 16,
                 padding: EdgeInsets.zero,
                 child: Scaffold(
                   backgroundColor: Colors.transparent,
@@ -154,7 +153,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: GlassCard(
                   radius: 20,
-                  blurSigma: 20,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,7 +207,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             bottom: 16,
             child: GlassCard(
               radius: 24,
-              blurSigma: 24,
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: NavigationBar(
                 backgroundColor: Colors.transparent,

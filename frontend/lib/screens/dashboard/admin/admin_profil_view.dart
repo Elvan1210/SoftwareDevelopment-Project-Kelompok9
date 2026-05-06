@@ -11,7 +11,7 @@ class AdminProfilView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF8B5CF6); // Violet for Admin
+    const Color primaryColor = Color(0xFF075864); // Violet for Admin
 
     return FutureBuilder<Map<String, dynamic>?>(
       future: AuthService.getUserData(),

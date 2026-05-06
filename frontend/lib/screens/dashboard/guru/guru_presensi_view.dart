@@ -416,7 +416,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       children: [
         Expanded(child: _buildStatCard('Hadir', stats['Hadir']!, const Color(0xFF10B981))),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard('Izin', stats['Izin']!, const Color(0xFF3B82F6))),
+        Expanded(child: _buildStatCard('Izin', stats['Izin']!, const Color(0xFF76AFB8))),
         const SizedBox(width: 12),
         Expanded(child: _buildStatCard('Sakit', stats['Sakit']!, const Color(0xFFF59E0B))),
         const SizedBox(width: 12),
@@ -431,7 +431,6 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     
     return GlassCard(
       radius: 16,
-      blurSigma: 10,
       overrideColor: color.withAlpha(isDark ? 30 : 15),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       child: Column(
@@ -655,7 +654,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildRecapMiniStat('Hadir', stats['Hadir']!, const Color(0xFF10B981), total),
-                      _buildRecapMiniStat('Izin', stats['Izin']!, const Color(0xFF3B82F6), total),
+                      _buildRecapMiniStat('Izin', stats['Izin']!, const Color(0xFF76AFB8), total),
                       _buildRecapMiniStat('Sakit', stats['Sakit']!, const Color(0xFFF59E0B), total),
                       _buildRecapMiniStat('Alpa', stats['Alpa']!, const Color(0xFFEF4444), total),
                     ],
@@ -691,7 +690,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildStatusBtn(studentId, 'Hadir', 'H', const Color(0xFF10B981), currentStatus == 'Hadir'),
-          _buildStatusBtn(studentId, 'Izin', 'I', const Color(0xFF3B82F6), currentStatus == 'Izin'),
+          _buildStatusBtn(studentId, 'Izin', 'I', const Color(0xFF76AFB8), currentStatus == 'Izin'),
           _buildStatusBtn(studentId, 'Sakit', 'S', const Color(0xFFF59E0B), currentStatus == 'Sakit'),
           _buildStatusBtn(studentId, 'Alpa', 'A', const Color(0xFFEF4444), currentStatus == 'Alpa'),
         ],

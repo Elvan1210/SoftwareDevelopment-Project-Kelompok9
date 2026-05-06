@@ -349,13 +349,13 @@ class _SaluranViewState extends State<SaluranView> {
           if (!isMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: isGuru ? Colors.blue.withAlpha(40) : Colors.grey.withAlpha(40),
+              backgroundColor: isGuru ? Color(0xFF76AFB8).withAlpha(40) : Colors.grey.withAlpha(40),
               child: Text(
                 (msg['pengirim_nama'] ?? '?')[0].toUpperCase(),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
-                  color: isGuru ? Colors.blue.shade700 : Colors.grey.shade700,
+                  color: isGuru ? Color(0xFF76AFB8) : Color(0xFF26494F),
                 ),
               ),
             ),
@@ -389,13 +389,13 @@ class _SaluranViewState extends State<SaluranView> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(msg['pengirim_nama'] ?? 'Anonim', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: isGuru ? Colors.blue.shade400 : theme.primaryColor)),
+                          Text(msg['pengirim_nama'] ?? 'Anonim', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: isGuru ? Color(0xFF76AFB8) : theme.primaryColor)),
                           if (isGuru) ...[
                             const SizedBox(width: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(color: Colors.blue.withAlpha(30), borderRadius: BorderRadius.circular(4)),
-                              child: const Text('Guru', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.blue)),
+                              decoration: BoxDecoration(color: Color(0xFF76AFB8).withAlpha(30), borderRadius: BorderRadius.circular(4)),
+                              child: const Text('Guru', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF76AFB8))),
                             ),
                           ],
                         ],

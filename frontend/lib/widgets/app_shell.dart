@@ -1,4 +1,4 @@
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'smooth_scroll.dart';
 
@@ -103,31 +103,46 @@ class AppBackground extends StatelessWidget {
     return RepaintBoundary(
       child: Container(
         color: theme.scaffoldBackgroundColor,
-        child: isDark 
-            ? Container(
+        child: Stack(
+          children: [
+            // Top left ambient glow
+            Positioned(
+              top: -200,
+              left: -200,
+              child: Container(
+                width: 600,
+                height: 600,
                 decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   gradient: RadialGradient(
-                    center: const Alignment(-0.8, -0.8),
-                    radius: 2.0,
                     colors: [
-                      Colors.white.withAlpha(8), // Very subtle top-left light
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              )
-            : Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(0, -1.0),
-                    radius: 1.5,
-                    colors: [
-                      Colors.black.withAlpha(2),
+                      theme.primaryColor.withAlpha(isDark ? 40 : 15),
                       Colors.transparent,
                     ],
                   ),
                 ),
               ),
+            ),
+            // Bottom right ambient glow
+            Positioned(
+              bottom: -300,
+              right: -100,
+              child: Container(
+                width: 800,
+                height: 800,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      theme.colorScheme.secondary.withAlpha(isDark ? 25 : 10),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -139,7 +154,6 @@ class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double radius;
-  final double blurSigma;
   final Color? overrideColor;
   final List<BoxShadow>? shadows;
 
@@ -148,7 +162,6 @@ class GlassCard extends StatelessWidget {
     required this.child,
     this.padding,
     this.radius = 24,
-    this.blurSigma = 0, // Performance: Default to 0 unless needed
     this.overrideColor,
     this.shadows,
   });
@@ -159,32 +172,33 @@ class GlassCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     
     return RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: overrideColor ??
-                  theme.colorScheme.surface.withAlpha(isDark ? 230 : 255),
-              borderRadius: BorderRadius.circular(radius),
-              // Pro-Static Dual Border
-              border: Border.all(
-                color: isDark ? Colors.white.withAlpha(20) : Colors.black.withAlpha(10),
-                width: 1.5,
-              ),
-              boxShadow: shadows ??
-                  [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(isDark ? 100 : 20),
-                      blurRadius: 30,
-                      offset: const Offset(0, 15),
-                    ),
-                  ],
-            ),
-            child: child,
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: overrideColor ?? theme.colorScheme.surface.withAlpha(isDark ? 230 : 250),
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8),
+            width: 1.0,
           ),
+          boxShadow: shadows ?? [
+            // Layer 1: Sharp ambient occlusion
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 80 : 8),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+            // Layer 2: Soft diffused drop shadow
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 60 : 4),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius - 1),
+          child: child,
         ),
       ),
     );
@@ -239,14 +253,21 @@ class _PremiumCardState extends State<PremiumCard> {
           borderRadius: BorderRadius.circular(widget.radius),
           // ── Minimalist Sharp Border ──
           border: Border.all(
-            color: _hovered ? theme.colorScheme.onSurface.withAlpha(40) : (isDark ? Colors.white.withAlpha(12) : Colors.black.withAlpha(8)),
+            color: _hovered ? accent.withAlpha(isDark ? 100 : 50) : (isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8)),
             width: 1.0,
           ),
           boxShadow: [
+            // Ambient Occlusion
             BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 50 : 5),
-              blurRadius: _hovered ? 25 : 10,
-              offset: Offset(0, _hovered ? 8 : 4),
+              color: Colors.black.withAlpha(isDark ? 60 : 8),
+              blurRadius: _hovered ? 12 : 6,
+              offset: Offset(0, _hovered ? 6 : 2),
+            ),
+            // Diffused Glow / Drop Shadow
+            BoxShadow(
+              color: _hovered ? accent.withAlpha(isDark ? 40 : 15) : Colors.black.withAlpha(isDark ? 40 : 4),
+              blurRadius: _hovered ? 30 : 15,
+              offset: Offset(0, _hovered ? 15 : 8),
             ),
           ],
         ),

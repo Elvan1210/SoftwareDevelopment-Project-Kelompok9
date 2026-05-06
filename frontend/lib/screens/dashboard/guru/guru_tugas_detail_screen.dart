@@ -303,7 +303,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                               Row(
                                 children: [
                                   const CircleAvatar(
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor: Color(0xFF76AFB8),
                                     radius: 16,
                                     child: Icon(Icons.person, size: 16, color: Colors.white),
                                   ),
@@ -314,12 +314,12 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: isGraded ? Colors.green.shade50 : Colors.blue.shade50,
+                                  color: isGraded ? Colors.green.shade50 : Color(0xFF76AFB8),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   isGraded ? 'Dinilai' : 'Diserahkan',
-                                  style: TextStyle(color: isGraded ? Colors.green.shade700 : Colors.blue.shade700, fontWeight: FontWeight.bold, fontSize: 12),
+                                  style: TextStyle(color: isGraded ? Colors.green.shade700 : Color(0xFF76AFB8), fontWeight: FontWeight.bold, fontSize: 12),
                                 ),
                               ),
                             ],
@@ -345,9 +345,9 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                     },
                                     child: const Row(
                                       children: [
-                                        Icon(Icons.attachment, size: 16, color: Colors.blue),
+                                        Icon(Icons.attachment, size: 16, color: Color(0xFF76AFB8)),
                                         SizedBox(width: 8),
-                                        Expanded(child: Text('Buka File Jawaban', style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline))),
+                                        Expanded(child: Text('Buka File Jawaban', style: TextStyle(color: Color(0xFF76AFB8), decoration: TextDecoration.underline))),
                                       ],
                                     ),
                                   ),
