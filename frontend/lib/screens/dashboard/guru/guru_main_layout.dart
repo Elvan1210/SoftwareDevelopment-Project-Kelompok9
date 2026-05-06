@@ -10,9 +10,6 @@ import '../../../widgets/sidebar.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 
-// Catatan: Import untuk Tugas, Materi, Presensi, dan Nilai sudah dihapus 
-// karena nanti akan dimasukkan ke dalam modul Teams.
-
 class GuruMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -27,7 +24,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
   int _selectedIndex = 0;
   late List<Widget> _views;
 
-  // Judul disesuaikan menjadi 4 menu
   final List<String> _titles = [
     'Dashboard Overview',
     'Teams / Kelas',
@@ -40,7 +36,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     super.initState();
     _views = [
       GuruDashboardView(userData: widget.userData, token: widget.token),
-      // Memanggil halaman GuruTeamsView yang baru dibuat
       GuruTeamsView(userData: widget.userData, token: widget.token),
       GuruPengumumanView(userData: widget.userData, token: widget.token),
       GuruProfilView(userData: widget.userData),

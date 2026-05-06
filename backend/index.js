@@ -30,6 +30,7 @@ const notifikasiRoutes  = require('./routes/notifikasiRoutes');
 const presensiRoutes    = require('./routes/presensiRoutes');
 const saluranRoutes     = require('./routes/saluranRoutes');
 const channelRoutes     = require('./routes/channelRoutes');
+const quizRoutes        = require('./routes/quizRoutes');
 
 // ─── Register Routes ────────────────────────────────────────────────────────
 app.use('/api',             authRoutes);
@@ -44,6 +45,7 @@ app.use('/api/notifikasi',  notifikasiRoutes);
 app.use('/api/presensi',    presensiRoutes);
 app.use('/api/saluran',     saluranRoutes);
 app.use('/api/channels',    channelRoutes);
+app.use('/api/quiz',        quizRoutes);
 
 // ─── Global Error Handling ──────────────────────────────────────────────────
 app.use((err, req, res, next) => {
