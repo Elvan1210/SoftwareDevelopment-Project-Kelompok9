@@ -7,6 +7,7 @@ import 'guru_nilai_view.dart';
 import 'guru_materi_view.dart';
 import 'guru_presensi_view.dart';
 import 'guru_pending_requests_view.dart';
+import 'guru_quiz_view.dart';
 import '../shared/saluran_view.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
@@ -165,6 +166,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       case 'permintaan': return GuruPendingRequestsView(userData: widget.userData, token: widget.token, teamData: widget.teamData, onRequestsChanged: _fetchPendingCount);
       case 'presensi': return GuruPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'tugas': return GuruTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
+      case 'kuis': return GuruQuizView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'nilai': return GuruNilaiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'materi': return GuruMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       default: return _buildDashboardView();
@@ -225,6 +227,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           _buildSidebarItem('permintaan', Icons.person_add_alt_rounded, 'Permintaan', badgeCount: _pendingCount),
                           _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Kelas'),
                           _buildSidebarItem('tugas', Icons.assignment_outlined, 'Penugasan'),
+                          _buildSidebarItem('kuis', Icons.quiz_outlined, 'Kuis & Ujian'),
                           _buildSidebarItem('nilai', Icons.military_tech_outlined, 'Nilai Siswa'),
                           _buildSidebarItem('materi', Icons.auto_stories_outlined, 'Materi Ajar'),
                           
@@ -507,6 +510,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
               Text('Menu Lainnya', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
               const SizedBox(height: 16),
               _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Kelas'),
+              _buildSidebarItem('kuis', Icons.quiz_outlined, 'Kuis & Ujian'),
               _buildSidebarItem('nilai', Icons.military_tech_outlined, 'Nilai Siswa'),
               _buildSidebarItem('materi', Icons.auto_stories_outlined, 'Materi Ajar'),
               const Divider(height: 32),

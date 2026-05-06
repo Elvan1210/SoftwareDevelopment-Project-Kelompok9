@@ -6,6 +6,7 @@ import 'siswa_tugas_view.dart';
 import 'siswa_materi_view.dart';
 import 'siswa_nilai_view.dart';
 import 'siswa_presensi_view.dart';
+import 'siswa_quiz_view.dart';
 import '../shared/saluran_view.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
@@ -76,6 +77,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
       case 'saluran': return SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData, channelId: 'general', channelName: 'Groupchat Kelas');
       case 'presensi': return SiswaPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'tugas': return SiswaTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
+      case 'kuis': return SiswaQuizView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'nilai': return SiswaNilaiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'materi': return SiswaMateriView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       default: return _buildDashboardView();
@@ -134,6 +136,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                           _buildSidebarItem('saluran', LucideIcons.messageSquare, 'Saluran'),
                           _buildSidebarItem('presensi', LucideIcons.userCheck, 'Presensi Saya'),
                           _buildSidebarItem('tugas', LucideIcons.clipboardList, 'Tugas Kelas'),
+                          _buildSidebarItem('kuis', LucideIcons.helpCircle, 'Kuis & Ujian'),
                           _buildSidebarItem('nilai', LucideIcons.award, 'Nilai Saya'),
                           _buildSidebarItem('materi', LucideIcons.bookOpen, 'Materi Pelajaran'),
                           
@@ -401,6 +404,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
               Text('Menu Lainnya', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
               const SizedBox(height: 16),
               _buildSidebarItem('presensi', LucideIcons.userCheck, 'Presensi Saya'),
+              _buildSidebarItem('kuis', LucideIcons.helpCircle, 'Kuis & Ujian'),
               _buildSidebarItem('nilai', LucideIcons.award, 'Nilai Saya'),
               const Divider(height: 32),
               Padding(

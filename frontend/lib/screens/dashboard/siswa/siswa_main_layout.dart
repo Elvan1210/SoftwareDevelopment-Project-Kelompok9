@@ -10,9 +10,6 @@ import '../../../widgets/sidebar.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 
-// Catatan: Import untuk Tugas, Materi, dan Nilai sudah dihapus 
-// karena nanti akan dimasukkan ke dalam modul Teams.
-
 class SiswaMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -26,7 +23,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
   int _selectedIndex = 0;
   late List<Widget> _views;
 
-  // Judul disesuaikan menjadi 4 menu
   final List<String> _titles = [
     'Dashboard Overview',
     'Teams / Kelas Saya',
@@ -39,7 +35,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     super.initState();
     _views = [
       SiswaDashboardScreen(userData: widget.userData, token: widget.token),
-      // Memanggil halaman SiswaTeamsView yang baru dibuat
       SiswaTeamsView(userData: widget.userData, token: widget.token),
       SiswaPengumumanView(userData: widget.userData, token: widget.token),
       SiswaProfilView(userData: widget.userData),
