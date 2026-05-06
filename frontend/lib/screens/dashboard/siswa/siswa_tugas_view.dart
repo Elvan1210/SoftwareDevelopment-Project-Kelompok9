@@ -258,7 +258,7 @@ class _TugasList extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
-                    child: Text(key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey.shade700)),
+                    child: Text(key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF26494F))),
                   ),
                   GridView.builder(
                     shrinkWrap: true,
@@ -308,7 +308,7 @@ class _TugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const accent = Color(0xFF3B82F6);
+    const accent = Color(0xFF76AFB8);
 
     return PremiumCard(
       onTap: onTap,

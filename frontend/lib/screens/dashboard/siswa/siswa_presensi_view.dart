@@ -238,7 +238,7 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
           Row(
             children: [
               _buildStatDetail('Hadir', _hadir, const Color(0xFF22C55E)),
-              _buildStatDetail('Izin', _izin, const Color(0xFF3B82F6)),
+              _buildStatDetail('Izin', _izin, const Color(0xFF76AFB8)),
               _buildStatDetail('Sakit', _sakit, const Color(0xFFF59E0B)),
               _buildStatDetail('Alpa', _alpha, const Color(0xFFEF4444)),
             ],
@@ -334,7 +334,7 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
   _StatusConfig _getStatusConfig(String status) {
     switch (status.toLowerCase()) {
       case 'hadir': return const _StatusConfig(Color(0xFF22C55E), Icons.check_circle_rounded);
-      case 'izin': return const _StatusConfig(Color(0xFF3B82F6), Icons.insert_drive_file_rounded);
+      case 'izin': return const _StatusConfig(Color(0xFF76AFB8), Icons.insert_drive_file_rounded);
       case 'sakit': return const _StatusConfig(Color(0xFFF59E0B), Icons.medical_services_rounded);
       default: return const _StatusConfig(Color(0xFFEF4444), Icons.cancel_rounded);
     }

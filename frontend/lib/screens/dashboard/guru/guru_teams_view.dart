@@ -72,7 +72,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF27F33),
-                  foregroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF121212),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: isSubmitting ? null : () async {

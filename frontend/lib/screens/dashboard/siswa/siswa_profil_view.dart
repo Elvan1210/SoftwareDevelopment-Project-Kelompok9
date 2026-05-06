@@ -13,7 +13,7 @@ class SiswaProfilView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    const Color primaryColor = Color(0xFF3B82F6);
+    const Color primaryColor = Color(0xFF76AFB8);
     final String nama = userData['nama'] ?? '-';
     final String email = userData['email'] ?? '-';
     final String kelas = userData['kelas'] ?? '-';

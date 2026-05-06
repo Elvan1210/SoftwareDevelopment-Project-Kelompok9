@@ -164,10 +164,10 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
       return const _NotifMeta(LucideIcons.userPlus, Color(0xFFF27F33));
     }
     if (judul.contains('tugas') || judul.contains('assignment')) {
-      return const _NotifMeta(LucideIcons.clipboardList, Color(0xFF3B82F6));
+      return const _NotifMeta(LucideIcons.clipboardList, Color(0xFF76AFB8));
     }
     if (judul.contains('nilai') || judul.contains('grade')) {
-      return const _NotifMeta(LucideIcons.award, Color(0xFF8B5CF6));
+      return const _NotifMeta(LucideIcons.award, Color(0xFF075864));
     }
     if (judul.contains('materi') || judul.contains('material')) {
       return const _NotifMeta(LucideIcons.bookOpen, Color(0xFF0891B2));
@@ -239,7 +239,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
             return Container(
               height: MediaQuery.of(context).size.height * 0.75,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                color: isDark ? const Color(0xFF121212) : Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 border: Border.all(
                   color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8),

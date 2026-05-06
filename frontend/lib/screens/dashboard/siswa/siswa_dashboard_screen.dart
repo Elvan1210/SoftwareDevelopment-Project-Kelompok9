@@ -146,7 +146,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       return const EmptyState(
         icon: Icons.grid_view_rounded,
         message: 'Kamu belum terdaftar di kelas manapun.\nHubungi Admin.',
-        color: Colors.blueGrey,
+        color: Color(0xFF76AFB8),
       );
     }
 

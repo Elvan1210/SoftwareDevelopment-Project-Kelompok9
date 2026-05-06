@@ -85,7 +85,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   Widget _buildDashboardView() {
     return Center(
       child: GlassCard(
-        blurSigma: 24,
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -100,7 +99,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             const SizedBox(height: 8),
             Text(
               'Ringkasan aktivitas akan muncul di sini',
-              style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+              style: TextStyle(color: Color(0xFF26494F), fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -121,7 +120,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             SizedBox(
               width: 280,
               child: GlassCard(
-                blurSigma: 24,
                 padding: EdgeInsets.zero,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +165,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             // ── Main Content Area ──
             Expanded(
               child: GlassCard(
-                blurSigma: 16,
                 padding: EdgeInsets.zero,
                 child: Scaffold(
                   backgroundColor: Colors.transparent,
@@ -231,7 +228,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           const SizedBox(height: 8),
           Text(
             widget.teamData['guru_nama'] ?? 'Pengajar',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF26494F)),
           ),
         ],
       ),
@@ -290,7 +287,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
       padding: const EdgeInsets.all(24.0),
       child: GlassCard(
         radius: 16,
-        blurSigma: 0, 
         padding: const EdgeInsets.all(12),
         overrideColor: theme.primaryColor.withAlpha(15),
         child: Row(
@@ -318,7 +314,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: GlassCard(
                   radius: 20,
-                  blurSigma: 20,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   child: Row(
                     children: [
@@ -370,7 +365,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             bottom: 16,
             child: GlassCard(
               radius: 24,
-              blurSigma: 24,
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

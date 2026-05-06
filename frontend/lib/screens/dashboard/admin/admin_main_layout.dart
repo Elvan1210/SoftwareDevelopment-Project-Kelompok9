@@ -101,7 +101,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             const SizedBox(width: 28),
             Expanded(
               child: GlassCard(
-                blurSigma: 16,
                 padding: EdgeInsets.zero,
                 child: Scaffold(
                   backgroundColor: Colors.transparent,
@@ -173,7 +172,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: GlassCard(
                   radius: 20,
-                  blurSigma: 20,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   child: Row(
                     children: [
@@ -220,7 +218,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             bottom: 16,
             child: GlassCard(
               radius: 24,
-              blurSigma: 24,
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -67,7 +67,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
             ? const EmptyState(
                 icon: Icons.workspace_premium_rounded,
                 message: 'Belum ada nilai\nyang diinput guru.',
-                color: Color(0xFF3B82F6))
+                color: Color(0xFF76AFB8))
             : RefreshIndicator(
                 onRefresh: _fetchNilai,
                 child: LayoutBuilder(

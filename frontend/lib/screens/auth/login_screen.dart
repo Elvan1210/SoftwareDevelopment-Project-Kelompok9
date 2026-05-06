@@ -153,9 +153,7 @@ class _AnimatedBackground extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: isDark
-                  ? [const Color(0xFF0F172A), const Color(0xFF020617)]
-                  : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+              colors: isDark ? const [Color(0xFF121212), Color(0xFF121212)] : const [Colors.white, Colors.white],
             ),
           ),
         ),
@@ -170,7 +168,7 @@ class _AnimatedBackground extends StatelessWidget {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withAlpha(isDark ? 40 : 25),
+                color: const Color(0xFF76AFB8).withAlpha(isDark ? 40 : 25),
               ),
             ),
           ),
@@ -186,7 +184,7 @@ class _AnimatedBackground extends StatelessWidget {
               height: 350,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF8B5CF6).withAlpha(isDark ? 35 : 20),
+                color: const Color(0xFF075864).withAlpha(isDark ? 35 : 20),
               ),
             ),
           ),
@@ -224,7 +222,6 @@ class _LoginCard extends StatelessWidget {
     final theme = Theme.of(context);
     return GlassCard(
       radius: 32,
-      blurSigma: 20,
       padding: const EdgeInsets.all(32),
       child: Form(
         key: formKey,
@@ -236,12 +233,12 @@ class _LoginCard extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF76AFB8), Color(0xFF075864)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withAlpha(80), blurRadius: 24, offset: const Offset(0, 8))],
+                boxShadow: [BoxShadow(color: const Color(0xFF76AFB8).withAlpha(80), blurRadius: 24, offset: const Offset(0, 8))],
               ),
               child: const Icon(Icons.school_rounded, color: Colors.white, size: 36),
             )
@@ -306,13 +303,13 @@ class _LoginCard extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: isLoading ? null : onLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFF76AFB8),
+                  foregroundColor: const Color(0xFF121212),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 child: isLoading
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Color(0xFF121212), strokeWidth: 2))
                     : const Text('Masuk', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: 0.3)),
               ),
             ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
