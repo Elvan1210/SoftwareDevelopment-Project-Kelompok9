@@ -226,7 +226,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) {
       return Colors.green;
     }
-    if (lower.contains('.doc')) return Color(0xFF76AFB8);
+    if (lower.contains('.doc')) return const Color(0xFF76AFB8);
     return Colors.purple;
   }
 
@@ -743,7 +743,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                       const SectionHeader(title: 'Feedback Pengajar'),
                       const SizedBox(height: 12),
                       PremiumCard(
-                        accentColor: Color(0xFF76AFB8),
+                        accentColor: const Color(0xFF76AFB8),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

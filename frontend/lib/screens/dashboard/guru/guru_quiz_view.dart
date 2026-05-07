@@ -413,9 +413,9 @@ class _QuizCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.orange.withAlpha(80)),
                     ),
-                    child: Text(
+                    child: const Text(
                       'TERJADWAL',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         color: Colors.orange,
@@ -833,8 +833,11 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
     for (var sub in _submissions) {
       final scorePercent = sub.totalPoints > 0 ? (sub.score / sub.totalPoints * 100) : 0;
       totalScore += scorePercent;
-      if (scorePercent >= 70) passed++;
-      else failed++;
+      if (scorePercent >= 70) {
+        passed++;
+      } else {
+        failed++;
+      }
     }
 
     final avgScore = (totalScore / _submissions.length).round();

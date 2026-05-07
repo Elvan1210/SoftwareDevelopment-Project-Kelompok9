@@ -258,7 +258,7 @@ class _TugasList extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
-                    child: Text(key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF26494F))),
+                    child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF26494F))),
                   ),
                   GridView.builder(
                     shrinkWrap: true,
