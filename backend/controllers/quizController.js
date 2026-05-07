@@ -331,12 +331,18 @@ const quizController = {
       const quizId = req.params.id;
       const snapshot = await db.collection('live_violations')
         .where('quizId', '==', quizId)
-        .orderBy('timestamp', 'desc')
         .limit(50)
         .get();
 
       const violations = [];
       snapshot.forEach(doc => violations.push({ id: doc.id, ...doc.data() }));
+
+      // Sort in memory to avoid missing index error
+      violations.sort((a, b) => {
+        const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
+        const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
+        return dateB - dateA;
+      });
 
       res.status(200).json({ data: violations });
     } catch (error) {

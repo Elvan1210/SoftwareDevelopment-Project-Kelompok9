@@ -314,12 +314,12 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: isGraded ? Colors.green.shade50 : Color(0xFF76AFB8),
+                                  color: isGraded ? Colors.green.shade50 : const Color(0xFF76AFB8),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   isGraded ? 'Dinilai' : 'Diserahkan',
-                                  style: TextStyle(color: isGraded ? Colors.green.shade700 : Color(0xFF76AFB8), fontWeight: FontWeight.bold, fontSize: 12),
+                                  style: TextStyle(color: isGraded ? Colors.green.shade700 : const Color(0xFF76AFB8), fontWeight: FontWeight.bold, fontSize: 12),
                                 ),
                               ),
                             ],

@@ -164,7 +164,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(LucideIcons.backpack, size: 80, color: Color(0xFF8DBCC3)),
+                  const Icon(LucideIcons.backpack, size: 80, color: Color(0xFF8DBCC3)),
                   const SizedBox(height: 16),
                   Text(
                     'Kamu belum tergabung di kelas mana pun.',
@@ -252,7 +252,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                                 Expanded(
                                   child: Text(
                                     tim['guru_nama'] ?? 'Guru Belum Ditugaskan', 
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF26494F)),
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF26494F)),
                                     maxLines: 1, overflow: TextOverflow.ellipsis,
                                   ),
                                 ),

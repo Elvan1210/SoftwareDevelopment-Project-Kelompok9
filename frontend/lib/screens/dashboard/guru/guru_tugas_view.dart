@@ -182,7 +182,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        decoration: BoxDecoration(border: Border.all(color: Color(0xFF8DBCC3)), borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFF8DBCC3)), borderRadius: BorderRadius.circular(12)),
                         child: Row(children: [
                           Icon(LucideIcons.calendar, color: Colors.grey.shade600, size: 20),
                           const SizedBox(width: 12),

@@ -317,12 +317,12 @@ class _QuizTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: Colors.red.withAlpha(40)),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(LucideIcons.xCircle, size: 18, color: Colors.red),
-                          const SizedBox(width: 8),
-                          const Text(
+                          Icon(LucideIcons.xCircle, size: 18, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text(
                             'Ujian Telah Ditutup',
                             style: TextStyle(fontWeight: FontWeight.w800, color: Colors.red),
                           ),

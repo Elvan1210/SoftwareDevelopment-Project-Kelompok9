@@ -99,7 +99,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Ringkasan aktivitas akan muncul di sini',
               style: TextStyle(color: Color(0xFF26494F), fontWeight: FontWeight.w600),
             ),
@@ -184,6 +184,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
                     ).animate(key: ValueKey(_activeTabID)).fade(duration: 400.ms).slideX(begin: -0.05),
                     actions: [
+                      const SizedBox(width: 8),
                       const ThemeToggle(),
                       const SizedBox(width: 8),
                       NotificationBell(
@@ -231,7 +232,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
           const SizedBox(height: 8),
           Text(
             widget.teamData['guru_nama'] ?? 'Pengajar',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF26494F)),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF26494F)),
           ),
         ],
       ),
