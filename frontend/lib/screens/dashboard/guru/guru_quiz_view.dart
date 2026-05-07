@@ -8,6 +8,8 @@ import '../../../services/quiz_service.dart';
 import '../../../services/export_service.dart';
 import '../../../models/quiz_model.dart';
 import 'guru_quiz_create_screen.dart';
+import 'guru_submission_detail.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class GuruQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -541,64 +543,77 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withAlpha(50),
-              borderRadius: BorderRadius.circular(2),
+    return DefaultTabController(
+      length: 2,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurface.withAlpha(50),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                const Icon(LucideIcons.barChart2, color: AppTheme.tealDeep, size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Hasil: ${widget.quiz.title}',
-                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-                    overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.barChart2, color: AppTheme.tealDeep, size: 22),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Hasil: ${widget.quiz.title}',
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: _exportCsv,
-                  icon: const Icon(LucideIcons.download, size: 16),
-                  label: const Text('Export CSV'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.tealDeep,
-                    backgroundColor: AppTheme.tealDeep.withAlpha(20),
+                  TextButton.icon(
+                    onPressed: _exportCsv,
+                    icon: const Icon(LucideIcons.download, size: 16),
+                    label: const Text('Export CSV'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.tealDeep,
+                      backgroundColor: AppTheme.tealDeep.withAlpha(20),
+                    ),
                   ),
-                ),
+                ],
+              ),
+            ),
+            
+            TabBar(
+              labelColor: AppTheme.tealDeep,
+              unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(150),
+              indicatorColor: AppTheme.tealDeep,
+              tabs: const [
+                Tab(text: 'Daftar Siswa'),
+                Tab(text: 'Statistik'),
               ],
             ),
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: _filterByKelas,
-                  onChanged: (val) {
-                    setState(() => _filterByKelas = val ?? true);
-                    _loadSubmissions();
-                  },
-                ),
-                Text('Hanya tampilkan siswa di kelas ini', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(150))),
-              ],
+            const SizedBox(height: 10),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _filterByKelas,
+                    onChanged: (val) {
+                      setState(() => _filterByKelas = val ?? true);
+                      _loadSubmissions();
+                    },
+                  ),
+                  Text('Hanya tampilkan siswa di kelas ini', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(150))),
+                ],
+              ),
             ),
-          ),
           
           const Divider(height: 1),
           Expanded(
@@ -614,63 +629,189 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                           ),
                         ),
                       )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _submissions.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (ctx, i) {
-                          final sub = _submissions[i];
-                          final scorePercent = sub.totalPoints > 0
-                              ? (sub.score / sub.totalPoints * 100).round()
-                              : 0;
+                    : TabBarView(
+                        children: [
+                          ListView.separated(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _submissions.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (ctx, i) {
+                              final sub = _submissions[i];
+                              final scorePercent = sub.totalPoints > 0
+                                  ? (sub.score / sub.totalPoints * 100).round()
+                                  : 0;
 
-                          return ListTile(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            tileColor: theme.colorScheme.surface.withAlpha(isDark ? 180 : 255),
-                            leading: CircleAvatar(
-                              backgroundColor: scorePercent >= 70
-                                  ? Colors.green.withAlpha(30)
-                                  : Colors.red.withAlpha(30),
-                              child: Text(
-                                '$scorePercent%',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                  color: scorePercent >= 70 ? Colors.green : Colors.red,
+                              return ListTile(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(
+                                    builder: (_) => GuruSubmissionDetail(submission: sub, quiz: widget.quiz)
+                                  ));
+                                },
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                tileColor: theme.colorScheme.surface.withAlpha(isDark ? 180 : 255),
+                                leading: CircleAvatar(
+                                  backgroundColor: scorePercent >= 70
+                                      ? Colors.green.withAlpha(30)
+                                      : Colors.red.withAlpha(30),
+                                  child: Text(
+                                    '$scorePercent%',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      color: scorePercent >= 70 ? Colors.green : Colors.red,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            title: Text(
-                              sub.studentName,
-                              style: const TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                            subtitle: Text(
-                              'Skor: ${sub.score}/${sub.totalPoints} • Pelanggaran: ${sub.violations}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withAlpha(140),
-                              ),
-                            ),
-                            trailing: sub.autoSubmitted
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withAlpha(20),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text(
-                                      'AUTO',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  )
-                                : null,
-                          );
-                        },
+                                title: Text(
+                                  sub.studentName,
+                                  style: const TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                subtitle: Text(
+                                  'Skor: ${sub.score}/${sub.totalPoints} • Pelanggaran: ${sub.violations}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.colorScheme.onSurface.withAlpha(140),
+                                  ),
+                                ),
+                                trailing: sub.autoSubmitted
+                                    ? Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.withAlpha(20),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          'AUTO',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                              );
+                            },
+                          ),
+                          _buildAnalyticsTab(theme, isDark),
+                        ],
                       ),
+          ),
+        ],
+      ),
+    ));
+  }
+
+  Widget _buildAnalyticsTab(ThemeData theme, bool isDark) {
+    if (_submissions.isEmpty) return const SizedBox.shrink();
+
+    int passed = 0;
+    int failed = 0;
+    double totalScore = 0;
+
+    for (var sub in _submissions) {
+      final scorePercent = sub.totalPoints > 0 ? (sub.score / sub.totalPoints * 100) : 0;
+      totalScore += scorePercent;
+      if (scorePercent >= 70) passed++;
+      else failed++;
+    }
+
+    final avgScore = (totalScore / _submissions.length).round();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.tealDeep.withAlpha(20),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.tealDeep.withAlpha(50)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(LucideIcons.trendingUp, color: AppTheme.tealDeep),
+                      const SizedBox(height: 10),
+                      const Text('Rata-Rata', style: TextStyle(fontSize: 12)),
+                      Text('$avgScore%', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.tealDeep)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withAlpha(20),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.green.withAlpha(50)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(LucideIcons.checkCircle, color: Colors.green),
+                      const SizedBox(height: 10),
+                      const Text('Lulus (≥70)', style: TextStyle(fontSize: 12)),
+                      Text('$passed', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.green)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+          const Text('Distribusi Kelulusan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 200,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 2,
+                centerSpaceRadius: 40,
+                sections: [
+                  PieChartSectionData(
+                    color: Colors.green,
+                    value: passed.toDouble(),
+                    title: passed > 0 ? '$passed' : '',
+                    radius: 50,
+                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                  ),
+                  PieChartSectionData(
+                    color: Colors.red,
+                    value: failed.toDouble(),
+                    title: failed > 0 ? '$failed' : '',
+                    radius: 50,
+                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Container(width: 12, height: 12, color: Colors.green),
+                  const SizedBox(width: 6),
+                  const Text('Lulus', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+              const SizedBox(width: 20),
+              Row(
+                children: [
+                  Container(width: 12, height: 12, color: Colors.red),
+                  const SizedBox(width: 6),
+                  const Text('Tidak Lulus', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+            ],
           ),
         ],
       ),

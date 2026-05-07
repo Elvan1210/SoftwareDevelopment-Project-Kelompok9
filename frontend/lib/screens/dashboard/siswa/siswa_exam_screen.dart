@@ -510,16 +510,19 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           const SizedBox(height: 20),
 
           if (q.imageUrl != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                q.imageUrl!,
-                width: double.infinity,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 100,
-                  color: Colors.grey.withAlpha(50),
-                  child: const Center(child: Icon(LucideIcons.imageOff, color: Colors.grey)),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 250),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  q.imageUrl!,
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 100,
+                    color: Colors.grey.withAlpha(50),
+                    child: const Center(child: Icon(LucideIcons.imageOff, color: Colors.grey)),
+                  ),
                 ),
               ),
             ),
@@ -535,6 +538,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
 
           if (q.questionType == 'essay') ...[
             TextFormField(
+              key: ValueKey(q.id),
               initialValue: selectedEssay,
               maxLines: 8,
               onChanged: (val) => _selectAnswer(q.id, val, 'essay'),
