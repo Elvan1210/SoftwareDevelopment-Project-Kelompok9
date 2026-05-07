@@ -68,6 +68,7 @@ class Quiz {
   final DateTime? startTime;
   final DateTime? endTime;
   final DateTime? scheduledAt;
+  final DateTime? closedAt;
   final DateTime createdAt;
 
   const Quiz({
@@ -91,6 +92,7 @@ class Quiz {
     this.startTime,
     this.endTime,
     this.scheduledAt,
+    this.closedAt,
     required this.createdAt,
   });
 
@@ -99,9 +101,9 @@ class Quiz {
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      subject: json['subject'] ?? '',
+      subject: json['subject'] ?? 'Umum',
       createdBy: json['createdBy']?.toString() ?? '',
-      createdByName: json['createdByName'] ?? '',
+      createdByName: json['createdByName'] ?? 'Guru',
       kelasId: json['kelasId']?.toString() ?? '',
       questions: (json['questions'] as List<dynamic>?)
           ?.map((q) => QuizQuestion.fromJson(q))
@@ -118,11 +120,13 @@ class Quiz {
       startTime: json['startTime'] != null ? DateTime.tryParse(json['startTime']) : null,
       endTime: json['endTime'] != null ? DateTime.tryParse(json['endTime']) : null,
       scheduledAt: json['scheduledAt'] != null ? DateTime.tryParse(json['scheduledAt']) : null,
+      closedAt: json['closedAt'] != null ? DateTime.tryParse(json['closedAt']) : null,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() => {
+    'id': id,
     'title': title,
     'description': description,
     'subject': subject,
@@ -137,10 +141,13 @@ class Quiz {
     'isScheduled': isScheduled,
     'shuffleQuestions': shuffleQuestions,
     'shuffleOptions': shuffleOptions,
+    'shareCode': shareCode,
     'sharedKelasIds': sharedKelasIds,
     'startTime': startTime?.toIso8601String(),
     'endTime': endTime?.toIso8601String(),
     'scheduledAt': scheduledAt?.toIso8601String(),
+    'closedAt': closedAt?.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
   };
 
   int get totalPoints => questions.fold(0, (sum, q) => sum + q.points);
@@ -151,6 +158,7 @@ class QuizSubmission {
   final String quizId;
   final String studentId;
   final String studentName;
+  final String? studentEmail;
   final String kelasId;
   final Map<String, dynamic> answers;
   final Map<String, String> essayAnswers;
@@ -166,6 +174,7 @@ class QuizSubmission {
     required this.quizId,
     required this.studentId,
     required this.studentName,
+    this.studentEmail,
     this.kelasId = '',
     required this.answers,
     this.essayAnswers = const {},
@@ -183,6 +192,7 @@ class QuizSubmission {
       quizId: json['quizId']?.toString() ?? '',
       studentId: json['studentId']?.toString() ?? '',
       studentName: json['studentName'] ?? '',
+      studentEmail: json['studentEmail'],
       kelasId: json['kelasId']?.toString() ?? '',
       answers: Map<String, dynamic>.from(json['answers'] ?? {}),
       essayAnswers: Map<String, String>.from(json['essayAnswers'] ?? {}),

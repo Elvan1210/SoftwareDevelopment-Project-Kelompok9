@@ -120,16 +120,109 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     );
   }
 
+  void _openLiveMonitor(Quiz quiz) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _LiveMonitorSheet(quiz: quiz, token: widget.token),
+    );
+  }
+
   void _copyShareCode(Quiz quiz) {
     if (quiz.shareCode != null) {
       Clipboard.setData(ClipboardData(text: quiz.shareCode!));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kode Share Kuis berhasil disalin! Bagikan ke kelas lain.'), backgroundColor: Colors.green),
+        const SnackBar(content: Text('Kode Share Kuis berhasil disalin! Bagikan ke guru/kelas lain.'), backgroundColor: Colors.green),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Kode Share tidak tersedia untuk kuis ini.'), backgroundColor: Colors.red),
       );
+    }
+  }
+
+  void _showImportDialog() {
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Tarik Kuis (Import)', style: TextStyle(fontWeight: FontWeight.w900)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Masukkan Kode Share kuis yang ingin Anda tarik ke kelas ini.', style: TextStyle(fontSize: 13)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: ctrl,
+              decoration: InputDecoration(
+                hintText: 'Contoh: A1B2C3D4',
+                filled: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              textCapitalization: TextCapitalization.characters,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () async {
+              final code = ctrl.text.trim().toUpperCase();
+              if (code.isEmpty) return;
+              Navigator.pop(ctx);
+              _importQuiz(code);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.tealDeep,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Import', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _importQuiz(String code) async {
+    setState(() => _isLoading = true);
+    final quiz = await QuizService.joinByCode(token: widget.token, shareCode: code);
+    
+    if (quiz == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kuis tidak ditemukan atau kode salah'), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+
+    // Clone it!
+    final quizData = quiz.toJson();
+    quizData.remove('id');
+    quizData.remove('_id');
+    quizData['kelasId'] = widget.teamData['id']?.toString() ?? '';
+    quizData['createdBy'] = widget.userData['id']?.toString() ?? widget.userData['_id']?.toString() ?? '';
+    quizData['createdByName'] = widget.userData['nama'] ?? 'Guru';
+    quizData['isActive'] = false; // Import as draft
+
+    final result = await QuizService.createQuiz(token: widget.token, quizData: quizData);
+    
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kuis berhasil ditarik ke kelas ini!'), backgroundColor: Colors.green),
+        );
+        _loadQuizzes();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Gagal mengimpor kuis')),
+        );
+      }
     }
   }
 
@@ -140,14 +233,29 @@ class _GuruQuizViewState extends State<GuruQuizView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToCreate,
-        backgroundColor: AppTheme.tealDeep,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-        icon: const Icon(LucideIcons.plus),
-        label: const Text('Buat Kuis', style: TextStyle(fontWeight: FontWeight.bold)),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'import_quiz',
+            onPressed: _showImportDialog,
+            backgroundColor: Colors.blueAccent,
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: const Icon(LucideIcons.download),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'create_quiz',
+            onPressed: _navigateToCreate,
+            backgroundColor: AppTheme.tealDeep,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+            icon: const Icon(LucideIcons.plus),
+            label: const Text('Buat Kuis', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.tealDeep))
@@ -166,6 +274,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
                         onDelete: () => _deleteQuiz(_quizzes[index].id),
                         onViewSubmissions: () => _viewSubmissions(_quizzes[index]),
                         onShare: () => _copyShareCode(_quizzes[index]),
+                        onLiveMonitor: () => _openLiveMonitor(_quizzes[index]),
                       ).animate(delay: (100 + index * 60).ms)
                         .fadeIn(duration: 400.ms)
                         .slideY(begin: 0.05, curve: Curves.easeOutQuart);
@@ -218,6 +327,7 @@ class _QuizCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onViewSubmissions;
   final VoidCallback onShare;
+  final VoidCallback onLiveMonitor;
 
   const _QuizCard({
     required this.quiz,
@@ -226,6 +336,7 @@ class _QuizCard extends StatelessWidget {
     required this.onDelete,
     required this.onViewSubmissions,
     required this.onShare,
+    required this.onLiveMonitor,
   });
 
   @override
@@ -385,6 +496,16 @@ class _QuizCard extends StatelessWidget {
                   color: AppTheme.tealDeep,
                 ),
                 const SizedBox(width: 8),
+                if (quiz.isActive && quiz.isSecureMode)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _ActionBtn(
+                      icon: LucideIcons.activity,
+                      label: 'Live',
+                      onTap: onLiveMonitor,
+                      color: Colors.redAccent,
+                    ),
+                  ),
                 _ActionBtn(
                   icon: LucideIcons.share2,
                   label: 'Share',
@@ -812,6 +933,175 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                 ],
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LiveMonitorSheet extends StatefulWidget {
+  final Quiz quiz;
+  final String token;
+
+  const _LiveMonitorSheet({required this.quiz, required this.token});
+
+  @override
+  State<_LiveMonitorSheet> createState() => _LiveMonitorSheetState();
+}
+
+class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
+  List<dynamic> _violations = [];
+  bool _isLoading = true;
+  bool _isDisposed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchViolations();
+    _startPolling();
+  }
+
+  void _startPolling() {
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_isDisposed) return;
+      _fetchViolations();
+      _startPolling();
+    });
+  }
+
+  Future<void> _fetchViolations() async {
+    final v = await QuizService.getLiveViolations(token: widget.token, quizId: widget.quiz.id);
+    if (!_isDisposed) {
+      setState(() {
+        _violations = v;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onSurface.withAlpha(50),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                const Icon(LucideIcons.activity, color: Colors.redAccent, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Live Monitor: ${widget.quiz.title}',
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withAlpha(30),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.withAlpha(50)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8, height: 8,
+                        decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text('LIVE', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _isLoading && _violations.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
+                : _violations.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(LucideIcons.shieldCheck, size: 48, color: Colors.green.withAlpha(150)),
+                            const SizedBox(height: 16),
+                            const Text('Belum ada pelanggaran', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _violations.length,
+                        itemBuilder: (ctx, idx) {
+                          final v = _violations[idx];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withAlpha(isDark ? 30 : 15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.red.withAlpha(50)),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(LucideIcons.alertTriangle, color: Colors.red, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        v['studentName'] ?? 'Unknown',
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        v['reason'] ?? 'Pelanggaran terdeteksi',
+                                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(200)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  v['timestamp'] != null 
+                                      ? DateFormat('HH:mm:ss').format(DateTime.parse(v['timestamp']).toLocal())
+                                      : '-',
+                                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150), fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),

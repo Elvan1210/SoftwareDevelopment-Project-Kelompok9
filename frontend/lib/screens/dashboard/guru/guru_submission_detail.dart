@@ -79,6 +79,11 @@ class GuruSubmissionDetail extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  submission.studentEmail?.isNotEmpty == true ? submission.studentEmail! : 'Email tidak tersedia',
+                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withAlpha(150)),
+                ),
+                const SizedBox(height: 8),
+                Text(
                   'Total Skor: ${submission.score} / ${submission.totalPoints}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -188,6 +193,8 @@ class GuruSubmissionDetail extends StatelessWidget {
     if (q.questionType == 'multipleChoice') {
       int correct = q.correctAnswers.isNotEmpty ? q.correctAnswers.first : 0;
       isCorrect = studentAns == correct;
+    } else if (q.questionType == 'multipleAnswer') {
+      isCorrect = studentAns is int && q.correctAnswers.contains(studentAns);
     } else {
       List<int> sAns = studentAns is List ? List<int>.from(studentAns) : [];
       List<int> cAns = List.from(q.correctAnswers);

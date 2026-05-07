@@ -155,7 +155,17 @@ const quizController = {
       const quizId = req.params.id;
       const { answers, violations, autoSubmitted, violationLog, kelasId, essayAnswers } = req.body;
       const userId = req.user?.id || req.user?.uid || req.body.studentId;
-      const userName = req.user?.nama || req.body.studentName || 'Unknown';
+      let userName = req.user?.nama || req.body.studentName || 'Unknown';
+      let userEmail = req.user?.email || '';
+
+      if (userName === 'Unknown' && userId) {
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          const udata = userDoc.data();
+          userName = udata.nama || 'Unknown';
+          userEmail = udata.email || userEmail;
+        }
+      }
 
       const existingSubmission = await db.collection('quiz_submissions')
         .where('quizId', '==', quizId)
@@ -196,7 +206,15 @@ const quizController = {
           }
         }
 
-        if (qType === 'multipleAnswer' || qType === 'complexCheckbox') {
+        if (qType === 'multipleAnswer') {
+          const studentAnswer = answers ? answers[q.id] : undefined;
+          const correctAnswers = q.correctAnswers || [];
+          if (studentAnswer !== undefined && correctAnswers.includes(studentAnswer)) {
+            score += pts;
+          }
+        }
+
+        if (qType === 'complexCheckbox') {
           const studentAnswers = answers ? answers[q.id] : undefined;
           const correctAnswers = q.correctAnswers || [];
           if (Array.isArray(studentAnswers) && Array.isArray(correctAnswers)) {
@@ -214,6 +232,7 @@ const quizController = {
         quizId,
         studentId: userId,
         studentName: userName,
+        studentEmail: userEmail,
         kelasId: kelasId || '',
         answers: answers || {},
         essayAnswers: essayAnswers || {},
@@ -276,6 +295,52 @@ const quizController = {
       res.status(200).json({ hasSubmitted: !snapshot.empty });
     } catch (error) {
       res.status(500).json({ message: 'Error checking submission', error: error.message });
+    }
+  },
+
+  reportLiveViolation: async (req, res) => {
+    try {
+      const quizId = req.params.id;
+      const { reason } = req.body;
+      const userId = req.user?.id || req.user?.uid;
+      let userName = req.user?.nama || 'Unknown';
+
+      if (userName === 'Unknown' && userId) {
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          userName = userDoc.data().nama || 'Unknown';
+        }
+      }
+
+      await db.collection('live_violations').add({
+        quizId,
+        studentId: userId,
+        studentName: userName,
+        reason: reason || 'Pelanggaran terdeteksi',
+        timestamp: new Date().toISOString()
+      });
+
+      res.status(200).json({ message: 'Live violation logged' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error logging live violation', error: error.message });
+    }
+  },
+
+  getLiveViolations: async (req, res) => {
+    try {
+      const quizId = req.params.id;
+      const snapshot = await db.collection('live_violations')
+        .where('quizId', '==', quizId)
+        .orderBy('timestamp', 'desc')
+        .limit(50)
+        .get();
+
+      const violations = [];
+      snapshot.forEach(doc => violations.push({ id: doc.id, ...doc.data() }));
+
+      res.status(200).json({ data: violations });
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching live violations', error: error.message });
     }
   },
 

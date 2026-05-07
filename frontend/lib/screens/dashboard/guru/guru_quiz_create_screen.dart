@@ -34,13 +34,16 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _durationCtrl = TextEditingController(text: '60');
-  final _maxViolationsCtrl = TextEditingController(text: '5');
+  
   bool _isSecureMode = true;
   bool _isActive = true;
   bool _isScheduled = false;
   bool _shuffleQuestions = false;
   bool _shuffleOptions = false;
+  
   DateTime? _scheduledAt;
+  DateTime? _closedAt;
+  
   bool _isSaving = false;
 
   final List<_QuestionForm> _questions = [];
@@ -55,13 +58,13 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       _titleCtrl.text = q.title;
       _descCtrl.text = q.description;
       _durationCtrl.text = q.durationMinutes.toString();
-      _maxViolationsCtrl.text = q.maxViolations.toString();
       _isSecureMode = q.isSecureMode;
       _isActive = q.isActive;
       _isScheduled = q.isScheduled;
       _shuffleQuestions = q.shuffleQuestions;
       _shuffleOptions = q.shuffleOptions;
       _scheduledAt = q.scheduledAt;
+      _closedAt = q.closedAt;
 
       for (final question in q.questions) {
         _questions.add(_QuestionForm.fromModel(question));
@@ -106,6 +109,27 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       _scheduledAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
       _isScheduled = true;
       _isActive = false;
+    });
+  }
+
+  Future<void> _pickCloseTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _closedAt ?? _scheduledAt ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date == null) return;
+
+    if (!mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_closedAt ?? _scheduledAt ?? DateTime.now()),
+    );
+    if (time == null) return;
+
+    setState(() {
+      _closedAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
   }
 
@@ -170,13 +194,14 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       'kelasId': widget.teamData['id']?.toString() ?? '',
       'questions': questions,
       'durationMinutes': int.tryParse(_durationCtrl.text) ?? 60,
-      'maxViolations': int.tryParse(_maxViolationsCtrl.text) ?? 5,
+      'maxViolations': 5, // Default fallback for backward compatibility
       'isSecureMode': _isSecureMode,
       'isActive': _isActive,
       'isScheduled': _isScheduled,
       'shuffleQuestions': _shuffleQuestions,
       'shuffleOptions': _shuffleOptions,
       'scheduledAt': _scheduledAt?.toIso8601String(),
+      'closedAt': _closedAt?.toIso8601String(),
     };
 
     Map<String, dynamic> result;
@@ -245,7 +270,6 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
     _titleCtrl.dispose();
     _descCtrl.dispose();
     _durationCtrl.dispose();
-    _maxViolationsCtrl.dispose();
     for (final q in _questions) {
       q.dispose();
     }
@@ -313,21 +337,32 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
               const _SectionLabel(label: 'PENGATURAN UJIAN', icon: LucideIcons.settings),
               const SizedBox(height: 12),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildField('Durasi (menit)', _durationCtrl, '60', LucideIcons.clock, theme, isDark,
-                        isNumber: true),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _buildField('Max Pelanggaran', _maxViolationsCtrl, '5', LucideIcons.alertTriangle, theme, isDark,
-                        isNumber: true),
-                  ),
-                ],
-              ),
+              _buildField('Durasi (menit)', _durationCtrl, '60', LucideIcons.clock, theme, isDark,
+                  isNumber: true),
 
               const SizedBox(height: 16),
+
+              _buildToggleCard(
+                title: 'Batas Waktu (Jam Tutup)',
+                subtitle: _closedAt != null ? 'Tutup pada: ${DateFormat('dd MMM yyyy HH:mm').format(_closedAt!)}' : 'Ujian otomatis di-submit jika lewat batas waktu',
+                icon: LucideIcons.timerOff,
+                value: _closedAt != null,
+                onChanged: (v) {
+                  if (v) {
+                    _pickCloseTime();
+                  } else {
+                    setState(() => _closedAt = null);
+                  }
+                },
+                theme: theme,
+                isDark: isDark,
+                extraAction: _closedAt != null ? IconButton(
+                  icon: const Icon(LucideIcons.edit2, size: 16),
+                  onPressed: _pickCloseTime,
+                ) : null,
+              ),
+
+              const SizedBox(height: 10),
 
               _buildToggleCard(
                 title: 'Secure Exam Mode',
@@ -644,10 +679,15 @@ class _QuestionCardState extends State<_QuestionCard> {
         
         List<int> newAnswers = [];
         for (int ans in widget.form.correctAnswers) {
-          if (ans < index) newAnswers.add(ans);
-          else if (ans > index) newAnswers.add(ans - 1);
+          if (ans < index) {
+            newAnswers.add(ans);
+          } else if (ans > index) {
+            newAnswers.add(ans - 1);
+          }
         }
-        if (newAnswers.isEmpty) newAnswers.add(0);
+        if (newAnswers.isEmpty) {
+          newAnswers.add(0);
+        }
         widget.form.correctAnswers = newAnswers;
       });
       widget.onUpdate();
@@ -896,14 +936,22 @@ class _QuestionCardState extends State<_QuestionCard> {
                 child: Row(
                   children: [
                     if (form.questionType == 'multipleChoice')
-                      Radio<int>.adaptive(
-                        value: oi,
-                        groupValue: form.correctAnswers.isNotEmpty ? form.correctAnswers.first : null,
-                        onChanged: (v) {
-                          setState(() => form.correctAnswers = [v ?? 0]);
-                          widget.onUpdate();
-                        },
-                        activeColor: Colors.green,
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() => form.correctAnswers = [oi]);
+                            widget.onUpdate();
+                          },
+                          child: Icon(
+                            form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
+                                ? LucideIcons.checkCircle2
+                                : LucideIcons.circle,
+                            color: form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
+                                ? Colors.green
+                                : widget.theme.colorScheme.onSurface.withAlpha(100),
+                          ),
+                        ),
                       )
                     else
                       Checkbox(

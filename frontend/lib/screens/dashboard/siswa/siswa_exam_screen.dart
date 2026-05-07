@@ -60,13 +60,21 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     _initShuffle();
 
     _violationService = ViolationService(
-      maxViolations: widget.quiz.maxViolations,
-      onMaxViolationsReached: () => _autoSubmit('Batas pelanggaran tercapai'),
+      maxViolations: 9999, // Removed max violations auto-submit
+      onMaxViolationsReached: () {}, 
     );
     _violationService.addListener(_onViolationChanged);
 
+    int examDuration = widget.quiz.durationMinutes;
+    if (widget.quiz.closedAt != null) {
+      final diff = widget.quiz.closedAt!.difference(DateTime.now()).inMinutes;
+      if (diff < examDuration) {
+        examDuration = diff > 0 ? diff : 1;
+      }
+    }
+
     _timerService = TimerService(
-      durationMinutes: widget.quiz.durationMinutes,
+      durationMinutes: examDuration,
       onTimeUp: () => _autoSubmit('Waktu habis'),
     );
     _timerService.addListener(() { if (mounted) setState(() {}); });
@@ -146,6 +154,11 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     if (_violationService.violations.isNotEmpty) {
       final last = _violationService.violations.last;
       _showWarning(last.typeLabel);
+      QuizService.reportLiveViolation(
+        token: widget.token,
+        quizId: widget.quiz.id,
+        reason: last.typeLabel,
+      );
     }
   }
 
@@ -562,7 +575,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               final oi = oOrder[i];
               
               bool isSelected = false;
-              if (q.questionType == 'multipleChoice') {
+              if (q.questionType == 'multipleChoice' || q.questionType == 'multipleAnswer') {
                 isSelected = selectedAnswer == oi;
               } else {
                 isSelected = (selectedAnswer is List) && selectedAnswer.contains(oi);
@@ -574,7 +587,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      if (q.questionType == 'multipleChoice') {
+                      if (q.questionType == 'multipleChoice' || q.questionType == 'multipleAnswer') {
                         _selectAnswer(q.id, oi, q.questionType);
                       } else {
                         List<int> current = selectedAnswer is List ? List<int>.from(selectedAnswer) : [];
@@ -606,7 +619,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                             width: 36, height: 36,
                             decoration: BoxDecoration(
                               color: isSelected ? AppTheme.tealDeep : theme.colorScheme.onSurface.withAlpha(15),
-                              borderRadius: q.questionType == 'multipleChoice' ? BorderRadius.circular(18) : BorderRadius.circular(8),
+                              borderRadius: q.questionType == 'multipleChoice' || q.questionType == 'multipleAnswer' ? BorderRadius.circular(18) : BorderRadius.circular(8),
                             ),
                             child: Center(child: Text(
                               String.fromCharCode(65 + i),
@@ -651,10 +664,11 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           bool isAnswered = false;
           if (q.questionType == 'essay') {
             isAnswered = _essayAnswers.containsKey(q.id) && _essayAnswers[q.id]!.trim().isNotEmpty;
-          } else if (q.questionType == 'multipleChoice') {
+          } else if (q.questionType == 'multipleChoice' || q.questionType == 'multipleAnswer') {
             isAnswered = _answers.containsKey(q.id);
           } else {
-            isAnswered = _answers.containsKey(q.id) && (_answers[q.id] as List).isNotEmpty;
+            final ans = _answers[q.id];
+            isAnswered = ans != null && (ans is List) && ans.isNotEmpty;
           }
 
           final isCurrent = i == _currentIndex;

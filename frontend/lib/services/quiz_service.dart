@@ -172,6 +172,25 @@ class QuizService {
     }
   }
 
+  static Future<void> reportLiveViolation({
+    required String token,
+    required String quizId,
+    required String reason,
+  }) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/api/quiz/$quizId/live-violation'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'reason': reason}),
+      );
+    } catch (e) {
+      debugPrint('reportLiveViolation error: $e');
+    }
+  }
+
   static Future<List<QuizSubmission>> getSubmissions({
     required String token,
     required String quizId,
@@ -196,6 +215,26 @@ class QuizService {
       return [];
     } catch (e) {
       debugPrint('getSubmissions error: $e');
+      return [];
+    }
+  }
+
+  static Future<List<dynamic>> getLiveViolations({
+    required String token,
+    required String quizId,
+  }) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/quiz/$quizId/live-violations'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        return body['data'] as List<dynamic>;
+      }
+      return [];
+    } catch (e) {
+      debugPrint('getLiveViolations error: $e');
       return [];
     }
   }
