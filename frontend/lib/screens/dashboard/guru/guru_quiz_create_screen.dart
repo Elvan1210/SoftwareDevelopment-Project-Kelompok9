@@ -8,6 +8,7 @@ import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../services/quiz_service.dart';
 import '../../../services/upload_service.dart';
+import '../../../services/notifikasi_service.dart';
 import '../../../models/quiz_model.dart';
 
 class GuruQuizCreateScreen extends StatefulWidget {
@@ -195,6 +196,24 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
     if (mounted) {
       setState(() => _isSaving = false);
       if (result['success'] == true) {
+        if (!isEditing) {
+          if (_isActive) {
+            NotifikasiService.kirimNotifikasi(
+              judul: 'Kuis Baru: ${_titleCtrl.text.trim()}',
+              pesan: 'Ujian baru telah ditambahkan ke kelas Anda. Silakan cek menu Ujian!',
+              token: widget.token,
+              targetKelas: widget.teamData['id']?.toString(),
+            );
+          } else if (_isScheduled && _scheduledAt != null) {
+            NotifikasiService.kirimNotifikasi(
+              judul: 'Ujian Dijadwalkan: ${_titleCtrl.text.trim()}',
+              pesan: 'Ujian akan dimulai pada ${DateFormat('dd MMM yyyy, HH:mm').format(_scheduledAt!)}.',
+              token: widget.token,
+              targetKelas: widget.teamData['id']?.toString(),
+            );
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isEditing ? 'Kuis berhasil diupdate!' : 'Kuis berhasil dibuat!'),
@@ -816,13 +835,15 @@ class _QuestionCardState extends State<_QuestionCard> {
           if (form.imageUrl != null)
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    form.imageUrl!,
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 250),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      form.imageUrl!,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 Positioned(
