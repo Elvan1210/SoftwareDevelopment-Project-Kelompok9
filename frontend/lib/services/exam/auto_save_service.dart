@@ -19,7 +19,7 @@ class AutoSaveService {
   Timer? _timer;
   final int intervalSeconds;
   final String _storageKey;
-  Map<String, int> _currentAnswers = {};
+  Map<String, dynamic> _currentAnswers = {};
   bool _isDirty = false; // track if there are unsaved changes
 
   AutoSaveService({
@@ -40,19 +40,19 @@ class AutoSaveService {
   }
 
   // ── Update answer ─────────────────────────────────────────────────────
-  void updateAnswer(String questionId, int selectedOption) {
+  void updateAnswer(String questionId, dynamic selectedOption) {
     _currentAnswers[questionId] = selectedOption;
     _isDirty = true;
   }
 
   // ── Bulk update ───────────────────────────────────────────────────────
-  void updateAllAnswers(Map<String, int> answers) {
+  void updateAllAnswers(Map<String, dynamic> answers) {
     _currentAnswers = Map.from(answers);
     _isDirty = true;
   }
 
   // ── Get current answers ───────────────────────────────────────────────
-  Map<String, int> get currentAnswers => Map.unmodifiable(_currentAnswers);
+  Map<String, dynamic> get currentAnswers => Map.unmodifiable(_currentAnswers);
 
   // ── Save to local storage ─────────────────────────────────────────────
   Future<void> _saveToStorage() async {
@@ -76,15 +76,14 @@ class AutoSaveService {
   }
 
   // ── Restore from local storage ────────────────────────────────────────
-  Future<Map<String, int>> restore() async {
+  Future<Map<String, dynamic>> restore() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_storageKey);
       if (raw == null) return {};
 
       final data = jsonDecode(raw) as Map<String, dynamic>;
-      final answers = (data['answers'] as Map<String, dynamic>?)
-          ?.map((k, v) => MapEntry(k, v as int)) ?? {};
+      final answers = (data['answers'] as Map<String, dynamic>?) ?? {};
       
       _currentAnswers = Map.from(answers);
       debugPrint('🔄 [AutoSaveService] Restored ${answers.length} answers');

@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,9 +13,6 @@ import '../../../services/exam/secure_mode_service.dart';
 import '../../../services/exam/focus_detection_service.dart';
 import '../../../services/exam/keyboard_protection_service.dart';
 import '../../../services/quiz_service.dart';
-
-/// Secure Exam Screen — inti dari Secure Exam Browser.
-/// Menggabungkan semua service keamanan menjadi satu screen ujian.
 
 class SiswaExamScreen extends StatefulWidget {
   final Quiz quiz;
@@ -33,7 +31,6 @@ class SiswaExamScreen extends StatefulWidget {
 }
 
 class _SiswaExamScreenState extends State<SiswaExamScreen> {
-  // ── Services ──
   late final ViolationService _violationService;
   late final TimerService _timerService;
   late final AutoSaveService _autoSaveService;
@@ -41,14 +38,17 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   late final FocusDetectionService _focusDetectionService;
   late final KeyboardProtectionService _keyboardProtection;
 
-  // ── State ──
-  final Map<String, int> _answers = {};
+  final Map<String, dynamic> _answers = {};
+  final Map<String, String> _essayAnswers = {};
   int _currentIndex = 0;
   bool _isSubmitting = false;
   bool _isSubmitted = false;
   bool _showViolationWarning = false;
   String _lastViolationMsg = '';
   final FocusNode _focusNode = FocusNode();
+
+  List<int> _questionOrder = [];
+  final Map<String, List<int>> _optionOrder = {};
 
   String get _studentId =>
       widget.userData['id']?.toString() ?? widget.userData['_id']?.toString() ?? '';
@@ -57,67 +57,83 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   void initState() {
     super.initState();
 
-    // 1. Violation Service
+    _initShuffle();
+
     _violationService = ViolationService(
       maxViolations: widget.quiz.maxViolations,
       onMaxViolationsReached: () => _autoSubmit('Batas pelanggaran tercapai'),
     );
     _violationService.addListener(_onViolationChanged);
 
-    // 2. Timer
     _timerService = TimerService(
       durationMinutes: widget.quiz.durationMinutes,
       onTimeUp: () => _autoSubmit('Waktu habis'),
     );
     _timerService.addListener(() { if (mounted) setState(() {}); });
 
-    // 3. Auto Save
     _autoSaveService = AutoSaveService(
       quizId: widget.quiz.id,
       studentId: _studentId,
       intervalSeconds: 10,
     );
 
-    // 4. Secure Mode
     _secureModeService = SecureModeService(violationService: _violationService);
 
-    // 5. Focus Detection
     _focusDetectionService = FocusDetectionService(
       violationService: _violationService,
       onFocusLost: () { if (mounted) _showWarning('Anda meninggalkan aplikasi!'); },
       onFocusRegained: () { if (mounted) _recoverSecureMode(); },
     );
 
-    // 6. Keyboard Protection
     _keyboardProtection = KeyboardProtectionService(violationService: _violationService);
 
     _initExam();
   }
 
-  Future<void> _initExam() async {
-    // Restore saved answers
-    final saved = await _autoSaveService.restore();
-    if (saved.isNotEmpty) {
-      setState(() => _answers.addAll(saved));
+  void _initShuffle() {
+    _questionOrder = List.generate(widget.quiz.questions.length, (i) => i);
+    if (widget.quiz.shuffleQuestions) {
+      _questionOrder.shuffle(Random(widget.quiz.id.hashCode));
     }
 
-    // Activate all security
+    for (var q in widget.quiz.questions) {
+      List<int> oOrder = List.generate(q.options.length, (i) => i);
+      if (widget.quiz.shuffleOptions) {
+        oOrder.shuffle(Random(q.id.hashCode));
+      }
+      _optionOrder[q.id] = oOrder;
+    }
+  }
+
+  Future<void> _initExam() async {
+    final saved = await _autoSaveService.restore();
+    if (saved.isNotEmpty) {
+      setState(() {
+        for (var entry in saved.entries) {
+          final q = widget.quiz.questions.firstWhere((x) => x.id == entry.key, orElse: () => widget.quiz.questions.first);
+          if (q.id == entry.key) {
+            if (q.questionType == 'essay') {
+              _essayAnswers[entry.key] = entry.value.toString();
+            } else {
+              _answers[entry.key] = entry.value;
+            }
+          }
+        }
+      });
+    }
+
     if (widget.quiz.isSecureMode) {
       await _secureModeService.activate();
       _focusDetectionService.activate();
       _keyboardProtection.activate();
 
-      // Mobile immersive mode
       if (!kIsWeb && !_isDesktop) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       }
     }
 
-    // Start timer & auto-save
     _timerService.start();
     _autoSaveService.start();
-
-    // Request focus for keyboard listener
     _focusNode.requestFocus();
   }
 
@@ -150,9 +166,16 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     _focusNode.requestFocus();
   }
 
-  void _selectAnswer(String questionId, int optionIndex) {
-    setState(() => _answers[questionId] = optionIndex);
-    _autoSaveService.updateAnswer(questionId, optionIndex);
+  void _selectAnswer(String questionId, dynamic answer, String type) {
+    setState(() {
+      if (type == 'essay') {
+        _essayAnswers[questionId] = answer.toString();
+        _autoSaveService.updateAnswer(questionId, answer.toString());
+      } else {
+        _answers[questionId] = answer;
+        _autoSaveService.updateAnswer(questionId, answer);
+      }
+    });
   }
 
   Future<void> _autoSubmit(String reason) async {
@@ -165,30 +188,27 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     if (_isSubmitted || _isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    // Force save first
-    _autoSaveService.updateAllAnswers(_answers);
+    _autoSaveService.updateAllAnswers({..._answers, ..._essayAnswers});
     await _autoSaveService.forceSave();
 
-    // Stop services
     _timerService.stop();
 
     final result = await QuizService.submitAnswers(
       token: widget.token,
       quizId: widget.quiz.id,
+      kelasId: widget.quiz.kelasId,
       answers: _answers,
+      essayAnswers: _essayAnswers,
       violations: _violationService.violationCount,
       autoSubmitted: autoSubmitted,
       violationLog: _violationService.exportLog(),
     );
 
-    // Clear auto-save
     await _autoSaveService.clear();
 
     if (mounted) {
       setState(() { _isSubmitting = false; _isSubmitted = true; });
       _deactivateSecureMode();
-
-      // Show result
       _showResultDialog(result, autoSubmitted);
     }
   }
@@ -197,6 +217,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     final data = result['data'];
     final score = data?['data']?['score'] ?? data?['score'] ?? 0;
     final total = data?['data']?['totalPoints'] ?? data?['totalPoints'] ?? 0;
+    final hasEssay = data?['data']?['hasEssay'] ?? data?['hasEssay'] ?? false;
 
     showDialog(
       context: context,
@@ -229,8 +250,14 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                 ),
                 const SizedBox(height: 8),
                 if (result['success'] == true) ...[
-                  Text('Skor: $score / $total',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.tealDeep)),
+                  if (hasEssay)
+                    const Text('Jawaban berhasil disimpan.\nNilai akhir menunggu penilaian guru untuk soal essay.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.orange))
+                  else
+                    Text('Skor: $score / $total',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.tealDeep)),
+                  
                   const SizedBox(height: 8),
                   Text('Pelanggaran: ${_violationService.violationCount}',
                     style: TextStyle(fontSize: 14, color: Colors.red.withAlpha(200))),
@@ -260,13 +287,14 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   }
 
   void _confirmSubmit() {
+    int answered = _answers.length + _essayAnswers.length;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Submit Jawaban?', style: TextStyle(fontWeight: FontWeight.w900)),
         content: Text(
-          'Dijawab: ${_answers.length}/${widget.quiz.questions.length} soal.\nPelanggaran: ${_violationService.violationCount}',
+          'Dijawab: $answered/${widget.quiz.questions.length} soal.\nPelanggaran: ${_violationService.violationCount}',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
@@ -348,7 +376,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     );
   }
 
-  // ── TOP BAR ──
   Widget _buildTopBar(ThemeData theme, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -359,7 +386,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       ),
       child: Row(
         children: [
-          // Shield icon
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -381,12 +407,8 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               ],
             ),
           ),
-
-          // Timer
           _buildTimerChip(isDark),
           const SizedBox(width: 10),
-
-          // Violation counter
           _buildViolationChip(isDark),
         ],
       ),
@@ -439,7 +461,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     );
   }
 
-  // ── WARNING BANNER ──
   Widget _buildWarningBanner(bool isDark) {
     return Container(
       width: double.infinity,
@@ -460,21 +481,22 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     );
   }
 
-  // ── QUESTION AREA ──
   Widget _buildQuestionArea(ThemeData theme, bool isDark) {
     if (widget.quiz.questions.isEmpty) {
       return const Center(child: Text('Tidak ada soal'));
     }
 
-    final q = widget.quiz.questions[_currentIndex];
+    final qIndex = _questionOrder[_currentIndex];
+    final q = widget.quiz.questions[qIndex];
     final selectedAnswer = _answers[q.id];
+    final selectedEssay = _essayAnswers[q.id] ?? '';
+    final oOrder = _optionOrder[q.id] ?? [];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Question number badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
@@ -487,7 +509,23 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Question text — NO selection allowed
+          if (q.imageUrl != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                q.imageUrl!,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 100,
+                  color: Colors.grey.withAlpha(50),
+                  child: const Center(child: Icon(LucideIcons.imageOff, color: Colors.grey)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+
           SelectionContainer.disabled(
             child: Text(q.question,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700,
@@ -495,64 +533,104 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           ),
           const SizedBox(height: 28),
 
-          // Options
-          ...List.generate(q.options.length, (oi) {
-            final isSelected = selectedAnswer == oi;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _selectAnswer(q.id, oi),
+          if (q.questionType == 'essay') ...[
+            TextFormField(
+              initialValue: selectedEssay,
+              maxLines: 8,
+              onChanged: (val) => _selectAnswer(q.id, val, 'essay'),
+              style: TextStyle(color: theme.colorScheme.onSurface),
+              decoration: InputDecoration(
+                hintText: 'Tulis jawaban uraian Anda di sini...',
+                filled: true,
+                fillColor: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppTheme.tealDeep.withAlpha(isDark ? 30 : 15)
-                          : theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected ? AppTheme.tealDeep.withAlpha(100) : theme.colorScheme.onSurface.withAlpha(20),
-                        width: isSelected ? 2 : 1,
+                  borderSide: BorderSide(color: theme.colorScheme.onSurface.withAlpha(20)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: AppTheme.tealDeep, width: 2),
+                ),
+              ),
+            ),
+          ] else ...[
+            ...List.generate(oOrder.length, (i) {
+              final oi = oOrder[i];
+              
+              bool isSelected = false;
+              if (q.questionType == 'multipleChoice') {
+                isSelected = selectedAnswer == oi;
+              } else {
+                isSelected = (selectedAnswer is List) && selectedAnswer.contains(oi);
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      if (q.questionType == 'multipleChoice') {
+                        _selectAnswer(q.id, oi, q.questionType);
+                      } else {
+                        List<int> current = selectedAnswer is List ? List<int>.from(selectedAnswer) : [];
+                        if (current.contains(oi)) {
+                          current.remove(oi);
+                        } else {
+                          current.add(oi);
+                        }
+                        _selectAnswer(q.id, current, q.questionType);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.tealDeep.withAlpha(isDark ? 30 : 15)
+                            : theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected ? AppTheme.tealDeep.withAlpha(100) : theme.colorScheme.onSurface.withAlpha(20),
+                          width: isSelected ? 2 : 1,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36, height: 36,
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppTheme.tealDeep : theme.colorScheme.onSurface.withAlpha(15),
-                            borderRadius: BorderRadius.circular(10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36, height: 36,
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppTheme.tealDeep : theme.colorScheme.onSurface.withAlpha(15),
+                              borderRadius: q.questionType == 'multipleChoice' ? BorderRadius.circular(18) : BorderRadius.circular(8),
+                            ),
+                            child: Center(child: Text(
+                              String.fromCharCode(65 + i),
+                              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15,
+                                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(150)),
+                            )),
                           ),
-                          child: Center(child: Text(
-                            String.fromCharCode(65 + oi),
-                            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15,
-                              color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(150)),
-                          )),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: SelectionContainer.disabled(
-                            child: Text(q.options[oi],
-                              style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: theme.colorScheme.onSurface)),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: SelectionContainer.disabled(
+                              child: Text(q.options[oi],
+                                style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                  color: theme.colorScheme.onSurface)),
+                            ),
                           ),
-                        ),
-                        if (isSelected)
-                          const Icon(LucideIcons.checkCircle, color: AppTheme.tealDeep, size: 22),
-                      ],
+                          if (isSelected)
+                            const Icon(LucideIcons.checkCircle, color: AppTheme.tealDeep, size: 22),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ],
 
           const SizedBox(height: 20),
 
-          // Question navigator dots
           _buildQuestionDots(isDark),
         ],
       ),
@@ -564,8 +642,17 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       child: Wrap(
         spacing: 6, runSpacing: 6,
         children: List.generate(widget.quiz.questions.length, (i) {
-          final q = widget.quiz.questions[i];
-          final isAnswered = _answers.containsKey(q.id);
+          final qIndex = _questionOrder[i];
+          final q = widget.quiz.questions[qIndex];
+          bool isAnswered = false;
+          if (q.questionType == 'essay') {
+            isAnswered = _essayAnswers.containsKey(q.id) && _essayAnswers[q.id]!.trim().isNotEmpty;
+          } else if (q.questionType == 'multipleChoice') {
+            isAnswered = _answers.containsKey(q.id);
+          } else {
+            isAnswered = _answers.containsKey(q.id) && (_answers[q.id] as List).isNotEmpty;
+          }
+
           final isCurrent = i == _currentIndex;
           return GestureDetector(
             onTap: () => setState(() => _currentIndex = i),
@@ -596,9 +683,20 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     );
   }
 
-  // ── BOTTOM NAV ──
   Widget _buildBottomNav(ThemeData theme, bool isDark) {
     final total = widget.quiz.questions.length;
+    
+    int answeredCount = 0;
+    for (var q in widget.quiz.questions) {
+      if (q.questionType == 'essay') {
+        if (_essayAnswers.containsKey(q.id) && _essayAnswers[q.id]!.trim().isNotEmpty) answeredCount++;
+      } else if (q.questionType == 'multipleChoice') {
+        if (_answers.containsKey(q.id)) answeredCount++;
+      } else {
+        if (_answers.containsKey(q.id) && (_answers[q.id] as List).isNotEmpty) answeredCount++;
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
@@ -607,7 +705,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       ),
       child: Row(
         children: [
-          // Prev
           OutlinedButton.icon(
             onPressed: _currentIndex > 0 ? () => setState(() => _currentIndex--) : null,
             icon: const Icon(LucideIcons.chevronLeft, size: 18),
@@ -619,12 +716,10 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
             ),
           ),
           const Spacer(),
-          // Progress
-          Text('${_answers.length}/$total dijawab',
+          Text('$answeredCount/$total dijawab',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
               color: theme.colorScheme.onSurface.withAlpha(140))),
           const Spacer(),
-          // Next or Submit
           if (_currentIndex < total - 1)
             ElevatedButton.icon(
               onPressed: () => setState(() => _currentIndex++),

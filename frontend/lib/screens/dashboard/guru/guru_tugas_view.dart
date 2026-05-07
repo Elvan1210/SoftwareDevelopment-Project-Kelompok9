@@ -1,4 +1,4 @@
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart' as fp;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
@@ -112,8 +112,8 @@ class _GuruTugasViewState extends State<GuruTugasView> {
               : (isEditing ? (tugas['deadline'] ?? 'Pilih Deadline') : 'Pilih Deadline');
 
           Future<void> handleUploadFile() async {
-            FilePickerResult? result = await FilePicker.platform.pickFiles(
-              type: FileType.custom,
+            fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
+              type: fp.FileType.custom,
               allowedExtensions: ['jpg', 'png', 'pdf', 'doc', 'docx'],
               withData: true, 
             );

@@ -7,7 +7,7 @@ import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart' as fp;
 import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruMateriView extends StatefulWidget {
@@ -130,8 +130,8 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                               ),
                               onPressed: () async {
-                                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                  type: FileType.custom,
+                                fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
+                                  type: fp.FileType.custom,
                                   allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
                                   withData: true,
                                 );
