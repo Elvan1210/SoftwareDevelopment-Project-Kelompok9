@@ -4,7 +4,7 @@ import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart' as fp;
 import '../../../services/notifikasi_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../widgets/app_shell.dart';
@@ -108,8 +108,8 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   // ✅ FIX UTAMA: Upload file dengan penanganan Flutter Web yang benar
   Future<void> _pickAndUploadFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
+    fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
+      type: fp.FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
       allowMultiple: true,
       withData: true, // Wajib true untuk Flutter Web

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:intl/intl.dart';
 import '../../../config/theme.dart';
 import '../../../services/quiz_service.dart';
+import '../../../services/export_service.dart';
 import '../../../models/quiz_model.dart';
 import 'guru_quiz_create_screen.dart';
 
@@ -111,8 +114,21 @@ class _GuruQuizViewState extends State<GuruQuizView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _SubmissionsSheet(quiz: quiz, token: widget.token),
+      builder: (ctx) => _SubmissionsSheet(quiz: quiz, token: widget.token, kelasId: widget.teamData['id']?.toString() ?? ''),
     );
+  }
+
+  void _copyShareCode(Quiz quiz) {
+    if (quiz.shareCode != null) {
+      Clipboard.setData(ClipboardData(text: quiz.shareCode!));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kode Share Kuis berhasil disalin! Bagikan ke kelas lain.'), backgroundColor: Colors.green),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kode Share tidak tersedia untuk kuis ini.'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -147,6 +163,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
                         onEdit: () => _navigateToEdit(_quizzes[index]),
                         onDelete: () => _deleteQuiz(_quizzes[index].id),
                         onViewSubmissions: () => _viewSubmissions(_quizzes[index]),
+                        onShare: () => _copyShareCode(_quizzes[index]),
                       ).animate(delay: (100 + index * 60).ms)
                         .fadeIn(duration: 400.ms)
                         .slideY(begin: 0.05, curve: Curves.easeOutQuart);
@@ -192,14 +209,13 @@ class _GuruQuizViewState extends State<GuruQuizView> {
   }
 }
 
-// ── Quiz Card Widget ──────────────────────────────────────────────────────────
-
 class _QuizCard extends StatelessWidget {
   final Quiz quiz;
   final bool isDark;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onViewSubmissions;
+  final VoidCallback onShare;
 
   const _QuizCard({
     required this.quiz,
@@ -207,6 +223,7 @@ class _QuizCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onViewSubmissions,
+    required this.onShare,
   });
 
   @override
@@ -234,7 +251,6 @@ class _QuizCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row
             Row(
               children: [
                 Container(
@@ -276,34 +292,51 @@ class _QuizCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: quiz.isActive
-                        ? Colors.green.withAlpha(isDark ? 40 : 20)
-                        : Colors.grey.withAlpha(isDark ? 40 : 20),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: quiz.isActive ? Colors.green.withAlpha(80) : Colors.grey.withAlpha(60),
+                if (quiz.isScheduled)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withAlpha(isDark ? 40 : 20),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.withAlpha(80)),
+                    ),
+                    child: Text(
+                      'TERJADWAL',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.orange,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: quiz.isActive
+                          ? Colors.green.withAlpha(isDark ? 40 : 20)
+                          : Colors.grey.withAlpha(isDark ? 40 : 20),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: quiz.isActive ? Colors.green.withAlpha(80) : Colors.grey.withAlpha(60),
+                      ),
+                    ),
+                    child: Text(
+                      quiz.isActive ? 'AKTIF' : 'NONAKTIF',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: quiz.isActive ? Colors.green : Colors.grey,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    quiz.isActive ? 'AKTIF' : 'NONAKTIF',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: quiz.isActive ? Colors.green : Colors.grey,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
               ],
             ),
 
             const SizedBox(height: 16),
 
-            // Info chips
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -320,12 +353,13 @@ class _QuizCard extends StatelessWidget {
                   color: AppTheme.tealLight,
                   isDark: isDark,
                 ),
-                _InfoChip(
-                  icon: LucideIcons.alertTriangle,
-                  label: 'Max ${quiz.maxViolations} Pelanggaran',
-                  color: Colors.red,
-                  isDark: isDark,
-                ),
+                if (quiz.isScheduled && quiz.scheduledAt != null)
+                  _InfoChip(
+                    icon: LucideIcons.calendarClock,
+                    label: DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!),
+                    color: Colors.orange,
+                    isDark: isDark,
+                  ),
                 if (quiz.isSecureMode)
                   _InfoChip(
                     icon: LucideIcons.lock,
@@ -340,7 +374,6 @@ class _QuizCard extends StatelessWidget {
             const Divider(height: 1),
             const SizedBox(height: 12),
 
-            // Action buttons
             Row(
               children: [
                 _ActionBtn(
@@ -350,6 +383,13 @@ class _QuizCard extends StatelessWidget {
                   color: AppTheme.tealDeep,
                 ),
                 const SizedBox(width: 8),
+                _ActionBtn(
+                  icon: LucideIcons.share2,
+                  label: 'Share',
+                  onTap: onShare,
+                  color: Colors.blue,
+                ),
+                const Spacer(),
                 _ActionBtn(
                   icon: LucideIcons.edit3,
                   label: 'Edit',
@@ -454,13 +494,12 @@ class _ActionBtn extends StatelessWidget {
   }
 }
 
-// ── Submissions Bottom Sheet ──────────────────────────────────────────────────
-
 class _SubmissionsSheet extends StatefulWidget {
   final Quiz quiz;
   final String token;
+  final String kelasId;
 
-  const _SubmissionsSheet({required this.quiz, required this.token});
+  const _SubmissionsSheet({required this.quiz, required this.token, required this.kelasId});
 
   @override
   State<_SubmissionsSheet> createState() => _SubmissionsSheetState();
@@ -469,6 +508,7 @@ class _SubmissionsSheet extends StatefulWidget {
 class _SubmissionsSheetState extends State<_SubmissionsSheet> {
   List<QuizSubmission> _submissions = [];
   bool _isLoading = true;
+  bool _filterByKelas = true;
 
   @override
   void initState() {
@@ -477,9 +517,11 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
   }
 
   Future<void> _loadSubmissions() async {
+    setState(() => _isLoading = true);
     final subs = await QuizService.getSubmissions(
       token: widget.token,
       quizId: widget.quiz.id,
+      kelasId: _filterByKelas ? widget.kelasId : null,
     );
     if (mounted) {
       setState(() {
@@ -489,20 +531,24 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
     }
   }
 
+  void _exportCsv() {
+    if (_submissions.isEmpty) return;
+    ExportService.exportSubmissionsToCsv(_submissions, widget.quiz.title);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
-          // Handle bar
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: 40,
@@ -525,17 +571,35 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(
-                  '${_submissions.length} Jawaban',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface.withAlpha(140),
+                TextButton.icon(
+                  onPressed: _exportCsv,
+                  icon: const Icon(LucideIcons.download, size: 16),
+                  label: const Text('Export CSV'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.tealDeep,
+                    backgroundColor: AppTheme.tealDeep.withAlpha(20),
                   ),
                 ),
               ],
             ),
           ),
+          
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: _filterByKelas,
+                  onChanged: (val) {
+                    setState(() => _filterByKelas = val ?? true);
+                    _loadSubmissions();
+                  },
+                ),
+                Text('Hanya tampilkan siswa di kelas ini', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(150))),
+              ],
+            ),
+          ),
+          
           const Divider(height: 1),
           Expanded(
             child: _isLoading

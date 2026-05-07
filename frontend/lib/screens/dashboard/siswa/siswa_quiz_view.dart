@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:intl/intl.dart';
 import '../../../config/theme.dart';
 import '../../../services/quiz_service.dart';
 import '../../../models/quiz_model.dart';
@@ -26,11 +28,21 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
   List<Quiz> _quizzes = [];
   bool _isLoading = true;
   final Map<String, bool> _submittedMap = {};
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadQuizzes();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {}); 
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadQuizzes() async {
@@ -56,7 +68,7 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
 
     if (mounted) {
       setState(() {
-        _quizzes = quizzes.where((q) => q.isActive).toList();
+        _quizzes = quizzes.where((q) => q.isActive || (q.isScheduled && q.scheduledAt != null)).toList();
         _isLoading = false;
       });
     }
@@ -75,7 +87,6 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
       return;
     }
 
-    // Show confirmation dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -168,8 +179,6 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
   }
 }
 
-// ── Quiz Tile ───────────────────────────────────────────────────────────────
-
 class _QuizTile extends StatelessWidget {
   final Quiz quiz;
   final bool isDark;
@@ -186,6 +195,13 @@ class _QuizTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
+    bool isUpcoming = false;
+    if (quiz.isScheduled && quiz.scheduledAt != null && !quiz.isActive) {
+      if (quiz.scheduledAt!.isAfter(DateTime.now())) {
+        isUpcoming = true;
+      }
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -272,7 +288,6 @@ class _QuizTile extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Info row
             Wrap(
               spacing: 10,
               runSpacing: 8,
@@ -287,29 +302,48 @@ class _QuizTile extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Action button
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: isSubmitted ? null : onStart,
-                icon: Icon(
-                  isSubmitted ? LucideIcons.checkCircle : LucideIcons.play,
-                  size: 18,
-                ),
-                label: Text(
-                  isSubmitted ? 'Sudah Dikerjakan' : 'Mulai Ujian',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isSubmitted ? Colors.green.withAlpha(40) : AppTheme.tealDeep,
-                  foregroundColor: isSubmitted ? Colors.green : Colors.white,
-                  disabledBackgroundColor: Colors.green.withAlpha(isDark ? 30 : 15),
-                  disabledForegroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
-                ),
-              ),
+              child: isUpcoming
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withAlpha(20),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.orange.withAlpha(40)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(LucideIcons.calendarClock, size: 18, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Tersedia pada: ${DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!)}',
+                            style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.orange),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: isSubmitted ? null : onStart,
+                      icon: Icon(
+                        isSubmitted ? LucideIcons.checkCircle : LucideIcons.play,
+                        size: 18,
+                      ),
+                      label: Text(
+                        isSubmitted ? 'Sudah Dikerjakan' : 'Mulai Ujian',
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSubmitted ? Colors.green.withAlpha(40) : AppTheme.tealDeep,
+                        foregroundColor: isSubmitted ? Colors.green : Colors.white,
+                        disabledBackgroundColor: Colors.green.withAlpha(isDark ? 30 : 15),
+                        disabledForegroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -340,8 +374,6 @@ class _InfoTag extends StatelessWidget {
   }
 }
 
-// ── Exam Start Confirmation Dialog ──────────────────────────────────────────
-
 class _ExamStartDialog extends StatelessWidget {
   final Quiz quiz;
   final VoidCallback onStart;
@@ -362,7 +394,6 @@ class _ExamStartDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Shield icon
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -399,7 +430,6 @@ class _ExamStartDialog extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Rules
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -436,7 +466,6 @@ class _ExamStartDialog extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Buttons
             Row(
               children: [
                 Expanded(
