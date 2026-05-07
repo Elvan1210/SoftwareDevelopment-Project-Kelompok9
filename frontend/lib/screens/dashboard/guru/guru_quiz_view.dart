@@ -496,7 +496,7 @@ class _QuizCard extends StatelessWidget {
                   color: AppTheme.tealDeep,
                 ),
                 const SizedBox(width: 8),
-                if (quiz.isActive && quiz.isSecureMode)
+                if ((quiz.isActive || quiz.isScheduled) && quiz.isSecureMode)
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _ActionBtn(
