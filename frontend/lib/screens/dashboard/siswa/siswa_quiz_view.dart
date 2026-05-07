@@ -203,6 +203,11 @@ class _QuizTile extends StatelessWidget {
       }
     }
 
+    bool isClosed = false;
+    if (quiz.closedAt != null && DateTime.now().isAfter(quiz.closedAt!)) {
+      isClosed = true;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -304,27 +309,47 @@ class _QuizTile extends StatelessWidget {
 
             SizedBox(
               width: double.infinity,
-              child: isUpcoming
+              child: isClosed
                   ? Container(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withAlpha(20),
+                        color: Colors.red.withAlpha(20),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.orange.withAlpha(40)),
+                        border: Border.all(color: Colors.red.withAlpha(40)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(LucideIcons.calendarClock, size: 18, color: Colors.orange),
+                          const Icon(LucideIcons.xCircle, size: 18, color: Colors.red),
                           const SizedBox(width: 8),
-                          Text(
-                            'Tersedia pada: ${DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!)}',
-                            style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.orange),
+                          const Text(
+                            'Ujian Telah Ditutup',
+                            style: TextStyle(fontWeight: FontWeight.w800, color: Colors.red),
                           ),
                         ],
                       ),
                     )
-                  : ElevatedButton.icon(
+                  : isUpcoming
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withAlpha(20),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.orange.withAlpha(40)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(LucideIcons.calendarClock, size: 18, color: Colors.orange),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Tersedia pada: ${DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!)}',
+                                style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.orange),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ElevatedButton.icon(
                       onPressed: isSubmitted ? null : onStart,
                       icon: Icon(
                         isSubmitted ? LucideIcons.checkCircle : LucideIcons.play,
