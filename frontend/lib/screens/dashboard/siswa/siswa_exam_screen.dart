@@ -900,13 +900,19 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     for (var q in widget.quiz.questions) {
       if (q.questionType == 'essay') {
         if (_essayAnswers.containsKey(q.id) &&
-            _essayAnswers[q.id]!.trim().isNotEmpty) answeredCount++;
+            _essayAnswers[q.id]!.trim().isNotEmpty) {
+          answeredCount++;
+        }
       } else if (q.questionType == 'multipleChoice' ||
           q.questionType == 'multipleAnswer') {
-        if (_answers.containsKey(q.id)) answeredCount++;
+        if (_answers.containsKey(q.id)) {
+          answeredCount++;
+        }
       } else {
         final ans = _answers[q.id];
-        if (ans != null && (ans is List) && ans.isNotEmpty) answeredCount++;
+        if (ans != null && (ans is List) && ans.isNotEmpty) {
+          answeredCount++;
+        }
       }
     }
 
