@@ -20,6 +20,7 @@ dependencies:
   lucide_icons: ^0.257.0
   window_manager: ^0.4.3
   image_picker: ^1.2.2
+  connectivity_plus: ^6.0.3
 
 dev_dependencies:
   flutter_test:
