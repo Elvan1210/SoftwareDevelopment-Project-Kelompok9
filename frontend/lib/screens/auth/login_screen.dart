@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_animate/flutter_animate.dart';
@@ -69,9 +68,9 @@ class _LoginScreenState extends State<LoginScreen>
 
         if (role == 'Admin') {
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AdminMainLayout(token: token)));
+              context,
+              MaterialPageRoute(
+                  builder: (_) => AdminMainLayout(token: token)));
         } else if (role == 'Guru') {
           Navigator.pushReplacement(
               context,
@@ -149,8 +148,8 @@ class _LoginScreenState extends State<LoginScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF075864).withOpacity(0.08),
-                      const Color(0xFF075864).withOpacity(0.0),
+                      const Color(0xFF075864).withValues(alpha: 0.08),
+                      const Color(0xFF075864).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -173,8 +172,8 @@ class _LoginScreenState extends State<LoginScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF76AFB8).withOpacity(0.10),
-                      const Color(0xFF76AFB8).withOpacity(0.0),
+                      const Color(0xFF76AFB8).withValues(alpha: 0.10),
+                      const Color(0xFF76AFB8).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -213,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen>
                   '© 2025 MyPSKD. All rights reserved.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.black.withOpacity(0.35),
+                    color: Colors.black.withValues(alpha: 0.35),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -229,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen>
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 40,
                 offset: const Offset(-10, 0),
               ),
@@ -283,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen>
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF075864).withOpacity(0.25),
+                color: const Color(0xFF075864).withValues(alpha: 0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -333,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen>
           'Masuk untuk mengakses dunia belajarmu\ndan pantau perkembangan akademikmu.',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             height: 1.6,
             fontWeight: FontWeight.w400,
           ),
@@ -359,10 +358,10 @@ class _LoginScreenState extends State<LoginScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF075864).withOpacity(0.08)),
+        border: Border.all(color: const Color(0xFF075864).withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF075864).withOpacity(0.08),
+            color: const Color(0xFF075864).withValues(alpha: 0.08),
             blurRadius: 32,
             offset: const Offset(0, 12),
           ),
@@ -376,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF075864).withOpacity(0.08),
+                  color: const Color(0xFF075864).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.trending_up_rounded,
@@ -403,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text('+4.3%',
@@ -443,7 +442,7 @@ class _LoginScreenState extends State<LoginScreen>
               decoration: BoxDecoration(
                 color: highlight
                     ? const Color(0xFF075864)
-                    : const Color(0xFF075864).withOpacity(0.15),
+                    : const Color(0xFF075864).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
@@ -451,7 +450,7 @@ class _LoginScreenState extends State<LoginScreen>
             Text(label,
                 style: TextStyle(
                     fontSize: 10,
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     fontWeight: FontWeight.w500)),
           ],
         ),
@@ -463,9 +462,9 @@ class _LoginScreenState extends State<LoginScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF075864).withOpacity(0.06),
+        color: const Color(0xFF075864).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: const Color(0xFF075864).withOpacity(0.12)),
+        border: Border.all(color: const Color(0xFF075864).withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -503,7 +502,7 @@ class _LoginScreenState extends State<LoginScreen>
             'Masukkan email dan kata sandi kamu',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.black.withOpacity(0.45),
+              color: Colors.black.withValues(alpha: 0.45),
               fontWeight: FontWeight.w400,
             ),
           ).animate().fadeIn(delay: 350.ms),
@@ -544,7 +543,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
                 size: 18,
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
               ),
             ),
             validator: (v) {
@@ -591,7 +590,7 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
                 disabledBackgroundColor:
-                    const Color(0xFF075864).withOpacity(0.5),
+                    const Color(0xFF075864).withValues(alpha: 0.5),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -615,18 +614,18 @@ class _LoginScreenState extends State<LoginScreen>
             children: [
               Expanded(
                   child: Divider(
-                      color: Colors.black.withOpacity(0.08), thickness: 1)),
+                      color: Colors.black.withValues(alpha: 0.08), thickness: 1)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text('atau',
                     style: TextStyle(
                         fontSize: 12,
-                        color: Colors.black.withOpacity(0.35),
+                        color: Colors.black.withValues(alpha: 0.35),
                         fontWeight: FontWeight.w500)),
               ),
               Expanded(
                   child: Divider(
-                      color: Colors.black.withOpacity(0.08), thickness: 1)),
+                      color: Colors.black.withValues(alpha: 0.08), thickness: 1)),
             ],
           ).animate().fadeIn(delay: 520.ms),
           const SizedBox(height: 20),
@@ -637,7 +636,7 @@ class _LoginScreenState extends State<LoginScreen>
               'EduAdmin — Platform Manajemen Sekolah',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -685,10 +684,10 @@ class _LoginScreenState extends State<LoginScreen>
         hintText: hint,
         hintStyle: TextStyle(
           fontSize: 14,
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           fontWeight: FontWeight.w400,
         ),
-        prefixIcon: Icon(icon, size: 18, color: Colors.black.withOpacity(0.35)),
+        prefixIcon: Icon(icon, size: 18, color: Colors.black.withValues(alpha: 0.35)),
         suffixIcon: suffix != null
             ? Padding(
                 padding: const EdgeInsets.only(right: 14),
@@ -702,11 +701,11 @@ class _LoginScreenState extends State<LoginScreen>
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -732,7 +731,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF075864).withOpacity(0.04)
+      ..color = const Color(0xFF075864).withValues(alpha: 0.04)
       ..strokeCap = StrokeCap.round;
 
     const spacing = 28.0;
