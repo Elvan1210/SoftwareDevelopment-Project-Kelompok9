@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
-// Ambil daftar percakapan untuk user tertentu
+// 1. Ambil daftar percakapan
 router.get('/conversations/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -11,7 +11,6 @@ router.get('/conversations/:userId', async (req, res) => {
       .get();
 
     let list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    // Sortir urutan waktu secara manual
     list.sort((a, b) => new Date(b.lastUpdate) - new Date(a.lastUpdate));
     res.json(list);
   } catch (error) {
@@ -19,7 +18,7 @@ router.get('/conversations/:userId', async (req, res) => {
   }
 });
 
-// Ambil semua user untuk list
+// 2. Ambil semua user
 router.get('/users', async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
@@ -30,12 +29,11 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// Logic Buat Chat/Grup
+// 3. Logic Chat/Grup (Anti-Duplikat)
 router.post('/conversations', async (req, res) => {
   try {
     const { participants, participantNames, type, groupName } = req.body;
     
-    // ANTI-DUPLIKAT: Jika chat pribadi, cek dulu apa sudah pernah chat
     if (type === 'private') {
       const existing = await db.collection('conversations')
         .where('type', '==', 'private')
@@ -54,7 +52,7 @@ router.post('/conversations', async (req, res) => {
       participants,
       participantNames: participantNames || {}, 
       type,
-      name: type === 'group' ? groupName : '', // Nama hanya untuk grup
+      name: type === 'group' ? groupName : '', 
       lastMessage: 'Memulai percakapan...',
       lastUpdate: new Date().toISOString()
     };
@@ -63,6 +61,30 @@ router.post('/conversations', async (req, res) => {
     res.json({ id: docRef.id, ...newConv });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. LOGIC SALURAN / CHANNELS (MURNI TEKS JSON) - TIDAK ERROR 500 LAGI
+router.post('/saluran', async (req, res) => {
+  try {
+    const { kelas_id, channel_id, pengirim_id, pengirim_nama, role, pesan, parentId, waktu } = req.body;
+
+    const newMessage = {
+      kelas_id,
+      channel_id,
+      pengirim_id,
+      pengirim_nama,
+      role,
+      pesan: pesan || "",
+      parentId: parentId || null, // Untuk fitur Reply MS Teams
+      waktu: waktu || new Date().toISOString()
+    };
+
+    const docRef = await db.collection('saluran').add(newMessage);
+    res.status(201).json({ id: docRef.id, ...newMessage });
+  } catch (error) {
+    console.error("Backend Error:", error);
+    res.status(500).json({ error: "Gagal menyimpan postingan" });
   }
 });
 
