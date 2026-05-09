@@ -13,6 +13,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -115,6 +116,48 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     }
   }
 
+  // FITUR BARU: Hapus Channel
+  Future<void> _hapusChannel(String channelId) async {
+    try {
+      final res = await http.delete(
+        Uri.parse('$baseUrl/api/channels/$channelId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        if (_activeTabID == 'channel_$channelId') {
+          setState(() {
+            _activeTabID = 'channel_general';
+            _activeTitle = 'General';
+          });
+        }
+        _fetchChannels();
+      }
+    } catch (e) {
+      debugPrint('Err hapus channel: $e');
+    }
+  }
+
+  void _confirmDeleteChannel(String channelId, String channelName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Channel', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text('Anda yakin ingin menghapus channel "$channelName"? Semua obrolan di dalamnya akan hilang.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _hapusChannel(channelId);
+            },
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showCreateChannelDialog() {
     showDialog(
       context: context,
@@ -150,19 +193,17 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   Widget _getActiveView() {
     if (_activeTabID.startsWith('channel_')) {
       final cId = _activeTabID.replaceFirst('channel_', '');
-      final name = _activeTitle;
       return SaluranView(
         userData: widget.userData,
         token: widget.token,
         teamData: widget.teamData,
         channelId: cId,
-        channelName: name,
+        channelName: _activeTitle,
       );
     }
     
     switch (_activeTabID) {
       case 'dashboard': return _buildDashboardView();
-      case 'saluran': return SaluranView(userData: widget.userData, token: widget.token, teamData: widget.teamData, channelId: 'general', channelName: 'Groupchat Kelas');
       case 'permintaan': return GuruPendingRequestsView(userData: widget.userData, token: widget.token, teamData: widget.teamData, onRequestsChanged: _fetchPendingCount);
       case 'presensi': return GuruPresensiView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
       case 'tugas': return GuruTugasView(userData: widget.userData, token: widget.token, teamData: widget.teamData);
@@ -223,7 +264,6 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
                           _buildSidebarItem('dashboard', Icons.hub_outlined, 'Dashboard'),
-                          _buildSidebarItem('saluran', Icons.forum_outlined, 'Saluran'),
                           _buildSidebarItem('permintaan', Icons.person_add_alt_rounded, 'Permintaan', badgeCount: _pendingCount),
                           _buildSidebarItem('presensi', Icons.how_to_reg_outlined, 'Presensi Kelas'),
                           _buildSidebarItem('tugas', Icons.assignment_outlined, 'Penugasan'),
@@ -245,14 +285,10 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                               ],
                             ),
                           ),
-                          // List sub channels (Saluran is already at the top)
-                          if (_channels.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 14, top: 4),
-                              child: Text('Belum ada channel', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(100))),
-                            ),
+                          // List sub channels (General di paling atas)
+                          _buildSidebarItem('channel_general', Icons.tag_rounded, 'General', isChannel: true),
                           for (var c in _channels)
-                            _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true),
+                            _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true, canDelete: true),
                             
                           const SizedBox(height: 24),
                         ],
@@ -339,7 +375,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     );
   }
 
-  Widget _buildSidebarItem(String id, IconData icon, String label, {int badgeCount = 0, bool isChannel = false}) {
+  Widget _buildSidebarItem(String id, IconData icon, String label, {int badgeCount = 0, bool isChannel = false, bool canDelete = false}) {
     final theme = Theme.of(context);
     final isSelected = _activeTabID == id;
     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(120);
@@ -379,6 +415,13 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   decoration: BoxDecoration(color: const Color(0xFFF27F33), borderRadius: BorderRadius.circular(100)),
                   child: Text('$badgeCount', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)),
                 ).animate().scale(curve: Curves.easeOutBack)
+              else if (canDelete)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                  onPressed: () => _confirmDeleteChannel(id.replaceFirst('channel_', ''), label),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                )
               else if (isSelected && !isChannel)
                 Container(
                   width: 6, height: 6, 
@@ -479,7 +522,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildMobileNavItem('dashboard', Icons.hub_outlined, 'Home'),
-                  _buildMobileNavItem('saluran', Icons.forum_outlined, 'Saluran'),
+                  _buildMobileNavItem('channel_general', Icons.tag_rounded, 'General'),
                   _buildMobileNavItem('permintaan', Icons.person_add_alt_rounded, 'Permintaan', badgeCount: _pendingCount),
                   _buildMobileNavItem('tugas', Icons.assignment_outlined, 'Tugas'),
                   IconButton(
@@ -528,13 +571,9 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 ],
               ),
               const SizedBox(height: 8),
-              if (_channels.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(left: 14, top: 4),
-                  child: Text('Belum ada channel', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(100))),
-                ),
+              _buildSidebarItem('channel_general', Icons.tag_rounded, 'General', isChannel: true),
               for (var c in _channels)
-                _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true),
+                _buildSidebarItem('channel_${c['id']}', Icons.tag_rounded, c['nama_channel'] ?? 'Unnamed', isChannel: true, canDelete: true),
             ],
           ),
         ),
@@ -587,5 +626,35 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       if (constraints.maxWidth > 1100) return _buildWebLayout(context);
       return _buildMobileLayout(context);
     });
+  }
+}
+
+// Widget GlassCard lokal untuk memastikan fungsionalitas
+class GlassCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets padding;
+  final double radius;
+  final Color? overrideColor;
+
+  const GlassCard({
+    super.key, 
+    required this.child, 
+    this.padding = const EdgeInsets.all(16),
+    this.radius = 24,
+    this.overrideColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: overrideColor ?? (isDark ? Colors.white.withAlpha(15) : Colors.white.withAlpha(180)),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: Colors.white.withAlpha(30)),
+      ),
+      child: child,
+    );
   }
 }

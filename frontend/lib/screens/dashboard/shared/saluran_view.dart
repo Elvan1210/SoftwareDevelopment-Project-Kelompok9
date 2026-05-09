@@ -3,9 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
-import '../guru/guru_tugas_detail_screen.dart';
-import '../siswa/siswa_tugas_detail_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class SaluranView extends StatefulWidget {
@@ -21,7 +18,7 @@ class SaluranView extends StatefulWidget {
     required this.token,
     required this.teamData,
     this.channelId = 'general',
-    this.channelName = 'Saluran Utama', // Default nama untuk groupchat utama
+    this.channelName = 'General',
   });
 
   @override
@@ -30,17 +27,15 @@ class SaluranView extends StatefulWidget {
 
 class _SaluranViewState extends State<SaluranView> {
   final TextEditingController _pesanCtrl = TextEditingController();
-  final ScrollController _scrollCtrl = ScrollController();
-
-  List<dynamic> _pesan = [];
+  final TextEditingController _replyCtrl = TextEditingController();
+  List<Map<String, dynamic>> _allData = [];
   bool _isLoading = true;
-  bool _isSending = false;
+  String? _replyingToId; // ID postingan yang sedang dibalas
 
   String get _kelasId => widget.teamData['id']?.toString() ?? '';
   String get _myId => widget.userData['id']?.toString() ?? widget.userData['uid']?.toString() ?? '';
-  String get _myNama => widget.userData['nama']?.toString() ?? widget.userData['email']?.toString() ?? 'Pengguna';
+  String get _myNama => widget.userData['nama']?.toString() ?? 'Pengguna';
   String get _myRole => widget.userData['role']?.toString() ?? 'Siswa';
-  bool get _canManage => _myRole == 'Guru' || _myRole == 'Admin';
 
   @override
   void initState() {
@@ -56,132 +51,46 @@ class _SaluranViewState extends State<SaluranView> {
     }
   }
 
-  @override
-  void dispose() {
-    _pesanCtrl.dispose();
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
-
   Future<void> _fetchData() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resPesanFuture = http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
-      final resTugasFuture = http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$_kelasId'), headers: headers);
-      
-      final results = await Future.wait([resPesanFuture, resTugasFuture]);
-      final resPesan = results[0];
-      final resTugas = results[1];
-      
-      List<dynamic> raw = [];
+      final resPesan = await http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
       
       if (resPesan.statusCode == 200) {
-        final dec = jsonDecode(resPesan.body);
-        if (dec is List) {
-          raw.addAll(dec.map((e) {
-            final m = Map<String, dynamic>.from(e as Map);
-            m['_type'] = 'pesan';
-            return m;
-          }));
-        }
+        final decoded = jsonDecode(resPesan.body) as List;
+        setState(() {
+          _allData = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+          _isLoading = false;
+        });
       }
-
-      if (resTugas.statusCode == 200) {
-        final dec = jsonDecode(resTugas.body);
-        if (dec is List) {
-          raw.addAll(dec.map((e) {
-            final m = Map<String, dynamic>.from(e as Map);
-            m['_type'] = 'tugas';
-            return m;
-          }));
-        }
-      }
-      
-      // Sort kronologis
-      raw.sort((a, b) {
-        final ta = DateTime.tryParse(a['waktu'] ?? a['deadline'] ?? '') ?? DateTime(2000);
-        final tb = DateTime.tryParse(b['waktu'] ?? b['deadline'] ?? '') ?? DateTime(2000);
-        return ta.compareTo(tb);
-      });
-      
-      // Filter by channel_id
-      _pesan = raw.where((msg) {
-        final cId = msg['channel_id']?.toString();
-        if (widget.channelId == 'general') {
-          return cId == null || cId == 'general' || cId == '';
-        }
-        return cId == widget.channelId;
-      }).toList();
     } catch (e) {
-      debugPrint('Error fetch data: $e');
-    }
-    
-    if (mounted) {
-      setState(() => _isLoading = false);
-      _scrollToBottom();
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _kirimPesan() async {
-    final text = _pesanCtrl.text.trim();
-    if (text.isEmpty || _isSending) return;
-
-    setState(() => _isSending = true);
-    _pesanCtrl.clear();
-
-    final body = {
-      'kelas_id': _kelasId,
-      'channel_id': widget.channelId,
-      'pengirim_id': _myId,
-      'pengirim_nama': _myNama,
-      'role': _myRole,
-      'pesan': text,
-      'waktu': DateTime.now().toIso8601String(),
-    };
-
+  Future<void> _postMessage({String? parentId, required String text}) async {
+    if (text.isEmpty) return;
     try {
-      final response = await http.post(
+      await http.post(
         Uri.parse('$baseUrl/api/saluran'),
         headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
-        body: jsonEncode(body),
+        body: jsonEncode({
+          'kelas_id': _kelasId,
+          'channel_id': widget.channelId,
+          'pengirim_id': _myId,
+          'pengirim_nama': _myNama,
+          'role': _myRole,
+          'pesan': text,
+          'parentId': parentId, // Penting untuk sistem reply
+          'waktu': DateTime.now().toIso8601String(),
+        }),
       );
-      if (response.statusCode == 201) {
-        await _fetchData();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengirim pesan')));
-      }
+      _fetchData();
     } catch (e) {
-      debugPrint('Err kirim: $e');
+      debugPrint(e.toString());
     }
-    if (mounted) setState(() => _isSending = false);
-  }
-
-  Future<void> _hapusPesan(String id) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/api/saluran/$id'),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
-      if (response.statusCode == 200) {
-        await _fetchData();
-      }
-    } catch (e) {
-      debugPrint('Error hapus pesan: $e');
-    }
-  }
-
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
   }
 
   @override
@@ -189,368 +98,192 @@ class _SaluranViewState extends State<SaluranView> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Column(
-      children: [
-        // ── Header Status Bar (menunjukkan nama channel) ──
-        if (widget.channelId != 'general')
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
-              border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
-            ),
-            child: Row(
-              children: [
-                Icon(LucideIcons.hash, color: theme.primaryColor, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.channelName,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
-                  ),
+    // Filter pesan utama (bukan reply)
+    final mainPosts = _allData.where((m) => 
+      (m['channel_id']?.toString() ?? 'general') == widget.channelId && 
+      m['parentId'] == null
+    ).toList();
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF3F2F1),
+      body: Column(
+        children: [
+          Expanded(
+            child: _isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : mainPosts.isEmpty 
+              ? const Center(child: Text("No posts yet. Start a conversation!"))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: mainPosts.length,
+                  itemBuilder: (context, i) => _buildPostThread(mainPosts[i], isDark, theme),
                 ),
-              ],
-            ),
           ),
-
-        // ── Pesan Area ──
-        Expanded(
-          child: _isLoading
-              ? _buildSkeleton()
-              : _pesan.isEmpty
-                  ? _buildEmpty(theme)
-                  : RefreshIndicator(
-                      onRefresh: _fetchData,
-                      child: ListView.builder(
-                        controller: _scrollCtrl,
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        itemCount: _pesan.length,
-                        itemBuilder: (context, i) {
-                          final msg = _pesan[i];
-                          if (msg['_type'] == 'tugas') {
-                            return _buildTugasCard(msg, isDark, theme)
-                                .animate(delay: Duration(milliseconds: i > 10 ? 0 : i * 30))
-                                .fadeIn(duration: 300.ms)
-                                .slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                          }
-                          
-                          final isMe = msg['pengirim_id']?.toString() == _myId;
-                          return _buildBubble(msg, isMe, isDark, theme)
-                              .animate(delay: Duration(milliseconds: i > 10 ? 0 : i * 30))
-                              .fadeIn(duration: 300.ms)
-                              .slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                        },
-                      ),
-                    ),
-        ),
-
-        // ── Input Box ──
-        _buildInputBar(theme, isDark),
-      ],
+          _buildNewPostButton(theme, isDark),
+        ],
+      ),
     );
   }
 
-  String _formatTugasWaktu(String iso) {
-    if (iso.isEmpty) return '';
-    final dt = DateTime.tryParse(iso);
-    if (dt != null) return DateFormat('MMM d, h:mm a').format(dt);
-    return iso;
-  }
+  // ── UNIT POSTINGAN UTAMA + BALASANNYA ──
+  Widget _buildPostThread(Map<String, dynamic> post, bool isDark, ThemeData theme) {
+    final postId = post['id']?.toString() ?? post['_id']?.toString() ?? '';
+    final replies = _allData.where((m) => m['parentId'] == postId).toList();
 
-  Widget _buildTugasCard(Map<String, dynamic> msg, bool isDark, ThemeData theme) {
-    final title = msg['judul'] ?? 'Untitled Assignment';
-    final due = msg['deadline'] ?? '';
-    final timeStr = _formatTugasWaktu(msg['waktu'] ?? msg['deadline'] ?? '');
-    final dueStr = _formatTugasWaktu(due);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4)],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: theme.colorScheme.secondary.withAlpha(40), borderRadius: BorderRadius.circular(6)),
-                child: Icon(LucideIcons.clipboardList, color: theme.colorScheme.secondary, size: 14),
-              ),
-              const SizedBox(width: 8),
-              Text('Assignments', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: theme.colorScheme.secondary)),
-              const SizedBox(width: 8),
-              Text(timeStr, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w700)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
+          // Post Utama
+          Padding(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white.withAlpha(200),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: theme.dividerColor.withAlpha(isDark ? 50 : 20)),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 4)),
-              ],
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-                if (dueStr.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(LucideIcons.clock, size: 14, color: theme.colorScheme.onSurface.withAlpha(150)),
-                      const SizedBox(width: 4),
-                      Text('Due $dueStr', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150))),
-                    ],
-                  ),
-                ],
-                const SizedBox(height: 16),
-                OutlinedButton(
-                  onPressed: () {
-                    if (_canManage) {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => GuruTugasDetailScreen(tugas: msg, token: widget.token)));
-                    } else {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: msg, token: widget.token, userData: widget.userData)));
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: isDark ? Colors.white : theme.primaryColor,
-                    side: BorderSide(color: isDark ? Colors.white.withAlpha(50) : theme.primaryColor.withAlpha(50)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                  child: const Text('View assignment', style: TextStyle(fontWeight: FontWeight.w800)),
-                )
+                Row(children: [
+                  CircleAvatar(radius: 16, child: Text(post['pengirim_nama']?[0].toUpperCase() ?? '?')),
+                  const SizedBox(width: 12),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(post['pengirim_nama'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(post['waktu']?.toString().split('T')[0] ?? '', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  ])
+                ]),
+                const SizedBox(height: 12),
+                Text(post['pesan'] ?? '', style: const TextStyle(fontSize: 16)),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Divider(color: theme.dividerColor.withAlpha(40), height: 1),
-        ],
-      ),
-    );
-  }
+          
+          const Divider(height: 1),
 
-  Widget _buildBubble(Map<String, dynamic> msg, bool isMe, bool isDark, ThemeData theme) {
-    final time = DateTime.tryParse(msg['waktu'] ?? '');
-    final timeStr = time != null ? DateFormat('HH:mm').format(time) : '';
-    final role = msg['role']?.toString() ?? 'Siswa';
-    final isGuru = role == 'Guru';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMe) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: isGuru ? const Color(0xFF76AFB8).withAlpha(40) : Colors.grey.withAlpha(40),
-              child: Text(
-                (msg['pengirim_nama'] ?? '?')[0].toUpperCase(),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                  color: isGuru ? const Color(0xFF76AFB8) : const Color(0xFF26494F),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: GestureDetector(
-              onLongPress: _canManage
-                  ? () => _confirmDelete(msg['id']?.toString() ?? '')
-                  : null,
-              child: Container(
-                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isMe ? theme.primaryColor : (isDark ? Colors.white.withAlpha(15) : Colors.white),
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(18),
-                    topRight: const Radius.circular(18),
-                    bottomLeft: Radius.circular(isMe ? 18 : 4),
-                    bottomRight: Radius.circular(isMe ? 4 : 18),
-                  ),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2)),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!isMe) ...[
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(msg['pengirim_nama'] ?? 'Anonim', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: isGuru ? const Color(0xFF76AFB8) : theme.primaryColor)),
-                          if (isGuru) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(color: const Color(0xFF76AFB8).withAlpha(30), borderRadius: BorderRadius.circular(4)),
-                              child: const Text('Guru', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF76AFB8))),
-                            ),
+          // List Balasan (Replies)
+          if (replies.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: isDark ? Colors.white.withAlpha(5) : Colors.grey.withAlpha(10),
+              child: Column(
+                children: replies.map((r) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(radius: 12, child: Text(r['pengirim_nama']?[0].toUpperCase() ?? '?', style: const TextStyle(fontSize: 10))),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(r['pengirim_nama'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text(r['pesan'] ?? '', style: const TextStyle(fontSize: 14)),
                           ],
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 4),
                     ],
-                    Text(
-                      msg['pesan'] ?? '',
-                      style: TextStyle(fontSize: 14, height: 1.4, color: isMe ? Colors.white : theme.colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      timeStr,
-                      style: TextStyle(fontSize: 10, color: isMe ? Colors.white.withAlpha(170) : theme.colorScheme.onSurface.withAlpha(100)),
-                    ),
-                  ],
-                ),
+                  ),
+                )).toList(),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildInputBar(ThemeData theme, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withAlpha(8) : Colors.black.withAlpha(4),
-        border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(50))),
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withAlpha(12) : Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: theme.dividerColor.withAlpha(60)),
-                  boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 8, offset: const Offset(0, 2))],
-                ),
-                child: Row(
+          // Tombol Reply / Input Balasan
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _replyingToId == postId
+              ? Row(
                   children: [
-                    const SizedBox(width: 16),
                     Expanded(
                       child: TextField(
-                        controller: _pesanCtrl,
-                        decoration: InputDecoration(
-                          hintText: 'Tulis pesan di ${widget.channelId == 'general' ? 'saluran utama' : '#${widget.channelName}'}...',
-                          hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(100), fontSize: 14),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                        style: const TextStyle(fontSize: 14),
-                        maxLines: 4,
-                        minLines: 1,
-                        textInputAction: TextInputAction.send,
-                        keyboardType: TextInputType.multiline,
-                        onSubmitted: (_) => _kirimPesan(),
+                        controller: _replyCtrl,
+                        autofocus: true,
+                        decoration: const InputDecoration(hintText: "Reply...", border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)),
                       ),
                     ),
+                    IconButton(
+                      icon: const Icon(LucideIcons.send, size: 20),
+                      onPressed: () {
+                        _postMessage(parentId: postId, text: _replyCtrl.text.trim());
+                        _replyCtrl.clear();
+                        setState(() => _replyingToId = null);
+                      },
+                    ),
+                    IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _replyingToId = null)),
                   ],
+                )
+              : TextButton.icon(
+                  onPressed: () => setState(() {
+                    _replyingToId = postId;
+                    _replyCtrl.clear();
+                  }),
+                  icon: const Icon(LucideIcons.messageSquare, size: 16),
+                  label: const Text("Reply"),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              child: Material(
-                color: theme.primaryColor,
-                borderRadius: BorderRadius.circular(24),
-                child: InkWell(
-                  onTap: _isSending ? null : _kirimPesan,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    child: _isSending
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(LucideIcons.send, color: Colors.white, size: 20),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmpty(ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(LucideIcons.messageSquare, size: 72, color: theme.colorScheme.onSurface.withAlpha(60)),
-          const SizedBox(height: 16),
-          Text('Belum ada pesan di sini.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(120))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSkeleton() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 6,
-      itemBuilder: (_, i) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          mainAxisAlignment: i % 2 == 0 ? MainAxisAlignment.start : MainAxisAlignment.end,
-          children: [
-            if (i % 2 == 0) ...[const SkeletonLoader(height: 32, width: 32, radius: 16), const SizedBox(width: 8)],
-            SkeletonLoader(height: 52, width: 180 + (i % 3 * 30).toDouble(), radius: 18),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _confirmDelete(String id) {
-    if (id.isEmpty) return;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Pesan', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: const Text('Hapus pesan ini dari saluran?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () {
-              Navigator.pop(ctx);
-              _hapusPesan(id);
-            },
-            child: const Text('Hapus'),
           ),
         ],
       ),
+    ).animate().fadeIn();
+  }
+
+  // ── TOMBOL POSTINGAN BARU DI BAWAH ──
+  Widget _buildNewPostButton(ThemeData theme, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        border: Border(top: BorderSide(color: theme.dividerColor)),
+      ),
+      child: ElevatedButton.icon(
+        onPressed: () => _showNewPostDialog(theme),
+        icon: const Icon(Icons.add),
+        label: const Text("Start a new conversation", style: TextStyle(fontWeight: FontWeight.bold)),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
     );
   }
 
-  // Helper widget included locally
-}
-
-class SkeletonLoader extends StatelessWidget {
-  final double width, height, radius;
-  const SkeletonLoader({super.key, required this.width, required this.height, this.radius = 8});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width, height: height,
-      decoration: BoxDecoration(color: Theme.of(context).dividerColor.withAlpha(20), borderRadius: BorderRadius.circular(radius)),
-    ).animate(onPlay: (controller) => controller.repeat()).shimmer(duration: 1200.ms, color: Colors.white.withAlpha(20));
+  void _showNewPostDialog(ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("New Post", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _pesanCtrl,
+              maxLines: 5,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: "What's on your mind?", border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  _postMessage(text: _pesanCtrl.text.trim());
+                  _pesanCtrl.clear();
+                  Navigator.pop(context);
+                }, 
+                child: const Text("Post")
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 }
