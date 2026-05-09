@@ -28,9 +28,12 @@ class SaluranView extends StatefulWidget {
 class _SaluranViewState extends State<SaluranView> {
   final TextEditingController _pesanCtrl = TextEditingController();
   final TextEditingController _replyCtrl = TextEditingController();
+  final ScrollController _scrollCtrl = ScrollController();
+  
   List<Map<String, dynamic>> _allData = [];
   bool _isLoading = true;
-  String? _replyingToId; // ID postingan yang sedang dibalas
+  bool _isSending = false;
+  String? _replyingToId;
 
   String get _kelasId => widget.teamData['id']?.toString() ?? '';
   String get _myId => widget.userData['id']?.toString() ?? widget.userData['uid']?.toString() ?? '';
@@ -56,26 +59,34 @@ class _SaluranViewState extends State<SaluranView> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final resPesan = await http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
+      final res = await http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
       
-      if (resPesan.statusCode == 200) {
-        final decoded = jsonDecode(resPesan.body) as List;
-        setState(() {
-          _allData = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
-          _isLoading = false;
-        });
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body) as List;
+        if (mounted) {
+          setState(() {
+            _allData = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  // DIKEMBALIKAN KE POST JSON BIASA (TANPA FILE) AGAR TIDAK ERROR 500
   Future<void> _postMessage({String? parentId, required String text}) async {
     if (text.isEmpty) return;
+    setState(() => _isSending = true);
+
     try {
-      await http.post(
+      final response = await http.post(
         Uri.parse('$baseUrl/api/saluran'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}'
+        },
         body: jsonEncode({
           'kelas_id': _kelasId,
           'channel_id': widget.channelId,
@@ -83,13 +94,25 @@ class _SaluranViewState extends State<SaluranView> {
           'pengirim_nama': _myNama,
           'role': _myRole,
           'pesan': text,
-          'parentId': parentId, // Penting untuk sistem reply
+          'parentId': parentId,
           'waktu': DateTime.now().toIso8601String(),
         }),
       );
-      _fetchData();
+
+      if (response.statusCode == 201) {
+        setState(() {
+          _pesanCtrl.clear();
+          _replyCtrl.clear();
+          _replyingToId = null;
+        });
+        _fetchData(); // Refresh UI setelah sukses kirim
+      } else {
+        debugPrint("Error dari server: ${response.statusCode}");
+      }
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Error kirim: $e");
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
@@ -98,10 +121,8 @@ class _SaluranViewState extends State<SaluranView> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Filter pesan utama (bukan reply)
     final mainPosts = _allData.where((m) => 
-      (m['channel_id']?.toString() ?? 'general') == widget.channelId && 
-      m['parentId'] == null
+      (m['channel_id']?.toString() ?? 'general') == widget.channelId && m['parentId'] == null
     ).toList();
 
     return Scaffold(
@@ -111,13 +132,12 @@ class _SaluranViewState extends State<SaluranView> {
           Expanded(
             child: _isLoading 
             ? const Center(child: CircularProgressIndicator())
-            : mainPosts.isEmpty 
-              ? const Center(child: Text("No posts yet. Start a conversation!"))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: mainPosts.length,
-                  itemBuilder: (context, i) => _buildPostThread(mainPosts[i], isDark, theme),
-                ),
+            : ListView.builder(
+                controller: _scrollCtrl,
+                padding: const EdgeInsets.all(20),
+                itemCount: mainPosts.length,
+                itemBuilder: (context, i) => _buildPostThread(mainPosts[i], isDark, theme),
+              ),
           ),
           _buildNewPostButton(theme, isDark),
         ],
@@ -125,7 +145,6 @@ class _SaluranViewState extends State<SaluranView> {
     );
   }
 
-  // ── UNIT POSTINGAN UTAMA + BALASANNYA ──
   Widget _buildPostThread(Map<String, dynamic> post, bool isDark, ThemeData theme) {
     final postId = post['id']?.toString() ?? post['_id']?.toString() ?? '';
     final replies = _allData.where((m) => m['parentId'] == postId).toList();
@@ -140,14 +159,14 @@ class _SaluranViewState extends State<SaluranView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Post Utama
+          // POSTINGAN UTAMA
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  CircleAvatar(radius: 16, child: Text(post['pengirim_nama']?[0].toUpperCase() ?? '?')),
+                  CircleAvatar(radius: 18, child: Text(post['pengirim_nama']?[0].toUpperCase() ?? '?')),
                   const SizedBox(width: 12),
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(post['pengirim_nama'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -159,10 +178,9 @@ class _SaluranViewState extends State<SaluranView> {
               ],
             ),
           ),
-          
           const Divider(height: 1),
-
-          // List Balasan (Replies)
+          
+          // DAFTAR BALASAN (REPLIES)
           if (replies.isNotEmpty)
             Container(
               width: double.infinity,
@@ -190,99 +208,102 @@ class _SaluranViewState extends State<SaluranView> {
                 )).toList(),
               ),
             ),
-
-          // Tombol Reply / Input Balasan
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _replyingToId == postId
-              ? Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _replyCtrl,
-                        autofocus: true,
-                        decoration: const InputDecoration(hintText: "Reply...", border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(LucideIcons.send, size: 20),
-                      onPressed: () {
-                        _postMessage(parentId: postId, text: _replyCtrl.text.trim());
-                        _replyCtrl.clear();
-                        setState(() => _replyingToId = null);
-                      },
-                    ),
-                    IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _replyingToId = null)),
-                  ],
-                )
-              : TextButton.icon(
-                  onPressed: () => setState(() {
-                    _replyingToId = postId;
-                    _replyCtrl.clear();
-                  }),
-                  icon: const Icon(LucideIcons.messageSquare, size: 16),
-                  label: const Text("Reply"),
-                ),
-          ),
+            
+          // INPUT BALASAN BAWAH (REPLY)
+          _buildReplySection(postId, isDark),
         ],
       ),
     ).animate().fadeIn();
   }
 
-  // ── TOMBOL POSTINGAN BARU DI BAWAH ──
+  Widget _buildReplySection(String postId, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: _replyingToId == postId
+        ? Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _replyCtrl,
+                  autofocus: true,
+                  decoration: const InputDecoration(hintText: "Reply...", border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                ),
+              ),
+              IconButton(
+                icon: _isSending ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(LucideIcons.send, size: 20),
+                onPressed: _isSending ? null : () => _postMessage(parentId: postId, text: _replyCtrl.text.trim()),
+              ),
+              IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _replyingToId = null)),
+            ],
+          )
+        : TextButton.icon(
+            onPressed: () => setState(() { _replyingToId = postId; _replyCtrl.clear(); }),
+            icon: const Icon(LucideIcons.messageSquare, size: 16),
+            label: const Text("Reply"),
+          ),
+    );
+  }
+
   Widget _buildNewPostButton(ThemeData theme, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
-      width: double.infinity,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
       child: ElevatedButton.icon(
-        onPressed: () => _showNewPostDialog(theme),
+        onPressed: () => _showNewPostDialog(),
         icon: const Icon(Icons.add),
         label: const Text("Start a new conversation", style: TextStyle(fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );
   }
 
-  void _showNewPostDialog(ThemeData theme) {
+  void _showNewPostDialog() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("New Post", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _pesanCtrl,
-              maxLines: 5,
-              autofocus: true,
-              decoration: const InputDecoration(hintText: "What's on your mind?", border: OutlineInputBorder()),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("New Post", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _pesanCtrl,
+                  maxLines: 5,
+                  autofocus: true,
+                  decoration: const InputDecoration(hintText: "What's on your mind?", border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSending ? null : () {
+                      _postMessage(text: _pesanCtrl.text.trim());
+                      Navigator.pop(context);
+                    }, 
+                    child: _isSending ? const CircularProgressIndicator(color: Colors.white) : const Text("Post")
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  _postMessage(text: _pesanCtrl.text.trim());
-                  _pesanCtrl.clear();
-                  Navigator.pop(context);
-                }, 
-                child: const Text("Post")
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          );
+        }
       ),
     );
   }

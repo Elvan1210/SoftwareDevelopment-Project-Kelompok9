@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:lucide_icons/lucide_icons.dart';
 
 class MessagesScreen extends StatefulWidget {
   final Map<String, dynamic> userData; 
@@ -12,21 +13,20 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _MessagesScreenState extends State<MessagesScreen> {
-  IO.Socket? socket;
+  IO.Socket? socket; // PERBAIKAN: Socket dibuat nullable agar tidak crash
   final TextEditingController _messageController = TextEditingController();
   List<Map<String, dynamic>> conversations = [];
   List<Map<String, dynamic>> messages = [];
   
-  // State untuk menyimpan data obrolan yang sedang aktif
   String? activeConversationId;
   String? activeChatName;
   String? activeConversationType; 
-  Map<String, dynamic> activeParticipantNames = {}; // Menyimpan daftar anggota
+  Map<String, dynamic> activeParticipantNames = {}; 
   
   bool isLoading = true;
 
-  String get myId => widget.userData['id'] ?? widget.userData['uid'] ?? widget.userData['_id'] ?? 'admin';
-  String get myName => widget.userData['nama'] ?? 'User';
+  String get myId => widget.userData['id']?.toString() ?? widget.userData['uid']?.toString() ?? widget.userData['_id']?.toString() ?? 'admin';
+  String get myName => widget.userData['nama']?.toString() ?? 'User';
 
   @override
   void initState() {
@@ -88,7 +88,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return 'Private Chat';
   }
 
-  // UPDATE: Memperbarui fungsi saat obrolan dipilih untuk menyimpan tipe dan anggota
   void selectConversation(Map<String, dynamic> conv, String name) {
     setState(() {
       activeConversationId = conv['id'];
@@ -112,7 +111,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
-  // ─── FITUR BARU: MENAMPILKAN INFO GRUP (ANGGOTA) ───
   void _showGroupInfo() {
     if (activeConversationType != 'group') return;
     
@@ -126,7 +124,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             width: double.maxFinite,
             height: 300,
             child: entries.isEmpty
-                ? const Center(child: Text("Data anggota tidak tersedia (grup lama)."))
+                ? const Center(child: Text("Data anggota tidak tersedia."))
                 : ListView.builder(
                     shrinkWrap: true,
                     itemCount: entries.length,
@@ -266,7 +264,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             setDialogState(() {
                               if (val == true) {
                                 selectedIds.add(uId);
-                                selectedUsers.add(user); // Simpan detail user
+                                selectedUsers.add(user); 
                               } else {
                                 selectedIds.remove(uId);
                                 selectedUsers.removeWhere((u) => (u['id'] ?? u['uid'] ?? u['_id']) == uId);
@@ -287,7 +285,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   if (groupName.isEmpty || selectedIds.isEmpty) return;
                   Navigator.pop(context);
                   
-                  // UPDATE: Menyusun map nama anggota agar bisa ditampilkan di fitur info grup
                   Map<String, String> pNames = {myId: myName};
                   for (var u in selectedUsers) {
                     final uid = u['id'] ?? u['uid'] ?? u['_id'];
@@ -327,6 +324,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   @override
   void dispose() {
+    // PERBAIKAN: Pastikan tidak memanggil dispose sembarangan
     if (socket != null && socket!.connected) {
       socket!.disconnect();
       socket!.dispose();
@@ -373,7 +371,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             subtitle: Text(conv['lastMessage'] ?? '...', maxLines: 1, overflow: TextOverflow.ellipsis),
                             selected: activeConversationId == conv['id'],
                             selectedTileColor: Theme.of(context).primaryColor.withAlpha(20),
-                            onTap: () => selectConversation(conv, convName), // Mengirim seluruh object conv
+                            onTap: () => selectConversation(conv, convName), 
                           );
                         },
                       ),
@@ -389,7 +387,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.forum_outlined, size: 64, color: Colors.grey.withAlpha(100)),
+                    Icon(LucideIcons.messageSquare, size: 64, color: Colors.grey.withAlpha(100)),
                     const SizedBox(height: 16),
                     const Text("Pilih obrolan dari kiri atau mulai chat baru", style: TextStyle(color: Colors.grey)),
                   ],
@@ -397,7 +395,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
               )
             : Column(
                 children: [
-                  // UPDATE: AppBar bisa diklik untuk melihat Info Grup
                   AppBar(
                     title: InkWell(
                       onTap: activeConversationType == 'group' ? _showGroupInfo : null,
@@ -427,7 +424,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           final isMe = msg['senderId'] == myId;
                           final isGroup = activeConversationType == 'group';
                           
-                          // Format Waktu (Contoh: 14:05)
                           String timeStr = "";
                           if (msg['timestamp'] != null) {
                             try {
@@ -452,7 +448,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Munculkan nama pengirim hanya jika di grup & bukan pesan sendiri
                                   if (isGroup && !isMe) ...[
                                     Text(
                                       msg['senderName'] ?? 'User',
@@ -468,7 +463,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                   Text(msg['text'] ?? '', style: TextStyle(color: isMe ? Colors.white : (isDark ? Colors.white : Colors.black87), fontSize: 15)),
                                   
                                   const SizedBox(height: 4),
-                                  // Menampilkan Waktu (Timestamp) di pojok bawah bubble
                                   Align(
                                     alignment: Alignment.bottomRight,
                                     child: Text(
@@ -505,7 +499,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         const SizedBox(width: 12),
                         Container(
                           decoration: BoxDecoration(color: Theme.of(context).primaryColor, shape: BoxShape.circle),
-                          child: IconButton(icon: const Icon(Icons.send, color: Colors.white), onPressed: _sendMessage),
+                          child: IconButton(icon: const Icon(LucideIcons.send, color: Colors.white), onPressed: _sendMessage),
                         ),
                       ],
                     ),

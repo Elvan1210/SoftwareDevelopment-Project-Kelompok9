@@ -79,28 +79,33 @@ io.on('connection', (socket) => {
     } catch (err) { logger.error(err.message); }
   });
 
+  // KEMBALIKAN LOGIKA INI KE PRIVATE CHAT (Bukan Saluran)
   socket.on('send_message', async (data) => {
-    const { kelas_id, channel_id, pengirim_id, pengirim_nama, role, pesan, waktu, parentId } = data;
+    const { conversationId, senderId, senderName, text } = data;
     
-    const newMessage = {
-      kelas_id,
-      channel_id,
-      pengirim_id,
-      pengirim_nama,
-      role,
-      pesan,
-      waktu: waktu || new Date().toISOString(),
-      parentId: parentId || null // Jika null = Postingan Utama, Jika ada isi = Balasan
-  };
+    // Cegah error jika data tidak lengkap
+    if (!conversationId || !text) return; 
 
-  try {
-    await db.collection('saluran').add(newMessage);
-    // Broadcast ke semua orang di kelas tersebut
-    io.emit('receive_saluran_message', newMessage);
-  } catch (err) {
-    logger.error("Gagal kirim pesan saluran: " + err.message);
-  }
-});
+    const newMessage = { senderId, senderName, text, timestamp: new Date().toISOString() };
+    
+    try {
+      // Simpan ke koleksi 'conversations', BUKAN 'saluran'
+      await db.collection('conversations').doc(conversationId).collection('messages').add(newMessage);
+      await db.collection('conversations').doc(conversationId).update({
+        lastMessage: text,
+        lastUpdate: newMessage.timestamp
+      });
+      
+      io.to(conversationId).emit('receive_message', { ...newMessage, conversationId });
+      
+      const conv = await db.collection('conversations').doc(conversationId).get();
+      if (conv.exists) {
+        conv.data().participants.forEach(pId => io.to(pId).emit('update_conversation_list'));
+      }
+    } catch (err) { 
+      logger.error("Gagal kirim pesan private: " + err.message); 
+    }
+  });
 
   socket.on('disconnect', () => {});
 });
