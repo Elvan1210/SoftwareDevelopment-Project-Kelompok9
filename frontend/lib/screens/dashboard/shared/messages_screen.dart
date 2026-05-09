@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons/lucide_icons.dart';
@@ -13,7 +13,7 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _MessagesScreenState extends State<MessagesScreen> {
-  IO.Socket? socket; // PERBAIKAN: Socket dibuat nullable agar tidak crash
+  io.Socket? socket;
   final TextEditingController _messageController = TextEditingController();
   List<Map<String, dynamic>> conversations = [];
   List<Map<String, dynamic>> messages = [];
@@ -36,7 +36,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void initSocket() {
-    socket = IO.io('http://localhost:3000', IO.OptionBuilder().setTransports(['websocket']).build());
+    socket = io.io('http://localhost:3000', io.OptionBuilder().setTransports(['websocket']).build());
     
     if (socket != null) {
       socket!.connect();
@@ -73,6 +73,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         });
       }
     } catch (e) {
+      debugPrint('fetchConversations error: $e');
       if (mounted) setState(() => isLoading = false);
     }
   }
@@ -195,6 +196,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         }
       }
     } catch (e) {
+      debugPrint('showUserList error: $e');
       if (mounted) Navigator.pop(context);
     }
   }
@@ -318,13 +320,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
         }
       }
     } catch (e) {
-      debugPrint("Error: $e");
+      debugPrint("_startConv error: $e");
     }
   }
 
   @override
   void dispose() {
-    // PERBAIKAN: Pastikan tidak memanggil dispose sembarangan
     if (socket != null && socket!.connected) {
       socket!.disconnect();
       socket!.dispose();
@@ -429,7 +430,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             try {
                               final dt = DateTime.parse(msg['timestamp']).toLocal();
                               timeStr = "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-                            } catch(e) {}
+                            } catch (e) {
+                              debugPrint('timestamp parse error: $e');
+                            }
                           }
                           
                           return Align(
@@ -459,9 +462,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                   ],
-                                  
                                   Text(msg['text'] ?? '', style: TextStyle(color: isMe ? Colors.white : (isDark ? Colors.white : Colors.black87), fontSize: 15)),
-                                  
                                   const SizedBox(height: 4),
                                   Align(
                                     alignment: Alignment.bottomRight,
