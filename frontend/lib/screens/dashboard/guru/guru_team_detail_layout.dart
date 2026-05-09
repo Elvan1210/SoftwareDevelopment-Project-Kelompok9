@@ -13,7 +13,6 @@ import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
