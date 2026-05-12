@@ -169,7 +169,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   // ── Tugas Section ─────────────────────────────────────────────────────────
   Widget _buildTugasSection(bool isDark) {
     if (_tugasList.isEmpty) {
-      return _EmptyCard(
+      return const _EmptyCard(
         icon: LucideIcons.clipboardCheck,
         message: 'Tidak ada tugas mendatang',
         subtitle: 'Semua tugas sudah dikumpulkan!',
@@ -233,7 +233,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   Widget _buildPengumumanSection(bool isDark) {
     final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
     if (_pengumumanList.isEmpty) {
-      return _EmptyCard(
+      return const _EmptyCard(
         icon: LucideIcons.megaphone,
         message: 'Belum ada pengumuman',
         subtitle: 'Pantau terus ya!',
@@ -249,7 +249,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
         ),
         child: Row(children: [
-          Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
+          const Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
           const SizedBox(width: 12),
           Text('Semua pengumuman sudah dibaca!',
               style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600,
@@ -282,10 +282,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       child: Column(children: [
         const SkeletonLoader(height: 120, radius: 24),
         const SizedBox(height: 20),
-        Row(children: List.generate(3, (_) => Expanded(
+        Row(children: List.generate(3, (_) => const Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: const SkeletonLoader(height: 90, radius: 18),
+            padding: EdgeInsets.only(right: 10),
+            child: SkeletonLoader(height: 90, radius: 18),
           ),
         ))),
         const SizedBox(height: 24),

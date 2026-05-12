@@ -120,7 +120,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Color(0xFF6366F1)
+                                color: const Color(0xFF6366F1)
                                     .withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -150,7 +150,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF6366F1)
+                              color: const Color(0xFF6366F1)
                                   .withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
@@ -202,11 +202,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
-                                color: Color(0xFF6366F1)
+                                color: const Color(0xFF6366F1)
                                     .withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: Color(0xFF6366F1)
+                                  color: const Color(0xFF6366F1)
                                       .withValues(alpha: 0.12),
                                 ),
                               ),
@@ -215,7 +215,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                 children: [
                                   Icon(Icons.email_outlined,
                                       size: 14,
-                                      color: Color(0xFF6366F1)
+                                      color: const Color(0xFF6366F1)
                                           .withValues(alpha: 0.7)),
                                   const SizedBox(width: 6),
                                   Text(
@@ -297,7 +297,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                 onPressed:
                                     _isLoading ? null : _resetPassword,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF6366F1),
+                                  backgroundColor: const Color(0xFF6366F1),
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shadowColor: Colors.transparent,
@@ -305,7 +305,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                       borderRadius:
                                           BorderRadius.circular(14)),
                                   disabledBackgroundColor:
-                                      Color(0xFF6366F1)
+                                      const Color(0xFF6366F1)
                                           .withValues(alpha: 0.5),
                                 ),
                                 child: _isLoading
@@ -502,8 +502,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Color(0xFF6366F1).withValues(alpha: 0.07),
-                      Color(0xFF6366F1).withValues(alpha: 0.0),
+                      const Color(0xFF6366F1).withValues(alpha: 0.07),
+                      const Color(0xFF6366F1).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -525,8 +525,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Color(0xFF8B5CF6).withValues(alpha: 0.09),
-                      Color(0xFF8B5CF6).withValues(alpha: 0.0),
+                      const Color(0xFF8B5CF6).withValues(alpha: 0.09),
+                      const Color(0xFF8B5CF6).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -544,7 +544,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color(0xFF6366F1).withValues(alpha: 0.04)
+      ..color = const Color(0xFF6366F1).withValues(alpha: 0.04)
       ..strokeCap = StrokeCap.round;
     const spacing = 28.0;
     const dotRadius = 1.2;

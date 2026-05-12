@@ -247,7 +247,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
           const SizedBox(height: 8),
           Expanded(
             child: _filtered.isEmpty
-                ? EmptyState(
+                ? const EmptyState(
                     icon: LucideIcons.megaphone,
                     message: 'Belum ada pengumuman.',
                     color: AppTheme.amber)
@@ -492,7 +492,7 @@ class _AdminPengumumanCard extends StatelessWidget {
                           color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
                           borderRadius: BorderRadius.circular(7),
                         ),
-                        child: Icon(LucideIcons.user, size: 11, color: AppTheme.indigoPrimary),
+                        child: const Icon(LucideIcons.user, size: 11, color: AppTheme.indigoPrimary),
                       ),
                       const SizedBox(width: 6),
                       Text('Oleh: $author',
