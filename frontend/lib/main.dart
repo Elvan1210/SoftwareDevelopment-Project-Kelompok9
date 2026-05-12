@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/dashboard/siswa/siswa_main_layout.dart';
 import 'screens/dashboard/guru/guru_main_layout.dart';
@@ -25,7 +27,7 @@ class MyPSKDApp extends StatelessWidget {
           title: 'MyPSKD',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeProvider().themeMode, // Tracks theme choice dynamically
+          themeMode: ThemeProvider().themeMode,
           scrollBehavior: AppScrollBehavior(),
           home: const SplashScreen(),
         );
@@ -34,7 +36,7 @@ class MyPSKDApp extends StatelessWidget {
   }
 }
 
-/// Layar splash yang mengecek apakah user sudah login sebelumnya
+// ─── Splash Screen ────────────────────────────────────────────────────────────
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -42,15 +44,31 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseCtrl;
+
   @override
   void initState() {
     super.initState();
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
     _checkSession();
   }
 
+  @override
+  void dispose() {
+    _pulseCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _checkSession() async {
-    final token = await AuthService.getToken();
+    // Beri waktu splash muncul sebentar
+    await Future.delayed(const Duration(milliseconds: 1800));
+
+    final token    = await AuthService.getToken();
     final userData = await AuthService.getUserData();
 
     if (!mounted) return;
@@ -75,35 +93,175 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Brightness brightness = Theme.of(context).brightness;
-    final bool isDark = brightness == Brightness.dark;
-    final Color bgColor = isDark ? Colors.black : Colors.white;
-    final Color txtColor = isDark ? Colors.white : Colors.black;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: bgColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
+      body: Stack(
+        children: [
+          // Background blobs
+          Positioned(
+            top: -150, left: -100,
+            child: Container(
+              width: 500, height: 500,
               decoration: BoxDecoration(
-                color: AppTheme.tealDeep.withAlpha(40),
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: AppTheme.tealDeep.withAlpha(isDark ? 60 : 30), blurRadius: 40)],
+                gradient: RadialGradient(colors: [
+                  AppTheme.indigoPrimary.withAlpha(isDark ? 60 : 35),
+                  Colors.transparent,
+                ]),
               ),
-              child: const Icon(Icons.school_rounded, size: 80, color: AppTheme.tealDeep),
             ),
-            const SizedBox(height: 32),
-            Text('MyPSKD', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: txtColor, letterSpacing: -1)),
-            const SizedBox(height: 8),
-            Text('Academic Portal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: txtColor.withAlpha(150), letterSpacing: 2)),
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(color: AppTheme.tealDeep, strokeWidth: 3),
-          ],
-        ),
+          ),
+          Positioned(
+            bottom: -200, right: -80,
+            child: Container(
+              width: 600, height: 600,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [
+                  AppTheme.purpleSecondary.withAlpha(isDark ? 45 : 25),
+                  Colors.transparent,
+                ]),
+              ),
+            ),
+          ),
+
+          // Content
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo with pulse glow
+                AnimatedBuilder(
+                  animation: _pulseCtrl,
+                  builder: (_, __) => Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                      ),
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.indigoPrimary.withAlpha(
+                            (80 + 60 * _pulseCtrl.value).round(),
+                          ),
+                          blurRadius: 30 + 20 * _pulseCtrl.value,
+                          spreadRadius: 4 * _pulseCtrl.value,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      size: 52,
+                      color: Colors.white,
+                    ),
+                  ),
+                ).animate().fadeIn(duration: 600.ms).scale(
+                      begin: const Offset(0.7, 0.7),
+                      curve: Curves.elasticOut,
+                      duration: 1000.ms,
+                    ),
+                const SizedBox(height: 36),
+
+                // App name
+                Text(
+                  'MyPSKD',
+                  style: GoogleFonts.poppins(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1.5,
+                    foreground: Paint()
+                      ..shader = const LinearGradient(
+                        colors: [AppTheme.indigoLight, AppTheme.purpleLight],
+                      ).createShader(const Rect.fromLTWH(0, 0, 200, 50)),
+                  ),
+                ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.2),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Academic Management Platform',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    letterSpacing: 1.5,
+                  ),
+                ).animate().fadeIn(delay: 450.ms),
+
+                const SizedBox(height: 60),
+
+                // Loading dots
+                _LoadingDots().animate().fadeIn(delay: 600.ms),
+              ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _LoadingDots extends StatefulWidget {
+  @override
+  State<_LoadingDots> createState() => _LoadingDotsState();
+}
+
+class _LoadingDotsState extends State<_LoadingDots>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _ctrls;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrls = List.generate(3, (i) {
+      final ctrl = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 600),
+      );
+      Future.delayed(Duration(milliseconds: i * 150), () {
+        if (mounted) ctrl.repeat(reverse: true);
+      });
+      return ctrl;
+    });
+  }
+
+  @override
+  void dispose() {
+    for (final c in _ctrls) { c.dispose(); }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (i) {
+        return AnimatedBuilder(
+          animation: _ctrls[i],
+          builder: (_, __) => Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 8,
+            height: 8 + 8 * _ctrls[i].value,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppTheme.indigoPrimary.withAlpha((150 + 105 * _ctrls[i].value).round()),
+                  AppTheme.purpleSecondary.withAlpha((100 + 80 * _ctrls[i].value).round()),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

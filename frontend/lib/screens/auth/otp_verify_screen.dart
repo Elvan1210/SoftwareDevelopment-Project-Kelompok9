@@ -135,7 +135,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Kode baru telah dikirim ke email kamu'),
-          backgroundColor: const Color(0xFF075864),
+          backgroundColor: Color(0xFF6366F1),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -157,7 +157,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF0D0D1A) : const Color(0xFFF5F5FF),
       body: Stack(
         children: [
           _buildBackground(),
@@ -178,14 +178,14 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF075864)
+                                color: Color(0xFF6366F1)
                                     .withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
                                 Icons.arrow_back_ios_new_rounded,
                                 size: 16,
-                                color: Color(0xFF075864),
+                                color: Color(0xFF6366F1),
                               ),
                             ),
                           ),
@@ -201,14 +201,14 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                         height: 80,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF075864), Color(0xFF76AFB8)],
+                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF075864)
+                              color: Color(0xFF6366F1)
                                   .withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
@@ -252,7 +252,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                             TextSpan(
                               text: widget.email,
                               style: const TextStyle(
-                                color: Color(0xFF075864),
+                                color: Color(0xFF6366F1),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -279,7 +279,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF075864)
+                                  color: Color(0xFF6366F1)
                                       .withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(100),
                                 ),
@@ -287,13 +287,13 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const Icon(Icons.timer_outlined,
-                                        size: 15, color: Color(0xFF075864)),
+                                        size: 15, color: Color(0xFF6366F1)),
                                     const SizedBox(width: 6),
                                     Text(
                                       'Kode kedaluwarsa dalam $_timerText',
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        color: Color(0xFF075864),
+                                        color: Color(0xFF6366F1),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -339,13 +339,13 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                   ? null
                                   : _verifyOtp,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF075864),
+                            backgroundColor: Color(0xFF6366F1),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14)),
-                            disabledBackgroundColor: const Color(0xFF075864)
+                            disabledBackgroundColor: Color(0xFF6366F1)
                                 .withValues(alpha: 0.4),
                           ),
                           child: _isLoading
@@ -390,13 +390,13 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                     width: 14,
                                     height: 14,
                                     child: CircularProgressIndicator(
-                                        color: Color(0xFF075864),
+                                        color: Color(0xFF6366F1),
                                         strokeWidth: 2))
                                 : const Text(
                                     'Kirim Ulang',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Color(0xFF075864),
+                                      color: Color(0xFF6366F1),
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -428,7 +428,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
         style: const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w900,
-          color: Color(0xFF075864),
+          color: Color(0xFF6366F1),
         ),
         decoration: InputDecoration(
           counterText: '',
@@ -448,7 +448,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                const BorderSide(color: Color(0xFF075864), width: 2),
+                const BorderSide(color: Color(0xFF6366F1), width: 2),
           ),
         ),
         onChanged: (value) {
@@ -475,7 +475,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
           height: 36,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF075864), Color(0xFF76AFB8)],
+              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -490,7 +490,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF075864),
+            color: Color(0xFF6366F1),
             letterSpacing: -0.5,
           ),
         ),
@@ -515,8 +515,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF075864).withValues(alpha: 0.07),
-                      const Color(0xFF075864).withValues(alpha: 0.0),
+                      Color(0xFF6366F1).withValues(alpha: 0.07),
+                      Color(0xFF6366F1).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -538,8 +538,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF76AFB8).withValues(alpha: 0.09),
-                      const Color(0xFF76AFB8).withValues(alpha: 0.0),
+                      Color(0xFF8B5CF6).withValues(alpha: 0.09),
+                      Color(0xFF8B5CF6).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -557,7 +557,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF075864).withValues(alpha: 0.04)
+      ..color = Color(0xFF6366F1).withValues(alpha: 0.04)
       ..strokeCap = StrokeCap.round;
     const spacing = 28.0;
     const dotRadius = 1.2;

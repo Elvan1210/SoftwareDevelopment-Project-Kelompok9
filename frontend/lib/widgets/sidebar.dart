@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../config/theme.dart';
 
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
@@ -24,64 +27,126 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return RepaintBoundary(
       child: Container(
-        width: 280,
-        margin: const EdgeInsets.all(16),
+        width: 270,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withAlpha(isDark ? 100 : 255),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+                    AppTheme.darkCard,
+                    const Color(0xFF16162A),
+                  ]
+                : [
+                    Colors.white,
+                    const Color(0xFFF5F4FF),
+                  ],
+          ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
-            width: 1.0,
+            color: isDark
+                ? AppTheme.indigoPrimary.withAlpha(40)
+                : AppTheme.lightBorder,
+            width: 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withAlpha(100)
+                  : AppTheme.indigoPrimary.withAlpha(20),
+              blurRadius: 30,
+              offset: const Offset(4, 0),
+            ),
+          ],
         ),
         child: Column(
           children: [
-            // ── Profile Header ──
-            _ProfileHeader(
+            // ── Brand Header ──
+            _BrandHeader(isDark: isDark),
+
+            // ── Divider ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Divider(
+                height: 1,
+                color: isDark
+                    ? AppTheme.indigoPrimary.withAlpha(30)
+                    : AppTheme.lightBorder,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // ── Profile ──
+            _ProfileChip(
               name: userName,
               role: userRole,
               kelas: userKelas,
               isDark: isDark,
-              primaryColor: theme.primaryColor,
-              secondaryColor: theme.colorScheme.secondary,
             ),
-            
             const SizedBox(height: 8),
-            const Divider(height: 1, indent: 24, endIndent: 24),
-            const SizedBox(height: 16),
-            
+
+            // ── Divider ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Divider(
+                height: 1,
+                color: isDark
+                    ? AppTheme.indigoPrimary.withAlpha(30)
+                    : AppTheme.lightBorder,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // ── Nav Label ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'MENU',
+                  style: GoogleFonts.poppins(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.0,
+                    color: isDark
+                        ? AppTheme.textMutedDk
+                        : AppTheme.textMutedLt,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+
             // ── Menu Items ──
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 itemCount: destinations.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, __) => const SizedBox(height: 4),
                 itemBuilder: (context, index) {
                   final item = destinations[index];
                   final isSelected = selectedIndex == index;
-                  
+
                   return _SidebarItem(
                     icon: isSelected ? item.selectedIcon : item.icon,
                     label: item.label,
                     isSelected: isSelected,
                     onTap: () => onDestinationSelected(index),
-                    primaryColor: theme.primaryColor,
-                  ).animate(delay: (300 + index * 50).ms).fadeIn(duration: 400.ms).slideX(begin: -0.1, curve: Curves.easeOutQuart);
+                    index: index,
+                  )
+                      .animate(delay: (200 + index * 40).ms)
+                      .fadeIn(duration: 350.ms)
+                      .slideX(begin: -0.08, curve: Curves.easeOutQuart);
                 },
               ),
             ),
-            
-            // ── Footer Logout ──
-            _SidebarFooter(
-              onLogout: onLogout,
-              isDark: isDark,
-              primaryColor: theme.primaryColor,
-            ),
+
+            // ── Logout ──
+            _LogoutButton(onLogout: onLogout, isDark: isDark),
           ],
         ),
       ),
@@ -89,6 +154,7 @@ class Sidebar extends StatelessWidget {
   }
 }
 
+// ─── SidebarItemData ──────────────────────────────────────────────────────────
 class SidebarItemData {
   final IconData icon, selectedIcon;
   final String label;
@@ -100,105 +166,58 @@ class SidebarItemData {
   });
 }
 
-class _ProfileHeader extends StatelessWidget {
-  final String name, role;
-  final String? kelas;
+// ─── Brand Header ─────────────────────────────────────────────────────────────
+class _BrandHeader extends StatelessWidget {
   final bool isDark;
-  final Color primaryColor, secondaryColor;
-
-  const _ProfileHeader({
-    required this.name,
-    required this.role,
-    this.kelas,
-    required this.isDark,
-    required this.primaryColor,
-    required this.secondaryColor,
-  });
+  const _BrandHeader({required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final initials = name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
-    
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 32, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+      child: Row(
         children: [
-          Row(
-            children: [
-              // Avatar Placeholder
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [primaryColor, primaryColor.withAlpha(150)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withAlpha(isDark ? 30 : 60),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withAlpha(40),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          // Logo badge
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.indigoPrimary.withAlpha(100),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                    ),
-                  ),
+              ],
+            ),
+            child: const Icon(Icons.school_rounded, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'MyPSKD',
+                style: GoogleFonts.poppins(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  color: isDark ? Colors.white : AppTheme.textLight,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: _HeaderBadge(
-                            label: role,
-                            color: primaryColor,
-                            isDark: isDark,
-                          ),
-                        ),
-                        if (kelas != null) ...[
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: _HeaderBadge(
-                              label: kelas!,
-                              color: secondaryColor,
-                              isDark: isDark,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+              Text(
+                'Academic Portal',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],
@@ -209,37 +228,134 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _HeaderBadge extends StatelessWidget {
-  final String label;
-  final Color color;
+// ─── Profile Chip ─────────────────────────────────────────────────────────────
+class _ProfileChip extends StatelessWidget {
+  final String name, role;
+  final String? kelas;
   final bool isDark;
 
-  const _HeaderBadge({
-    required this.label,
-    required this.color,
+  const _ProfileChip({
+    required this.name,
+    required this.role,
+    this.kelas,
     required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Contrast check: sage (#A6ACA2) on white = 2.5:1 — FAIL.
-    // In light mode, use the color darkened enough to pass WCAG AA.
-    // In dark mode, the badge sits on dark surface so the lighter color works.
-    final textColor = isDark ? color : Color.alphaBlend(color.withAlpha(220), Colors.black);
+    final initials = name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
+              AppTheme.purpleSecondary.withAlpha(isDark ? 20 : 12),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.indigoPrimary.withAlpha(isDark ? 50 : 30),
+            width: 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.indigoPrimary.withAlpha(80),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                      color: isDark ? Colors.white : AppTheme.textLight,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      _Pill(label: role, color: AppTheme.indigoPrimary),
+                      if (kelas != null) ...[
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: _Pill(label: kelas!, color: AppTheme.purpleSecondary),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Pill({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withAlpha(isDark ? 30 : 15),
+        color: color.withAlpha(isDark ? 35 : 20),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withAlpha(isDark ? 60 : 40), width: 1),
+        border: Border.all(color: color.withAlpha(isDark ? 70 : 50), width: 1),
       ),
       child: Text(
         label.toUpperCase(),
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w900,
+        style: GoogleFonts.poppins(
+          fontSize: 8,
+          fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
-          color: textColor,
+          color: color,
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -248,19 +364,20 @@ class _HeaderBadge extends StatelessWidget {
   }
 }
 
+// ─── Sidebar Item ─────────────────────────────────────────────────────────────
 class _SidebarItem extends StatefulWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color primaryColor;
+  final int index;
 
   const _SidebarItem({
     required this.icon,
     required this.label,
     required this.isSelected,
     required this.onTap,
-    required this.primaryColor,
+    required this.index,
   });
 
   @override
@@ -268,68 +385,110 @@ class _SidebarItem extends StatefulWidget {
 }
 
 class _SidebarItemState extends State<_SidebarItem> {
-  bool _isHovered = false;
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: widget.isSelected 
-                ? widget.primaryColor.withAlpha(isDark ? 20 : 10)
-                : (_isHovered ? widget.primaryColor.withAlpha(8) : Colors.transparent),
-            borderRadius: BorderRadius.circular(12),
+            gradient: widget.isSelected
+                ? LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      AppTheme.indigoPrimary.withAlpha(isDark ? 50 : 30),
+                      AppTheme.purpleSecondary.withAlpha(isDark ? 25 : 15),
+                    ],
+                  )
+                : _hovered
+                    ? LinearGradient(
+                        colors: [
+                          AppTheme.indigoPrimary.withAlpha(isDark ? 20 : 12),
+                          Colors.transparent,
+                        ],
+                      )
+                    : const LinearGradient(colors: [Colors.transparent, Colors.transparent]),
+            borderRadius: BorderRadius.circular(14),
+            border: widget.isSelected
+                ? Border.all(
+                    color: AppTheme.indigoPrimary.withAlpha(isDark ? 80 : 50),
+                    width: 1.0,
+                  )
+                : Border.all(color: Colors.transparent),
           ),
           child: Row(
             children: [
-              // ── Selection Indicator ──
-              if (widget.isSelected)
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: widget.primaryColor,
-                    borderRadius: BorderRadius.circular(2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: widget.primaryColor.withAlpha(100),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
+              // Icon container
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  gradient: widget.isSelected
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                        )
+                      : LinearGradient(
+                          colors: [
+                            (isDark ? Colors.white : AppTheme.textLight).withAlpha(_hovered ? 15 : 8),
+                            Colors.transparent,
+                          ],
+                        ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: widget.isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.indigoPrimary.withAlpha(90),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : [],
                 ),
-              if (widget.isSelected) const SizedBox(width: 12),
-              
-              Icon(
-                widget.icon,
-                color: widget.isSelected 
-                    ? widget.primaryColor 
-                    : theme.colorScheme.onSurface.withAlpha(120),
-                size: 22,
+                child: Icon(
+                  widget.icon,
+                  color: widget.isSelected
+                      ? Colors.white
+                      : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  size: 18,
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   widget.label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: widget.isSelected ? FontWeight.w900 : FontWeight.w600,
-                    color: widget.isSelected 
-                        ? widget.primaryColor 
-                        : theme.colorScheme.onSurface.withAlpha(150),
-                    letterSpacing: 0.2,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: widget.isSelected
+                        ? (isDark ? Colors.white : AppTheme.indigoDark)
+                        : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                    letterSpacing: 0.1,
                   ),
                 ),
               ),
+              // Active dot
+              if (widget.isSelected)
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.indigoPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
             ],
           ),
         ),
@@ -338,49 +497,76 @@ class _SidebarItemState extends State<_SidebarItem> {
   }
 }
 
-class _SidebarFooter extends StatelessWidget {
+// ─── Logout Button ────────────────────────────────────────────────────────────
+class _LogoutButton extends StatefulWidget {
   final VoidCallback onLogout;
   final bool isDark;
-  final Color primaryColor;
 
-  const _SidebarFooter({
-    required this.onLogout,
-    required this.isDark,
-    required this.primaryColor,
-  });
+  const _LogoutButton({required this.onLogout, required this.isDark});
+
+  @override
+  State<_LogoutButton> createState() => _LogoutButtonState();
+}
+
+class _LogoutButtonState extends State<_LogoutButton> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
-      child: InkWell(
-        onTap: onLogout,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(5),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(LucideIcons.logOut, color: primaryColor, size: 20),
-              const SizedBox(width: 12),
-              Text(
-                'LOGOUT',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                  color: primaryColor,
-                  letterSpacing: 1.0,
-                ),
+      padding: const EdgeInsets.all(16),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit:  (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onLogout,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: _hovered
+                  ? const LinearGradient(
+                      colors: [Color(0xFF7F1D1D), Color(0xFFEF4444)],
+                    )
+                  : LinearGradient(
+                      colors: [
+                        AppTheme.rose.withAlpha(widget.isDark ? 25 : 15),
+                        AppTheme.rose.withAlpha(widget.isDark ? 15 : 8),
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: AppTheme.rose.withAlpha(_hovered ? 150 : (widget.isDark ? 50 : 30)),
+                width: 1.0,
               ),
-            ],
+              boxShadow: _hovered
+                  ? [BoxShadow(color: AppTheme.rose.withAlpha(80), blurRadius: 15, offset: const Offset(0, 4))]
+                  : [],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  LucideIcons.logOut,
+                  color: _hovered ? Colors.white : AppTheme.rose,
+                  size: 16,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Keluar',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _hovered ? Colors.white : AppTheme.rose,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
