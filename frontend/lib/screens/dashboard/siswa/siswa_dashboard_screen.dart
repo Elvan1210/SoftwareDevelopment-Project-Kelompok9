@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
@@ -26,11 +27,28 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   List<dynamic> _pengumumanList   = [];
   List<dynamic> _pengumpulanList  = [];
   List<dynamic> _kelasList        = [];
+  Set<String>   _readIds          = {};
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _loadAndFetch();
+  }
+
+  Future<void> _loadAndFetch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
+    _readIds = list.toSet();
+    await _fetchData();
+  }
+
+  Future<void> _markRead(String id) async {
+    setState(() => _readIds.add(id));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'read_pengumuman_${widget.userData['id']}',
+      _readIds.toList(),
+    );
   }
 
   Future<void> _fetchData() async {
@@ -134,11 +152,8 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                     const SizedBox(height: 36),
 
                     // ── Pengumuman ────────────────────────────────────
-                    SectionHeader(
-                      title: 'Pengumuman Sekolah',
-                      subtitle: 'Info terbaru untuk kamu',
-                    ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                    const SizedBox(height: 16),
+                    _buildPengumumanHeader(isDark),
+                    const SizedBox(height: 12),
                     _buildPengumumanSection(isDark),
                     const SizedBox(height: 32),
                   ]),
@@ -188,8 +203,35 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     );
   }
 
-  // ── Pengumuman Section ────────────────────────────────────────────────────
+  // ── Pengumuman Header ─────────────────────────────────────────────────────
+  Widget _buildPengumumanHeader(bool isDark) {
+    final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length;
+    return Row(
+      children: [
+        Expanded(
+          child: SectionHeader(
+            title: 'Pengumuman Sekolah',
+            subtitle: unread > 0 ? '$unread belum dibaca' : 'Semua sudah dibaca',
+          ),
+        ),
+        if (unread > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.amber.withAlpha(isDark ? 40 : 25),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: AppTheme.amber.withAlpha(isDark ? 80 : 50)),
+            ),
+            child: Text('$unread baru',
+                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.amber)),
+          ).animate().fadeIn(delay: 300.ms),
+      ],
+    ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart);
+  }
+
+  // ── Pengumuman Section (horizontal scroll) ────────────────────────────────
   Widget _buildPengumumanSection(bool isDark) {
+    final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
     if (_pengumumanList.isEmpty) {
       return _EmptyCard(
         icon: LucideIcons.megaphone,
@@ -198,14 +240,38 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
         color: AppTheme.amber,
       );
     }
-
-    return Column(
-      children: List.generate(_pengumumanList.length.clamp(0, 4), (i) {
-        return _PengumumanCard(pengumuman: _pengumumanList[i])
-            .animate(delay: (400 + i * 70).ms)
-            .fadeIn(duration: 400.ms)
-            .slideY(begin: 0.08, curve: Curves.easeOutQuart);
-      }),
+    if (unread.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkCard : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+        ),
+        child: Row(children: [
+          Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
+          const SizedBox(width: 12),
+          Text('Semua pengumuman sudah dibaca!',
+              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600,
+                  color: AppTheme.emerald)),
+        ]),
+      );
+    }
+    return SizedBox(
+      height: 120,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: unread.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (ctx, i) {
+          final p = unread[i];
+          return _PengumumanChipCard(
+            pengumuman: p,
+            isDark: isDark,
+            onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
+          ).animate(delay: (i * 60).ms).fadeIn(duration: 350.ms);
+        },
+      ),
     );
   }
 
@@ -599,94 +665,105 @@ class _TugasCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Pengumuman Card (Dashboard preview)
+// Pengumuman Chip Card (horizontal scroll, compact, with mark-as-read)
 // ═══════════════════════════════════════════════════════════════════════════
-class _PengumumanCard extends StatelessWidget {
+class _PengumumanChipCard extends StatelessWidget {
   final dynamic pengumuman;
-  const _PengumumanCard({required this.pengumuman});
+  final bool isDark;
+  final VoidCallback onMarkRead;
+  const _PengumumanChipCard({
+    required this.pengumuman,
+    required this.isDark,
+    required this.onMarkRead,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      width: 240,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppTheme.amber.withAlpha(isDark ? 50 : 35),
-          width: 1.0,
+          color: AppTheme.amber.withAlpha(isDark ? 60 : 40),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 50 : 6),
+            color: AppTheme.amber.withAlpha(isDark ? 25 : 10),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppTheme.amber.withAlpha(isDark ? 60 : 35), AppTheme.amber.withAlpha(isDark ? 30 : 18)],
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.amber, Color(0xFFF97316)],
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 14),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(LucideIcons.megaphone, color: AppTheme.amber, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
                   pengumuman['judul'] ?? '-',
                   style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
                     color: isDark ? Colors.white : AppTheme.textLight,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  pengumuman['isi'] ?? '-',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    height: 1.5,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+              ),
+              // Mark as read X button
+              GestureDetector(
+                onTap: onMarkRead,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkBorder : const Color(0xFFF5F5FF),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  child: Icon(LucideIcons.x, size: 12,
+                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                 ),
-                if (pengumuman['tanggal'] != null) ...[
-                  const SizedBox(height: 8),
-                  Row(children: [
-                    Icon(LucideIcons.calendar, size: 10,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                    const SizedBox(width: 4),
-                    Text(
-                      pengumuman['tanggal'].toString(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                      ),
-                    ),
-                  ]),
-                ],
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Text(
+              pengumuman['isi'] ?? '-',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                height: 1.5,
+                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          if (pengumuman['tanggal'] != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              pengumuman['tanggal'].toString(),
+              style: GoogleFonts.poppins(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.amber.withAlpha(isDark ? 200 : 160),
+              ),
+            ),
+          ],
         ],
       ),
     );
