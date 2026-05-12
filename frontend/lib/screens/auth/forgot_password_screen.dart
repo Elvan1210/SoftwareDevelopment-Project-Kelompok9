@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'otp_verify_screen.dart';
 import '../../services/forgot_password_service.dart';
+import '../../config/theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -67,8 +69,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       body: Stack(
         children: [
           _buildBackground(),
@@ -89,14 +92,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF075864)
-                                    .withValues(alpha: 0.08),
+                                color: AppTheme.indigoPrimary.withAlpha(20),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
                                 Icons.arrow_back_ios_new_rounded,
                                 size: 16,
-                                color: Color(0xFF075864),
+                                color: AppTheme.indigoPrimary,
                               ),
                             ),
                           ),
@@ -106,21 +108,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       ).animate().fadeIn(duration: 500.ms),
                       const SizedBox(height: 48),
 
-                      // Icon ilustrasi
+                       // Icon ilustrasi
                       Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF075864), Color(0xFF76AFB8)],
+                            colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  const Color(0xFF075864).withValues(alpha: 0.3),
+                              color: AppTheme.indigoPrimary.withAlpha(80),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -138,22 +139,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       const SizedBox(height: 28),
 
                       // Judul & deskripsi
-                      const Text(
-                        'Lupa Kata Sandi?',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF0A1628),
-                          letterSpacing: -0.8,
+                      ShaderMask(
+                        shaderCallback: (b) => const LinearGradient(
+                          colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                        ).createShader(b),
+                        child: Text(
+                          'Lupa Kata Sandi?',
+                          style: GoogleFonts.poppins(
+                            fontSize: 28, fontWeight: FontWeight.w800,
+                            letterSpacing: -0.8, color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ).animate().fadeIn(delay: 200.ms).slideY(begin: -0.1),
                       const SizedBox(height: 10),
                       Text(
                         'Masukkan email akunmu dan kami akan mengirimkan kode verifikasi 6 digit untuk mereset kata sandimu.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black.withValues(alpha: 0.5),
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                           height: 1.6,
                         ),
                         textAlign: TextAlign.center,
@@ -173,107 +177,66 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.done,
                               onFieldSubmitted: (_) => _sendOtp(),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF0A1628),
+                              style: GoogleFonts.poppins(
+                                fontSize: 14, fontWeight: FontWeight.w500,
+                                color: isDark ? AppTheme.textDark : AppTheme.textLight,
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Email tidak boleh kosong';
-                                }
-                                if (!v.contains('@')) {
-                                  return 'Email tidak valid';
-                                }
+                                if (v == null || v.isEmpty) return 'Email tidak boleh kosong';
+                                if (!v.contains('@')) return 'Email tidak valid';
                                 return null;
                               },
                               decoration: InputDecoration(
                                 hintText: 'contoh@email.com',
-                                hintStyle: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.email_outlined,
-                                  size: 18,
-                                  color:
-                                      Colors.black.withValues(alpha: 0.35),
-                                ),
+                                hintStyle: GoogleFonts.poppins(fontSize: 13,
+                                  color: isDark ? AppTheme.textMutedDk.withAlpha(150) : AppTheme.textMutedLt.withAlpha(150)),
+                                prefixIcon: Icon(Icons.email_outlined, size: 18,
+                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                                 filled: true,
-                                fillColor: const Color(0xFFF9FAFB),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.08)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.08)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: Color(0xFF075864), width: 1.5),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: Color(0xFFEF4444)),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: Color(0xFFEF4444), width: 1.5),
-                                ),
+                                fillColor: isDark ? AppTheme.darkCard : Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
+                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 1.8)),
+                                errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: AppTheme.rose)),
+                                focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: AppTheme.rose, width: 1.8)),
                               ),
                             ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
                             const SizedBox(height: 32),
 
                             // Tombol kirim
                             SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _sendOtp,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF075864),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(14)),
-                                  disabledBackgroundColor:
-                                      const Color(0xFF075864)
-                                          .withValues(alpha: 0.5),
+                              width: double.infinity, height: 52,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: _isLoading
+                                      ? LinearGradient(colors: [AppTheme.indigoPrimary.withAlpha(120), AppTheme.purpleSecondary.withAlpha(120)])
+                                      : const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: _isLoading ? [] : [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(100), blurRadius: 20, offset: const Offset(0, 8))],
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2.5))
-                                    : const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.send_rounded, size: 18),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Kirim Kode Verifikasi',
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: 0.2),
-                                          ),
-                                        ],
-                                      ),
+                                child: ElevatedButton(
+                                  onPressed: _isLoading ? null : _sendOtp,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
+                                    foregroundColor: Colors.white, elevation: 0,
+                                    disabledBackgroundColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  child: _isLoading
+                                      ? const SizedBox(width: 22, height: 22,
+                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                      : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                          const Icon(Icons.send_rounded, size: 18),
+                                          const SizedBox(width: 8),
+                                          Text('Kirim Kode Verifikasi', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
+                                        ]),
+                                ),
                               ),
                             ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.1),
                           ],
@@ -285,32 +248,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color:
-                              const Color(0xFF075864).withValues(alpha: 0.05),
+                          color: AppTheme.indigoPrimary.withAlpha(isDark ? 20 : 12),
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color:
-                                const Color(0xFF075864).withValues(alpha: 0.12),
-                          ),
+                          border: Border.all(color: AppTheme.indigoPrimary.withAlpha(isDark ? 50 : 30)),
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.info_outline_rounded,
-                              size: 18,
-                              color:
-                                  const Color(0xFF075864).withValues(alpha: 0.7),
-                            ),
+                            const Icon(Icons.info_outline_rounded, size: 18, color: AppTheme.indigoPrimary),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'Kode verifikasi berlaku selama 10 menit. Periksa folder spam jika email tidak masuk.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: const Color(0xFF075864)
-                                      .withValues(alpha: 0.8),
-                                  height: 1.5,
-                                ),
+                                style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.indigoPrimary, height: 1.5),
                               ),
                             ),
                           ],
@@ -332,121 +281,69 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: 36, height: 36,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF075864), Color(0xFF76AFB8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(9),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF075864).withValues(alpha: 0.25),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(80), blurRadius: 10, offset: const Offset(0, 3))],
           ),
-          child:
-              const Icon(Icons.school_rounded, color: Colors.white, size: 18),
+          child: const Icon(Icons.school_rounded, color: Colors.white, size: 18),
         ),
         const SizedBox(width: 8),
-        const Text(
-          'MyPSKD',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF075864),
-            letterSpacing: -0.5,
-          ),
+        ShaderMask(
+          shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]).createShader(b),
+          child: Text('MyPSKD', style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
         ),
       ],
     );
   }
 
   Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF374151),
-      ),
-    );
+    return Text(text, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.indigoPrimary));
   }
 
   Widget _buildBackground() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       children: [
-        Positioned(
-          top: -100,
-          right: -60,
-          child: AnimatedBuilder(
-            animation: _floatController,
-            builder: (_, __) => Transform.translate(
-              offset: Offset(0, 10 * _floatController.value),
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF075864).withValues(alpha: 0.07),
-                      const Color(0xFF075864).withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+        Positioned(top: -100, right: -60,
+          child: AnimatedBuilder(animation: _floatController, builder: (_, __) =>
+            Transform.translate(offset: Offset(0, 10 * _floatController.value),
+              child: Container(width: 300, height: 300,
+                decoration: BoxDecoration(shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppTheme.indigoPrimary.withAlpha(isDark ? 55 : 30), Colors.transparent,
+                  ]))))),
         ),
-        Positioned(
-          bottom: -80,
-          left: -40,
-          child: AnimatedBuilder(
-            animation: _floatController,
-            builder: (_, __) => Transform.translate(
-              offset: Offset(0, -8 * _floatController.value),
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF76AFB8).withValues(alpha: 0.09),
-                      const Color(0xFF76AFB8).withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+        Positioned(bottom: -80, left: -40,
+          child: AnimatedBuilder(animation: _floatController, builder: (_, __) =>
+            Transform.translate(offset: Offset(0, -8 * _floatController.value),
+              child: Container(width: 250, height: 250,
+                decoration: BoxDecoration(shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    AppTheme.purpleSecondary.withAlpha(isDark ? 40 : 20), Colors.transparent,
+                  ]))))),
         ),
-        Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
+        Positioned.fill(child: CustomPaint(painter: _DotGridPainter(isDark))),
       ],
     );
   }
 }
 
 class _DotGridPainter extends CustomPainter {
+  final bool isDark;
+  const _DotGridPainter(this.isDark);
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF075864).withValues(alpha: 0.04)
-      ..strokeCap = StrokeCap.round;
-    const spacing = 28.0;
-    const dotRadius = 1.2;
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), dotRadius, paint);
+    final p = Paint()..color = AppTheme.indigoPrimary.withAlpha(isDark ? 18 : 10)..strokeCap = StrokeCap.round;
+    for (double x = 0; x < size.width; x += 28) {
+      for (double y = 0; y < size.height; y += 28) {
+        canvas.drawCircle(Offset(x, y), 1.2, p);
       }
     }
   }
-
-  @override
-  bool shouldRepaint(_DotGridPainter oldDelegate) => false;
+  @override bool shouldRepaint(_DotGridPainter o) => false;
 }
