@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
@@ -22,12 +23,40 @@ class SiswaPengumumanView extends StatefulWidget {
 class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   List<dynamic> _pengumumanList = [];
   bool _isLoading = true;
-  String _search = '';
+  String _search  = '';
+  Set<String> _readIds = {};
+  bool _showRead = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchPengumuman();
+    _loadAndFetch();
+  }
+
+  Future<void> _loadAndFetch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
+    _readIds = list.toSet();
+    await _fetchPengumuman();
+  }
+
+  Future<void> _markRead(String id) async {
+    setState(() => _readIds.add(id));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'read_pengumuman_${widget.userData['id']}',
+      _readIds.toList(),
+    );
+  }
+
+  Future<void> _markAllRead() async {
+    final allIds = _pengumumanList.map((p) => p['id']?.toString() ?? '').toSet();
+    setState(() => _readIds.addAll(allIds));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'read_pengumuman_${widget.userData['id']}',
+      _readIds.toList(),
+    );
   }
 
   Future<void> _fetchPengumuman() async {
@@ -48,9 +77,12 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   }
 
   List<dynamic> get _filtered {
-    if (_search.isEmpty) return _pengumumanList;
+    final base = _showRead
+        ? _pengumumanList
+        : _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
+    if (_search.isEmpty) return base;
     final q = _search.toLowerCase();
-    return _pengumumanList.where((p) {
+    return base.where((p) {
       return (p['judul'] ?? '').toLowerCase().contains(q) ||
              (p['isi']   ?? '').toLowerCase().contains(q);
     }).toList();
@@ -82,16 +114,20 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ── Header ────────────────────────────────────
-                      _Header(isDark: isDark, count: _filtered.length)
-                          .animate().fadeIn(duration: 400.ms),
-                      const SizedBox(height: 20),
+                      _Header(isDark: isDark, count: _filtered.length,
+                        unread: _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length,
+                        showRead: _showRead,
+                        onToggleRead: () => setState(() => _showRead = !_showRead),
+                        onMarkAll: _markAllRead,
+                      ).animate().fadeIn(duration: 400.ms),
+                      const SizedBox(height: 16),
 
                       // ── Search Bar ────────────────────────────────
                       _SearchBar(
                         isDark: isDark,
                         onChanged: (v) => setState(() => _search = v),
                       ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.05),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -116,10 +152,14 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, i) {
+                            final p = _filtered[i];
+                            final isRead = _readIds.contains(p['id']?.toString());
                             return _PengumumanDetailCard(
-                              pengumuman: _filtered[i],
+                              pengumuman: p,
                               isDark: isDark,
                               index: i,
+                              isRead: isRead,
+                              onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
                             );
                           },
                           childCount: _filtered.length,
@@ -149,50 +189,88 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
 class _Header extends StatelessWidget {
   final bool isDark;
   final int count;
-  const _Header({required this.isDark, required this.count});
+  final int unread;
+  final bool showRead;
+  final VoidCallback onToggleRead;
+  final VoidCallback onMarkAll;
+  const _Header({required this.isDark, required this.count, required this.unread,
+    required this.showRead, required this.onToggleRead, required this.onMarkAll});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppTheme.amber, Color(0xFFF97316)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.amber.withAlpha(100),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
-            Text(
-              'Pengumuman Sekolah',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-                color: isDark ? Colors.white : AppTheme.textLight,
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.amber, Color(0xFFF97316)],
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(color: AppTheme.amber.withAlpha(100), blurRadius: 16, offset: const Offset(0, 6)),
+                ],
+              ),
+              child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Pengumuman Sekolah',
+                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5, color: isDark ? Colors.white : AppTheme.textLight)),
+                  Text(unread > 0 ? '$unread belum dibaca' : 'Semua sudah dibaca',
+                      style: GoogleFonts.poppins(fontSize: 12,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                ],
               ),
             ),
-            Text(
-              '$count pengumuman tersedia',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+          ],
+        ),
+        const SizedBox(height: 14),
+        // Action row
+        Row(
+          children: [
+            if (unread > 0)
+              GestureDetector(
+                onTap: onMarkAll,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
+                  ),
+                  child: Row(children: [
+                    Icon(LucideIcons.checkCheck, size: 12, color: AppTheme.emerald),
+                    const SizedBox(width: 5),
+                    Text('Tandai Semua Dibaca',
+                        style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
+                  ]),
+                ),
+              ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onToggleRead,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(color: AppTheme.indigoPrimary.withAlpha(isDark ? 70 : 50)),
+                ),
+                child: Row(children: [
+                  Icon(showRead ? LucideIcons.eyeOff : LucideIcons.eye, size: 12, color: AppTheme.indigoPrimary),
+                  const SizedBox(width: 5),
+                  Text(showRead ? 'Sembunyikan Dibaca' : 'Tampilkan Semua',
+                      style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.indigoPrimary)),
+                ]),
               ),
             ),
           ],
@@ -248,10 +326,14 @@ class _PengumumanDetailCard extends StatelessWidget {
   final dynamic pengumuman;
   final bool isDark;
   final int index;
+  final bool isRead;
+  final VoidCallback onMarkRead;
   const _PengumumanDetailCard({
     required this.pengumuman,
     required this.isDark,
     required this.index,
+    required this.isRead,
+    required this.onMarkRead,
   });
 
   String _formatDate(String? raw) {
@@ -368,30 +450,59 @@ class _PengumumanDetailCard extends StatelessWidget {
                     color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                   ),
                 ),
-                if (author != null) ...[
-                  const SizedBox(height: 14),
-                  Divider(height: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-                  const SizedBox(height: 12),
-                  Row(children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
-                        borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 14),
+                Divider(height: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    if (author != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(LucideIcons.user, size: 12, color: AppTheme.indigoPrimary),
                       ),
-                      child: Icon(LucideIcons.user, size: 12, color: AppTheme.indigoPrimary),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Oleh: $author',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.indigoPrimary,
+                      const SizedBox(width: 8),
+                      Text(
+                        'Oleh: $author',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12, fontWeight: FontWeight.w600,
+                          color: AppTheme.indigoPrimary,
+                        ),
                       ),
-                    ),
-                  ]),
-                ],
+                    ],
+                    const Spacer(),
+                    // Mark as read button
+                    if (!isRead)
+                      GestureDetector(
+                        onTap: onMarkRead,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
+                          ),
+                          child: Row(children: [
+                            Icon(LucideIcons.check, size: 11, color: AppTheme.emerald),
+                            const SizedBox(width: 4),
+                            Text('Tandai Dibaca',
+                                style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
+                          ]),
+                        ),
+                      )
+                    else
+                      Row(children: [
+                        Icon(LucideIcons.checkCheck, size: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        const SizedBox(width: 4),
+                        Text('Dibaca',
+                            style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600,
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      ]),
+                  ],
+                ),
               ],
             ),
           ),
@@ -403,3 +514,4 @@ class _PengumumanDetailCard extends StatelessWidget {
         .slideY(begin: 0.08, curve: Curves.easeOutQuart);
   }
 }
+
