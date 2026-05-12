@@ -248,7 +248,7 @@ class _Header extends StatelessWidget {
                     border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
                   ),
                   child: Row(children: [
-                    Icon(LucideIcons.checkCheck, size: 12, color: AppTheme.emerald),
+                    const Icon(LucideIcons.checkCheck, size: 12, color: AppTheme.emerald),
                     const SizedBox(width: 5),
                     Text('Tandai Semua Dibaca',
                         style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
@@ -462,7 +462,7 @@ class _PengumumanDetailCard extends StatelessWidget {
                           color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(LucideIcons.user, size: 12, color: AppTheme.indigoPrimary),
+                        child: const Icon(LucideIcons.user, size: 12, color: AppTheme.indigoPrimary),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -486,7 +486,7 @@ class _PengumumanDetailCard extends StatelessWidget {
                             border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
                           ),
                           child: Row(children: [
-                            Icon(LucideIcons.check, size: 11, color: AppTheme.emerald),
+                            const Icon(LucideIcons.check, size: 11, color: AppTheme.emerald),
                             const SizedBox(width: 4),
                             Text('Tandai Dibaca',
                                 style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.emerald)),

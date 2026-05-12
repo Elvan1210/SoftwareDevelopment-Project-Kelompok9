@@ -451,7 +451,7 @@ class _GuruPengumumanCard extends StatelessWidget {
                       color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
                       borderRadius: BorderRadius.circular(7),
                     ),
-                    child: Icon(LucideIcons.user, size: 11, color: AppTheme.indigoPrimary),
+                    child: const Icon(LucideIcons.user, size: 11, color: AppTheme.indigoPrimary),
                   ),
                   const SizedBox(width: 6),
                   Text('Oleh: $author',

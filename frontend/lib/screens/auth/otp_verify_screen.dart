@@ -135,7 +135,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Kode baru telah dikirim ke email kamu'),
-          backgroundColor: Color(0xFF6366F1),
+          backgroundColor: const Color(0xFF6366F1),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -178,7 +178,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Color(0xFF6366F1)
+                                color: const Color(0xFF6366F1)
                                     .withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -208,7 +208,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF6366F1)
+                              color: const Color(0xFF6366F1)
                                   .withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
@@ -279,7 +279,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF6366F1)
+                                  color: const Color(0xFF6366F1)
                                       .withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(100),
                                 ),
@@ -339,13 +339,13 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                   ? null
                                   : _verifyOtp,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF6366F1),
+                            backgroundColor: const Color(0xFF6366F1),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14)),
-                            disabledBackgroundColor: Color(0xFF6366F1)
+                            disabledBackgroundColor: const Color(0xFF6366F1)
                                 .withValues(alpha: 0.4),
                           ),
                           child: _isLoading
@@ -515,8 +515,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Color(0xFF6366F1).withValues(alpha: 0.07),
-                      Color(0xFF6366F1).withValues(alpha: 0.0),
+                      const Color(0xFF6366F1).withValues(alpha: 0.07),
+                      const Color(0xFF6366F1).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -538,8 +538,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Color(0xFF8B5CF6).withValues(alpha: 0.09),
-                      Color(0xFF8B5CF6).withValues(alpha: 0.0),
+                      const Color(0xFF8B5CF6).withValues(alpha: 0.09),
+                      const Color(0xFF8B5CF6).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -557,7 +557,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color(0xFF6366F1).withValues(alpha: 0.04)
+      ..color = const Color(0xFF6366F1).withValues(alpha: 0.04)
       ..strokeCap = StrokeCap.round;
     const spacing = 28.0;
     const dotRadius = 1.2;
