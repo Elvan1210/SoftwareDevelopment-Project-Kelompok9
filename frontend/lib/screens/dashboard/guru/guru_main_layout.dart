@@ -460,24 +460,92 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
             child: GlassCard(
               radius: 24,
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: NavigationBar(
-                backgroundColor: Colors.transparent,
-                indicatorColor: theme.primaryColor.withAlpha(40),
-                elevation: 0,
-                height: 64,
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
-                destinations: const [
-                  NavigationDestination(icon: Icon(Icons.dashboard_customize_outlined), label: 'Overview'),
-                  NavigationDestination(icon: Icon(Icons.class_outlined), label: 'Kelas'),
-                  NavigationDestination(icon: Icon(Icons.forum_outlined), label: 'Messages'), // TAMBAHAN BOTTOM NAV
-                  NavigationDestination(icon: Icon(Icons.notifications_none_rounded), label: 'Info'),
-                  NavigationDestination(icon: Icon(Icons.manage_accounts_outlined), label: 'Profil'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildMobileNavItem(
+                    icon: Icons.dashboard_customize_outlined,
+                    selectedIcon: Icons.dashboard_customize_rounded,
+                    label: 'Overview',
+                    isSelected: _selectedIndex == 0,
+                    onTap: () => setState(() => _selectedIndex = 0),
+                    theme: theme,
+                  ),
+                  _buildMobileNavItem(
+                    icon: Icons.class_outlined,
+                    selectedIcon: Icons.class_rounded,
+                    label: 'Kelas',
+                    isSelected: _selectedIndex == 1,
+                    onTap: () => setState(() => _selectedIndex = 1),
+                    theme: theme,
+                  ),
+                  _buildMobileNavItem(
+                    icon: Icons.forum_outlined,
+                    selectedIcon: Icons.forum_rounded,
+                    label: 'Messages',
+                    isSelected: _selectedIndex == 2,
+                    onTap: () => setState(() => _selectedIndex = 2),
+                    theme: theme,
+                  ),
+                  _buildMobileNavItem(
+                    icon: Icons.campaign_outlined,
+                    selectedIcon: Icons.campaign_rounded,
+                    label: 'Info',
+                    isSelected: _selectedIndex == 3,
+                    onTap: () => setState(() => _selectedIndex = 3),
+                    theme: theme,
+                  ),
+                  _buildMobileNavItem(
+                    icon: Icons.manage_accounts_outlined,
+                    selectedIcon: Icons.manage_accounts_rounded,
+                    label: 'Profil',
+                    isSelected: _selectedIndex == 4,
+                    onTap: () => setState(() => _selectedIndex = 4),
+                    theme: theme,
+                  ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMobileNavItem({
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required ThemeData theme,
+  }) {
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(isSelected ? selectedIcon : icon, color: color, size: 22),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, color: color),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

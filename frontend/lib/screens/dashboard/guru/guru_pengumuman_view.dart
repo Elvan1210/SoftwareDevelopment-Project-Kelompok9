@@ -331,13 +331,8 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(isDark ? 40 : 6), blurRadius: 12, offset: const Offset(0, 4))],
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: TextField(
         onChanged: onChanged,
         style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
@@ -377,14 +372,10 @@ class _GuruPengumumanCard extends StatelessWidget {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
     final author  = pengumuman['author']?.toString();
 
-    return Container(
+    return PremiumCard(
+      accentColor: AppTheme.amber,
+      padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.amber.withAlpha(isDark ? 45 : 30)),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 5))],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

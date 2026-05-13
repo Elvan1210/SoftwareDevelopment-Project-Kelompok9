@@ -304,7 +304,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       onSelected: (val) => setState(() => _selectedRole = r),
                       backgroundColor: Colors.transparent,
                       selectedColor: Theme.of(context).colorScheme.secondary.withAlpha(isSelected ? 40 : 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey.withAlpha(50))),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey.withAlpha(160))),
                       labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey),
                       showCheckmark: false,
                     ),
@@ -389,7 +389,7 @@ class _UserCard extends StatelessWidget {
                   if (val == 'edit') onEdit();
                   if (val == 'delete') onDelete();
                 },
-                icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(160)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 itemBuilder: (_) => [
                   const PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
@@ -401,16 +401,16 @@ class _UserCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(LucideIcons.atSign, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
+              Icon(LucideIcons.atSign, size: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
               const SizedBox(width: 8),
-              Expanded(child: Text(user['email'] ?? '-', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(user['email'] ?? '-', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
           if ((user['kelas'] ?? '').toString().isNotEmpty) ...[
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(LucideIcons.library, size: 14, color: theme.colorScheme.onSurface.withAlpha(80)),
+                Icon(LucideIcons.library, size: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
                 const SizedBox(width: 8),
                 Text(user['kelas'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
               ],

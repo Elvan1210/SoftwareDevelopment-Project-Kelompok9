@@ -147,14 +147,14 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                 children: [
                   Icon(Icons.groups_rounded, size: 80, color: Theme.of(context).colorScheme.secondary),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Anda belum memiliki/masuk ke tim atau kelas.',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Klik tombol di bawah untuk bergabung menggunakan kode akses.',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                   ),
                 ],
               ),
@@ -251,9 +251,9 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          Icon(Icons.people_alt_outlined, size: 16, color: Colors.grey.shade600),
+                                          Icon(Icons.people_alt_outlined, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                                           const SizedBox(width: 4),
-                                          Text('${(tim['siswa_ids'] as List?)?.length ?? 0}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                                          Text('${(tim['siswa_ids'] as List?)?.length ?? 0}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
                                         ],
                                       ),
                                     ),

@@ -56,7 +56,7 @@ class Sidebar extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: isDark
-                  ? Colors.black.withAlpha(100)
+                  ? Colors.black.withAlpha(160)
                   : AppTheme.indigoPrimary.withAlpha(20),
               blurRadius: 30,
               offset: const Offset(4, 0),

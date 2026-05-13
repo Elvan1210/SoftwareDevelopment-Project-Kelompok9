@@ -281,7 +281,7 @@
 //     required VoidCallback onTap,
 //     required ThemeData theme,
 //   }) {
-//     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100);
+//     final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
 //     return InkWell(
 //       onTap: onTap,
 //       borderRadius: BorderRadius.circular(16),
@@ -339,7 +339,7 @@
 //     final isSelected = !isLogout && _selectedIndex == targetIndex;
 //     final color = isLogout
 //         ? Colors.redAccent
-//         : (isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(150));
+//         : (isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160));
 
 //     return Padding(
 //       padding: const EdgeInsets.only(bottom: 4),
@@ -677,27 +677,31 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     required VoidCallback onTap,
     required ThemeData theme,
   }) {
-    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(isSelected ? selectedIcon : icon, color: color, size: 22),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, color: color),
-            ),
-          ],
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(isSelected ? selectedIcon : icon, color: color, size: 22),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, color: color),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -735,7 +739,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     final isSelected = !isLogout && _selectedIndex == targetIndex;
     final color = isLogout
         ? Colors.redAccent
-        : (isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(150));
+        : (isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),

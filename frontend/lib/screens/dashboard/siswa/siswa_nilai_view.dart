@@ -117,7 +117,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                                         style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
                                     if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
                                       Text(n['keterangan'],
-                                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
+                                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(160)),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis),
                                   ],

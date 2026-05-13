@@ -169,11 +169,11 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
               })),
               const SizedBox(width: 12),
               Expanded(child: _actionBtn(LucideIcons.megaphone, 'Broadcast', Theme.of(context).colorScheme.secondary, () {
-                if (widget.onNavigate != null) widget.onNavigate!(6);
+                if (widget.onNavigate != null) widget.onNavigate!(7); // Pengumuman
               })),
               const SizedBox(width: 12),
               Expanded(child: _actionBtn(LucideIcons.settings, 'Preferensi', theme.colorScheme.primary, () {
-                if (widget.onNavigate != null) widget.onNavigate!(7);
+                if (widget.onNavigate != null) widget.onNavigate!(8); // Admin Profil
               })),
             ],
           ),
@@ -304,7 +304,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                         return Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(labels[v.toInt()],
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150))),
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
                         );
                       },
                       reservedSize: 28,
@@ -380,4 +380,5 @@ class _StatData {
 }
 
 
-// StatData and Chart logic remains below
+// StatData and Chart logic remains below
+

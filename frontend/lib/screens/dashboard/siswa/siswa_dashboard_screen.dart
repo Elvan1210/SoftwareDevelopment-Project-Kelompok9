@@ -395,7 +395,6 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final items = [
       _StatItem(LucideIcons.clipboardList, 'Belum Dikumpul', stats['belum'] ?? 0, AppTheme.amber),
       _StatItem(LucideIcons.alertTriangle, 'Lewat Deadline', stats['lewat'] ?? 0, AppTheme.rose),
@@ -409,7 +408,7 @@ class _StatRow extends StatelessWidget {
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(right: isLast ? 0 : 12),
-            child: _StatMiniCard(item: item, isDark: isDark)
+            child: StatCard(icon: item.icon, label: item.label, value: '${item.value}', color: item.color)
                 .animate(delay: (100 + e.key * 80).ms)
                 .fadeIn(duration: 400.ms)
                 .scale(begin: const Offset(0.85, 0.85), curve: Curves.elasticOut, duration: 700.ms),
@@ -428,69 +427,6 @@ class _StatItem {
   const _StatItem(this.icon, this.label, this.value, this.color);
 }
 
-class _StatMiniCard extends StatelessWidget {
-  final _StatItem item;
-  final bool isDark;
-  const _StatMiniCard({required this.item, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: item.color.withAlpha(isDark ? 60 : 40),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: item.color.withAlpha(isDark ? 30 : 15),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [item.color.withAlpha(isDark ? 50 : 30), item.color.withAlpha(isDark ? 25 : 15)],
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(item.icon, size: 16, color: item.color),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${item.value}',
-            style: GoogleFonts.poppins(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
-              color: isDark ? Colors.white : AppTheme.textLight,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            item.label,
-            style: GoogleFonts.poppins(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Tugas Card
@@ -537,30 +473,15 @@ class _TugasCard extends StatelessWidget {
     final isDark  = Theme.of(context).brightness == Brightness.dark;
     final accent  = _statusColor;
 
-    return GestureDetector(
+    return PremiumCard(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkCard : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
-            width: 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 60 : 8),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Left accent bar
-            Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      accentColor: accent,
+      child: Row(
+        children: [
+          // Left accent bar
+          Container(
               width: 4,
               height: 52,
               decoration: BoxDecoration(
@@ -659,7 +580,6 @@ class _TugasCard extends StatelessWidget {
                 size: 16, color: (isDark ? Colors.white : AppTheme.textLight).withAlpha(80)),
           ],
         ),
-      ),
     );
   }
 }
@@ -679,27 +599,15 @@ class _PengumumanChipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 240,
+    return PremiumCard(
+      accentColor: AppTheme.amber,
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppTheme.amber.withAlpha(isDark ? 60 : 40),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.amber.withAlpha(isDark ? 25 : 10),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SizedBox(
+        width: 240,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             children: [
               Container(
@@ -766,6 +674,7 @@ class _PengumumanChipCard extends StatelessWidget {
           ],
         ],
       ),
+      ),
     );
   }
 }
@@ -783,15 +692,12 @@ class _EmptyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
+    return GlassCard(
+      radius: 18,
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-      ),
-      child: Column(
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
@@ -808,6 +714,7 @@ class _EmptyCard extends StatelessWidget {
           Text(subtitle, style: GoogleFonts.poppins(fontSize: 12,
             color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
         ],
+      ),
       ),
     );
   }

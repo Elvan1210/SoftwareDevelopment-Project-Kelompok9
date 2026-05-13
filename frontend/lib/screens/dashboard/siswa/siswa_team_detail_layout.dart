@@ -135,7 +135,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                           const SizedBox(height: 24),
                           Padding(
                             padding: const EdgeInsets.only(left: 12, bottom: 8),
-                            child: Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(100), letterSpacing: 1.5)),
+                            child: Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 1.5)),
                           ),
                           _buildSidebarItem('channel_general', LucideIcons.hash, 'General', isChannel: true),
                           for (var c in _channels)
@@ -221,7 +221,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   Widget _buildSidebarItem(String id, IconData icon, String label, {bool isChannel = false}) {
     final theme = Theme.of(context);
     final isSelected = _activeTabID == id;
-    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(120);
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -254,7 +254,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   }
 
   Widget _buildSidebarFooter(ThemeData theme) {
-    return const Padding(padding: EdgeInsets.all(24.0), child: Text('Siswa Access', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)));
+    return Padding(padding: EdgeInsets.all(24.0), child: Text('Siswa Access', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))));
   }
 
   Widget _buildMobileLayout(BuildContext context) {
@@ -289,7 +289,7 @@ class GlassCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: overrideColor ?? (isDark ? Colors.white.withAlpha(15) : Colors.white.withAlpha(180)),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: Colors.white.withAlpha(30)),
+        border: Border.all(color: Colors.white.withAlpha(160)),
       ),
       child: child,
     );

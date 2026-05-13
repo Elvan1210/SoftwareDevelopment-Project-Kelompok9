@@ -321,7 +321,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                       : 'Siswa memerlukan persetujuan Anda',
                   style: TextStyle(
                     fontSize: 12,
-                    color: theme.colorScheme.onSurface.withAlpha(150),
+                    color: theme.colorScheme.onSurface.withAlpha(160),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -394,18 +394,18 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
               color: Theme.of(context).colorScheme.secondary.withAlpha(80),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Tidak ada permintaan baru',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Colors.grey,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Permintaan bergabung dari siswa akan muncul di sini.',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
             ),
           ],
         ),
@@ -503,7 +503,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                     email,
                     style: TextStyle(
                       fontSize: 12,
-                      color: theme.colorScheme.onSurface.withAlpha(120),
+                      color: theme.colorScheme.onSurface.withAlpha(160),
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
@@ -513,11 +513,11 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.schedule_rounded, size: 12, color: Colors.grey.shade500),
+                    Icon(Icons.schedule_rounded, size: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                     const SizedBox(width: 4),
                     Text(
                       timeAgo,
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -542,7 +542,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                     decoration: BoxDecoration(
                       color: Colors.red.withAlpha(15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withAlpha(40)),
+                      border: Border.all(color: Colors.red.withAlpha(160)),
                     ),
                     child: const Icon(Icons.close_rounded, color: Colors.red, size: 20),
                   ),

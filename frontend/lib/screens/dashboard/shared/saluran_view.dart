@@ -170,7 +170,7 @@ class _SaluranViewState extends State<SaluranView> {
                   const SizedBox(width: 12),
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(post['pengirim_nama'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text(post['waktu']?.toString().split('T')[0] ?? '', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                    Text(post['waktu']?.toString().split('T')[0] ?? '', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
                   ])
                 ]),
                 const SizedBox(height: 12),

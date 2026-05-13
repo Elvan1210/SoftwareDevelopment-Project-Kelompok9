@@ -263,7 +263,7 @@ class _GuruNilaiCard extends StatelessWidget {
                     ],
                   );
                 },
-                icon: Icon(LucideIcons.moreVertical, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                icon: Icon(LucideIcons.moreVertical, size: 20, color: theme.colorScheme.onSurface.withAlpha(160)),
               ),
             ],
           ),
@@ -274,11 +274,11 @@ class _GuruNilaiCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(val.toStringAsFixed(0), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-                  const Padding(padding: EdgeInsets.only(bottom: 6, left: 4), child: Text('pts', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey))),
+                  Padding(padding: EdgeInsets.only(bottom: 6, left: 4), child: Text('pts', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)))),
                 ],
               ),
               const SizedBox(height: 2),
-              Text(nilai['mapel'] ?? '-', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150))),
+              Text(nilai['mapel'] ?? '-', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
             ],
           ),
         ],

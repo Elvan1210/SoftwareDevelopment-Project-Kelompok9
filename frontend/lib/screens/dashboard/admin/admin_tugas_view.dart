@@ -167,8 +167,8 @@ class _AdminTugasCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(tugas['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text('Guru: ${tugas['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text('Deadline: ${tugas['deadline'] ?? '-'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('Guru: ${tugas['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('Deadline: ${tugas['deadline'] ?? '-'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -179,7 +179,7 @@ class _AdminTugasCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.library, size: 12, color: theme.colorScheme.onSurface.withAlpha(150)),
+                Icon(LucideIcons.library, size: 12, color: theme.colorScheme.onSurface.withAlpha(160)),
                 const SizedBox(width: 6),
                 Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
               ],

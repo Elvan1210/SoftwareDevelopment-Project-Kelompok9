@@ -180,7 +180,7 @@ class _MateriCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(materi['mapel'] ?? '-',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(150), letterSpacing: 0.5),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 0.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
               ),
@@ -197,7 +197,7 @@ class _MateriCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 6),
                 Text(materi['deskripsi'] ?? '-',
-                    style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withAlpha(150)),
+                    style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withAlpha(160)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
               ],

@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           border: Border(left: BorderSide(
             color: isDark ? AppTheme.indigoPrimary.withAlpha(30) : AppTheme.lightBorder)),
           boxShadow: [BoxShadow(
-            color: isDark ? Colors.black.withAlpha(120) : AppTheme.indigoPrimary.withAlpha(20),
+            color: isDark ? Colors.black.withAlpha(160) : AppTheme.indigoPrimary.withAlpha(20),
             blurRadius: 40, offset: const Offset(-10, 0),
           )],
         ),
