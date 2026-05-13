@@ -261,7 +261,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withAlpha(40),
+                        color: theme.colorScheme.onSurface.withAlpha(160),
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
@@ -360,7 +360,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                     decoration: BoxDecoration(
                                       color: Colors.red.withAlpha(15),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.red.withAlpha(40)),
+                                      border: Border.all(color: Colors.red.withAlpha(160)),
                                     ),
                                     child: const Icon(Icons.delete_sweep_rounded, size: 16, color: Colors.red),
                                   ),
@@ -405,7 +405,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        color: theme.colorScheme.onSurface.withAlpha(100),
+                                        color: theme.colorScheme.onSurface.withAlpha(160),
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -454,7 +454,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: theme.colorScheme.onSurface.withAlpha(120),
+              color: theme.colorScheme.onSurface.withAlpha(160),
             ),
           ),
           const SizedBox(height: 6),
@@ -463,7 +463,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withAlpha(80),
+              color: theme.colorScheme.onSurface.withAlpha(160),
             ),
           ),
         ],
@@ -520,7 +520,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                   child: Icon(
                     meta.icon,
                     color: isRead
-                        ? theme.colorScheme.onSurface.withAlpha(80)
+                        ? theme.colorScheme.onSurface.withAlpha(160)
                         : meta.color,
                     size: 20,
                   ),
@@ -541,7 +541,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                 fontWeight: isRead ? FontWeight.w600 : FontWeight.w800,
                                 fontSize: 13,
                                 color: isRead
-                                    ? theme.colorScheme.onSurface.withAlpha(150)
+                                    ? theme.colorScheme.onSurface.withAlpha(160)
                                     : theme.colorScheme.onSurface,
                               ),
                               maxLines: 1,
@@ -555,7 +555,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: isRead
-                                  ? theme.colorScheme.onSurface.withAlpha(60)
+                                  ? theme.colorScheme.onSurface.withAlpha(160)
                                   : meta.color.withAlpha(180),
                             ),
                           ),
@@ -630,7 +630,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                   child: Icon(
                                     Icons.delete_outline_rounded,
                                     size: 14,
-                                    color: theme.colorScheme.onSurface.withAlpha(120),
+                                    color: theme.colorScheme.onSurface.withAlpha(160),
                                   ),
                                 ),
                               ),

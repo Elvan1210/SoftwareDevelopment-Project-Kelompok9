@@ -59,7 +59,7 @@ class GuruSubmissionDetail extends StatelessWidget {
             : Colors.red.withAlpha(isDark ? 30 : 20),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: percent >= 70 ? Colors.green.withAlpha(50) : Colors.red.withAlpha(50),
+          color: percent >= 70 ? Colors.green.withAlpha(160) : Colors.red.withAlpha(160),
         ),
       ),
       child: Row(
@@ -80,7 +80,7 @@ class GuruSubmissionDetail extends StatelessWidget {
               children: [
                 Text(
                   submission.studentEmail?.isNotEmpty == true ? submission.studentEmail! : 'Email tidak tersedia',
-                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withAlpha(150)),
+                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -139,7 +139,7 @@ class GuruSubmissionDetail extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 '${q.points} Poin',
-                style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150)),
+                style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160)),
               ),
               const Spacer(),
               if (!isEssay) _buildStatusBadge(q, studentAns),
@@ -245,7 +245,7 @@ class GuruSubmissionDetail extends StatelessWidget {
           icon = LucideIcons.checkCircle;
         } else if (isActuallyCorrect && !isStudentSelected) {
           bgColor = Colors.green.withAlpha(10);
-          borderColor = Colors.green.withAlpha(50);
+          borderColor = Colors.green.withAlpha(160);
           icon = LucideIcons.check;
         } else if (!isActuallyCorrect && isStudentSelected) {
           bgColor = Colors.red.withAlpha(20);
@@ -277,7 +277,7 @@ class GuruSubmissionDetail extends StatelessWidget {
                     fontSize: 14,
                     color: isStudentSelected || isActuallyCorrect 
                         ? theme.colorScheme.onSurface 
-                        : theme.colorScheme.onSurface.withAlpha(150),
+                        : theme.colorScheme.onSurface.withAlpha(160),
                     fontWeight: isStudentSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),

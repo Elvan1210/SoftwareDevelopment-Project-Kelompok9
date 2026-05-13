@@ -193,7 +193,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                     const SizedBox(height: 4),
                     Text(
                       'Pantau kehadiran kelas ${widget.teamData != null ? widget.teamData['nama_kelas'] : ''}',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(150), fontWeight: FontWeight.w600),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -301,14 +301,14 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(120)),
+            Icon(icon, size: 14, color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(160)),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 fontSize: 12,
-                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(120),
+                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withAlpha(160),
               ),
             ),
           ],
@@ -502,7 +502,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                     style: TextStyle(
                       fontWeight: FontWeight.w800, 
                       fontSize: 16,
-                      color: isRecorded ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withAlpha(150),
+                      color: isRecorded ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withAlpha(160),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -511,13 +511,13 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                       Icon(
                         isRecorded ? Icons.access_time_filled_rounded : Icons.access_time_rounded,
                         size: 14,
-                        color: theme.colorScheme.onSurface.withAlpha(100),
+                        color: theme.colorScheme.onSurface.withAlpha(160),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         isRecorded ? 'Tercatat: $time' : 'Belum dicatat',
                         style: TextStyle(
-                          color: theme.colorScheme.onSurface.withAlpha(120),
+                          color: theme.colorScheme.onSurface.withAlpha(160),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -632,7 +632,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                     const SizedBox(width: 16),
                     Icon(
                       isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                      color: theme.colorScheme.onSurface.withAlpha(100),
+                      color: theme.colorScheme.onSurface.withAlpha(160),
                     ),
                   ],
                 ),
@@ -719,7 +719,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
             child: Text(
               short,
               style: TextStyle(
-                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withAlpha(100),
+                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withAlpha(160),
                 fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
                 fontSize: 14,
               ),

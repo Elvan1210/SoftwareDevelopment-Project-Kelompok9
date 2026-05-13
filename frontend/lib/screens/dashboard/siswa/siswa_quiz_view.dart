@@ -7,6 +7,7 @@ import '../../../config/theme.dart';
 import '../../../services/quiz_service.dart';
 import '../../../models/quiz_model.dart';
 import 'siswa_exam_screen.dart';
+import '../../../widgets/app_shell.dart';
 
 class SiswaQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -170,7 +171,7 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
             'Kuis dari guru akan muncul di sini',
             style: TextStyle(
               fontSize: 14,
-              color: theme.colorScheme.onSurface.withAlpha(120),
+              color: theme.colorScheme.onSurface.withAlpha(160),
             ),
           ),
         ],
@@ -208,29 +209,12 @@ class _QuizTile extends StatelessWidget {
       isClosed = true;
     }
 
-    return Container(
+    return PremiumCard(
+      padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isSubmitted
-              ? Colors.green.withAlpha(40)
-              : (isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 60 : 8),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Row(
               children: [
                 Container(
@@ -238,7 +222,7 @@ class _QuizTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isSubmitted
-                          ? [Colors.green.withAlpha(30), Colors.green.withAlpha(15)]
+                          ? [Colors.green.withAlpha(160), Colors.green.withAlpha(15)]
                           : [AppTheme.tealDeep.withAlpha(30), AppTheme.tealDeep.withAlpha(15)],
                     ),
                     borderRadius: BorderRadius.circular(14),
@@ -268,7 +252,7 @@ class _QuizTile extends StatelessWidget {
                         '${quiz.subject} • oleh ${quiz.createdByName}',
                         style: TextStyle(
                           fontSize: 13,
-                          color: theme.colorScheme.onSurface.withAlpha(120),
+                          color: theme.colorScheme.onSurface.withAlpha(160),
                         ),
                       ),
                     ],
@@ -283,7 +267,7 @@ class _QuizTile extends StatelessWidget {
                 quiz.description,
                 style: TextStyle(
                   fontSize: 13,
-                  color: theme.colorScheme.onSurface.withAlpha(150),
+                  color: theme.colorScheme.onSurface.withAlpha(160),
                   height: 1.4,
                 ),
                 maxLines: 2,
@@ -315,7 +299,7 @@ class _QuizTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.red.withAlpha(20),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.red.withAlpha(40)),
+                        border: Border.all(color: Colors.red.withAlpha(160)),
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -360,7 +344,7 @@ class _QuizTile extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSubmitted ? Colors.green.withAlpha(40) : AppTheme.tealDeep,
+                        backgroundColor: isSubmitted ? Colors.green.withAlpha(160) : AppTheme.tealDeep,
                         foregroundColor: isSubmitted ? Colors.green : Colors.white,
                         disabledBackgroundColor: Colors.green.withAlpha(isDark ? 30 : 15),
                         disabledForegroundColor: Colors.green,
@@ -369,10 +353,9 @@ class _QuizTile extends StatelessWidget {
                         elevation: 0,
                       ),
                     ),
-            ),
+                  ),
           ],
         ),
-      ),
     );
   }
 }
@@ -387,7 +370,7 @@ class _InfoTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.onSurface.withAlpha(140);
+    final c = color ?? Theme.of(context).colorScheme.onSurface.withAlpha(160);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -408,8 +391,6 @@ class _ExamStartDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       backgroundColor: theme.colorScheme.surface,
@@ -455,13 +436,8 @@ class _ExamStartDialog extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            Container(
+            GlassCard(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.withAlpha(isDark ? 15 : 8),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.red.withAlpha(30)),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -499,7 +475,7 @@ class _ExamStartDialog extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      side: BorderSide(color: theme.colorScheme.onSurface.withAlpha(40)),
+                      side: BorderSide(color: theme.colorScheme.onSurface.withAlpha(160)),
                     ),
                     child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),

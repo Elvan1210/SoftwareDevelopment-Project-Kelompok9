@@ -152,7 +152,7 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
           ],
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(150),
+        unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(160),
         labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.3),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         tabs: const [
@@ -336,7 +336,7 @@ class _TugasCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text('Mapel: ${tugas['mapel'] ?? '-'}',
-                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(150))),
+                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(160))),
               ],
             ),
           ),
@@ -361,7 +361,7 @@ class _TugasCard extends StatelessWidget {
               ),
             ),
           const SizedBox(width: 8),
-          Icon(LucideIcons.chevronRight, color: theme.colorScheme.onSurface.withAlpha(100)),
+          Icon(LucideIcons.chevronRight, color: theme.colorScheme.onSurface.withAlpha(160)),
         ],
       ),
     );

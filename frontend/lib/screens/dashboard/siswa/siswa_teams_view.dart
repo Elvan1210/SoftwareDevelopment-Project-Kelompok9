@@ -6,7 +6,7 @@ import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'siswa_team_detail_layout.dart';
+import 'siswa_team_detail_layout.dart' hide GlassCard;
 import '../../../widgets/app_shell.dart';
 
 class SiswaTeamsView extends StatefulWidget {
@@ -87,12 +87,8 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                           color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                   const SizedBox(height: 20),
                   // Code input
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkBg : const Color(0xFFF5F5FF),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.indigoPrimary.withAlpha(60)),
-                    ),
+                  GlassCard(
+                    padding: EdgeInsets.zero,
                     child: TextField(
                       controller: codeCtrl,
                       maxLength: 8,
@@ -344,22 +340,9 @@ class _TeamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkCard : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: color.withAlpha(isDark ? 70 : 50),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withAlpha(isDark ? 40 : 20),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
+      child: PremiumCard(
+        accentColor: color,
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -381,7 +364,7 @@ class _TeamCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(40),
+                      color: Colors.white.withAlpha(160),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -399,7 +382,7 @@ class _TeamCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(40),
+                              color: Colors.white.withAlpha(160),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(

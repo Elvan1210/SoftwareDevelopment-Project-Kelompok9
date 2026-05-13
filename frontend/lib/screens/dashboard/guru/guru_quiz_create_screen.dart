@@ -497,7 +497,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
         children: [
           Icon(
             icon,
-            color: value ? activeColor : theme.colorScheme.onSurface.withAlpha(120),
+            color: value ? activeColor : theme.colorScheme.onSurface.withAlpha(160),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -515,7 +515,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: theme.colorScheme.onSurface.withAlpha(120),
+                    color: theme.colorScheme.onSurface.withAlpha(160),
                   ),
                 ),
               ],
@@ -786,7 +786,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                     decoration: BoxDecoration(
                       color: widget.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: widget.theme.colorScheme.onSurface.withAlpha(30)),
+                      border: Border.all(color: widget.theme.colorScheme.onSurface.withAlpha(160)),
                     ),
                     child: DropdownButton<String>(
                       value: form.questionType,
@@ -924,7 +924,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
-                color: widget.theme.colorScheme.onSurface.withAlpha(120),
+                color: widget.theme.colorScheme.onSurface.withAlpha(160),
               ),
             ),
             const SizedBox(height: 8),
@@ -949,7 +949,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                                 : LucideIcons.circle,
                             color: form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
                                 ? Colors.green
-                                : widget.theme.colorScheme.onSurface.withAlpha(100),
+                                : widget.theme.colorScheme.onSurface.withAlpha(160),
                           ),
                         ),
                       )
@@ -986,13 +986,13 @@ class _QuestionCardState extends State<_QuestionCard> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: isCorrect ? Colors.green.withAlpha(80) : widget.theme.colorScheme.onSurface.withAlpha(15),
+                              color: isCorrect ? Colors.green.withAlpha(160) : widget.theme.colorScheme.onSurface.withAlpha(15),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: isCorrect ? Colors.green.withAlpha(80) : widget.theme.colorScheme.onSurface.withAlpha(15),
+                              color: isCorrect ? Colors.green.withAlpha(160) : widget.theme.colorScheme.onSurface.withAlpha(15),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -1030,11 +1030,11 @@ class _QuestionCardState extends State<_QuestionCard> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: widget.theme.colorScheme.onSurface.withAlpha(20)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(LucideIcons.alignLeft, size: 16, color: Colors.grey),
-                  SizedBox(width: 10),
-                  Text('Siswa akan menjawab berupa teks uraian', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Icon(LucideIcons.alignLeft, size: 16, color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                  const SizedBox(width: 10),
+                  Text('Siswa akan menjawab berupa teks uraian', style: TextStyle(color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt), fontSize: 13)),
                 ],
               ),
             ),

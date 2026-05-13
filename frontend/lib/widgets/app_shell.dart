@@ -257,7 +257,7 @@ class GlassCard extends StatelessWidget {
               [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black.withAlpha(120)
+                      ? Colors.black.withAlpha(160)
                       : AppTheme.indigoPrimary.withAlpha(18),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
@@ -455,7 +455,7 @@ class StatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(160),
                     letterSpacing: 0.2,
                     fontFamily: GoogleFonts.poppins().fontFamily,
                   ),

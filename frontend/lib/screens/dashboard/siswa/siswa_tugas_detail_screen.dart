@@ -406,7 +406,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.red.withAlpha(30),
+                              color: Colors.red.withAlpha(160),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Text('Terlewat',
@@ -540,7 +540,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                     Text('Ketuk untuk membuka',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey.shade600)),
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
                                   ],
                                 ),
                               ),
@@ -563,7 +563,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.green.withAlpha(30),
+                              color: Colors.green.withAlpha(160),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -615,7 +615,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                               child: Center(
                                 child: Text(
                                     'Belum ada file atau link ditambahkan',
-                                    style: TextStyle(color: Colors.grey.shade600)),
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
                               ),
                             ),
 
@@ -680,7 +680,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                           strokeWidth: 2)),
                                   const SizedBox(width: 12),
                                   Text('Mengunggah file...',
-                                      style: TextStyle(color: Colors.grey.shade600)),
+                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
                                 ],
                               ),
                             ),
@@ -772,7 +772,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Colors.grey),
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
         const SizedBox(width: 12),
         Text(
           '$label: ',

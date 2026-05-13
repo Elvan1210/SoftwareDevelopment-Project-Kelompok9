@@ -252,7 +252,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface.withAlpha(150))),
+                                color: theme.colorScheme.onSurface.withAlpha(160))),
                       );
                     },
                     reservedSize: 32,
@@ -264,7 +264,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                     interval: (maxY / 4).clamp(1.0, 1000.0),
                     getTitlesWidget: (v, _) => Text(
                       v.toInt().toString(),
-                      style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120)),
+                      style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)),
                     ),
                     reservedSize: 28,
                   ),
@@ -397,7 +397,7 @@ class _GuruClassCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           '${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa Terdaftar',
-                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(120)),
+                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(160)),
                         ),
                       ],
                     ),
@@ -419,7 +419,7 @@ class _GuruClassCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 _buildMiniIcon(LucideIcons.award),
                 const Spacer(),
-                const Icon(LucideIcons.settings, size: 14, color: Colors.grey),
+                Icon(LucideIcons.settings, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
               ],
             ),
           ),
@@ -429,7 +429,7 @@ class _GuruClassCard extends StatelessWidget {
   }
 
   Widget _buildMiniIcon(IconData icon) {
-    return Icon(icon, size: 14, color: Colors.grey);
+    return Icon(icon, size: 14, color: const Color(0xFF757575));
   }
 }
 
@@ -442,27 +442,3 @@ class _StatData {
   const _StatData(this.icon, this.label, this.value, this.color);
 }
 
-class SectionHeader extends StatelessWidget {
-  final String title, subtitle;
-  final Widget? action;
-  const SectionHeader({super.key, required this.title, required this.subtitle, this.action});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-            const SizedBox(height: 4),
-            Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w500)),
-          ],
-        ),
-        if (action != null) action!,
-      ],
-    );
-  }
-}

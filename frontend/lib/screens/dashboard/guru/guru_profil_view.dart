@@ -88,7 +88,7 @@ class _ProfileHeroHeader extends StatelessWidget {
       child: Column(children: [
         Container(
           padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: Colors.white.withAlpha(40), shape: BoxShape.circle),
+          decoration: BoxDecoration(color: Colors.white.withAlpha(160), shape: BoxShape.circle),
           child: Container(
             width: 100,
             height: 100,
@@ -101,7 +101,7 @@ class _ProfileHeroHeader extends StatelessWidget {
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(color: Colors.white.withAlpha(35), borderRadius: BorderRadius.circular(100), border: Border.all(color: Colors.white.withAlpha(80))),
+          decoration: BoxDecoration(color: Colors.white.withAlpha(160), borderRadius: BorderRadius.circular(100), border: Border.all(color: Colors.white.withAlpha(160))),
           child: Text(role.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
         ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
       ]),
@@ -133,7 +133,7 @@ class _InfoSection extends StatelessWidget {
       Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: primary.withAlpha(15), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: primary, size: 20)),
       const SizedBox(width: 16),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface.withAlpha(130), letterSpacing: 0.5)),
+        Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface.withAlpha(160), letterSpacing: 0.5)),
         const SizedBox(height: 3),
         Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
       ])),

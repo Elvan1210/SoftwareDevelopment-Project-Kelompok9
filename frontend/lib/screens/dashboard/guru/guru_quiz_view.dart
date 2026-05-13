@@ -10,6 +10,7 @@ import '../../../models/quiz_model.dart';
 import 'guru_quiz_create_screen.dart';
 import 'guru_submission_detail.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../widgets/app_shell.dart';
 
 class GuruQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -311,7 +312,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
             'Buat kuis pertama untuk ujian siswa',
             style: TextStyle(
               fontSize: 14,
-              color: theme.colorScheme.onSurface.withAlpha(120),
+              color: theme.colorScheme.onSurface.withAlpha(160),
             ),
           ),
         ],
@@ -343,27 +344,12 @@ class _QuizCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
+    return PremiumCard(
+      padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 60 : 8),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Row(
               children: [
                 Container(
@@ -397,7 +383,7 @@ class _QuizCard extends StatelessWidget {
                         quiz.description,
                         style: TextStyle(
                           fontSize: 13,
-                          color: theme.colorScheme.onSurface.withAlpha(140),
+                          color: theme.colorScheme.onSurface.withAlpha(160),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -432,7 +418,7 @@ class _QuizCard extends StatelessWidget {
                           : Colors.grey.withAlpha(isDark ? 40 : 20),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: quiz.isActive ? Colors.green.withAlpha(80) : Colors.grey.withAlpha(60),
+                        color: quiz.isActive ? Colors.green.withAlpha(160) : Colors.grey.withAlpha(160),
                       ),
                     ),
                     child: Text(
@@ -530,7 +516,6 @@ class _QuizCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -679,7 +664,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withAlpha(50),
+                color: theme.colorScheme.onSurface.withAlpha(160),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -711,7 +696,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
             
             TabBar(
               labelColor: AppTheme.tealDeep,
-              unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(150),
+              unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(160),
               indicatorColor: AppTheme.tealDeep,
               tabs: const [
                 Tab(text: 'Daftar Siswa'),
@@ -731,7 +716,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                       _loadSubmissions();
                     },
                   ),
-                  Text('Hanya tampilkan siswa di kelas ini', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(150))),
+                  Text('Hanya tampilkan siswa di kelas ini', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(160))),
                 ],
               ),
             ),
@@ -745,7 +730,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                         child: Text(
                           'Belum ada siswa yang mengerjakan',
                           style: TextStyle(
-                            color: theme.colorScheme.onSurface.withAlpha(140),
+                            color: theme.colorScheme.onSurface.withAlpha(160),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -772,8 +757,8 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                                 tileColor: theme.colorScheme.surface.withAlpha(isDark ? 180 : 255),
                                 leading: CircleAvatar(
                                   backgroundColor: scorePercent >= 70
-                                      ? Colors.green.withAlpha(30)
-                                      : Colors.red.withAlpha(30),
+                                      ? Colors.green.withAlpha(160)
+                                      : Colors.red.withAlpha(160),
                                   child: Text(
                                     '$scorePercent%',
                                     style: TextStyle(
@@ -791,7 +776,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                                   'Skor: ${sub.score}/${sub.totalPoints} • Pelanggaran: ${sub.violations}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: theme.colorScheme.onSurface.withAlpha(140),
+                                    color: theme.colorScheme.onSurface.withAlpha(160),
                                   ),
                                 ),
                                 trailing: sub.autoSubmitted
@@ -874,7 +859,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                   decoration: BoxDecoration(
                     color: Colors.green.withAlpha(20),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.green.withAlpha(50)),
+                    border: Border.all(color: Colors.green.withAlpha(160)),
                   ),
                   child: Column(
                     children: [
@@ -1007,7 +992,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withAlpha(50),
+              color: theme.colorScheme.onSurface.withAlpha(160),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1027,9 +1012,9 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(30),
+                    color: Colors.green.withAlpha(160),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withAlpha(50)),
+                    border: Border.all(color: Colors.green.withAlpha(160)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1054,7 +1039,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.shieldCheck, size: 48, color: Colors.green.withAlpha(150)),
+                            Icon(LucideIcons.shieldCheck, size: 48, color: Colors.green.withAlpha(160)),
                             const SizedBox(height: 16),
                             const Text('Belum ada pelanggaran', style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
@@ -1071,7 +1056,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                             decoration: BoxDecoration(
                               color: Colors.red.withAlpha(isDark ? 30 : 15),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red.withAlpha(50)),
+                              border: Border.all(color: Colors.red.withAlpha(160)),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1098,7 +1083,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                                   v['timestamp'] != null 
                                       ? DateFormat('HH:mm:ss').format(DateTime.parse(v['timestamp']).toLocal())
                                       : '-',
-                                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150), fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),

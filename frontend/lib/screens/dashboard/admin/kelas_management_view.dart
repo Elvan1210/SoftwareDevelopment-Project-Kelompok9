@@ -6,6 +6,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:lucide_icons/lucide_icons.dart';
 
 class KelasManagementView extends StatefulWidget {
@@ -64,8 +65,16 @@ class _KelasManagementViewState extends State<KelasManagementView> {
 
   void _showKelasForm([Map<String, dynamic>? kelas]) {
     final isEditing = kelas != null;
+    
+    String generateRandomCode(int length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      final rnd = math.Random();
+      return String.fromCharCodes(Iterable.generate(
+          length, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
+    }
+
     final namaCtrl = TextEditingController(text: isEditing ? kelas['nama_kelas'] : '');
-    final kodeCtrl = TextEditingController(text: isEditing ? (kelas['kode_kelas'] ?? '') : '');
+    final kodeCtrl = TextEditingController(text: isEditing ? (kelas['kode_kelas'] ?? '') : generateRandomCode(6));
     final mapelCtrl = TextEditingController(text: isEditing ? (kelas['mapel'] ?? '') : '');
     final tahunAjaranCtrl = TextEditingController(text: isEditing ? (kelas['tahun_ajaran'] ?? '') : '');
     
@@ -363,18 +372,18 @@ class _TeamsClassCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            const Icon(LucideIcons.clock, size: 10, color: Colors.grey),
+                            Icon(LucideIcons.clock, size: 10, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                             const SizedBox(width: 4),
                             Text(
                               'TA: ${kelas['tahun_ajaran'] ?? '-'}',
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.grey),
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Guru: ${kelas['guru_nama'] ?? 'Belum ada'}',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(150)),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -383,7 +392,7 @@ class _TeamsClassCard extends StatelessWidget {
                   ),
                   
                   PopupMenuButton(
-                    icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(100)),
+                    icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(160)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     itemBuilder: (_) => [
                       PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(LucideIcons.edit2, size: 18), SizedBox(width: 12), Text('Edit Kelas')])),
@@ -408,7 +417,7 @@ class _TeamsClassCard extends StatelessWidget {
                 const SizedBox(width: 16),
                 _buildMiniIcon(LucideIcons.userCheck),
                 const Spacer(),
-                Text('${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey)),
+                Text('${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
               ],
             ),
           ),
@@ -418,6 +427,6 @@ class _TeamsClassCard extends StatelessWidget {
   }
 
   Widget _buildMiniIcon(IconData icon) {
-    return Icon(icon, size: 16, color: Colors.grey.shade600);
+    return Icon(icon, size: 16, color: const Color(0xFF757575));
   }
 }

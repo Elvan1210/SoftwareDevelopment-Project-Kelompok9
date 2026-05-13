@@ -110,9 +110,9 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withAlpha(20),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.withAlpha(40)),
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
                       ),
                       child: Column(
                         children: [
@@ -278,7 +278,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                           children: [
                             Text(m['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                             const SizedBox(height: 4),
-                            Text(m['deskripsi'] ?? (m['kelas'] ?? '-'), style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            Text(m['deskripsi'] ?? (m['kelas'] ?? '-'), style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
                           ],
                         ),
                       ),

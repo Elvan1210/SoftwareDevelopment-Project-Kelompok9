@@ -171,8 +171,8 @@ class _AdminMateriCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(materi['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(150)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text('Kelas: ${materi['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(120)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('Kelas: ${materi['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -193,7 +193,15 @@ class _AdminMateriCard extends StatelessWidget {
 
   Future<void> _launchURL(String? url) async {
     if (url == null || url.isEmpty) return;
-    final uri = Uri.parse(url);
+    
+    String finalUrl = url;
+    if (url.startsWith('/')) {
+      finalUrl = '$baseUrl$url';
+    } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      finalUrl = 'https://$url';
+    }
+    
+    final uri = Uri.parse(finalUrl);
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 }

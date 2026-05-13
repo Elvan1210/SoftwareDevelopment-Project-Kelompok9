@@ -231,7 +231,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
             Text(
               'Kelola materi, tugas, dan kehadiran siswa di sini.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -276,10 +276,10 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(100), letterSpacing: 1.5)),
+                                Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 1.5)),
                                 InkWell(
                                   onTap: _showCreateChannelDialog,
-                                  child: Icon(Icons.add, size: 16, color: theme.colorScheme.onSurface.withAlpha(150)),
+                                  child: Icon(Icons.add, size: 16, color: theme.colorScheme.onSurface.withAlpha(160)),
                                 )
                               ],
                             ),
@@ -377,7 +377,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   Widget _buildSidebarItem(String id, IconData icon, String label, {int badgeCount = 0, bool isChannel = false, bool canDelete = false}) {
     final theme = Theme.of(context);
     final isSelected = _activeTabID == id;
-    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(120);
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -526,7 +526,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   _buildMobileNavItem('tugas', Icons.assignment_outlined, 'Tugas'),
                   IconButton(
                     onPressed: () => _showMobileMenu(theme),
-                    icon: Icon(Icons.menu_rounded, color: theme.colorScheme.onSurface.withAlpha(150)),
+                    icon: Icon(Icons.menu_rounded, color: theme.colorScheme.onSurface.withAlpha(160)),
                   ),
                 ],
               ),
@@ -559,13 +559,13 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(100), letterSpacing: 1.5)),
+                  Text('CHANNELS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 1.5)),
                   InkWell(
                     onTap: () {
                       Navigator.pop(ctx);
                       _showCreateChannelDialog();
                     },
-                    child: Icon(Icons.add, size: 16, color: theme.colorScheme.onSurface.withAlpha(150)),
+                    child: Icon(Icons.add, size: 16, color: theme.colorScheme.onSurface.withAlpha(160)),
                   )
                 ],
               ),
@@ -583,7 +583,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   Widget _buildMobileNavItem(String id, IconData icon, String fallbackLabel, {int badgeCount = 0}) {
     final theme = Theme.of(context);
     final isSelected = _activeTabID == id;
-    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(100);
+    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
 
     return InkWell(
       onTap: () => setState(() {
@@ -651,7 +651,7 @@ class GlassCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: overrideColor ?? (isDark ? Colors.white.withAlpha(15) : Colors.white.withAlpha(180)),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: Colors.white.withAlpha(30)),
+        border: Border.all(color: Colors.white.withAlpha(160)),
       ),
       child: child,
     );

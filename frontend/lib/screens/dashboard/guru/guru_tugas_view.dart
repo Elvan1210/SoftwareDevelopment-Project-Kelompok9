@@ -184,7 +184,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         decoration: BoxDecoration(border: Border.all(color: const Color(0xFF8DBCC3)), borderRadius: BorderRadius.circular(12)),
                         child: Row(children: [
-                          Icon(LucideIcons.calendar, color: Colors.grey.shade600, size: 20),
+                          Icon(LucideIcons.calendar, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), size: 20),
                           const SizedBox(width: 12),
                           Text(deadlineStr, style: TextStyle(color: selectedDeadline != null ? Colors.black : Colors.grey.shade600, fontSize: 16)),
                         ]),
@@ -314,7 +314,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(padding.left, 24, padding.right, 16),
-                            child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.grey)),
+                            child: Text(key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
                           ),
                         )
                       );
@@ -416,7 +416,7 @@ class _GuruTugasCard extends StatelessWidget {
                   children: [
                     Text(tugas['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
-                    Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(150))),
+                    Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160))),
                   ],
                 ),
               ),
@@ -425,7 +425,7 @@ class _GuruTugasCard extends StatelessWidget {
                   if (val == 'edit') onEdit();
                   if (val == 'delete') onDelete();
                 },
-                icon: Icon(LucideIcons.moreVertical, color: theme.colorScheme.onSurface.withAlpha(100)),
+                icon: Icon(LucideIcons.moreVertical, color: theme.colorScheme.onSurface.withAlpha(160)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 itemBuilder: (_) => [
                   const PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),

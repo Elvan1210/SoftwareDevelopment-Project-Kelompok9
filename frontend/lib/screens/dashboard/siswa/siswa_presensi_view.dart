@@ -116,7 +116,7 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface.withAlpha(150),
+                        color: theme.colorScheme.onSurface.withAlpha(160),
                       ),
                     ),
                   ],
@@ -298,11 +298,11 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.access_time_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(120)),
+                      Icon(Icons.access_time_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
                       const SizedBox(width: 4),
                       Text(
                         'Pukul $waktu',
-                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(120), fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),

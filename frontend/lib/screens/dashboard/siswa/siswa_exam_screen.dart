@@ -538,7 +538,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                     'Soal ${_currentIndex + 1} dari ${widget.quiz.questions.length}',
                     style: TextStyle(
                         fontSize: 12,
-                        color: theme.colorScheme.onSurface.withAlpha(120))),
+                        color: theme.colorScheme.onSurface.withAlpha(160))),
               ],
             ),
           ),
@@ -679,9 +679,9 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Container(
                     height: 100,
-                    color: Colors.grey.withAlpha(50),
-                    child: const Center(
-                        child: Icon(LucideIcons.imageOff, color: Colors.grey)),
+                    color: (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                    child: Center(
+                        child: Icon(LucideIcons.imageOff, color: (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
                   ),
                 ),
               ),
@@ -869,7 +869,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                       : isAnswered
                           ? AppTheme.tealDeep.withAlpha(80)
                           : (isDark
-                              ? Colors.white.withAlpha(30)
+                              ? Colors.white.withAlpha(160)
                               : Colors.black.withAlpha(15)),
                   width: isCurrent ? 2 : 1,
                 ),
@@ -884,8 +884,8 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                               : isAnswered
                                   ? AppTheme.tealDeep
                                   : (isDark
-                                      ? Colors.white.withAlpha(120)
-                                      : Colors.black.withAlpha(100))))),
+                                      ? Colors.white.withAlpha(160)
+                                      : Colors.black.withAlpha(160))))),
             ),
           );
         }),
@@ -937,7 +937,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               side:
-                  BorderSide(color: theme.colorScheme.onSurface.withAlpha(30)),
+                  BorderSide(color: theme.colorScheme.onSurface.withAlpha(160)),
             ),
           ),
           const Spacer(),
@@ -945,7 +945,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.onSurface.withAlpha(140))),
+                  color: theme.colorScheme.onSurface.withAlpha(160))),
           const Spacer(),
           if (_currentIndex < total - 1)
             ElevatedButton.icon(
