@@ -72,7 +72,8 @@
 //   // ═══════════════════════════════════════════════════════════
 //   // WEB LAYOUT (> 1100px) — sidebar tetap dari sebelumnya
 //   // ═══════════════════════════════════════════════════════════
-//   Widget _buildWebLayout(BuildContext context) {
+//   Widget 
+//WebLayout(BuildContext context) {
 //     final theme = Theme.of(context);
 //     final isDark = theme.brightness == Brightness.dark;
 
@@ -711,9 +712,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => GlassCard(
-        radius: 24,
-        padding: const EdgeInsets.all(24),
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+      ), 
+      child: GlassCard(
+        radius: 12,
+        padding: const EdgeInsets.fromLTRB(24,20,10,32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,7 +738,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildMenuTile(IconData icon, String label, int targetIndex, ThemeData theme, BuildContext ctx, {bool isLogout = false}) {

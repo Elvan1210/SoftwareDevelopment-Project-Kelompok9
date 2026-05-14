@@ -30,6 +30,31 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     _fetchPengumuman();
   }
 
+  DateTime _parseIndonesianDate(String raw) {
+  if (raw.isEmpty) return DateTime(2000);
+  
+  // Coba ISO dulu (dari backend)
+  final iso = DateTime.tryParse(raw);
+  if (iso != null) return iso;
+  
+  //Parse format "14 Mei 2026"
+  const bulan = {
+    'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,
+    'May': 5, 'June': 6, 'July': 7, 'Aug': 8,
+    'Sep': 9, 'Oct': 10, 'Nov': 11, 'Des': 12,
+  };
+  
+   try {
+    final parts = raw.trim().split(' ');
+    final day = int.parse(parts[0]);
+    final month = bulan[parts[1]] ?? 1;
+    final year = int.parse(parts[2]);
+    return DateTime(year, month, day);
+  } catch (e) {
+    return DateTime(2000);
+  }
+}
+
   Future<void> _fetchPengumuman() async {
     setState(() => _isLoading = true);
     try {
@@ -39,13 +64,22 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
       );
       if (res.statusCode == 200) {
         final dec = jsonDecode(res.body);
-        setState(() => _pengumumanList = dec is List ? dec : []);
-      }
-    } catch (e) {
-      debugPrint('Error: $e');
+      List<dynamic> list = dec is List ? dec : [];
+      
+      //sort by tanggal, newest first
+      list.sort((a, b) {
+  final aDate = _parseIndonesianDate(a['tanggal']?.toString() ?? '');
+  final bDate = _parseIndonesianDate(b['tanggal']?.toString() ?? '');
+  return bDate.compareTo(aDate);
+});
+
+      setState(() => _pengumumanList = list);
     }
-    if (mounted) setState(() => _isLoading = false);
+  } catch (e) {
+    debugPrint('Error: $e');
   }
+  if (mounted) setState(() => _isLoading = false);
+}
 
   Future<void> _deletePengumuman(String id) async {
     if (await confirmDelete(context, pesan: 'Hapus pengumuman ini?')) {
@@ -190,13 +224,16 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     );
   }
 
-  List<dynamic> get _filtered => _searchQuery.isEmpty
+  List<dynamic> get _filtered {
+    final list= _searchQuery.isEmpty
       ? _pengumumanList
       : _pengumumanList
           .where((p) =>
               (p['judul'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
               (p['isi'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()))
           .toList();
+        return list;
+  }
 
   @override
   Widget build(BuildContext context) {

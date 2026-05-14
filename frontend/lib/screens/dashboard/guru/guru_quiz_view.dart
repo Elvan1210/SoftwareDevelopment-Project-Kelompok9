@@ -473,47 +473,43 @@ class _QuizCard extends StatelessWidget {
             const Divider(height: 1),
             const SizedBox(height: 12),
 
-            Row(
-              children: [
-                _ActionBtn(
-                  icon: LucideIcons.barChart2,
-                  label: 'Hasil',
-                  onTap: onViewSubmissions,
-                  color: AppTheme.tealDeep,
-                ),
-                const SizedBox(width: 8),
-                if ((quiz.isActive || quiz.isScheduled) && quiz.isSecureMode)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: _ActionBtn(
-                      icon: LucideIcons.activity,
-                      label: 'Live',
-                      onTap: onLiveMonitor,
-                      color: Colors.redAccent,
-                    ),
-                  ),
-                _ActionBtn(
-                  icon: LucideIcons.share2,
-                  label: 'Share',
-                  onTap: onShare,
-                  color: Colors.blue,
-                ),
-                const Spacer(),
-                _ActionBtn(
-                  icon: LucideIcons.edit3,
-                  label: 'Edit',
-                  onTap: onEdit,
-                  color: AppTheme.orangeVivid,
-                ),
-                const SizedBox(width: 8),
-                _ActionBtn(
-                  icon: LucideIcons.trash2,
-                  label: 'Hapus',
-                  onTap: onDelete,
-                  color: Colors.red,
-                ),
-              ],
-            ),
+            Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: [
+    _ActionBtn(
+      icon: LucideIcons.barChart2,
+      label: 'Hasil',
+      onTap: onViewSubmissions,
+      color: AppTheme.tealDeep,
+    ),
+    if ((quiz.isActive || quiz.isScheduled) && quiz.isSecureMode)
+      _ActionBtn(
+        icon: LucideIcons.activity,
+        label: 'Live',
+        onTap: onLiveMonitor,
+        color: Colors.redAccent,
+      ),
+    _ActionBtn(
+      icon: LucideIcons.share2,
+      label: 'Share',
+      onTap: onShare,
+      color: Colors.blue,
+    ),
+    _ActionBtn(
+      icon: LucideIcons.edit3,
+      label: 'Edit',
+      onTap: onEdit,
+      color: AppTheme.orangeVivid,
+    ),
+    _ActionBtn(
+      icon: LucideIcons.trash2,
+      label: 'Hapus',
+      onTap: onDelete,
+      color: Colors.red,
+    ),
+  ],
+),
           ],
         ),
     );

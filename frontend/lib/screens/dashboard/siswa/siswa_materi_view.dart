@@ -86,45 +86,39 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
             ),
 
             Expanded(
-              child: _filtered.isEmpty
-                  ? EmptyState(
-                      icon: Icons.library_books_rounded,
-                      message: _searchQuery.isEmpty ? 'Belum ada materi\ndi kelas ini.' : 'Materi tidak ditemukan.',
-                      color: const Color(0xFF10B981))
-                  : RefreshIndicator(
-                      onRefresh: _fetchMateri,
-                      child: LayoutBuilder(
-                        builder: (ctx, c) {
-                          final w = c.maxWidth;
-                          final padding = Breakpoints.screenPadding(w);
-                          final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+  child: _filtered.isEmpty
+      ? EmptyState(
+          icon: Icons.library_books_rounded,
+          message: _searchQuery.isEmpty ? 'Belum ada materi\ndi kelas ini.' : 'Materi tidak ditemukan.',
+          color: const Color(0xFF10B981))
+      : RefreshIndicator(
+          onRefresh: _fetchMateri,
+          child: LayoutBuilder(
+            builder: (ctx, c) {
+              final w = c.maxWidth;
+              final padding = Breakpoints.screenPadding(w);
 
-                          return RepaintBoundary(
-                            child: GridView.builder(
-                              padding: padding,
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: crossCount == 1 ? 2.5 : 1.4,
-                              ),
-                              itemCount: _filtered.length,
-                              itemBuilder: (_, i) {
-                                final m = _filtered[i];
-                                return _MateriCard(
-                                  materi: m,
-                                  isDark: Theme.of(context).brightness == Brightness.dark,
-                                ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-          ],
-      ),
-    );
+              return ListView.builder(
+                padding: padding,
+                itemCount: _filtered.length,
+                itemBuilder: (_, i) {
+                  final m = _filtered[i];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _MateriCard(
+                      materi: m,
+                      isDark: Theme.of(context).brightness == Brightness.dark,
+                    ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+),
+      ],),);               
+      }
+              
   }
 
   Widget _buildSkeleton() {
@@ -147,7 +141,7 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       ],
     );
   }
-}
+
 
 class _MateriCard extends StatelessWidget {
   final dynamic materi;
@@ -155,71 +149,143 @@ class _MateriCard extends StatelessWidget {
 
   const _MateriCard({required this.materi, required this.isDark});
 
-  @override
-  Widget build(BuildContext context) {
-    const accent = Color(0xFF76AFB8); // Light Teal
-    final theme = Theme.of(context);
-
-    return PremiumCard(
-      accentColor: accent,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+  void _showDetail(BuildContext context) {
+    const accent = Color(0xFF76AFB8);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(Icons.description_outlined, color: accent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(materi['judul'] ?? '-',
+                  style: const TextStyle(fontWeight: FontWeight.w900)),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: accent.withAlpha(20),
-                  borderRadius: BorderRadius.circular(12),
+              if (materi['mapel'] != null) ...[
+                const Text('Mata Pelajaran',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                const SizedBox(height: 4),
+                Text(materi['mapel'],
+                    style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 16),
+              ],
+              if (materi['deskripsi'] != null &&
+                  materi['deskripsi'].toString().isNotEmpty) ...[
+                const Text('Deskripsi',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                const SizedBox(height: 4),
+                Text(materi['deskripsi'],
+                    style: const TextStyle(fontSize: 14, height: 1.6)),
+                const SizedBox(height: 16),
+              ],
+              if (materi['file_url'] != null &&
+                  materi['file_url'].toString().isNotEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => _launchURL(materi['file_url']),
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Buka File Materi',
+                        style: TextStyle(fontWeight: FontWeight.w800)),
+                  ),
                 ),
-                child: const Icon(Icons.description_outlined, color: accent, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(materi['mapel'] ?? '-',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 0.5),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: Column(
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const accent = Color(0xFF76AFB8);
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => _showDetail(context), // ← card bisa diklik
+      child: PremiumCard(
+        accentColor: accent,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: accent.withAlpha(20),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.description_outlined, color: accent, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(materi['mapel'] ?? '-',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800,
+                          color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 0.5),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(materi['judul'] ?? '-',
-                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 6),
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.3),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
                 Text(materi['deskripsi'] ?? '-',
-                    style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withAlpha(160)),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _launchURL(materi['file_url']),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accent.withAlpha(isDark ? 50 : 30),
-                foregroundColor: accent,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                style: TextStyle(fontSize: 12, height: 1.4,
+                color: theme.colorScheme.onSurface.withAlpha(160)),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+                ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _showDetail(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accent.withAlpha(isDark ? 50 : 30),
+                  foregroundColor: accent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                label: const Text('Lihat Detail',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
               ),
-              icon: const Icon(Icons.download_rounded, size: 18),
-              label: const Text('Buka Materi', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -228,7 +294,10 @@ class _MateriCard extends StatelessWidget {
     if (url == null || url.isEmpty) return;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 }
+
+
+

@@ -34,6 +34,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _durationCtrl = TextEditingController(text: '60');
+  final _jumlahSoalCtrl = TextEditingController(text: '1');
   
   bool _isSecureMode = true;
   bool _isActive = true;
@@ -55,6 +56,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
     super.initState();
     if (isEditing) {
       final q = widget.existingQuiz!;
+      _jumlahSoalCtrl.text = _questions.length.toString();
       _titleCtrl.text = q.title;
       _descCtrl.text = q.description;
       _durationCtrl.text = q.durationMinutes.toString();
@@ -88,6 +90,26 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       _questions.removeAt(index);
     });
   }
+
+  void _onJumlahSoalChanged(String val) {
+  final n = int.tryParse(val);
+  if (n == null || n <= 0 || n > 50) return;
+  
+  setState(() {
+    if (n > _questions.length) {
+      // Tambah soal baru
+      for (int i = _questions.length; i < n; i++) {
+        _questions.add(_QuestionForm());
+      }
+    } else if (n < _questions.length) {
+      // Kurangi soal dari belakang
+      for (int i = _questions.length - 1; i >= n; i--) {
+        _questions[i].dispose();
+        _questions.removeAt(i);
+      }
+    }
+  });
+}
 
   Future<void> _pickSchedule() async {
     final date = await showDatePicker(
@@ -267,6 +289,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
 
   @override
   void dispose() {
+    _jumlahSoalCtrl.dispose();
     _titleCtrl.dispose();
     _descCtrl.dispose();
     _durationCtrl.dispose();
@@ -438,17 +461,30 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
               const SizedBox(height: 28),
 
               Row(
-                children: [
-                  _SectionLabel(label: 'SOAL (${_questions.length})', icon: LucideIcons.helpCircle),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: _addQuestion,
-                    icon: const Icon(LucideIcons.plusCircle, size: 18),
-                    label: const Text('Tambah Soal', style: TextStyle(fontWeight: FontWeight.bold)),
-                    style: TextButton.styleFrom(foregroundColor: AppTheme.tealDeep),
-                  ),
-                ],
-              ),
+  children: [
+    _SectionLabel(label: 'SOAL (${_questions.length})', icon: LucideIcons.helpCircle),
+    const Spacer(),
+    // GANTI TextButton jadi input jumlah soal
+    SizedBox(
+      width: 80,
+      child: TextFormField(
+        controller: _jumlahSoalCtrl,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        textAlign: TextAlign.center,
+        onChanged: _onJumlahSoalChanged,
+        decoration: InputDecoration(
+          labelText: 'Jumlah',
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+    ),
+    const SizedBox(width: 8),
+    Text('soal', style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
+  ],
+),
               const SizedBox(height: 12),
 
               ...List.generate(_questions.length, (i) {
@@ -464,7 +500,21 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                   .fadeIn(duration: 300.ms)
                   .slideY(begin: 0.03);
               }),
-
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _addQuestion,
+                  icon: const Icon(LucideIcons.plusCircle),
+                  label: const Text('Tambah Soal', style: TextStyle(fontWeight: FontWeight.w800)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.tealDeep,
+                    side: const BorderSide(color: AppTheme.tealDeep),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    ),
+                    ),
               const SizedBox(height: 100),
             ],
           ),
@@ -769,10 +819,10 @@ class _QuestionCardState extends State<_QuestionCard> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Soal ${widget.index + 1}',
+                  '${widget.index + 1}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
-                    fontSize: 13,
+                    fontSize: 14,
                     color: AppTheme.tealDeep,
                   ),
                 ),
@@ -795,8 +845,8 @@ class _QuestionCardState extends State<_QuestionCard> {
                       items: const [
                         DropdownMenuItem(value: 'multipleChoice', child: Text('Pilihan Ganda')),
                         DropdownMenuItem(value: 'multipleAnswer', child: Text('Pilihan Ganda (Banyak Jawaban)')),
-                        DropdownMenuItem(value: 'complexCheckbox', child: Text('Pilihan Ganda Kompleks')),
-                        DropdownMenuItem(value: 'essay', child: Text('Essay / Uraian')),
+                        DropdownMenuItem(value: 'complexCheckbox', child: Text('Pilihan Ganda (Kompleks)')),
+                        DropdownMenuItem(value: 'essay', child: Text('Uraian', overflow: TextOverflow.ellipsis)),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -932,7 +982,7 @@ class _QuestionCardState extends State<_QuestionCard> {
             ...List.generate(form.optionCtrls.length, (oi) {
               final isCorrect = form.correctAnswers.contains(oi);
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
                     if (form.questionType == 'multipleChoice')
@@ -1031,12 +1081,20 @@ class _QuestionCardState extends State<_QuestionCard> {
                 border: Border.all(color: widget.theme.colorScheme.onSurface.withAlpha(20)),
               ),
               child: Row(
-                children: [
-                  Icon(LucideIcons.alignLeft, size: 16, color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                  const SizedBox(width: 10),
-                  Text('Siswa akan menjawab berupa teks uraian', style: TextStyle(color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt), fontSize: 13)),
-                ],
-              ),
+  children: [
+    Icon(LucideIcons.alignLeft, size: 16, color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+    const SizedBox(width: 10),
+    Expanded( // ← TAMBAH EXPANDED
+      child: Text(
+        'Siswa akan menjawab berupa teks uraian',
+        style: TextStyle(
+          color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          fontSize: 13,
+        ),
+      ),
+    ),
+  ],
+),
             ),
           ],
         ],

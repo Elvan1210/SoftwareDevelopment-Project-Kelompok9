@@ -149,7 +149,23 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                   children: [
                     AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: LucideIcons.type),
                     const SizedBox(height: 16),
-                    AppTextField(controller: deskripsiCtrl, labelText: 'Deskripsi Detail', prefixIcon: LucideIcons.fileText, keyboardType: TextInputType.multiline),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(100)),
+                        borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TextField(
+                          controller: deskripsiCtrl,
+                          maxLines: 5,
+                          keyboardType: TextInputType.multiline,
+                          decoration: const InputDecoration(
+                            labelText: 'Deskripsi Detail',
+                            prefixIcon: Icon(LucideIcons.fileText),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            ),
+                            ),
+                            ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: selectedChannelId,

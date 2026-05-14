@@ -38,10 +38,29 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   String get _kelasId => widget.teamData['id']?.toString() ?? '';
 
   @override
-  void initState() {
-    super.initState();
-    _fetchChannels();
-  }
+void initState() {
+  super.initState();
+  _fetchChannels();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(LucideIcons.panelLeftOpen, color: Colors.white, size: 16),
+              SizedBox(width: 8),
+              Text('Geser dari kiri untuk lihat menu kelas',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  });
+}
 
   Future<void> _fetchChannels() async {
     try {
@@ -257,14 +276,79 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     return Padding(padding: EdgeInsets.all(24.0), child: Text('Siswa Access', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))));
   }
 
-  Widget _buildMobileLayout(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(_activeTitle)),
-      drawer: Drawer(child: ListView(children: [_buildSidebarHeader(context, theme), _buildSidebarItem('dashboard', Icons.home, 'Home')])),
-      body: _getActiveView(),
-    );
-  }
+ Widget _buildMobileLayout(BuildContext context) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
+
+  return AppShell(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.chevronLeft),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          _activeTitle,
+          style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+        ),
+        actions: [
+          const ThemeToggle(),
+          NotificationBell(
+            userData: widget.userData,
+            token: widget.token,
+            iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildSidebarHeader(context, theme),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    _buildSidebarItem('dashboard', LucideIcons.layoutDashboard, 'Dashboard'),
+                    _buildSidebarItem('presensi', LucideIcons.userCheck, 'Presensi Saya'),
+                    _buildSidebarItem('tugas', LucideIcons.clipboardList, 'Tugas Kelas'),
+                    _buildSidebarItem('kuis', LucideIcons.helpCircle, 'Kuis & Ujian'),
+                    _buildSidebarItem('nilai', LucideIcons.award, 'Nilai Saya'),
+                    _buildSidebarItem('materi', LucideIcons.bookOpen, 'Materi Pelajaran'),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, bottom: 8),
+                      child: Text('CHANNELS',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900,
+                              color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 1.5)),
+                    ),
+                    _buildSidebarItem('channel_general', LucideIcons.hash, 'General', isChannel: true),
+                    for (var c in _channels)
+                      _buildSidebarItem('channel_${c['id']}', LucideIcons.hash,
+                          c['nama_channel'] ?? 'Unnamed', isChannel: true),
+                  ],
+                ),
+              ),
+              _buildSidebarFooter(theme),
+            ],
+          ),
+        ),
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 250),
+        child: KeyedSubtree(
+          key: ValueKey(_activeTabID),
+          child: _getActiveView(),
+        ),
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
