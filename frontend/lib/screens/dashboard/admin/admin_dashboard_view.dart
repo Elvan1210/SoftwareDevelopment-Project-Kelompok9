@@ -205,7 +205,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

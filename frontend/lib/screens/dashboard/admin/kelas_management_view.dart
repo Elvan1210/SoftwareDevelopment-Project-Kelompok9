@@ -123,7 +123,29 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    AppTextField(controller: kodeCtrl, labelText: 'Kode Kelas (cth: GN2526)', prefixIcon: LucideIcons.qrCode),
+                    Row(
+  children: [
+    Expanded(
+      child: IgnorePointer(
+        child: AppTextField(
+          controller: kodeCtrl,
+          labelText: 'Kode Kelas',
+          prefixIcon: LucideIcons.qrCode,
+        ),
+      ),
+    ),
+    const SizedBox(width: 8),
+    IconButton(
+      icon: const Icon(LucideIcons.refreshCw),
+      tooltip: 'Generate ulang kode',
+      onPressed: () {
+        setDialogState(() {
+          kodeCtrl.text = generateRandomCode(6);
+        });
+      },
+    ),
+  ],
+),
                     const SizedBox(height: 16),
                     AppTextField(controller: namaCtrl, labelText: 'Nama Tim (cth: Sistem Operasi (A))', prefixIcon: LucideIcons.library),
                     const SizedBox(height: 16),

@@ -99,11 +99,23 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                         labelText: 'Judul Materi',
                         prefixIcon: LucideIcons.type),
                     const SizedBox(height: 16),
-                    AppTextField(
-                        controller: deskripsiCtrl,
-                        labelText: 'Deskripsi Singkat',
-                        prefixIcon: LucideIcons.alignLeft,
-                        keyboardType: TextInputType.multiline),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(100)),
+                        borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TextField(
+                          controller: deskripsiCtrl,
+                          maxLines: 5,
+                          keyboardType: TextInputType.multiline,
+                          decoration: const InputDecoration(
+                            labelText: 'Deskripsi Singkat',
+                            prefixIcon: Icon(LucideIcons.alignLeft),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            ),
+                            ),
+                            ),
                     const SizedBox(height: 20),
                     
                     // --- AREA UPLOAD ---
@@ -239,6 +251,61 @@ class _GuruMateriViewState extends State<GuruMateriView> {
     }
   }
 
+  void _showMateriDetail(Map<String, dynamic> m) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      title: Row(
+        children: [
+          Icon(LucideIcons.bookOpen, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(m['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (m['deskripsi'] != null && m['deskripsi'].toString().isNotEmpty) ...[
+              const Text('Deskripsi', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              const SizedBox(height: 8),
+              Text(m['deskripsi'], style: const TextStyle(fontSize: 14, height: 1.6)),
+              const SizedBox(height: 16),
+            ],
+            if (m['file_url'] != null && m['file_url'].toString().isNotEmpty)
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => _openFile(m['file_url']),
+                icon: const Icon(LucideIcons.externalLink, size: 16),
+                label: const Text('Buka File'),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Tutup')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () { Navigator.pop(ctx); _showMateriForm(m); },
+          child: const Text('Edit'),
+        ),
+      ],
+    ),
+  );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -259,8 +326,10 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               itemCount: _materiList.length,
               itemBuilder: (_, i) {
                 final m = _materiList[i];
-                return PremiumCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                return GestureDetector(
+                  onTap:()=> _showMateriDetail(m),
+                  child: PremiumCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
                     children: [
                       Container(
@@ -293,11 +362,14 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                               onPressed: () => _deleteMateri(m['id'].toString())),
                         ],
                       ),
-                    ],
+                    ],       
                   ),
-                ).animate().fadeIn(delay: (i * 50).ms).slideX();
+                  ),
+              ).animate().fadeIn(delay: (i * 50).ms).slideX();
               },
             ),
     );
   }
 }
+
+
