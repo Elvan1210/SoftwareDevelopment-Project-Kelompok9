@@ -26,6 +26,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   List<dynamic> _nilaiList = [];
   List<dynamic> _userList = [];
   bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -316,6 +317,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   }
 
   void _showStudentDetail(dynamic siswa, List<dynamic> nilaiSiswa) {
+    String activeFilter = 'Semua';
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -324,55 +327,124 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
         
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: theme.primaryColor.withAlpha(30),
-                      radius: 24,
-                      child: Icon(LucideIcons.user, color: theme.primaryColor),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(siswa['nama'] ?? '-', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18)),
-                          const SizedBox(height: 2),
-                          Text('Detail Nilai Siswa', style: TextStyle(color: theme.textTheme.bodySmall?.color, fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(LucideIcons.x, size: 28),
-                      onPressed: () => Navigator.pop(ctx),
-                    )
-                  ],
-                ),
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final filteredNilai = activeFilter == 'Semua' 
+              ? nilaiSiswa 
+              : nilaiSiswa.where((n) {
+                  final tipe = n['tipe'] ?? 'Lainnya';
+                  return tipe == activeFilter;
+                }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              // List Nilai
-              Expanded(
-                child: nilaiSiswa.isEmpty
-                    ? Center(child: Text('Belum ada nilai yang diinput.', style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(150))))
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(24),
-                        itemCount: nilaiSiswa.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 16),
-                        itemBuilder: (ctx, i) {
-                          final n = nilaiSiswa[i];
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: theme.primaryColor.withAlpha(30),
+                          radius: 24,
+                          child: Icon(LucideIcons.user, color: theme.primaryColor),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(siswa['nama'] ?? '-', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18)),
+                              const SizedBox(height: 2),
+                              Text('Detail Nilai Siswa', style: TextStyle(color: theme.textTheme.bodySmall?.color, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.x, size: 28),
+                          onPressed: () => Navigator.pop(ctx),
+                        )
+                      ],
+                    ),
+                  ),
+                  
+                  // Filter Chips
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    height: 56, // 40 for chip + 16 for padding
+                    child: ListView(
+                      clipBehavior: Clip.none,
+                      scrollDirection: Axis.horizontal,
+                      children: ['Semua', 'Assignment', 'Kuis', 'Lainnya'].map((k) {
+                        final selected = activeFilter == k;
+                        Color colorStart = theme.colorScheme.primary;
+                        Color colorEnd = const Color(0xFF818CF8);
+                        IconData icon = LucideIcons.layoutGrid;
+
+                        if (k == 'Kuis') {
+                          icon = LucideIcons.helpCircle;
+                          colorStart = const Color(0xFFF59E0B);
+                          colorEnd = const Color(0xFFFBBF24);
+                        } else if (k == 'Assignment') {
+                          icon = LucideIcons.clipboardList;
+                          colorStart = const Color(0xFF10B981);
+                          colorEnd = const Color(0xFF34D399);
+                        } else if (k == 'Lainnya') {
+                          icon = LucideIcons.fileText;
+                          colorStart = const Color(0xFF6366F1);
+                          colorEnd = const Color(0xFF818CF8);
+                        }
+                        
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () => setModalState(() => activeFilter = k),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                gradient: selected ? LinearGradient(colors: [colorStart, colorEnd]) : null,
+                                color: selected ? null : (isDark ? const Color(0xFF27273A) : const Color(0xFFF1F5F9)),
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(color: selected ? Colors.transparent : colorStart.withAlpha(isDark ? 80 : 60)),
+                                boxShadow: selected
+                                    ? [BoxShadow(color: colorStart.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
+                                    : [],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(icon, size: 13, color: selected ? Colors.white : colorStart),
+                                  const SizedBox(width: 6),
+                                  Text(k, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
+                                      color: selected ? Colors.white : colorStart)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  // List Nilai
+                  Expanded(
+                    child: filteredNilai.isEmpty
+                        ? Center(child: Text('Belum ada nilai yang diinput.', style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(150))))
+                        : ListView.separated(
+                            padding: const EdgeInsets.all(24),
+                            itemCount: filteredNilai.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 16),
+                            itemBuilder: (ctx, i) {
+                              final n = filteredNilai[i];
                           final val = double.tryParse(n['nilai'].toString()) ?? 0;
                           final tipe = n['tipe'] ?? 'Lainnya';
                           
@@ -568,9 +640,11 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                           );
                         },
                       ),
-              )
-            ],
-          ),
+                  )
+                ],
+              ),
+            );
+          }
         );
       },
     );
@@ -578,13 +652,20 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
       return AppShell(child: _buildSkeleton());
     }
 
+    // Filter by search query
+    final filteredUsers = _searchQuery.isEmpty 
+      ? _userList 
+      : _userList.where((u) => (u['nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+
     // Grouping by student
     final Map<String, List<dynamic>> groupedNilai = {};
-    for (var u in _userList) {
+    for (var u in filteredUsers) {
       groupedNilai[u['id'].toString()] = [];
     }
     for (var n in _nilaiList) {
@@ -607,52 +688,84 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 icon: LucideIcons.users,
                 message: 'Belum ada siswa\ndi kelas ini.',
                 color: Color(0xFF10B981))
-            : RefreshIndicator(
-                onRefresh: _fetchData,
-                child: LayoutBuilder(
-                  builder: (ctx, c) {
-                    final w = c.maxWidth;
-                    final padding = Breakpoints.screenPadding(w);
-                    final crossCount = w >= Breakpoints.tablet
-                        ? 3
-                        : (w >= Breakpoints.mobile ? 2 : 1);
-
-                    return GridView.builder(
-                      padding: padding,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossCount,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: crossCount == 1 ? 2.5 : 1.8,
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withAlpha(isDark ? 40 : 10), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
                       ),
-                      itemCount: _userList.length,
-                      itemBuilder: (_, i) {
-                        final siswa = _userList[i];
-                        final sId = siswa['id'].toString();
-                        final nList = groupedNilai[sId] ?? [];
-                        
-                        double avg = 0;
-                        if (nList.isNotEmpty) {
-                          double sum = 0;
-                          for (var n in nList) {
-                            sum += double.tryParse(n['nilai'].toString()) ?? 0;
-                          }
-                          avg = sum / nList.length;
-                        }
+                      child: TextField(
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                        style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                        decoration: InputDecoration(
+                          hintText: 'Cari nama siswa...',
+                          hintStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? Colors.white54 : Colors.black45),
+                          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? Colors.white54 : Colors.black45),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        ),
+                      ),
+                    ).animate().fadeIn().slideY(begin: -0.1),
+                  ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: _fetchData,
+                      child: filteredUsers.isEmpty 
+                        ? Center(child: Text('Siswa tidak ditemukan.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150))))
+                        : LayoutBuilder(
+                            builder: (ctx, c) {
+                              final w = c.maxWidth;
+                              final padding = Breakpoints.screenPadding(w);
+                              final crossCount = w >= Breakpoints.tablet
+                                  ? 3
+                                  : (w >= Breakpoints.mobile ? 2 : 1);
 
-                        return _GuruRekapCard(
-                          siswa: siswa,
-                          avg: avg,
-                          count: nList.length,
-                          onTap: () => _showStudentDetail(siswa, nList),
-                        )
-                            .animate(delay: (i * 30).ms)
-                            .fadeIn(duration: 400.ms)
-                            .slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                      },
-                    );
-                  },
-                ),
+                              return GridView.builder(
+                                padding: padding.copyWith(top: 8, bottom: 100),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: crossCount == 1 ? 2.5 : 1.8,
+                                ),
+                                itemCount: filteredUsers.length,
+                                itemBuilder: (_, i) {
+                                  final siswa = filteredUsers[i];
+                                  final sId = siswa['id'].toString();
+                                  final nList = groupedNilai[sId] ?? [];
+                                  
+                                  double avg = 0;
+                                  if (nList.isNotEmpty) {
+                                    double sum = 0;
+                                    for (var n in nList) {
+                                      sum += double.tryParse(n['nilai'].toString()) ?? 0;
+                                    }
+                                    avg = sum / nList.length;
+                                  }
+
+                                  return _GuruRekapCard(
+                                    siswa: siswa,
+                                    avg: avg,
+                                    count: nList.length,
+                                    onTap: () => _showStudentDetail(siswa, nList),
+                                  )
+                                      .animate(delay: (i * 30).ms)
+                                      .fadeIn(duration: 400.ms)
+                                      .slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                },
+                              );
+                            },
+                          ),
+                    ),
+                  ),
+                ],
               ),
       ),
     );
