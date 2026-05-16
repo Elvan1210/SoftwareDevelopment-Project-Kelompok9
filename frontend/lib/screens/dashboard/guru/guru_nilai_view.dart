@@ -377,13 +377,20 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                           final tipe = n['tipe'] ?? 'Lainnya';
                           
                           IconData iconData = LucideIcons.fileText;
-                          Color iconColor = theme.colorScheme.primary;
+                          Color colorStart = theme.colorScheme.primary;
+                          Color colorEnd = const Color(0xFF818CF8);
+                          
                           if (tipe == 'Kuis') {
                             iconData = LucideIcons.helpCircle;
-                            iconColor = const Color(0xFFF59E0B);
+                            colorStart = const Color(0xFFF59E0B);
+                            colorEnd = const Color(0xFFFBBF24);
                           } else if (tipe == 'Assignment') {
                             iconData = LucideIcons.clipboardList;
-                            iconColor = const Color(0xFF10B981);
+                            colorStart = const Color(0xFF10B981);
+                            colorEnd = const Color(0xFF34D399);
+                          } else {
+                            colorStart = const Color(0xFF6366F1); // Indigo for Lainnya
+                            colorEnd = const Color(0xFF818CF8);
                           }
                           
                           String dateStr = '';
@@ -394,86 +401,170 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                           final colorScore = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
 
                           return Container(
-                            padding: const EdgeInsets.all(20),
+                            margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: isDark ? theme.colorScheme.surface.withAlpha(50) : const Color(0xFFF8FAFC),
+                              color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: theme.dividerColor.withAlpha(30)),
+                              border: Border.all(color: colorStart.withAlpha(isDark ? 55 : 35)),
+                              boxShadow: [
+                                BoxShadow(color: colorStart.withAlpha(isDark ? 30 : 12), blurRadius: 18, offset: const Offset(0, 6)),
+                                BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 4)),
+                              ],
                             ),
-                            child: Row(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // ── Top band ──
                                 Container(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
                                   decoration: BoxDecoration(
-                                    color: iconColor.withAlpha(25),
-                                    borderRadius: BorderRadius.circular(16),
+                                    gradient: LinearGradient(colors: [
+                                      colorStart.withAlpha(isDark ? 45 : 28),
+                                      colorEnd.withAlpha(isDark ? 20 : 10),
+                                    ]),
+                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
+                                    border: Border(bottom: BorderSide(color: colorStart.withAlpha(isDark ? 40 : 25))),
                                   ),
-                                  child: Icon(iconData, color: iconColor, size: 24),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // Icon box
+                                      Container(
+                                        padding: const EdgeInsets.all(9),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(colors: [colorStart, colorEnd], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                                          borderRadius: BorderRadius.circular(11),
+                                          boxShadow: [BoxShadow(color: colorStart.withAlpha(100), blurRadius: 10, offset: const Offset(0, 4))],
+                                        ),
+                                        child: Icon(iconData, color: Colors.white, size: 16),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Category & Title
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: colorStart.withAlpha(isDark ? 40 : 22),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(tipe.toUpperCase(),
+                                                  style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: colorStart, letterSpacing: 0.8)),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(n['mapel'] ?? '-',
+                                                style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: -0.3,
+                                                    color: isDark ? Colors.white : const Color(0xFF1E293B)),
+                                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                                          ],
+                                        ),
+                                      ),
+                                      // Date
+                                      if (dateStr.isNotEmpty) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: colorStart.withAlpha(isDark ? 35 : 20),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(dateStr, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: colorStart)),
+                                        ),
+                                      ],
+                                    ]
+                                  )
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
+                                
+                                // ── Body ──
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      RichText(
-                                        text: TextSpan(
-                                          style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 15, fontFamily: GoogleFonts.poppins().fontFamily),
-                                          children: [
-                                            TextSpan(text: 'Nilai ', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                            TextSpan(text: val.toStringAsFixed(0), style: TextStyle(fontWeight: FontWeight.w900, color: colorScore, fontSize: 16)),
-                                            TextSpan(text: ' dari ', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                            TextSpan(text: n['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                          ]
-                                        ),
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                                        textBaseline: TextBaseline.alphabetic,
+                                        children: [
+                                          Text('Skor:', style: GoogleFonts.poppins(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
+                                          const SizedBox(width: 8),
+                                          Text(val.toStringAsFixed(0), style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: colorScore)),
+                                          const Text(' / 100', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey)),
+                                        ],
                                       ),
-                                      const SizedBox(height: 6),
-                                      if (dateStr.isNotEmpty)
-                                        Row(
-                                          children: [
-                                            Icon(LucideIcons.calendarClock, size: 12, color: theme.colorScheme.onSurface.withAlpha(140)),
-                                            const SizedBox(width: 6),
-                                            Text(dateStr, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w600)),
-                                          ],
-                                        ),
                                       if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty) ...[
                                         const SizedBox(height: 8),
-                                        Text('${n['keterangan']}', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(180), fontStyle: FontStyle.italic)),
+                                        Text('${n['keterangan']}',
+                                            style: GoogleFonts.poppins(fontSize: 13, height: 1.7,
+                                                color: isDark ? Colors.white60 : Colors.black87),
+                                            maxLines: 4, overflow: TextOverflow.ellipsis),
+                                      ],
+                                      
+                                      if (n['isManual'] == true) ...[
+                                        const SizedBox(height: 12),
+                                        Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Icon(LucideIcons.user, size: 14, color: colorStart.withAlpha(200)),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text('Input Manual', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: colorStart)),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Navigator.pop(ctx); 
+                                                _showNilaiForm(n);
+                                              },
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: colorStart.withAlpha(25),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: colorStart.withAlpha(50)),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(LucideIcons.edit2, size: 12, color: colorStart),
+                                                    const SizedBox(width: 4),
+                                                    Text('Edit', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: colorStart)),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            InkWell(
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _deleteNilai(n['id'].toString());
+                                              },
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red.withAlpha(25),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: Colors.red.withAlpha(50)),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(LucideIcons.trash, size: 12, color: Colors.red),
+                                                    const SizedBox(width: 4),
+                                                    Text('Hapus', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.red)),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ]
+                                        )
                                       ]
-                                    ],
-                                  ),
-                                ),
-                                if (n['isManual'] == true)
-                                  IconButton(
-                                    icon: const Icon(LucideIcons.moreVertical, size: 20),
-                                    onPressed: () {
-                                      final renderBox = ctx.findRenderObject() as RenderBox;
-                                      final offset = renderBox.localToGlobal(Offset.zero);
-                                      showMenu(
-                                        context: ctx,
-                                        position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        items: [
-                                          PopupMenuItem(
-                                            onTap: () {
-                                              Navigator.pop(ctx); 
-                                              _showNilaiForm(n); 
-                                            },
-                                            child: const Row(children: [Icon(LucideIcons.edit2, size: 18), SizedBox(width: 12), Text('Edit')]),
-                                          ),
-                                          PopupMenuItem(
-                                            onTap: () {
-                                              Navigator.pop(ctx);
-                                              _deleteNilai(n['id'].toString());
-                                            },
-                                            child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 18), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))]),
-                                          ),
-                                        ],
-                                      );
-                                    },
+                                    ]
                                   )
-                              ],
-                            ),
+                                )
+                              ]
+                            )
                           );
                         },
                       ),
