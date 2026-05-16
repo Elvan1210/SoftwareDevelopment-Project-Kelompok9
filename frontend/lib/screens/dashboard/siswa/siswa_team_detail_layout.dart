@@ -43,6 +43,8 @@ void initState() {
   _fetchChannels();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (mounted) {
+      final isM = MediaQuery.of(context).size.width <= 600;
+      if (isM){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -58,6 +60,7 @@ void initState() {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
+    }
     }
   });
 }
@@ -353,7 +356,7 @@ void initState() {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth > 1100) return _buildWebLayout(context);
+      if (constraints.maxWidth > 600) return _buildWebLayout(context);
       return _buildMobileLayout(context);
     });
   }
