@@ -28,15 +28,11 @@ const _kategoriMap = {
   'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: AppTheme.purpleSecondary, colorEnd: AppTheme.purpleLight),
 };
 
-_KategoriConfig _getKategori(String? judul, [String? kategoriField]) {
+// Hanya gunakan field kategori eksplisit — tidak ada auto-detect dari judul
+_KategoriConfig _getKategori(String? kategoriField) {
   if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
     return _kategoriMap[kategoriField]!;
   }
-  if (judul == null) return _kategoriMap['Umum']!;
-  final low = judul.toLowerCase();
-  if (low.contains('libur')) return _kategoriMap['Libur']!;
-  if (low.contains('ujian') || low.contains('ulangan') || low.contains('uts') || low.contains('uas')) return _kategoriMap['Ujian']!;
-  if (low.contains('seminar') || low.contains('webinar') || low.contains('workshop')) return _kategoriMap['Seminar']!;
   return _kategoriMap['Umum']!;
 }
 
@@ -111,7 +107,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
         ? _pengumumanList
         : _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
     if (_selectedKategori != 'Semua') {
-      base = base.where((p) => _getKategori(p['judul']?.toString(), p['kategori']?.toString()).label == _selectedKategori).toList();
+      base = base.where((p) => _getKategori(p['kategori']?.toString()).label == _selectedKategori).toList();
     }
     if (_search.isEmpty) return base;
     final q = _search.toLowerCase();
@@ -400,7 +396,7 @@ class _PengumumanDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
     final author = pengumuman['author']?.toString();
-    final cfg = _getKategori(pengumuman['judul']?.toString());
+    final cfg = _getKategori(pengumuman['kategori']?.toString());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),

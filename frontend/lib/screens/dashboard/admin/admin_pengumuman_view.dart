@@ -59,15 +59,12 @@ const _kategoriMap = {
   ),
 };
 
-_KategoriConfig _getKategori(String? judul, [String? kategoriField]) {
+// Hanya gunakan field kategori eksplisit — tidak ada auto-detect dari judul
+_KategoriConfig _getKategori(String? kategoriField) {
   if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
     return _kategoriMap[kategoriField]!;
   }
-  if (judul == null) return _kategoriMap['Umum']!;
-  final low = judul.toLowerCase();
-  if (low.contains('libur')) return _kategoriMap['Libur']!;
-  if (low.contains('ujian') || low.contains('ulangan') || low.contains('uts') || low.contains('uas')) return _kategoriMap['Ujian']!;
-  if (low.contains('seminar') || low.contains('webinar') || low.contains('workshop')) return _kategoriMap['Seminar']!;
+  // Default ke 'Umum' jika field tidak ada / tidak dikenal
   return _kategoriMap['Umum']!;
 }
 
@@ -141,7 +138,8 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     final isEditing = pengumuman != null;
     final judulCtrl = TextEditingController(text: isEditing ? pengumuman['judul'] : '');
     final isiCtrl = TextEditingController(text: isEditing ? pengumuman['isi'] : '');
-    String formKategori = pengumuman?['kategori']?.toString() ?? 'Umum';
+    String formKategori = pengumuman?['kategori']?.toString() ?? '';
+    bool kategoriError = false;
     final now = DateTime.now();
     final tanggalStr = DateFormat('dd MMM yyyy').format(now);
 
@@ -194,7 +192,10 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                       final cfg = _kategoriMap[k]!;
                       final sel = formKategori == k;
                       return GestureDetector(
-                        onTap: () => setFormState(() => formKategori = k),
+                        onTap: () => setFormState(() {
+                          formKategori = k;
+                          kategoriError = false;
+                        }),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 150),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -202,7 +203,11 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                             gradient: sel ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
                             color: sel ? null : (isDark ? AppTheme.darkBg : const Color(0xFFF5F5FF)),
                             borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: sel ? Colors.transparent : cfg.color.withAlpha(80)),
+                            border: Border.all(
+                              color: kategoriError && !sel
+                                  ? AppTheme.rose.withAlpha(120)
+                                  : sel ? Colors.transparent : cfg.color.withAlpha(80),
+                            ),
                             boxShadow: sel ? [BoxShadow(color: cfg.color.withAlpha(70), blurRadius: 8, offset: const Offset(0, 3))] : [],
                           ),
                           child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -215,6 +220,11 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                       );
                     }).toList(),
                   ),
+                  if (kategoriError) ...[
+                    const SizedBox(height: 6),
+                    Text('Pilih kategori terlebih dahulu',
+                        style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.rose)),
+                  ],
                   const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -228,6 +238,10 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                         label: isEditing ? 'Simpan' : 'Terbitkan',
                         onPressed: () async {
                           if (judulCtrl.text.isEmpty || isiCtrl.text.isEmpty) return;
+                          if (formKategori.isEmpty) {
+                            setFormState(() => kategoriError = true);
+                            return;
+                          }
                           final body = {
                             'judul': judulCtrl.text,
                             'isi': isiCtrl.text,
@@ -276,7 +290,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     var list = _pengumumanList;
     if (_selectedKategori != 'Semua') {
       list = list.where((p) {
-        final cfg = _getKategori(p['judul']?.toString(), p['kategori']?.toString());
+        final cfg = _getKategori(p['kategori']?.toString());
         return cfg.label == _selectedKategori;
       }).toList();
     }
@@ -537,7 +551,7 @@ class _AdminPengumumanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
     final author = pengumuman['author']?.toString() ?? pengumuman['guru_nama']?.toString();
-    final cfg = _getKategori(pengumuman['judul']?.toString(), pengumuman['kategori']?.toString());
+    final cfg = _getKategori(pengumuman['kategori']?.toString());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
