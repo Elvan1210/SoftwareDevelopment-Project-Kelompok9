@@ -59,7 +59,10 @@ const _kategoriMap = {
   ),
 };
 
-_KategoriConfig _getKategori(String? judul) {
+_KategoriConfig _getKategori(String? judul, [String? kategoriField]) {
+  if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
+    return _kategoriMap[kategoriField]!;
+  }
   if (judul == null) return _kategoriMap['Umum']!;
   final low = judul.toLowerCase();
   if (low.contains('libur')) return _kategoriMap['Libur']!;
@@ -138,6 +141,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     final isEditing = pengumuman != null;
     final judulCtrl = TextEditingController(text: isEditing ? pengumuman['judul'] : '');
     final isiCtrl = TextEditingController(text: isEditing ? pengumuman['isi'] : '');
+    String formKategori = pengumuman?['kategori']?.toString() ?? 'Umum';
     final now = DateTime.now();
     final tanggalStr = DateFormat('dd MMM yyyy').format(now);
 
@@ -145,14 +149,16 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
       context: context,
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Dialog(
+        return StatefulBuilder(
+          builder: (ctx, setFormState) => Dialog(
           backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.all(28),
             child: SizedBox(
               width: 520,
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -176,6 +182,39 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                   _FormField(controller: judulCtrl, label: 'Judul Pengumuman', icon: LucideIcons.type, isDark: isDark),
                   const SizedBox(height: 16),
                   _FormField(controller: isiCtrl, label: 'Isi Pengumuman', icon: LucideIcons.alignLeft, isDark: isDark, maxLines: 5),
+                  const SizedBox(height: 16),
+                  // ── Kategori Picker ──
+                  Text('Kategori', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
+                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ['Umum', 'Ujian', 'Libur', 'Seminar'].map((k) {
+                      final cfg = _kategoriMap[k]!;
+                      final sel = formKategori == k;
+                      return GestureDetector(
+                        onTap: () => setFormState(() => formKategori = k),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: sel ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
+                            color: sel ? null : (isDark ? AppTheme.darkBg : const Color(0xFFF5F5FF)),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(color: sel ? Colors.transparent : cfg.color.withAlpha(80)),
+                            boxShadow: sel ? [BoxShadow(color: cfg.color.withAlpha(70), blurRadius: 8, offset: const Offset(0, 3))] : [],
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(cfg.icon, size: 13, color: sel ? Colors.white : cfg.color),
+                            const SizedBox(width: 6),
+                            Text(k, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
+                                color: sel ? Colors.white : cfg.color)),
+                          ]),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                   const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -195,6 +234,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                             'tanggal': isEditing ? (pengumuman['tanggal'] ?? tanggalStr) : tanggalStr,
                             'guru_id': 'admin',
                             'author': 'Administrator',
+                            'kategori': formKategori,
                           };
                           final headers = {
                             'Content-Type': 'application/json',
@@ -225,7 +265,9 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
       },
     );
   }
@@ -234,7 +276,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
     var list = _pengumumanList;
     if (_selectedKategori != 'Semua') {
       list = list.where((p) {
-        final cfg = _getKategori(p['judul']?.toString());
+        final cfg = _getKategori(p['judul']?.toString(), p['kategori']?.toString());
         return cfg.label == _selectedKategori;
       }).toList();
     }
@@ -292,53 +334,57 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
           ),
           const SizedBox(height: 12),
           // Category chips
-          SizedBox(
-            height: 38,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              children: _kategoriMap.keys.map((k) {
-                final cfg = _kategoriMap[k]!;
-                final selected = _selectedKategori == k;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedKategori = k),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: selected
-                            ? LinearGradient(colors: [cfg.color, cfg.colorEnd])
-                            : null,
-                        color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
-                        borderRadius: BorderRadius.circular(100),
-                        border: Border.all(
-                          color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60),
-                        ),
-                        boxShadow: selected
-                            ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
-                            : [],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
-                          const SizedBox(width: 6),
-                          Text(
-                            cfg.label,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: selected ? Colors.white : cfg.color,
-                            ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: SizedBox(
+              height: 46,
+              child: ListView(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: _kategoriMap.keys.map((k) {
+                  final cfg = _kategoriMap[k]!;
+                  final selected = _selectedKategori == k;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedKategori = k),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: selected
+                              ? LinearGradient(colors: [cfg.color, cfg.colorEnd])
+                              : null,
+                          color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(
+                            color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60),
                           ),
-                        ],
+                          boxShadow: selected
+                              ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
+                              : [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
+                            const SizedBox(width: 6),
+                            Text(
+                              cfg.label,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: selected ? Colors.white : cfg.color,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ).animate().fadeIn(delay: 80.ms),
           const SizedBox(height: 12),
@@ -491,7 +537,7 @@ class _AdminPengumumanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
     final author = pengumuman['author']?.toString() ?? pengumuman['guru_nama']?.toString();
-    final cfg = _getKategori(pengumuman['judul']?.toString());
+    final cfg = _getKategori(pengumuman['judul']?.toString(), pengumuman['kategori']?.toString());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
