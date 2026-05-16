@@ -37,43 +37,114 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final kelasId = widget.teamData['id']?.toString() ?? '';
+
       final responses = await Future.wait([
         http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
-        http.get(Uri.parse('$baseUrl/api/users'), headers: headers),
+        if (kelasId.isNotEmpty)
+          http.get(Uri.parse('$baseUrl/api/kelas/$kelasId/members'), headers: headers)
+        else
+          Future.value(http.Response('[]', 200)),
+        http.get(Uri.parse('$baseUrl/api/quizzes?kelasId=$kelasId'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'), headers: headers),
       ]);
       
+      List<dynamic> allNilai = [];
+
+      // Parse Tugas to filter assignments by this class
+      final Map<String, String> tugasMap = {};
+      if (responses[3].statusCode == 200) {
+        final decTugas = jsonDecode(responses[3].body);
+        final listTugas = decTugas is List ? decTugas : [];
+        for (var t in listTugas) {
+          if (t['kelas_id']?.toString() == kelasId || t['kelas'] == widget.teamData['nama_kelas']) {
+            tugasMap[t['id'].toString()] = t['judul'] ?? 'Tugas';
+          }
+        }
+      }
+
+      // 1. Parse Nilai Manual (Lainnya) & Tugas (Assignment)
       if (responses[0].statusCode == 200) {
         final dec = jsonDecode(responses[0].body);
         List data = dec is List ? dec : [];
-        _nilaiList = data.where((n) {
-          final bool isMyClass = widget.teamData['id'] != null
-              ? n['kelas_id'].toString() == widget.teamData['id'].toString()
-              : true;
-          return n['guru_id'].toString() == widget.userData['id'].toString() &&
-              isMyClass;
-        }).toList();
         
-        // Sort nilai from newest to oldest
-        _nilaiList.sort((a, b) {
-          final dA = DateTime.tryParse(a['tanggal']?.toString() ?? '') ?? DateTime(2000);
-          final dB = DateTime.tryParse(b['tanggal']?.toString() ?? '') ?? DateTime(2000);
-          return dB.compareTo(dA);
-        });
+        for (var n in data) {
+          if (n['guru_id'].toString() != widget.userData['id'].toString()) continue;
+
+          if (n['tugas_id'] != null) {
+            // Assignment: Only include if the tugas belongs to this class
+            final tId = n['tugas_id'].toString();
+            if (tugasMap.containsKey(tId)) {
+              n['tipe'] = 'Assignment';
+              n['isManual'] = false;
+              n['mapel'] = tugasMap[tId] ?? n['tugas_judul'] ?? n['mapel'] ?? 'Tugas';
+              n['tanggal'] = n['waktu_dinilai'] ?? n['tanggal'];
+              allNilai.add(n);
+            }
+          } else {
+            // Manual Grade: Only include if kelas_id matches
+            if (kelasId.isNotEmpty && n['kelas_id']?.toString() == kelasId) {
+              n['tipe'] = n['tipe'] ?? 'Lainnya'; // Enforce type
+              n['isManual'] = true;
+              allNilai.add(n);
+            } else if (kelasId.isEmpty) {
+              n['tipe'] = n['tipe'] ?? 'Lainnya';
+              n['isManual'] = true;
+              allNilai.add(n);
+            }
+          }
+        }
       }
+
+      // 2. Parse Quiz Submissions
+      if (responses[2].statusCode == 200) {
+        final decQuiz = jsonDecode(responses[2].body);
+        final listQuiz = decQuiz['data'] is List ? decQuiz['data'] : [];
+        
+        if (listQuiz.isNotEmpty) {
+          final quizReqs = listQuiz.map((q) => http.get(Uri.parse('$baseUrl/api/quizzes/${q['_id']}/submissions'), headers: headers));
+          final quizResps = await Future.wait(quizReqs);
+          
+          for (int i = 0; i < listQuiz.length; i++) {
+            final q = listQuiz[i];
+            final r = quizResps[i];
+            if (r.statusCode == 200) {
+              final subDec = jsonDecode(r.body);
+              final subs = subDec['data'] is List ? subDec['data'] : [];
+              for (var s in subs) {
+                final score = s['score'] ?? 0;
+                final total = s['totalPoints'] ?? 100;
+                final finalScore = total > 0 ? (score / total) * 100 : 0;
+                allNilai.add({
+                  'id': s['_id'],
+                  'siswa_id': s['studentId'],
+                  'mapel': q['title'] ?? 'Kuis',
+                  'nilai': finalScore,
+                  'keterangan': 'Otomatis dari kuis',
+                  'tipe': 'Kuis',
+                  'tanggal': s['submittedAt'],
+                  'isManual': false,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Sort all from newest to oldest
+      allNilai.sort((a, b) {
+        final dA = DateTime.tryParse(a['tanggal']?.toString() ?? '') ?? DateTime(2000);
+        final dB = DateTime.tryParse(b['tanggal']?.toString() ?? '') ?? DateTime(2000);
+        return dB.compareTo(dA);
+      });
+      
+      _nilaiList = allNilai;
+
+      // Parse Users (Class Members)
       if (responses[1].statusCode == 200) {
         final dec = jsonDecode(responses[1].body);
         List users = dec is List ? dec : [];
-        _userList = users.where((u) {
-          // Hanya siswa yang ada di kelas ini
-          final kelasId = widget.teamData['id']?.toString() ?? '';
-          if (u['role'] != 'Siswa') return false;
-          if (u['kelas_id'] != null && u['kelas_id'].toString() == kelasId) {
-            return true;
-          }
-          // Cek array siswa_ids di kelas jika user belum set kelas_id
-          List sIds = widget.teamData['siswa_ids'] ?? [];
-          return sIds.contains(u['id']);
-        }).toList();
+        _userList = users.toList();
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -105,9 +176,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         text: isEditing ? nilai['nilai']?.toString() : '');
     final keteranganCtrl =
         TextEditingController(text: isEditing ? nilai['keterangan'] : '');
-    String selectedTipe = isEditing ? (nilai['tipe'] ?? 'Lainnya') : 'Lainnya';
-
-    final List<String> tipeOptions = ['Assignment', 'Kuis', 'Lainnya'];
 
     showDialog(
       context: context,
@@ -145,19 +213,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     }).toList(),
                     onChanged: (val) =>
                         setDialogState(() => selectedSiswaId = val),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedTipe,
-                    decoration: InputDecoration(
-                      labelText: 'Tipe Nilai',
-                      prefixIcon: const Icon(LucideIcons.listFilter),
-                      fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
-                    items: tipeOptions.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                    onChanged: (val) => setDialogState(() => selectedTipe = val!),
                   ),
                   const SizedBox(height: 16),
                   AppTextField(
@@ -204,7 +259,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   'mapel': mapelCtrl.text,
                   'nilai': double.tryParse(nilaiCtrl.text) ?? 0,
                   'keterangan': keteranganCtrl.text,
-                  'tipe': selectedTipe,
+                  'tipe': 'Lainnya',
                   'guru_id': widget.userData['id'],
                   'kelas_id': widget.teamData['id'],
                   if (!isEditing) 'tanggal': DateTime.now().toIso8601String(),
@@ -388,34 +443,35 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                     ],
                                   ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(LucideIcons.moreVertical, size: 20),
-                                  onPressed: () {
-                                    final renderBox = ctx.findRenderObject() as RenderBox;
-                                    final offset = renderBox.localToGlobal(Offset.zero);
-                                    showMenu(
-                                      context: ctx,
-                                      position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      items: [
-                                        PopupMenuItem(
-                                          onTap: () {
-                                            Navigator.pop(ctx); 
-                                            _showNilaiForm(n); 
-                                          },
-                                          child: const Row(children: [Icon(LucideIcons.edit2, size: 18), SizedBox(width: 12), Text('Edit')]),
-                                        ),
-                                        PopupMenuItem(
-                                          onTap: () {
-                                            Navigator.pop(ctx);
-                                            _deleteNilai(n['id'].toString());
-                                          },
-                                          child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 18), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))]),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                )
+                                if (n['isManual'] == true)
+                                  IconButton(
+                                    icon: const Icon(LucideIcons.moreVertical, size: 20),
+                                    onPressed: () {
+                                      final renderBox = ctx.findRenderObject() as RenderBox;
+                                      final offset = renderBox.localToGlobal(Offset.zero);
+                                      showMenu(
+                                        context: ctx,
+                                        position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                        items: [
+                                          PopupMenuItem(
+                                            onTap: () {
+                                              Navigator.pop(ctx); 
+                                              _showNilaiForm(n); 
+                                            },
+                                            child: const Row(children: [Icon(LucideIcons.edit2, size: 18), SizedBox(width: 12), Text('Edit')]),
+                                          ),
+                                          PopupMenuItem(
+                                            onTap: () {
+                                              Navigator.pop(ctx);
+                                              _deleteNilai(n['id'].toString());
+                                            },
+                                            child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 18), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))]),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  )
                               ],
                             ),
                           );
