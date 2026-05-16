@@ -138,15 +138,17 @@ class _GuruTugasViewState extends State<GuruTugasView> {
 
               if (url != null) {
                 linkCtrl.text = url; // Isi kolom link secara otomatis!
-                if (ctx.mounted)
+                if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
                       content: Text('File terunggah!'),
                       backgroundColor: Colors.green));
+                }
               } else {
-                if (ctx.mounted)
+                if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
                       content: Text('Gagal upload!'),
                       backgroundColor: Colors.red));
+                }
               }
             }
           }
@@ -217,8 +219,9 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                               )),
                       ],
                       onChanged: (val) {
-                        if (val != null)
+                        if (val != null) {
                           setDialogState(() => selectedChannelId = val);
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
@@ -257,7 +260,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.65),
+                                  .withValues(alpha: 0.65),
                               size: 20),
                           const SizedBox(width: 12),
                           Text(deadlineStr,
@@ -439,7 +442,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurface
-                                      .withOpacity(0.65))),
+                                      .withValues(alpha: 0.65))),
                         ),
                       ));
 

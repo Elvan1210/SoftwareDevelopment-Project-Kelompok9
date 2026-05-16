@@ -399,13 +399,13 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Permintaan bergabung dari siswa akan muncul di sini.',
-              style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+              style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
             ),
           ],
         ),
@@ -513,11 +513,11 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.schedule_rounded, size: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+                    Icon(Icons.schedule_rounded, size: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
                     const SizedBox(width: 4),
                     Text(
                       timeAgo,
-                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
