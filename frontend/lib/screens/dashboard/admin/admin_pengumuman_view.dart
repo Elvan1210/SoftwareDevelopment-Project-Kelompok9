@@ -12,6 +12,62 @@ import '../../../services/notifikasi_service.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../utils/date_utils.dart';
 
+// ─── Kategori config ──────────────────────────────────────────────────────────
+class _KategoriConfig {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color colorEnd;
+  const _KategoriConfig({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.colorEnd,
+  });
+}
+
+const _kategoriMap = {
+  'Semua': _KategoriConfig(
+    label: 'Semua',
+    icon: LucideIcons.layoutGrid,
+    color: AppTheme.indigoPrimary,
+    colorEnd: AppTheme.purpleSecondary,
+  ),
+  'Ujian': _KategoriConfig(
+    label: 'Ujian',
+    icon: LucideIcons.clipboardList,
+    color: AppTheme.amber,
+    colorEnd: Color(0xFFF97316),
+  ),
+  'Libur': _KategoriConfig(
+    label: 'Libur',
+    icon: LucideIcons.palmtree,
+    color: AppTheme.emerald,
+    colorEnd: Color(0xFF059669),
+  ),
+  'Seminar': _KategoriConfig(
+    label: 'Seminar',
+    icon: LucideIcons.presentation,
+    color: AppTheme.sky,
+    colorEnd: Color(0xFF0EA5E9),
+  ),
+  'Umum': _KategoriConfig(
+    label: 'Umum',
+    icon: LucideIcons.megaphone,
+    color: AppTheme.purpleSecondary,
+    colorEnd: AppTheme.purpleLight,
+  ),
+};
+
+_KategoriConfig _getKategori(String? judul) {
+  if (judul == null) return _kategoriMap['Umum']!;
+  final low = judul.toLowerCase();
+  if (low.contains('libur')) return _kategoriMap['Libur']!;
+  if (low.contains('ujian') || low.contains('ulangan') || low.contains('uts') || low.contains('uas')) return _kategoriMap['Ujian']!;
+  if (low.contains('seminar') || low.contains('webinar') || low.contains('workshop')) return _kategoriMap['Seminar']!;
+  return _kategoriMap['Umum']!;
+}
+
 class AdminPengumumanView extends StatefulWidget {
   final String token;
   const AdminPengumumanView({super.key, required this.token});
@@ -24,6 +80,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
   List<dynamic> _pengumumanList = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  String _selectedKategori = 'Semua';
 
   @override
   void initState() {
@@ -40,22 +97,19 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
       );
       if (res.statusCode == 200) {
         final dec = jsonDecode(res.body);
-      List<dynamic> list = dec is List ? dec : [];
-      
-      //sort by tanggal, newest first
-      list.sort((a, b) {
-  final aDate = AppDateUtils.parseIndonesianDate(a['tanggal']?.toString() ?? '');
-  final bDate = AppDateUtils.parseIndonesianDate(b['tanggal']?.toString() ?? '');
-  return bDate.compareTo(aDate);
-});
-
-      setState(() => _pengumumanList = list);
+        List<dynamic> list = dec is List ? dec : [];
+        list.sort((a, b) {
+          final aDate = AppDateUtils.parseIndonesianDate(a['tanggal']?.toString() ?? '');
+          final bDate = AppDateUtils.parseIndonesianDate(b['tanggal']?.toString() ?? '');
+          return bDate.compareTo(aDate);
+        });
+        setState(() => _pengumumanList = list);
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
     }
-  } catch (e) {
-    debugPrint('Error: $e');
+    if (mounted) setState(() => _isLoading = false);
   }
-  if (mounted) setState(() => _isLoading = false);
-}
 
   Future<void> _deletePengumuman(String id) async {
     if (await confirmDelete(context, pesan: 'Hapus pengumuman ini?')) {
@@ -83,8 +137,8 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
   void _showPengumumanForm([Map<String, dynamic>? pengumuman]) {
     final isEditing = pengumuman != null;
     final judulCtrl = TextEditingController(text: isEditing ? pengumuman['judul'] : '');
-    final isiCtrl   = TextEditingController(text: isEditing ? pengumuman['isi'] : '');
-    final now       = DateTime.now();
+    final isiCtrl = TextEditingController(text: isEditing ? pengumuman['isi'] : '');
+    final now = DateTime.now();
     final tanggalStr = DateFormat('dd MMM yyyy').format(now);
 
     showDialog(
@@ -102,14 +156,11 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
                   Row(children: [
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.amber, Color(0xFFF97316)],
-                        ),
+                        gradient: const LinearGradient(colors: [AppTheme.amber, Color(0xFFF97316)]),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 20),
@@ -122,31 +173,16 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                     ),
                   ]),
                   const SizedBox(height: 24),
-                  // Judul
-                  _FormField(
-                    controller: judulCtrl,
-                    label: 'Judul Pengumuman',
-                    icon: LucideIcons.type,
-                    isDark: isDark,
-                  ),
+                  _FormField(controller: judulCtrl, label: 'Judul Pengumuman', icon: LucideIcons.type, isDark: isDark),
                   const SizedBox(height: 16),
-                  // Isi
-                  _FormField(
-                    controller: isiCtrl,
-                    label: 'Isi Pengumuman',
-                    icon: LucideIcons.alignLeft,
-                    isDark: isDark,
-                    maxLines: 5,
-                  ),
+                  _FormField(controller: isiCtrl, label: 'Isi Pengumuman', icon: LucideIcons.alignLeft, isDark: isDark, maxLines: 5),
                   const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
-                        child: Text('Batal',
-                            style: GoogleFonts.poppins(
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                        child: Text('Batal', style: GoogleFonts.poppins(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                       ),
                       const SizedBox(width: 10),
                       _GradientButton(
@@ -166,15 +202,9 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                           };
                           try {
                             if (isEditing) {
-                              await http.put(
-                                Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'),
-                                headers: headers, body: jsonEncode(body),
-                              );
+                              await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
                             } else {
-                              await http.post(
-                                Uri.parse('$baseUrl/api/pengumuman'),
-                                headers: headers, body: jsonEncode(body),
-                              );
+                              await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
                               NotifikasiService.kirimNotifikasi(
                                 judul: 'Pengumuman Admin: ${judulCtrl.text}',
                                 pesan: isiCtrl.text,
@@ -201,14 +231,21 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
   }
 
   List<dynamic> get _filtered {
-    final list= _searchQuery.isEmpty
-      ? _pengumumanList
-      : _pengumumanList
-          .where((p) =>
-              (p['judul'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              (p['isi'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
-        return list;
+    var list = _pengumumanList;
+    if (_selectedKategori != 'Semua') {
+      list = list.where((p) {
+        final cfg = _getKategori(p['judul']?.toString());
+        return cfg.label == _selectedKategori;
+      }).toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      list = list.where((p) =>
+        (p['judul'] ?? '').toString().toLowerCase().contains(q) ||
+        (p['isi'] ?? '').toString().toLowerCase().contains(q)
+      ).toList();
+    }
+    return list;
   }
 
   @override
@@ -230,13 +267,9 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
       backgroundColor: Colors.transparent,
       floatingActionButton: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppTheme.amber, Color(0xFFF97316)],
-          ),
+          gradient: const LinearGradient(colors: [AppTheme.amber, Color(0xFFF97316)]),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: AppTheme.amber.withAlpha(100), blurRadius: 20, offset: const Offset(0, 8)),
-          ],
+          boxShadow: [BoxShadow(color: AppTheme.amber.withAlpha(100), blurRadius: 20, offset: const Offset(0, 8))],
         ),
         child: FloatingActionButton.extended(
           onPressed: () => _showPengumumanForm(),
@@ -257,7 +290,58 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
               onChanged: (v) => setState(() => _searchQuery = v),
             ).animate().fadeIn().slideY(begin: -0.1),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          // Category chips
+          SizedBox(
+            height: 38,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              children: _kategoriMap.keys.map((k) {
+                final cfg = _kategoriMap[k]!;
+                final selected = _selectedKategori == k;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedKategori = k),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: selected
+                            ? LinearGradient(colors: [cfg.color, cfg.colorEnd])
+                            : null,
+                        color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60),
+                        ),
+                        boxShadow: selected
+                            ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
+                            : [],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
+                          const SizedBox(width: 6),
+                          Text(
+                            cfg.label,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: selected ? Colors.white : cfg.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ).animate().fadeIn(delay: 80.ms),
+          const SizedBox(height: 12),
           Expanded(
             child: _filtered.isEmpty
                 ? const EmptyState(
@@ -301,13 +385,7 @@ class _FormField extends StatelessWidget {
   final IconData icon;
   final bool isDark;
   final int maxLines;
-  const _FormField({
-    required this.controller,
-    required this.label,
-    required this.icon,
-    required this.isDark,
-    this.maxLines = 1,
-  });
+  const _FormField({required this.controller, required this.label, required this.icon, required this.isDark, this.maxLines = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -323,8 +401,7 @@ class _FormField extends StatelessWidget {
         style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.poppins(fontSize: 13,
-              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          labelStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -383,10 +460,8 @@ class _SearchBar extends StatelessWidget {
         style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
         decoration: InputDecoration(
           hintText: 'Cari pengumuman...',
-          hintStyle: GoogleFonts.poppins(fontSize: 13,
-              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          prefixIcon: Icon(LucideIcons.search, size: 18,
-              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          hintStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
@@ -415,16 +490,18 @@ class _AdminPengumumanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
-    final author  = pengumuman['author']?.toString() ?? pengumuman['guru_nama']?.toString();
+    final author = pengumuman['author']?.toString() ?? pengumuman['guru_nama']?.toString();
+    final cfg = _getKategori(pengumuman['judul']?.toString());
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 18),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.amber.withAlpha(isDark ? 45 : 30)),
+        border: Border.all(color: cfg.color.withAlpha(isDark ? 55 : 35)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 5)),
+          BoxShadow(color: cfg.color.withAlpha(isDark ? 30 : 12), blurRadius: 18, offset: const Offset(0, 6)),
+          BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -435,33 +512,53 @@ class _AdminPengumumanCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [
-                AppTheme.amber.withAlpha(isDark ? 35 : 20),
-                AppTheme.amber.withAlpha(isDark ? 15 : 8),
+                cfg.color.withAlpha(isDark ? 45 : 28),
+                cfg.colorEnd.withAlpha(isDark ? 20 : 10),
               ]),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
-              border: Border(bottom: BorderSide(color: AppTheme.amber.withAlpha(isDark ? 35 : 20))),
+              border: Border(bottom: BorderSide(color: cfg.color.withAlpha(isDark ? 40 : 25))),
             ),
             child: Row(
               children: [
-                // Icon
+                // Icon box bold
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [AppTheme.amber, Color(0xFFF97316)],
-                        begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [BoxShadow(color: AppTheme.amber.withAlpha(80), blurRadius: 8, offset: const Offset(0, 3))],
+                    gradient: LinearGradient(
+                      colors: [cfg.color, cfg.colorEnd],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: [BoxShadow(color: cfg.color.withAlpha(100), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
-                  child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 16),
+                  child: Icon(cfg.icon, color: Colors.white, size: 16),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    pengumuman['judul'] ?? '-',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: -0.3,
-                        color: isDark ? Colors.white : AppTheme.textLight),
-                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Kategori label
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: cfg.color.withAlpha(isDark ? 40 : 22),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          cfg.label.toUpperCase(),
+                          style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: cfg.color, letterSpacing: 0.8),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        pengumuman['judul'] ?? '-',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: -0.3,
+                            color: isDark ? Colors.white : AppTheme.textLight),
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
                 if (tanggal.isNotEmpty) ...[
@@ -469,11 +566,11 @@ class _AdminPengumumanCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.amber.withAlpha(isDark ? 35 : 20),
+                      color: cfg.color.withAlpha(isDark ? 35 : 20),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(tanggal,
-                        style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.amber)),
+                        style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: cfg.color)),
                   ),
                 ],
               ],
@@ -495,7 +592,6 @@ class _AdminPengumumanCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Divider(height: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                 const SizedBox(height: 12),
-                // Footer: author + actions
                 Row(
                   children: [
                     if (author != null) ...[
@@ -508,28 +604,16 @@ class _AdminPengumumanCard extends StatelessWidget {
                         child: const Icon(LucideIcons.user, size: 11, color: AppTheme.indigoPrimary),
                       ),
                       const SizedBox(width: 6),
-                      Text('Oleh: $author',
-                          style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600,
-                              color: AppTheme.indigoPrimary)),
+                      Expanded(
+                        child: Text('Oleh: $author',
+                            style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.indigoPrimary),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                      const SizedBox(width: 8),
                     ],
-                    const Spacer(),
-                    // Edit button
-                    _ActionButton(
-                      icon: LucideIcons.edit2,
-                      label: 'Edit',
-                      color: AppTheme.indigoPrimary,
-                      isDark: isDark,
-                      onTap: onEdit,
-                    ),
+                    _ActionButton(icon: LucideIcons.edit2, label: 'Edit', color: AppTheme.indigoPrimary, isDark: isDark, onTap: onEdit),
                     const SizedBox(width: 8),
-                    // Delete button
-                    _ActionButton(
-                      icon: LucideIcons.trash2,
-                      label: 'Hapus',
-                      color: AppTheme.rose,
-                      isDark: isDark,
-                      onTap: onDelete,
-                    ),
+                    _ActionButton(icon: LucideIcons.trash2, label: 'Hapus', color: AppTheme.rose, isDark: isDark, onTap: onDelete),
                   ],
                 ),
               ],
@@ -548,8 +632,7 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final bool isDark;
   final VoidCallback onTap;
-  const _ActionButton({required this.icon, required this.label,
-      required this.color, required this.isDark, required this.onTap});
+  const _ActionButton({required this.icon, required this.label, required this.color, required this.isDark, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
