@@ -4,6 +4,8 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../guru/guru_tugas_detail_screen.dart';
+import '../siswa/siswa_tugas_detail_screen.dart';
 
 class SaluranView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -29,14 +31,17 @@ class _SaluranViewState extends State<SaluranView> {
   final TextEditingController _pesanCtrl = TextEditingController();
   final TextEditingController _replyCtrl = TextEditingController();
   final ScrollController _scrollCtrl = ScrollController();
-  
+
   List<Map<String, dynamic>> _allData = [];
   bool _isLoading = true;
   bool _isSending = false;
   String? _replyingToId;
 
   String get _kelasId => widget.teamData['id']?.toString() ?? '';
-  String get _myId => widget.userData['id']?.toString() ?? widget.userData['uid']?.toString() ?? '';
+  String get _myId =>
+      widget.userData['id']?.toString() ??
+      widget.userData['uid']?.toString() ??
+      '';
   String get _myNama => widget.userData['nama']?.toString() ?? 'Pengguna';
   String get _myRole => widget.userData['role']?.toString() ?? 'Siswa';
 
@@ -59,13 +64,16 @@ class _SaluranViewState extends State<SaluranView> {
     setState(() => _isLoading = true);
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final res = await http.get(Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'), headers: headers);
-      
+      final res = await http.get(
+          Uri.parse('$baseUrl/api/saluran?kelas_id=$_kelasId'),
+          headers: headers);
+
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body) as List;
         if (mounted) {
           setState(() {
-            _allData = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+            _allData =
+                decoded.map((e) => Map<String, dynamic>.from(e)).toList();
             _isLoading = false;
           });
         }
@@ -121,23 +129,27 @@ class _SaluranViewState extends State<SaluranView> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final mainPosts = _allData.where((m) => 
-      (m['channel_id']?.toString() ?? 'general') == widget.channelId && m['parentId'] == null
-    ).toList();
+    final mainPosts = _allData
+        .where((m) =>
+            (m['channel_id']?.toString() ?? 'general') == widget.channelId &&
+            m['parentId'] == null)
+        .toList();
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF3F2F1),
+      backgroundColor:
+          isDark ? const Color(0xFF121212) : const Color(0xFFF3F2F1),
       body: Column(
         children: [
           Expanded(
-            child: _isLoading 
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                controller: _scrollCtrl,
-                padding: const EdgeInsets.all(20),
-                itemCount: mainPosts.length,
-                itemBuilder: (context, i) => _buildPostThread(mainPosts[i], isDark, theme),
-              ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    controller: _scrollCtrl,
+                    padding: const EdgeInsets.all(20),
+                    itemCount: mainPosts.length,
+                    itemBuilder: (context, i) =>
+                        _buildPostThread(mainPosts[i], isDark, theme),
+                  ),
           ),
           _buildNewPostButton(theme, isDark),
         ],
@@ -145,7 +157,8 @@ class _SaluranViewState extends State<SaluranView> {
     );
   }
 
-  Widget _buildPostThread(Map<String, dynamic> post, bool isDark, ThemeData theme) {
+  Widget _buildPostThread(
+      Map<String, dynamic> post, bool isDark, ThemeData theme) {
     final postId = post['id']?.toString() ?? post['_id']?.toString() ?? '';
     final replies = _allData.where((m) => m['parentId'] == postId).toList();
 
@@ -154,7 +167,9 @@ class _SaluranViewState extends State<SaluranView> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4)
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,49 +181,176 @@ class _SaluranViewState extends State<SaluranView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  CircleAvatar(radius: 18, child: Text(post['pengirim_nama']?[0].toUpperCase() ?? '?')),
+                  CircleAvatar(
+                      radius: 18,
+                      child:
+                          Text(post['pengirim_nama']?[0].toUpperCase() ?? '?')),
                   const SizedBox(width: 12),
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(post['pengirim_nama'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text(post['waktu']?.toString().split('T')[0] ?? '', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
-                  ])
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(post['pengirim_nama'] ?? 'User',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(post['waktu']?.toString().split('T')[0] ?? '',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.65))),
+                      ])
                 ]),
                 const SizedBox(height: 12),
-                Text(post['pesan'] ?? '', style: const TextStyle(fontSize: 16)),
+                // Cek apakah ini post tugas
+                if (post['tipe'] == 'tugas') ...[
+                  GestureDetector(
+                    onTap: () async {
+                      final tugasId = post['tugas_id'];
+                      if (tugasId == null) return;
+
+                      // Fetch data tugas
+                      try {
+                        final res = await http.get(
+                          Uri.parse('$baseUrl/api/tugas/$tugasId'),
+                          headers: {'Authorization': 'Bearer ${widget.token}'},
+                        );
+                        if (res.statusCode == 200 && mounted) {
+                          final tugas = jsonDecode(res.body);
+                          if (_myRole == 'Guru') {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => GuruTugasDetailScreen(
+                                      tugas: tugas, token: widget.token),
+                                ));
+                          } else {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => SiswaTugasDetailScreen(
+                                    tugas: tugas,
+                                    userData: widget.userData,
+                                    token: widget.token,
+                                    // hapus teamData
+                                  ),
+                                ));
+                          }
+                        }
+                      } catch (e) {
+                        debugPrint('Error fetch tugas: $e');
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondary.withAlpha(15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: theme.colorScheme.secondary.withAlpha(60)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondary.withAlpha(30),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(LucideIcons.clipboardList,
+                                color: theme.colorScheme.secondary, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  post['judul_tugas'] ?? post['pesan'] ?? '-',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (post['deadline_tugas'] != null) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(LucideIcons.clock,
+                                          size: 12,
+                                          color: theme.colorScheme.secondary),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Deadline: ${post['deadline_tugas'].toString().split('T')[0]}',
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            color: theme.colorScheme.secondary,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          Icon(LucideIcons.chevronRight,
+                              size: 16, color: theme.colorScheme.secondary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Text(post['pesan'] ?? '',
+                      style: const TextStyle(fontSize: 16)),
+                ],
               ],
             ),
           ),
           const Divider(height: 1),
-          
+
           // DAFTAR BALASAN (REPLIES)
           if (replies.isNotEmpty)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: isDark ? Colors.white.withAlpha(5) : Colors.grey.withAlpha(10),
+              color: isDark
+                  ? Colors.white.withAlpha(5)
+                  : Colors.grey.withAlpha(10),
               child: Column(
-                children: replies.map((r) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(radius: 12, child: Text(r['pengirim_nama']?[0].toUpperCase() ?? '?', style: const TextStyle(fontSize: 10))),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(r['pengirim_nama'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            Text(r['pesan'] ?? '', style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )).toList(),
+                children: replies
+                    .map((r) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                  radius: 12,
+                                  child: Text(
+                                      r['pengirim_nama']?[0].toUpperCase() ??
+                                          '?',
+                                      style: const TextStyle(fontSize: 10))),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(r['pengirim_nama'] ?? 'User',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13)),
+                                    Text(r['pesan'] ?? '',
+                                        style: const TextStyle(fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ))
+                    .toList(),
               ),
             ),
-            
+
           // INPUT BALASAN BAWAH (REPLY)
           _buildReplySection(postId, isDark),
         ],
@@ -220,27 +362,43 @@ class _SaluranViewState extends State<SaluranView> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: _replyingToId == postId
-        ? Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _replyCtrl,
-                  autofocus: true,
-                  decoration: const InputDecoration(hintText: "Reply...", border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+          ? Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _replyCtrl,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                        hintText: "Reply...",
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                  ),
                 ),
-              ),
-              IconButton(
-                icon: _isSending ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(LucideIcons.send, size: 20),
-                onPressed: _isSending ? null : () => _postMessage(parentId: postId, text: _replyCtrl.text.trim()),
-              ),
-              IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _replyingToId = null)),
-            ],
-          )
-        : TextButton.icon(
-            onPressed: () => setState(() { _replyingToId = postId; _replyCtrl.clear(); }),
-            icon: const Icon(LucideIcons.messageSquare, size: 16),
-            label: const Text("Reply"),
-          ),
+                IconButton(
+                  icon: _isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(LucideIcons.send, size: 20),
+                  onPressed: _isSending
+                      ? null
+                      : () => _postMessage(
+                          parentId: postId, text: _replyCtrl.text.trim()),
+                ),
+                IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => setState(() => _replyingToId = null)),
+              ],
+            )
+          : TextButton.icon(
+              onPressed: () => setState(() {
+                _replyingToId = postId;
+                _replyCtrl.clear();
+              }),
+              icon: const Icon(LucideIcons.messageSquare, size: 16),
+              label: const Text("Reply"),
+            ),
     );
   }
 
@@ -254,7 +412,8 @@ class _SaluranViewState extends State<SaluranView> {
       child: ElevatedButton.icon(
         onPressed: () => _showNewPostDialog(),
         icon: const Icon(Icons.add),
-        label: const Text("Start a new conversation", style: TextStyle(fontWeight: FontWeight.bold)),
+        label: const Text("Start a new conversation",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -267,44 +426,54 @@ class _SaluranViewState extends State<SaluranView> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("New Post", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _pesanCtrl,
-                  maxLines: 5,
-                  autofocus: true,
-                  decoration: const InputDecoration(hintText: "What's on your mind?", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSending ? null : () {
-                      _postMessage(text: _pesanCtrl.text.trim());
-                      Navigator.pop(context);
-                    }, 
-                    child: _isSending ? const CircularProgressIndicator(color: Colors.white) : const Text("Post")
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          );
-        }
-      ),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) => StatefulBuilder(builder: (context, setModalState) {
+        return Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("New Post",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _pesanCtrl,
+                maxLines: 5,
+                autofocus: true,
+                decoration: const InputDecoration(
+                    hintText: "What's on your mind?",
+                    border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                    onPressed: _isSending
+                        ? null
+                        : () {
+                            _postMessage(text: _pesanCtrl.text.trim());
+                            Navigator.pop(context);
+                          },
+                    child: _isSending
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Post")),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

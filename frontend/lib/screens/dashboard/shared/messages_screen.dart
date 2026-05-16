@@ -442,23 +442,26 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(LucideIcons.trash2, color: Colors.red),
-              title: const Text('Unsend Pesan',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.red)),
-              subtitle: const Text('Pesan dihapus untuk semua orang'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _unsendMessage(msg['id']);
-              },
-            ),
-          ],
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(LucideIcons.trash2, color: Colors.red),
+                title: const Text('Unsend Pesan',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.red)),
+                subtitle: const Text('Pesan dihapus untuk semua orang'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _unsendMessage(msg['id']);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

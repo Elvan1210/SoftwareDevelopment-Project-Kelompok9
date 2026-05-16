@@ -9,6 +9,7 @@ import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../utils/date_utils.dart';
 
 class SiswaPengumumanView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -23,7 +24,7 @@ class SiswaPengumumanView extends StatefulWidget {
 class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   List<dynamic> _pengumumanList = [];
   bool _isLoading = true;
-  String _search  = '';
+  String _search = '';
   Set<String> _readIds = {};
   bool _showRead = false;
 
@@ -35,7 +36,8 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
 
   Future<void> _loadAndFetch() async {
     final prefs = await SharedPreferences.getInstance();
-    final list  = prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
+    final list =
+        prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
     _readIds = list.toSet();
     await _fetchPengumuman();
   }
@@ -50,7 +52,8 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   }
 
   Future<void> _markAllRead() async {
-    final allIds = _pengumumanList.map((p) => p['id']?.toString() ?? '').toSet();
+    final allIds =
+        _pengumumanList.map((p) => p['id']?.toString() ?? '').toSet();
     setState(() => _readIds.addAll(allIds));
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -68,7 +71,16 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
       );
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        setState(() => _pengumumanList = decoded is List ? decoded : []);
+        List<dynamic> list = decoded is List ? decoded : [];
+        list.sort((a, b) {
+          final aDate =
+              AppDateUtils.parseIndonesianDate(a['tanggal']?.toString() ?? '');
+          final bDate =
+              AppDateUtils.parseIndonesianDate(b['tanggal']?.toString() ?? '');
+          return bDate.compareTo(aDate);
+        });
+
+        setState(() => _pengumumanList = list);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -79,12 +91,14 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   List<dynamic> get _filtered {
     final base = _showRead
         ? _pengumumanList
-        : _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
+        : _pengumumanList
+            .where((p) => !_readIds.contains(p['id']?.toString()))
+            .toList();
     if (_search.isEmpty) return base;
     final q = _search.toLowerCase();
     return base.where((p) {
       return (p['judul'] ?? '').toLowerCase().contains(q) ||
-             (p['isi']   ?? '').toLowerCase().contains(q);
+          (p['isi'] ?? '').toLowerCase().contains(q);
     }).toList();
   }
 
@@ -101,7 +115,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
         onRefresh: _fetchPengumuman,
         color: AppTheme.amber,
         child: LayoutBuilder(builder: (ctx, c) {
-          final w       = c.maxWidth;
+          final w = c.maxWidth;
           final padding = Breakpoints.screenPadding(w);
 
           return CustomScrollView(
@@ -114,10 +128,16 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ── Header ────────────────────────────────────
-                      _Header(isDark: isDark, count: _filtered.length,
-                        unread: _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length,
+                      _Header(
+                        isDark: isDark,
+                        count: _filtered.length,
+                        unread: _pengumumanList
+                            .where(
+                                (p) => !_readIds.contains(p['id']?.toString()))
+                            .length,
                         showRead: _showRead,
-                        onToggleRead: () => setState(() => _showRead = !_showRead),
+                        onToggleRead: () =>
+                            setState(() => _showRead = !_showRead),
                         onMarkAll: _markAllRead,
                       ).animate().fadeIn(duration: 400.ms),
                       const SizedBox(height: 16),
@@ -153,13 +173,15 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                         delegate: SliverChildBuilderDelegate(
                           (context, i) {
                             final p = _filtered[i];
-                            final isRead = _readIds.contains(p['id']?.toString());
+                            final isRead =
+                                _readIds.contains(p['id']?.toString());
                             return _PengumumanDetailCard(
                               pengumuman: p,
                               isDark: isDark,
                               index: i,
                               isRead: isRead,
-                              onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
+                              onMarkRead: () =>
+                                  _markRead(p['id']?.toString() ?? ''),
                             );
                           },
                           childCount: _filtered.length,
@@ -193,8 +215,13 @@ class _Header extends StatelessWidget {
   final bool showRead;
   final VoidCallback onToggleRead;
   final VoidCallback onMarkAll;
-  const _Header({required this.isDark, required this.count, required this.unread,
-    required this.showRead, required this.onToggleRead, required this.onMarkAll});
+  const _Header(
+      {required this.isDark,
+      required this.count,
+      required this.unread,
+      required this.showRead,
+      required this.onToggleRead,
+      required this.onMarkAll});
 
   @override
   Widget build(BuildContext context) {
@@ -204,18 +231,24 @@ class _Header extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 48, height: 48,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.amber, Color(0xFFF97316)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
-                  BoxShadow(color: AppTheme.amber.withAlpha(100), blurRadius: 16, offset: const Offset(0, 6)),
+                  BoxShadow(
+                      color: AppTheme.amber.withAlpha(100),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6)),
                 ],
               ),
-              child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 22),
+              child: const Icon(LucideIcons.megaphone,
+                  color: Colors.white, size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -223,11 +256,20 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Pengumuman Sekolah',
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5, color: isDark ? Colors.white : AppTheme.textLight)),
-                  Text(unread > 0 ? '$unread belum dibaca' : 'Semua sudah dibaca',
-                      style: GoogleFonts.poppins(fontSize: 12,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                          color: isDark ? Colors.white : AppTheme.textLight)),
+                  Text(
+                      unread > 0
+                          ? '$unread belum dibaca'
+                          : 'Semua sudah dibaca',
+                      style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppTheme.textMutedDk
+                              : AppTheme.textMutedLt)),
                 ],
               ),
             ),
@@ -241,17 +283,23 @@ class _Header extends StatelessWidget {
               GestureDetector(
                 onTap: onMarkAll,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
                     borderRadius: BorderRadius.circular(100),
-                    border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
+                    border: Border.all(
+                        color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
                   ),
                   child: Row(children: [
-                    const Icon(LucideIcons.checkCheck, size: 12, color: AppTheme.emerald),
+                    const Icon(LucideIcons.checkCheck,
+                        size: 12, color: AppTheme.emerald),
                     const SizedBox(width: 5),
                     Text('Tandai Semua Dibaca',
-                        style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
+                        style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.emerald)),
                   ]),
                 ),
               ),
@@ -259,17 +307,24 @@ class _Header extends StatelessWidget {
             GestureDetector(
               onTap: onToggleRead,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
                   borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: AppTheme.indigoPrimary.withAlpha(isDark ? 70 : 50)),
+                  border: Border.all(
+                      color:
+                          AppTheme.indigoPrimary.withAlpha(isDark ? 70 : 50)),
                 ),
                 child: Row(children: [
-                  Icon(showRead ? LucideIcons.eyeOff : LucideIcons.eye, size: 12, color: AppTheme.indigoPrimary),
+                  Icon(showRead ? LucideIcons.eyeOff : LucideIcons.eye,
+                      size: 12, color: AppTheme.indigoPrimary),
                   const SizedBox(width: 5),
                   Text(showRead ? 'Sembunyikan Dibaca' : 'Tampilkan Semua',
-                      style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.indigoPrimary)),
+                      style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.indigoPrimary)),
                 ]),
               ),
             ),
@@ -292,16 +347,19 @@ class _SearchBar extends StatelessWidget {
       padding: EdgeInsets.zero,
       child: TextField(
         onChanged: onChanged,
-        style: GoogleFonts.poppins(fontSize: 14,
-          color: isDark ? Colors.white : AppTheme.textLight),
+        style: GoogleFonts.poppins(
+            fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
         decoration: InputDecoration(
           hintText: 'Cari pengumuman...',
-          hintStyle: GoogleFonts.poppins(fontSize: 13,
-            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          prefixIcon: Icon(LucideIcons.search, size: 18,
-            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          hintStyle: GoogleFonts.poppins(
+              fontSize: 13,
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          prefixIcon: Icon(LucideIcons.search,
+              size: 18,
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
@@ -333,7 +391,7 @@ class _PengumumanDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
-    final author  = pengumuman['author']?.toString();
+    final author = pengumuman['author']?.toString();
 
     return PremiumCard(
       accentColor: AppTheme.amber,
@@ -352,8 +410,10 @@ class _PengumumanDetailCard extends StatelessWidget {
                   AppTheme.amber.withAlpha(isDark ? 15 : 8),
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
-              border: Border(bottom: BorderSide(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(19)),
+              border: Border(
+                  bottom: BorderSide(
                 color: AppTheme.amber.withAlpha(isDark ? 40 : 25),
               )),
             ),
@@ -369,10 +429,14 @@ class _PengumumanDetailCard extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
-                      BoxShadow(color: AppTheme.amber.withAlpha(80), blurRadius: 8, offset: const Offset(0, 3)),
+                      BoxShadow(
+                          color: AppTheme.amber.withAlpha(80),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3)),
                     ],
                   ),
-                  child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 16),
+                  child: const Icon(LucideIcons.megaphone,
+                      color: Colors.white, size: 16),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -391,7 +455,8 @@ class _PengumumanDetailCard extends StatelessWidget {
                 if (tanggal.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.amber.withAlpha(isDark ? 35 : 20),
                       borderRadius: BorderRadius.circular(8),
@@ -425,7 +490,9 @@ class _PengumumanDetailCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                Divider(height: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+                Divider(
+                    height: 1,
+                    color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -433,16 +500,19 @@ class _PengumumanDetailCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
+                          color: AppTheme.indigoPrimary
+                              .withAlpha(isDark ? 40 : 20),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(LucideIcons.user, size: 12, color: AppTheme.indigoPrimary),
+                        child: const Icon(LucideIcons.user,
+                            size: 12, color: AppTheme.indigoPrimary),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Oleh: $author',
                         style: GoogleFonts.poppins(
-                          fontSize: 12, fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.indigoPrimary,
                         ),
                       ),
@@ -453,27 +523,42 @@ class _PengumumanDetailCard extends StatelessWidget {
                       GestureDetector(
                         onTap: onMarkRead,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
                             borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
+                            border: Border.all(
+                                color: AppTheme.emerald
+                                    .withAlpha(isDark ? 70 : 50)),
                           ),
                           child: Row(children: [
-                            const Icon(LucideIcons.check, size: 11, color: AppTheme.emerald),
+                            const Icon(LucideIcons.check,
+                                size: 11, color: AppTheme.emerald),
                             const SizedBox(width: 4),
                             Text('Tandai Dibaca',
-                                style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
+                                style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.emerald)),
                           ]),
                         ),
                       )
                     else
                       Row(children: [
-                        Icon(LucideIcons.checkCheck, size: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        Icon(LucideIcons.checkCheck,
+                            size: 11,
+                            color: isDark
+                                ? AppTheme.textMutedDk
+                                : AppTheme.textMutedLt),
                         const SizedBox(width: 4),
                         Text('Dibaca',
-                            style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600,
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                            style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? AppTheme.textMutedDk
+                                    : AppTheme.textMutedLt)),
                       ]),
                   ],
                 ),
@@ -488,4 +573,3 @@ class _PengumumanDetailCard extends StatelessWidget {
         .slideY(begin: 0.08, curve: Curves.easeOutQuart);
   }
 }
-

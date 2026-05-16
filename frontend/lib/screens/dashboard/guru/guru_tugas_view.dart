@@ -14,13 +14,13 @@ import 'package:lucide_icons/lucide_icons.dart';
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  final dynamic teamData; 
+  final dynamic teamData;
 
   const GuruTugasView({
-    super.key, 
-    required this.userData, 
+    super.key,
+    required this.userData,
     required this.token,
-    required this.teamData, 
+    required this.teamData,
   });
 
   @override
@@ -91,36 +91,43 @@ class _GuruTugasViewState extends State<GuruTugasView> {
 
   void _showTugasForm([Map<String, dynamic>? tugas]) {
     final isEditing = tugas != null;
-    final judulCtrl = TextEditingController(text: isEditing ? tugas['judul'] : '');
-    final deskripsiCtrl = TextEditingController(text: isEditing ? (tugas['deskripsi'] ?? '') : '');
-    final linkCtrl = TextEditingController(text: isEditing ? (tugas['link'] ?? '') : '');
+    final judulCtrl =
+        TextEditingController(text: isEditing ? tugas['judul'] : '');
+    final deskripsiCtrl = TextEditingController(
+        text: isEditing ? (tugas['deskripsi'] ?? '') : '');
+    final linkCtrl =
+        TextEditingController(text: isEditing ? (tugas['link'] ?? '') : '');
 
     DateTime? selectedDeadline;
     if (isEditing && tugas['deadline'] != null) {
       selectedDeadline = DateTime.tryParse(tugas['deadline']);
     }
 
-    String selectedChannelId = isEditing ? (tugas['channel_id'] ?? 'general') : 'general';
+    String selectedChannelId =
+        isEditing ? (tugas['channel_id'] ?? 'general') : 'general';
     bool isUploading = false; // State untuk loading upload
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          final deadlineStr = selectedDeadline != null 
+          final deadlineStr = selectedDeadline != null
               ? DateFormat('dd MMM yyyy, HH:mm').format(selectedDeadline!)
-              : (isEditing ? (tugas['deadline'] ?? 'Pilih Deadline') : 'Pilih Deadline');
+              : (isEditing
+                  ? (tugas['deadline'] ?? 'Pilih Deadline')
+                  : 'Pilih Deadline');
 
           Future<void> handleUploadFile() async {
-            fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
+            fp.FilePickerResult? result =
+                await fp.FilePicker.platform.pickFiles(
               type: fp.FileType.custom,
               allowedExtensions: ['jpg', 'png', 'pdf', 'doc', 'docx'],
-              withData: true, 
+              withData: true,
             );
 
             if (result != null && result.files.single.bytes != null) {
               setDialogState(() => isUploading = true);
-              
+
               String? url = await UploadService.uploadFile(
                 fileBytes: result.files.single.bytes!,
                 fileName: result.files.single.name,
@@ -131,131 +138,222 @@ class _GuruTugasViewState extends State<GuruTugasView> {
 
               if (url != null) {
                 linkCtrl.text = url; // Isi kolom link secara otomatis!
-                if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('File terunggah!'), backgroundColor: Colors.green));
+                if (ctx.mounted)
+                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                      content: Text('File terunggah!'),
+                      backgroundColor: Colors.green));
               } else {
-                if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Gagal upload!'), backgroundColor: Colors.red));
+                if (ctx.mounted)
+                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                      content: Text('Gagal upload!'),
+                      backgroundColor: Colors.red));
               }
             }
           }
 
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru',
+                style: const TextStyle(fontWeight: FontWeight.w900)),
             content: SizedBox(
-              width: 500,
+              width: MediaQuery.of(ctx).size.width * 0.9, 
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppTextField(controller: judulCtrl, labelText: 'Judul Tugas', prefixIcon: LucideIcons.type),
+                    AppTextField(
+                        controller: judulCtrl,
+                        labelText: 'Judul Tugas',
+                        prefixIcon: LucideIcons.type),
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(100)),
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withAlpha(100)),
                         borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TextField(
+                        controller: deskripsiCtrl,
+                        maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        decoration: const InputDecoration(
+                          labelText: 'Deskripsi Detail',
+                          prefixIcon: Icon(LucideIcons.fileText),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
                         ),
-                        child: TextField(
-                          controller: deskripsiCtrl,
-                          maxLines: 5,
-                          keyboardType: TextInputType.multiline,
-                          decoration: const InputDecoration(
-                            labelText: 'Deskripsi Detail',
-                            prefixIcon: Icon(LucideIcons.fileText),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            ),
-                            ),
-                            ),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: selectedChannelId,
                       decoration: InputDecoration(
                         labelText: 'Bagikan ke Channel...',
-                        prefixIcon: const Icon(LucideIcons.messageSquare),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon:
+                            const Icon(LucideIcons.messageSquare, size: 16),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
                       ),
                       items: [
-                        const DropdownMenuItem(value: 'general', child: Text('General (Seluruh Kelas)')),
+                        const DropdownMenuItem(
+                            value: 'general',
+                            child: Text('General (Seluruh Kelas)',
+                                style: TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis)),
                         for (var c in _channels)
-                          DropdownMenuItem(value: c['id'].toString(), child: Text(c['nama_channel'] ?? '-')),
+                          DropdownMenuItem(
+                              value: c['id'].toString(),
+                              child: Text(
+                                c['nama_channel'] ?? '-',
+                                style: const TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              )),
                       ],
                       onChanged: (val) {
-                        if (val != null) setDialogState(() => selectedChannelId = val);
+                        if (val != null)
+                          setDialogState(() => selectedChannelId = val);
                       },
                     ),
                     const SizedBox(height: 16),
                     // TOMBOL DEADLINE...
                     InkWell(
                       onTap: () async {
-                        final date = await showDatePicker(context: ctx, initialDate: selectedDeadline ?? DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2100));
+                        final date = await showDatePicker(
+                            context: ctx,
+                            initialDate: selectedDeadline ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100));
                         if (date != null) {
                           if (!ctx.mounted) return;
-                          final time = await showTimePicker(context: ctx, initialTime: TimeOfDay.fromDateTime(selectedDeadline ?? DateTime.now()));
+                          final time = await showTimePicker(
+                              context: ctx,
+                              initialTime: TimeOfDay.fromDateTime(
+                                  selectedDeadline ?? DateTime.now()));
                           if (time != null) {
-                            setDialogState(() => selectedDeadline = DateTime(date.year, date.month, date.day, time.hour, time.minute));
+                            setDialogState(() => selectedDeadline = DateTime(
+                                date.year,
+                                date.month,
+                                date.day,
+                                time.hour,
+                                time.minute));
                           }
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFF8DBCC3)), borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFF8DBCC3)),
+                            borderRadius: BorderRadius.circular(12)),
                         child: Row(children: [
-                          Icon(LucideIcons.calendar, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), size: 20),
+                          Icon(LucideIcons.calendar,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.65),
+                              size: 20),
                           const SizedBox(width: 12),
-                          Text(deadlineStr, style: TextStyle(color: selectedDeadline != null ? Colors.black : Colors.grey.shade600, fontSize: 16)),
+                          Text(deadlineStr,
+                              style: TextStyle(
+                                  color: selectedDeadline != null
+                                      ? Colors.black
+                                      : Colors.grey.shade600,
+                                  fontSize: 16)),
                         ]),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // TOMBOL UPLOAD FILE
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-                            ),
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12))),
                             onPressed: isUploading ? null : handleUploadFile,
-                            icon: isUploading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(LucideIcons.upload),
-                            label: Text(isUploading ? 'Mengunggah...' : 'Upload Lampiran (PDF/Foto)'),
+                            icon: isUploading
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white, strokeWidth: 2))
+                                : const Icon(LucideIcons.upload),
+                            label: Text(isUploading
+                                ? 'Mengunggah...' : 'Upload Lampiran',
+                                style: const TextStyle(fontSize: 13),),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     // Tampilkan link jika sudah ada
-                    AppTextField(controller: linkCtrl, labelText: 'Link File (Terisi Otomatis/Manual)', prefixIcon: LucideIcons.link),
+                    AppTextField(
+                        controller: linkCtrl,
+                        labelText: 'Link File (Terisi Otomatis/Manual)',
+                        prefixIcon: LucideIcons.link),
                   ],
                 ),
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Batal')),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondary, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Colors.white),
                 onPressed: () async {
                   final body = {
                     'judul': judulCtrl.text,
                     'deskripsi': deskripsiCtrl.text,
-                    'deadline': selectedDeadline?.toIso8601String() ?? (isEditing ? tugas['deadline'] : null),
+                    'deadline': selectedDeadline?.toIso8601String() ??
+                        (isEditing ? tugas['deadline'] : null),
                     'link': linkCtrl.text, // Link tersimpan di database
-                    'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
-                    'kelas': widget.teamData['nama_kelas'], 
-                    'kelas_id': widget.teamData['id'], 
+                    'mapel': widget.teamData['mapel'] ??
+                        widget.userData['kelas'] ??
+                        '-',
+                    'kelas': widget.teamData['nama_kelas'],
+                    'kelas_id': widget.teamData['id'],
                     'guru_id': widget.userData['id'],
-                    'channel_id': selectedChannelId, // Menyimpan channel_id spesifik
-                    'waktu': DateTime.now().toIso8601String(), // Waktu posting untuk channel feed
+                    'guru_nama': widget.userData['nama'],
+                    'channel_id':
+                        selectedChannelId, // Menyimpan channel_id spesifik
+                    'waktu': DateTime.now()
+                        .toIso8601String(), // Waktu posting untuk channel feed
                   };
-                  final url = isEditing ? '$baseUrl/api/tugas/${tugas['id']}' : '$baseUrl/api/tugas';
+                  final url = isEditing
+                      ? '$baseUrl/api/tugas/${tugas['id']}'
+                      : '$baseUrl/api/tugas';
                   final response = await (isEditing
-                      ? http.put(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
-                      : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
+                      ? http.put(Uri.parse(url),
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ${widget.token}'
+                          },
+                          body: jsonEncode(body))
+                      : http.post(Uri.parse(url),
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ${widget.token}'
+                          },
+                          body: jsonEncode(body)));
 
-                  if (response.statusCode == 200 || response.statusCode == 201) {
+                  if (response.statusCode == 200 ||
+                      response.statusCode == 201) {
                     if (ctx.mounted) Navigator.pop(ctx);
                     _fetchTugas();
                   }
@@ -283,7 +381,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
         label: 'Buat Tugas',
       ),
       body: _tugasList.isEmpty
-          ? EmptyState(icon: LucideIcons.clipboardList, message: 'Belum ada tugas di kelas ini.', color: Theme.of(context).colorScheme.secondary)
+          ? EmptyState(
+              icon: LucideIcons.clipboardList,
+              message: 'Belum ada tugas di kelas ini.',
+              color: Theme.of(context).colorScheme.secondary)
           : RepaintBoundary(
               child: RefreshIndicator(
                 onRefresh: _fetchTugas,
@@ -309,7 +410,8 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     final Map<String, List<dynamic>> groups = {};
                     for (final t in sortedTasks) {
                       String dateLabel = 'Tanpa Tenggat Waktu';
-                      if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
+                      if (t['deadline'] != null &&
+                          t['deadline'].toString().isNotEmpty) {
                         final dt = DateTime.tryParse(t['deadline']);
                         if (dt != null) {
                           dateLabel = DateFormat('MMM d, EEEE').format(dt);
@@ -325,50 +427,66 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     for (int i = 0; i < groupKeys.length; i++) {
                       final key = groupKeys[i];
                       final items = groups[key]!;
-                      
-                      slivers.add(
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(padding.left, 24, padding.right, 16),
-                            child: Text(key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+
+                      slivers.add(SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                              padding.left, 24, padding.right, 16),
+                          child: Text(key,
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.65))),
+                        ),
+                      ));
+
+                      slivers.add(SliverPadding(
+                        padding: EdgeInsets.fromLTRB(
+                            padding.left,
+                            0,
+                            padding.right,
+                            i < groupKeys.length - 1 ? 24 : padding.bottom),
+                        sliver: SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossCount,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: crossCount == 1 ? 2.5 : 2.2,
                           ),
-                        )
-                      );
-                      
-                      slivers.add(
-                        SliverPadding(
-                          padding: EdgeInsets.fromLTRB(padding.left, 0, padding.right, i < groupKeys.length - 1 ? 24 : padding.bottom),
-                          sliver: SliverGrid(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossCount,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              childAspectRatio: crossCount == 1 ? 3.5 : 2.2,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, j) {
-                                final t = items[j];
-                                return _GuruTugasCard(
-                                  tugas: t,
-                                  onEdit: () => _showTugasForm(t),
-                                  onDelete: () => _deleteTugas(t['id'].toString()),
-                                  onDetail: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => GuruTugasDetailScreen(tugas: t, token: widget.token),
-                                    ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, j) {
+                              final t = items[j];
+                              return _GuruTugasCard(
+                                tugas: t,
+                                onEdit: () => _showTugasForm(t),
+                                onDelete: () =>
+                                    _deleteTugas(t['id'].toString()),
+                                onDetail: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => GuruTugasDetailScreen(
+                                        tugas: t, token: widget.token),
                                   ),
-                                ).animate(delay: (j * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                              },
-                              childCount: items.length,
-                            ),
+                                ),
+                              )
+                                  .animate(delay: (j * 40).ms)
+                                  .fadeIn(duration: 400.ms)
+                                  .slideY(
+                                      begin: 0.1, curve: Curves.easeOutQuart);
+                            },
+                            childCount: items.length,
                           ),
-                        )
-                      );
+                        ),
+                      ));
                     }
 
                     return CustomScrollView(
-                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics()),
                       slivers: slivers,
                     );
                   },
@@ -394,15 +512,19 @@ class _GuruTugasCard extends StatelessWidget {
   final dynamic tugas;
   final VoidCallback onEdit, onDelete, onDetail;
 
-  const _GuruTugasCard({required this.tugas, required this.onEdit, required this.onDelete, required this.onDetail});
+  const _GuruTugasCard(
+      {required this.tugas,
+      required this.onEdit,
+      required this.onDelete,
+      required this.onDetail});
 
   String _formatDeadline(String? dl) {
     if (dl == null || dl.isEmpty) return '-';
     final parsed = DateTime.tryParse(dl);
     if (parsed != null) {
-      return DateFormat('dd MMM yyyyy, HH:mm').format(parsed);
+      return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
     }
-    return dl; 
+    return dl;
   }
 
   @override
@@ -422,7 +544,9 @@ class _GuruTugasCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: accent.withAlpha(20), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                    color: accent.withAlpha(20),
+                    borderRadius: BorderRadius.circular(12)),
                 child: Icon(LucideIcons.clipboardList, color: accent, size: 22),
               ),
               const SizedBox(width: 16),
@@ -430,9 +554,16 @@ class _GuruTugasCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tugas['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(tugas['judul'] ?? '-',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w900, fontSize: 16),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
-                    Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160))),
+                    Text('Kelas: ${tugas['kelas'] ?? '-'}',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: theme.colorScheme.onSurface.withAlpha(160))),
                   ],
                 ),
               ),
@@ -441,11 +572,25 @@ class _GuruTugasCard extends StatelessWidget {
                   if (val == 'edit') onEdit();
                   if (val == 'delete') onDelete();
                 },
-                icon: Icon(LucideIcons.moreVertical, color: theme.colorScheme.onSurface.withAlpha(160)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                icon: Icon(LucideIcons.moreVertical,
+                    color: theme.colorScheme.onSurface.withAlpha(160)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
-                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                  const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(children: [
+                        Icon(LucideIcons.edit2, size: 20),
+                        SizedBox(width: 12),
+                        Text('Edit')
+                      ])),
+                  const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(children: [
+                        Icon(LucideIcons.trash, color: Colors.red, size: 20),
+                        SizedBox(width: 12),
+                        Text('Hapus', style: TextStyle(color: Colors.red))
+                      ])),
                 ],
               ),
             ],
@@ -457,12 +602,22 @@ class _GuruTugasCard extends StatelessWidget {
               if (tugas['deadline'] != null)
                 Row(
                   children: [
-                    Icon(LucideIcons.clock, size: 14, color: theme.colorScheme.secondary.withAlpha(180)),
+                    Icon(LucideIcons.clock,
+                        size: 14,
+                        color: theme.colorScheme.secondary.withAlpha(180)),
                     const SizedBox(width: 6),
-                    Text(_formatDeadline(tugas['deadline']), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.secondary)),
+                    Text(_formatDeadline(tugas['deadline']),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.secondary)),
                   ],
                 ),
-              Text('Detail >', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: accent.withAlpha(200))),
+              Text('Detail >',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: accent.withAlpha(200))),
             ],
           ),
         ],

@@ -11,7 +11,11 @@ class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
   final dynamic teamData;
-  const GuruNilaiView({super.key, required this.userData, required this.token, required this.teamData});
+  const GuruNilaiView(
+      {super.key,
+      required this.userData,
+      required this.token,
+      required this.teamData});
 
   @override
   State<GuruNilaiView> createState() => _GuruNilaiViewState();
@@ -36,15 +40,16 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/users'), headers: headers),
       ]);
-
+      
       if (responses[0].statusCode == 200) {
         final dec = jsonDecode(responses[0].body);
         List data = dec is List ? dec : [];
         _nilaiList = data.where((n) {
-          final bool isMyClass = widget.teamData['id'] != null 
-              ? n['kelas_id'].toString() == widget.teamData['id'].toString() 
+          final bool isMyClass = widget.teamData['id'] != null
+              ? n['kelas_id'].toString() == widget.teamData['id'].toString()
               : true;
-          return n['guru_id'].toString() == widget.userData['id'].toString() && isMyClass;
+          return n['guru_id'].toString() == widget.userData['id'].toString() &&
+              isMyClass;
         }).toList();
       }
       if (responses[1].statusCode == 200) {
@@ -54,7 +59,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           // Hanya siswa yang ada di kelas ini
           final kelasId = widget.teamData['id']?.toString() ?? '';
           if (u['role'] != 'Siswa') return false;
-          if (u['kelas_id'] != null && u['kelas_id'].toString() == kelasId) return true;
+          if (u['kelas_id'] != null && u['kelas_id'].toString() == kelasId)
+            return true;
           // Cek array siswa_ids di kelas jika user belum set kelas_id
           List sIds = widget.teamData['siswa_ids'] ?? [];
           return sIds.contains(u['id']);
@@ -83,16 +89,21 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   void _showNilaiForm([Map<String, dynamic>? nilai]) {
     final isEditing = nilai != null;
     String? selectedSiswaId = isEditing ? nilai['siswa_id'].toString() : null;
-    final mapelCtrl = TextEditingController(text: isEditing ? nilai['mapel'] : widget.userData['kelas'] ?? '');
-    final nilaiCtrl = TextEditingController(text: isEditing ? nilai['nilai']?.toString() : '');
-    final keteranganCtrl = TextEditingController(text: isEditing ? nilai['keterangan'] : '');
+    final mapelCtrl = TextEditingController(
+        text: isEditing ? nilai['mapel'] : widget.userData['kelas'] ?? '');
+    final nilaiCtrl = TextEditingController(
+        text: isEditing ? nilai['nilai']?.toString() : '');
+    final keteranganCtrl =
+        TextEditingController(text: isEditing ? nilai['keterangan'] : '');
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text(isEditing ? 'Edit Nilai' : 'Input Nilai Siswa', style: const TextStyle(fontWeight: FontWeight.w900)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text(isEditing ? 'Edit Nilai' : 'Input Nilai Siswa',
+              style: const TextStyle(fontWeight: FontWeight.w900)),
           content: SizedBox(
             width: 500,
             child: SingleChildScrollView(
@@ -102,40 +113,64 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: selectedSiswaId,
+                    isExpanded: true,
                     decoration: InputDecoration(
                       labelText: 'Pilih Siswa',
                       prefixIcon: const Icon(LucideIcons.user),
-                      filled: true,
-                      fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      fillColor:
+                          Theme.of(context).colorScheme.surface.withAlpha(50),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                     ),
+                    hint: const Text('Pilih siswa...'),
                     items: _userList.map<DropdownMenuItem<String>>((u) {
-                      return DropdownMenuItem<String>(value: u['id'].toString(), child: Text(u['nama'] ?? '-'));
+                      return DropdownMenuItem<String>(
+                          value: u['id'].toString(),
+                          child: Text(u['nama'] ?? '-'));
                     }).toList(),
-                    onChanged: (val) => setDialogState(() => selectedSiswaId = val),
+                    onChanged: (val) =>
+                        setDialogState(() => selectedSiswaId = val),
                   ),
                   const SizedBox(height: 16),
-                  AppTextField(controller: mapelCtrl, labelText: 'Mata Pelajaran', prefixIcon: LucideIcons.bookOpen),
+                  AppTextField(
+                      controller: mapelCtrl,
+                      labelText: 'Mata Pelajaran',
+                      prefixIcon: LucideIcons.bookOpen),
                   const SizedBox(height: 16),
-                  AppTextField(controller: nilaiCtrl, labelText: 'Nilai (0-100)', prefixIcon: LucideIcons.award, keyboardType: TextInputType.number),
+                  AppTextField(
+                      controller: nilaiCtrl,
+                      labelText: 'Nilai (0-100)',
+                      prefixIcon: LucideIcons.award,
+                      keyboardType: TextInputType.number),
                   const SizedBox(height: 16),
-                  AppTextField(controller: keteranganCtrl, labelText: 'Keterangan / Catatan', prefixIcon: LucideIcons.messageSquare, keyboardType: TextInputType.multiline),
+                  AppTextField(
+                      controller: keteranganCtrl,
+                      labelText: 'Keterangan / Catatan',
+                      prefixIcon: LucideIcons.messageSquare,
+                      keyboardType: TextInputType.multiline),
                 ],
               ),
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Batal')),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               onPressed: () async {
                 if (selectedSiswaId == null || nilaiCtrl.text.isEmpty) return;
-                final siswa = _userList.firstWhere((u) => u['id'].toString() == selectedSiswaId);
+                final siswa = _userList
+                    .firstWhere((u) => u['id'].toString() == selectedSiswaId);
                 final body = {
                   'siswa_id': selectedSiswaId,
                   'siswa_nama': siswa['nama'],
@@ -146,17 +181,30 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   'kelas_id': widget.teamData['id'],
                 };
 
-                final url = isEditing ? '$baseUrl/api/nilai/${nilai['id']}' : '$baseUrl/api/nilai';
+                final url = isEditing
+                    ? '$baseUrl/api/nilai/${nilai['id']}'
+                    : '$baseUrl/api/nilai';
                 final response = await (isEditing
-                    ? http.put(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
-                    : http.post(Uri.parse(url), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
+                    ? http.put(Uri.parse(url),
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': 'Bearer ${widget.token}'
+                        },
+                        body: jsonEncode(body))
+                    : http.post(Uri.parse(url),
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': 'Bearer ${widget.token}'
+                        },
+                        body: jsonEncode(body)));
 
                 if (response.statusCode == 200 || response.statusCode == 201) {
                   if (ctx.mounted) Navigator.pop(ctx);
                   _fetchData();
                 }
               },
-              child: Text(isEditing ? 'Simpan' : 'Simpan Nilai', style: const TextStyle(fontWeight: FontWeight.w800)),
+              child: Text(isEditing ? 'Simpan' : 'Simpan Nilai',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -179,14 +227,19 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           label: 'Input Nilai',
         ),
         body: _nilaiList.isEmpty
-            ? const EmptyState(icon: LucideIcons.award, message: 'Belum ada data nilai\nyang diinput.', color: Color(0xFF10B981))
+            ? const EmptyState(
+                icon: LucideIcons.award,
+                message: 'Belum ada data nilai\nyang diinput.',
+                color: Color(0xFF10B981))
             : RefreshIndicator(
                 onRefresh: _fetchData,
                 child: LayoutBuilder(
                   builder: (ctx, c) {
                     final w = c.maxWidth;
                     final padding = Breakpoints.screenPadding(w);
-                    final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+                    final crossCount = w >= Breakpoints.tablet
+                        ? 3
+                        : (w >= Breakpoints.mobile ? 2 : 1);
 
                     return GridView.builder(
                       padding: padding,
@@ -203,7 +256,10 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                           nilai: n,
                           onEdit: () => _showNilaiForm(n),
                           onDelete: () => _deleteNilai(n['id'].toString()),
-                        ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                        )
+                            .animate(delay: (i * 40).ms)
+                            .fadeIn(duration: 400.ms)
+                            .slideY(begin: 0.1, curve: Curves.easeOutQuart);
                       },
                     );
                   },
@@ -229,13 +285,16 @@ class _GuruNilaiCard extends StatelessWidget {
   final dynamic nilai;
   final VoidCallback onEdit, onDelete;
 
-  const _GuruNilaiCard({required this.nilai, required this.onEdit, required this.onDelete});
+  const _GuruNilaiCard(
+      {required this.nilai, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final val = double.tryParse(nilai['nilai'].toString()) ?? 0;
-    final color = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+    final color = val >= 80
+        ? const Color(0xFF10B981)
+        : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
 
     return PremiumCard(
       accentColor: color,
@@ -246,24 +305,53 @@ class _GuruNilaiCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.user, color: color, size: 16)),
+              Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: color.withAlpha(20), shape: BoxShape.circle),
+                  child: Icon(LucideIcons.user, color: color, size: 16)),
               const SizedBox(width: 10),
-              Expanded(child: Text(nilai['siswa_nama'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(
+                  child: Text(nilai['siswa_nama'] ?? '-',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis)),
               IconButton(
                 onPressed: () {
                   final renderBox = context.findRenderObject() as RenderBox;
                   final offset = renderBox.localToGlobal(Offset.zero);
                   showMenu(
                     context: context,
-                    position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    position: RelativeRect.fromLTRB(
+                        offset.dx + renderBox.size.width - 40,
+                        offset.dy,
+                        offset.dx + renderBox.size.width,
+                        offset.dy + 40),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     items: [
-                      PopupMenuItem(onTap: onEdit, child: const Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
-                      PopupMenuItem(onTap: onDelete, child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+                      PopupMenuItem(
+                          onTap: onEdit,
+                          child: const Row(children: [
+                            Icon(LucideIcons.edit2, size: 20),
+                            SizedBox(width: 12),
+                            Text('Edit')
+                          ])),
+                      PopupMenuItem(
+                          onTap: onDelete,
+                          child: const Row(children: [
+                            Icon(LucideIcons.trash,
+                                color: Colors.red, size: 20),
+                            SizedBox(width: 12),
+                            Text('Hapus', style: TextStyle(color: Colors.red))
+                          ])),
                     ],
                   );
                 },
-                icon: Icon(LucideIcons.moreVertical, size: 20, color: theme.colorScheme.onSurface.withAlpha(160)),
+                icon: Icon(LucideIcons.moreVertical,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withAlpha(160)),
               ),
             ],
           ),
@@ -273,12 +361,30 @@ class _GuruNilaiCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(val.toStringAsFixed(0), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-                  Padding(padding: EdgeInsets.only(bottom: 6, left: 4), child: Text('pts', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)))),
+                  Text(val.toStringAsFixed(0),
+                      style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color: color,
+                          letterSpacing: -1)),
+                  Padding(
+                      padding: EdgeInsets.only(bottom: 6, left: 4),
+                      child: Text('pts',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.65)))),
                 ],
               ),
               const SizedBox(height: 2),
-              Text(nilai['mapel'] ?? '-', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
+              Text(nilai['mapel'] ?? '-',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withAlpha(160))),
             ],
           ),
         ],
@@ -286,4 +392,3 @@ class _GuruNilaiCard extends StatelessWidget {
     );
   }
 }
-
