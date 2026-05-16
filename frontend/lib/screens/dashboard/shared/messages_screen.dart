@@ -382,9 +382,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(LucideIcons.messageSquare, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+                Icon(LucideIcons.messageSquare, size: 64, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
                 const SizedBox(height: 16),
-                Text("Pilih obrolan dari kiri atau mulai chat baru", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                Text("Pilih obrolan dari kiri atau mulai chat baru", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
               ],
             )
           )
@@ -404,7 +404,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       children: [
                         Text(activeChatName ?? 'Chat', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                         if (activeConversationType == 'group')
-                          Text("Ketuk untuk info grup", style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                          Text("Ketuk untuk info grup", style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
                       ],
                     ),
                   ),

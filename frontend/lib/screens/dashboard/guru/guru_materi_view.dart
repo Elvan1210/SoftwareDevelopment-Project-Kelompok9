@@ -122,9 +122,9 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
                       ),
                       child: Column(
                         children: [

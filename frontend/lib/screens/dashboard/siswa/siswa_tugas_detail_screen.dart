@@ -540,7 +540,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                     Text('Ketuk untuk membuka',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
                                   ],
                                 ),
                               ),
@@ -615,7 +615,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                               child: Center(
                                 child: Text(
                                     'Belum ada file atau link ditambahkan',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
                               ),
                             ),
 
@@ -680,7 +680,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                           strokeWidth: 2)),
                                   const SizedBox(width: 12),
                                   Text('Mengunggah file...',
-                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
                                 ],
                               ),
                             ),
@@ -772,7 +772,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
         const SizedBox(width: 12),
         Text(
           '$label: ',

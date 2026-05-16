@@ -236,7 +236,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('Buka File Lampiran', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF76AFB8))),
-                            Text('Ketuk untuk mengunduh/melihat', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                            Text('Ketuk untuk mengunduh/melihat', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
                           ],
                         ),
                       ),
@@ -265,10 +265,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 padding: const EdgeInsets.all(20),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                   borderRadius: BorderRadius.circular(12)
                 ),
-                child: Text('Belum ada siswa yang mengumpulkan tugas ini.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                child: Text('Belum ada siswa yang mengumpulkan tugas ini.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
               )
             else
               ListView.builder(
@@ -325,7 +325,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text('Waktu: ${_formatDate(p['waktu_pengumpulan'])}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), fontSize: 12)),
+                          Text('Waktu: ${_formatDate(p['waktu_pengumpulan'])}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontSize: 12)),
                           const Divider(height: 24),
                           const Text('File Jawaban:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                           const SizedBox(height: 8),
@@ -367,7 +367,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                         if (existingNilai['feedback'] != null && existingNilai['feedback'].toString().isNotEmpty)
                                           Padding(
                                             padding: const EdgeInsets.only(top: 4.0),
-                                            child: Text('"${existingNilai['feedback']}"', style: TextStyle(fontStyle: FontStyle.italic, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), fontSize: 12)),
+                                            child: Text('"${existingNilai['feedback']}"', style: TextStyle(fontStyle: FontStyle.italic, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontSize: 12)),
                                           )
                                       ],
                                     )

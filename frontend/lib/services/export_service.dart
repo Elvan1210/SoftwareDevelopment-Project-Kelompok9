@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use, unused_local_variable
 //import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import '../models/quiz_model.dart';

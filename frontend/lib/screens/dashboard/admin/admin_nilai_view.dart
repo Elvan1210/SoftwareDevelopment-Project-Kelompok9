@@ -155,7 +155,7 @@ class _AdminNilaiCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(val.toStringAsFixed(0), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-                  Padding(padding: EdgeInsets.only(bottom: 5, left: 4), child: Text('pts', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)))),
+                  Padding(padding: const EdgeInsets.only(bottom: 5, left: 4), child: Text('pts', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)))),
                 ],
               ),
               const SizedBox(height: 2),

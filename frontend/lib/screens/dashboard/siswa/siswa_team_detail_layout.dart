@@ -276,7 +276,7 @@ void initState() {
   }
 
   Widget _buildSidebarFooter(ThemeData theme) {
-    return Padding(padding: EdgeInsets.all(24.0), child: Text('Siswa Access', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))));
+    return Padding(padding: const EdgeInsets.all(24.0), child: Text('Siswa Access', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))));
   }
 
  Widget _buildMobileLayout(BuildContext context) {

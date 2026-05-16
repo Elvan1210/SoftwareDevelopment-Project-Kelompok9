@@ -419,7 +419,7 @@ class _GuruClassCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 _buildMiniIcon(LucideIcons.award),
                 const Spacer(),
-                Icon(LucideIcons.settings, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+                Icon(LucideIcons.settings, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
               ],
             ),
           ),

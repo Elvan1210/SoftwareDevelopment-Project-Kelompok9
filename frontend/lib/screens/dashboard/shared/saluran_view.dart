@@ -198,7 +198,7 @@ class _SaluranViewState extends State<SaluranView> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withOpacity(0.65))),
+                                    .withValues(alpha: 0.65))),
                       ])
                 ]),
                 const SizedBox(height: 12),

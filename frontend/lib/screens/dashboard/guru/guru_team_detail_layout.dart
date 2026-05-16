@@ -231,7 +231,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
             Text(
               'Kelola materi, tugas, dan kehadiran siswa di sini.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65), fontWeight: FontWeight.w600),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontWeight: FontWeight.w600),
             ),
           ],
         ),

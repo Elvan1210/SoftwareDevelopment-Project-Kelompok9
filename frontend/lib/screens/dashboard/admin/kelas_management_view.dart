@@ -394,11 +394,11 @@ class _TeamsClassCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(LucideIcons.clock, size: 10, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+                            Icon(LucideIcons.clock, size: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
                             const SizedBox(width: 4),
                             Text(
                               'TA: ${kelas['tahun_ajaran'] ?? '-'}',
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65)),
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
                             ),
                           ],
                         ),
@@ -439,7 +439,7 @@ class _TeamsClassCard extends StatelessWidget {
                 const SizedBox(width: 16),
                 _buildMiniIcon(LucideIcons.userCheck),
                 const Spacer(),
-                Text('${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65))),
+                Text('${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
               ],
             ),
           ),
