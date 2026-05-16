@@ -26,6 +26,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   List<dynamic> _nilaiList = [];
   List<dynamic> _userList = [];
   bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -651,13 +652,20 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
       return AppShell(child: _buildSkeleton());
     }
 
+    // Filter by search query
+    final filteredUsers = _searchQuery.isEmpty 
+      ? _userList 
+      : _userList.where((u) => (u['nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+
     // Grouping by student
     final Map<String, List<dynamic>> groupedNilai = {};
-    for (var u in _userList) {
+    for (var u in filteredUsers) {
       groupedNilai[u['id'].toString()] = [];
     }
     for (var n in _nilaiList) {
@@ -680,52 +688,84 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 icon: LucideIcons.users,
                 message: 'Belum ada siswa\ndi kelas ini.',
                 color: Color(0xFF10B981))
-            : RefreshIndicator(
-                onRefresh: _fetchData,
-                child: LayoutBuilder(
-                  builder: (ctx, c) {
-                    final w = c.maxWidth;
-                    final padding = Breakpoints.screenPadding(w);
-                    final crossCount = w >= Breakpoints.tablet
-                        ? 3
-                        : (w >= Breakpoints.mobile ? 2 : 1);
-
-                    return GridView.builder(
-                      padding: padding,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossCount,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: crossCount == 1 ? 2.5 : 1.8,
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withAlpha(isDark ? 40 : 10), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
                       ),
-                      itemCount: _userList.length,
-                      itemBuilder: (_, i) {
-                        final siswa = _userList[i];
-                        final sId = siswa['id'].toString();
-                        final nList = groupedNilai[sId] ?? [];
-                        
-                        double avg = 0;
-                        if (nList.isNotEmpty) {
-                          double sum = 0;
-                          for (var n in nList) {
-                            sum += double.tryParse(n['nilai'].toString()) ?? 0;
-                          }
-                          avg = sum / nList.length;
-                        }
+                      child: TextField(
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                        style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                        decoration: InputDecoration(
+                          hintText: 'Cari nama siswa...',
+                          hintStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? Colors.white54 : Colors.black45),
+                          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? Colors.white54 : Colors.black45),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        ),
+                      ),
+                    ).animate().fadeIn().slideY(begin: -0.1),
+                  ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: _fetchData,
+                      child: filteredUsers.isEmpty 
+                        ? Center(child: Text('Siswa tidak ditemukan.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150))))
+                        : LayoutBuilder(
+                            builder: (ctx, c) {
+                              final w = c.maxWidth;
+                              final padding = Breakpoints.screenPadding(w);
+                              final crossCount = w >= Breakpoints.tablet
+                                  ? 3
+                                  : (w >= Breakpoints.mobile ? 2 : 1);
 
-                        return _GuruRekapCard(
-                          siswa: siswa,
-                          avg: avg,
-                          count: nList.length,
-                          onTap: () => _showStudentDetail(siswa, nList),
-                        )
-                            .animate(delay: (i * 30).ms)
-                            .fadeIn(duration: 400.ms)
-                            .slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                      },
-                    );
-                  },
-                ),
+                              return GridView.builder(
+                                padding: padding.copyWith(top: 8, bottom: 100),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: crossCount == 1 ? 2.5 : 1.8,
+                                ),
+                                itemCount: filteredUsers.length,
+                                itemBuilder: (_, i) {
+                                  final siswa = filteredUsers[i];
+                                  final sId = siswa['id'].toString();
+                                  final nList = groupedNilai[sId] ?? [];
+                                  
+                                  double avg = 0;
+                                  if (nList.isNotEmpty) {
+                                    double sum = 0;
+                                    for (var n in nList) {
+                                      sum += double.tryParse(n['nilai'].toString()) ?? 0;
+                                    }
+                                    avg = sum / nList.length;
+                                  }
+
+                                  return _GuruRekapCard(
+                                    siswa: siswa,
+                                    avg: avg,
+                                    count: nList.length,
+                                    onTap: () => _showStudentDetail(siswa, nList),
+                                  )
+                                      .animate(delay: (i * 30).ms)
+                                      .fadeIn(duration: 400.ms)
+                                      .slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                },
+                              );
+                            },
+                          ),
+                    ),
+                  ),
+                ],
               ),
       ),
     );
