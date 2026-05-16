@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/api_config.dart';
@@ -51,6 +52,13 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           return n['guru_id'].toString() == widget.userData['id'].toString() &&
               isMyClass;
         }).toList();
+        
+        // Sort nilai from newest to oldest
+        _nilaiList.sort((a, b) {
+          final dA = DateTime.tryParse(a['tanggal']?.toString() ?? '') ?? DateTime(2000);
+          final dB = DateTime.tryParse(b['tanggal']?.toString() ?? '') ?? DateTime(2000);
+          return dB.compareTo(dA);
+        });
       }
       if (responses[1].statusCode == 200) {
         final dec = jsonDecode(responses[1].body);
@@ -59,8 +67,9 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           // Hanya siswa yang ada di kelas ini
           final kelasId = widget.teamData['id']?.toString() ?? '';
           if (u['role'] != 'Siswa') return false;
-          if (u['kelas_id'] != null && u['kelas_id'].toString() == kelasId)
+          if (u['kelas_id'] != null && u['kelas_id'].toString() == kelasId) {
             return true;
+          }
           // Cek array siswa_ids di kelas jika user belum set kelas_id
           List sIds = widget.teamData['siswa_ids'] ?? [];
           return sIds.contains(u['id']);
@@ -80,6 +89,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           headers: {'Authorization': 'Bearer ${widget.token}'},
         );
         _fetchData();
+        if (mounted) Navigator.pop(context); // Close detail dialog if open
       } catch (e) {
         debugPrint('Error: $e');
       }
@@ -95,6 +105,9 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         text: isEditing ? nilai['nilai']?.toString() : '');
     final keteranganCtrl =
         TextEditingController(text: isEditing ? nilai['keterangan'] : '');
+    String selectedTipe = isEditing ? (nilai['tipe'] ?? 'Lainnya') : 'Lainnya';
+
+    final List<String> tipeOptions = ['Assignment', 'Kuis', 'Lainnya'];
 
     showDialog(
       context: context,
@@ -134,9 +147,22 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                         setDialogState(() => selectedSiswaId = val),
                   ),
                   const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedTipe,
+                    decoration: InputDecoration(
+                      labelText: 'Tipe Nilai',
+                      prefixIcon: const Icon(LucideIcons.listFilter),
+                      fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    items: tipeOptions.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                    onChanged: (val) => setDialogState(() => selectedTipe = val!),
+                  ),
+                  const SizedBox(height: 16),
                   AppTextField(
                       controller: mapelCtrl,
-                      labelText: 'Mata Pelajaran',
+                      labelText: 'Judul / Topik',
                       prefixIcon: LucideIcons.bookOpen),
                   const SizedBox(height: 16),
                   AppTextField(
@@ -171,14 +197,17 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 if (selectedSiswaId == null || nilaiCtrl.text.isEmpty) return;
                 final siswa = _userList
                     .firstWhere((u) => u['id'].toString() == selectedSiswaId);
+                
                 final body = {
                   'siswa_id': selectedSiswaId,
                   'siswa_nama': siswa['nama'],
                   'mapel': mapelCtrl.text,
                   'nilai': double.tryParse(nilaiCtrl.text) ?? 0,
                   'keterangan': keteranganCtrl.text,
+                  'tipe': selectedTipe,
                   'guru_id': widget.userData['id'],
                   'kelas_id': widget.teamData['id'],
+                  if (!isEditing) 'tanggal': DateTime.now().toIso8601String(),
                 };
 
                 final url = isEditing
@@ -212,10 +241,210 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     );
   }
 
+  String _formatDateStr(String raw) {
+    try {
+      final dt = DateTime.parse(raw);
+      final listHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      final listBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      
+      final hari = listHari[dt.weekday % 7];
+      final tanggal = dt.day;
+      final bulan = listBulan[dt.month - 1];
+      final tahun = dt.year;
+      final jam = dt.hour.toString().padLeft(2, '0');
+      final menit = dt.minute.toString().padLeft(2, '0');
+      
+      return '$hari, $tanggal $bulan $tahun, $jam:$menit';
+    } catch (_) {
+      return raw;
+    }
+  }
+
+  void _showStudentDetail(dynamic siswa, List<dynamic> nilaiSiswa) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: theme.primaryColor.withAlpha(30),
+                      radius: 24,
+                      child: Icon(LucideIcons.user, color: theme.primaryColor),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(siswa['nama'] ?? '-', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18)),
+                          const SizedBox(height: 2),
+                          Text('Detail Nilai Siswa', style: TextStyle(color: theme.textTheme.bodySmall?.color, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(LucideIcons.x, size: 28),
+                      onPressed: () => Navigator.pop(ctx),
+                    )
+                  ],
+                ),
+              ),
+              // List Nilai
+              Expanded(
+                child: nilaiSiswa.isEmpty
+                    ? Center(child: Text('Belum ada nilai yang diinput.', style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(150))))
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(24),
+                        itemCount: nilaiSiswa.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (ctx, i) {
+                          final n = nilaiSiswa[i];
+                          final val = double.tryParse(n['nilai'].toString()) ?? 0;
+                          final tipe = n['tipe'] ?? 'Lainnya';
+                          
+                          IconData iconData = LucideIcons.fileText;
+                          Color iconColor = theme.colorScheme.primary;
+                          if (tipe == 'Kuis') {
+                            iconData = LucideIcons.helpCircle;
+                            iconColor = const Color(0xFFF59E0B);
+                          } else if (tipe == 'Assignment') {
+                            iconData = LucideIcons.clipboardList;
+                            iconColor = const Color(0xFF10B981);
+                          }
+                          
+                          String dateStr = '';
+                          if (n['tanggal'] != null) {
+                            dateStr = _formatDateStr(n['tanggal']);
+                          }
+                          
+                          final colorScore = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+
+                          return Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: isDark ? theme.colorScheme.surface.withAlpha(50) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: theme.dividerColor.withAlpha(30)),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: iconColor.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Icon(iconData, color: iconColor, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      RichText(
+                                        text: TextSpan(
+                                          style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 15, fontFamily: GoogleFonts.poppins().fontFamily),
+                                          children: [
+                                            TextSpan(text: 'Nilai ', style: const TextStyle(fontWeight: FontWeight.w600)),
+                                            TextSpan(text: val.toStringAsFixed(0), style: TextStyle(fontWeight: FontWeight.w900, color: colorScore, fontSize: 16)),
+                                            TextSpan(text: ' dari ', style: const TextStyle(fontWeight: FontWeight.w600)),
+                                            TextSpan(text: n['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                          ]
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      if (dateStr.isNotEmpty)
+                                        Row(
+                                          children: [
+                                            Icon(LucideIcons.calendarClock, size: 12, color: theme.colorScheme.onSurface.withAlpha(140)),
+                                            const SizedBox(width: 6),
+                                            Text(dateStr, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w600)),
+                                          ],
+                                        ),
+                                      if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty) ...[
+                                        const SizedBox(height: 8),
+                                        Text('${n['keterangan']}', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(180), fontStyle: FontStyle.italic)),
+                                      ]
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(LucideIcons.moreVertical, size: 20),
+                                  onPressed: () {
+                                    final renderBox = ctx.findRenderObject() as RenderBox;
+                                    final offset = renderBox.localToGlobal(Offset.zero);
+                                    showMenu(
+                                      context: ctx,
+                                      position: RelativeRect.fromLTRB(offset.dx + renderBox.size.width - 40, offset.dy, offset.dx + renderBox.size.width, offset.dy + 40),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      items: [
+                                        PopupMenuItem(
+                                          onTap: () {
+                                            Navigator.pop(ctx); 
+                                            _showNilaiForm(n); 
+                                          },
+                                          child: const Row(children: [Icon(LucideIcons.edit2, size: 18), SizedBox(width: 12), Text('Edit')]),
+                                        ),
+                                        PopupMenuItem(
+                                          onTap: () {
+                                            Navigator.pop(ctx);
+                                            _deleteNilai(n['id'].toString());
+                                          },
+                                          child: const Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 18), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))]),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return AppShell(child: _buildSkeleton());
+    }
+
+    // Grouping by student
+    final Map<String, List<dynamic>> groupedNilai = {};
+    for (var u in _userList) {
+      groupedNilai[u['id'].toString()] = [];
+    }
+    for (var n in _nilaiList) {
+      final sId = n['siswa_id']?.toString();
+      if (sId != null && groupedNilai.containsKey(sId)) {
+        groupedNilai[sId]!.add(n);
+      }
     }
 
     return AppShell(
@@ -226,10 +455,10 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           icon: LucideIcons.lineChart,
           label: 'Input Nilai',
         ),
-        body: _nilaiList.isEmpty
+        body: _userList.isEmpty
             ? const EmptyState(
-                icon: LucideIcons.award,
-                message: 'Belum ada data nilai\nyang diinput.',
+                icon: LucideIcons.users,
+                message: 'Belum ada siswa\ndi kelas ini.',
                 color: Color(0xFF10B981))
             : RefreshIndicator(
                 onRefresh: _fetchData,
@@ -247,17 +476,30 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                         crossAxisCount: crossCount,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossCount == 1 ? 3.0 : 1.5,
+                        childAspectRatio: crossCount == 1 ? 2.5 : 1.8,
                       ),
-                      itemCount: _nilaiList.length,
+                      itemCount: _userList.length,
                       itemBuilder: (_, i) {
-                        final n = _nilaiList[i];
-                        return _GuruNilaiCard(
-                          nilai: n,
-                          onEdit: () => _showNilaiForm(n),
-                          onDelete: () => _deleteNilai(n['id'].toString()),
+                        final siswa = _userList[i];
+                        final sId = siswa['id'].toString();
+                        final nList = groupedNilai[sId] ?? [];
+                        
+                        double avg = 0;
+                        if (nList.isNotEmpty) {
+                          double sum = 0;
+                          for (var n in nList) {
+                            sum += double.tryParse(n['nilai'].toString()) ?? 0;
+                          }
+                          avg = sum / nList.length;
+                        }
+
+                        return _GuruRekapCard(
+                          siswa: siswa,
+                          avg: avg,
+                          count: nList.length,
+                          onTap: () => _showStudentDetail(siswa, nList),
                         )
-                            .animate(delay: (i * 40).ms)
+                            .animate(delay: (i * 30).ms)
                             .fadeIn(duration: 400.ms)
                             .slideY(begin: 0.1, curve: Curves.easeOutQuart);
                       },
@@ -273,7 +515,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     return GridView.count(
       padding: const EdgeInsets.all(24),
       crossAxisCount: 2,
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.8,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
@@ -281,113 +523,90 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   }
 }
 
-class _GuruNilaiCard extends StatelessWidget {
-  final dynamic nilai;
-  final VoidCallback onEdit, onDelete;
+class _GuruRekapCard extends StatelessWidget {
+  final dynamic siswa;
+  final double avg;
+  final int count;
+  final VoidCallback onTap;
 
-  const _GuruNilaiCard(
-      {required this.nilai, required this.onEdit, required this.onDelete});
+  const _GuruRekapCard(
+      {required this.siswa, required this.avg, required this.count, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final val = double.tryParse(nilai['nilai'].toString()) ?? 0;
-    final color = val >= 80
+    final color = avg >= 80
         ? const Color(0xFF10B981)
-        : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+        : (avg >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+    
+    final isDark = theme.brightness == Brightness.dark;
 
-    return PremiumCard(
-      accentColor: color,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                  padding: const EdgeInsets.all(8),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: PremiumCard(
+        accentColor: color,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: theme.primaryColor.withAlpha(isDark ? 40 : 25), shape: BoxShape.circle),
+                    child: Icon(LucideIcons.user, color: theme.primaryColor, size: 16)),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: Text(siswa['nama'] ?? '-',
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w800, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis)),
+                Icon(LucideIcons.chevronRight, size: 18, color: theme.colorScheme.onSurface.withAlpha(100))
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(count == 0 ? '-' : avg.toStringAsFixed(1),
+                        style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: count == 0 ? theme.disabledColor : color,
+                            letterSpacing: -1)),
+                    if (count > 0)
+                      Padding(
+                          padding: const EdgeInsets.only(bottom: 6, left: 4),
+                          child: Text('avg',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: theme.colorScheme.onSurface.withAlpha(120)))),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                      color: color.withAlpha(20), shape: BoxShape.circle),
-                  child: Icon(LucideIcons.user, color: color, size: 16)),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Text(nilai['siswa_nama'] ?? '-',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis)),
-              IconButton(
-                onPressed: () {
-                  final renderBox = context.findRenderObject() as RenderBox;
-                  final offset = renderBox.localToGlobal(Offset.zero);
-                  showMenu(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                        offset.dx + renderBox.size.width - 40,
-                        offset.dy,
-                        offset.dx + renderBox.size.width,
-                        offset.dy + 40),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    items: [
-                      PopupMenuItem(
-                          onTap: onEdit,
-                          child: const Row(children: [
-                            Icon(LucideIcons.edit2, size: 20),
-                            SizedBox(width: 12),
-                            Text('Edit')
-                          ])),
-                      PopupMenuItem(
-                          onTap: onDelete,
-                          child: const Row(children: [
-                            Icon(LucideIcons.trash,
-                                color: Colors.red, size: 20),
-                            SizedBox(width: 12),
-                            Text('Hapus', style: TextStyle(color: Colors.red))
-                          ])),
-                    ],
-                  );
-                },
-                icon: Icon(LucideIcons.moreVertical,
-                    size: 20,
-                    color: theme.colorScheme.onSurface.withAlpha(160)),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(val.toStringAsFixed(0),
+                    color: count == 0 ? theme.disabledColor.withAlpha(30) : color.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8)
+                  ),
+                  child: Text(count == 0 ? 'Belum ada nilai' : '$count Entri Nilai',
                       style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          color: color,
-                          letterSpacing: -1)),
-                  Padding(
-                      padding: EdgeInsets.only(bottom: 6, left: 4),
-                      child: Text('pts',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.65)))),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Text(nilai['mapel'] ?? '-',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withAlpha(160))),
-            ],
-          ),
-        ],
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: count == 0 ? theme.disabledColor : color)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
