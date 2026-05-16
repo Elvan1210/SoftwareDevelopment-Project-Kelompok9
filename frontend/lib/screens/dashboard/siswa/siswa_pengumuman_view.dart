@@ -28,12 +28,11 @@ const _kategoriMap = {
   'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: AppTheme.purpleSecondary, colorEnd: AppTheme.purpleLight),
 };
 
-_KategoriConfig _getKategori(String? judul) {
-  if (judul == null) return _kategoriMap['Umum']!;
-  final low = judul.toLowerCase();
-  if (low.contains('libur')) return _kategoriMap['Libur']!;
-  if (low.contains('ujian') || low.contains('ulangan') || low.contains('uts') || low.contains('uas')) return _kategoriMap['Ujian']!;
-  if (low.contains('seminar') || low.contains('webinar') || low.contains('workshop')) return _kategoriMap['Seminar']!;
+// Hanya gunakan field kategori eksplisit — tidak ada auto-detect dari judul
+_KategoriConfig _getKategori(String? kategoriField) {
+  if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
+    return _kategoriMap[kategoriField]!;
+  }
   return _kategoriMap['Umum']!;
 }
 
@@ -108,7 +107,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
         ? _pengumumanList
         : _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
     if (_selectedKategori != 'Semua') {
-      base = base.where((p) => _getKategori(p['judul']?.toString()).label == _selectedKategori).toList();
+      base = base.where((p) => _getKategori(p['kategori']?.toString()).label == _selectedKategori).toList();
     }
     if (_search.isEmpty) return base;
     final q = _search.toLowerCase();
@@ -162,42 +161,46 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                       const SizedBox(height: 12),
 
                       // ── Category chips ──
-                      SizedBox(
-                        height: 38,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _kategoriMap.keys.map((k) {
-                            final cfg = _kategoriMap[k]!;
-                            final selected = _selectedKategori == k;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: GestureDetector(
-                                onTap: () => setState(() => _selectedKategori = k),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    gradient: selected ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
-                                    color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
-                                    borderRadius: BorderRadius.circular(100),
-                                    border: Border.all(color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60)),
-                                    boxShadow: selected
-                                        ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
-                                        : [],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
-                                      const SizedBox(width: 6),
-                                      Text(cfg.label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
-                                          color: selected ? Colors.white : cfg.color)),
-                                    ],
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: SizedBox(
+                          height: 46,
+                          child: ListView(
+                            clipBehavior: Clip.none,
+                            scrollDirection: Axis.horizontal,
+                            children: _kategoriMap.keys.map((k) {
+                              final cfg = _kategoriMap[k]!;
+                              final selected = _selectedKategori == k;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedKategori = k),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      gradient: selected ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
+                                      color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
+                                      borderRadius: BorderRadius.circular(100),
+                                      border: Border.all(color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60)),
+                                      boxShadow: selected
+                                          ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
+                                          : [],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
+                                        const SizedBox(width: 6),
+                                        Text(cfg.label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
+                                            color: selected ? Colors.white : cfg.color)),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ).animate().fadeIn(delay: 150.ms),
                       const SizedBox(height: 16),
@@ -393,7 +396,7 @@ class _PengumumanDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
     final author = pengumuman['author']?.toString();
-    final cfg = _getKategori(pengumuman['judul']?.toString());
+    final cfg = _getKategori(pengumuman['kategori']?.toString());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),

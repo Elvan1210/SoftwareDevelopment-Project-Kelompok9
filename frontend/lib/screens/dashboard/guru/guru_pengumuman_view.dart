@@ -29,12 +29,11 @@ const _kategoriMap = {
   'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: AppTheme.purpleSecondary, colorEnd: AppTheme.purpleLight),
 };
 
-_KategoriConfig _getKategori(String? judul) {
-  if (judul == null) return _kategoriMap['Umum']!;
-  final low = judul.toLowerCase();
-  if (low.contains('libur')) return _kategoriMap['Libur']!;
-  if (low.contains('ujian') || low.contains('ulangan') || low.contains('uts') || low.contains('uas')) return _kategoriMap['Ujian']!;
-  if (low.contains('seminar') || low.contains('webinar') || low.contains('workshop')) return _kategoriMap['Seminar']!;
+// Hanya gunakan field kategori eksplisit — tidak ada auto-detect dari judul
+_KategoriConfig _getKategori(String? kategoriField) {
+  if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
+    return _kategoriMap[kategoriField]!;
+  }
   return _kategoriMap['Umum']!;
 }
 
@@ -108,20 +107,24 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
     final isEditing = pengumuman != null;
     final judulCtrl = TextEditingController(text: isEditing ? pengumuman['judul'] : '');
     final isiCtrl = TextEditingController(text: isEditing ? pengumuman['isi'] : '');
+    String formKategori = pengumuman?['kategori']?.toString() ?? '';
+    bool kategoriError = false;
     final tanggalStr = DateFormat('dd MMM yyyy').format(DateTime.now());
 
     showDialog(
       context: context,
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Dialog(
+        return StatefulBuilder(
+          builder: (ctx, setFormState) => Dialog(
           backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.all(28),
             child: SizedBox(
               width: 520,
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -145,6 +148,50 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                   _FormField(controller: judulCtrl, label: 'Judul Pengumuman', icon: LucideIcons.type, isDark: isDark),
                   const SizedBox(height: 16),
                   _FormField(controller: isiCtrl, label: 'Isi Pengumuman', icon: LucideIcons.alignLeft, isDark: isDark, maxLines: 5),
+                  const SizedBox(height: 16),
+                  Text('Kategori', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
+                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ['Umum', 'Ujian', 'Libur', 'Seminar'].map((k) {
+                      final cfg = _kategoriMap[k]!;
+                      final sel = formKategori == k;
+                      return GestureDetector(
+                        onTap: () => setFormState(() {
+                          formKategori = k;
+                          kategoriError = false;
+                        }),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: sel ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
+                            color: sel ? null : (isDark ? AppTheme.darkBg : const Color(0xFFF5F5FF)),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: kategoriError && !sel
+                                  ? AppTheme.rose.withAlpha(120)
+                                  : sel ? Colors.transparent : cfg.color.withAlpha(80),
+                            ),
+                            boxShadow: sel ? [BoxShadow(color: cfg.color.withAlpha(70), blurRadius: 8, offset: const Offset(0, 3))] : [],
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(cfg.icon, size: 13, color: sel ? Colors.white : cfg.color),
+                            const SizedBox(width: 6),
+                            Text(k, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
+                                color: sel ? Colors.white : cfg.color)),
+                          ]),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  if (kategoriError) ...[
+                    const SizedBox(height: 6),
+                    Text('Pilih kategori terlebih dahulu',
+                        style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.rose)),
+                  ],
                   const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -158,12 +205,17 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                         label: isEditing ? 'Simpan' : 'Terbitkan',
                         onPressed: () async {
                           if (judulCtrl.text.isEmpty || isiCtrl.text.isEmpty) return;
+                          if (formKategori.isEmpty) {
+                            setFormState(() => kategoriError = true);
+                            return;
+                          }
                           final body = {
                             'judul': judulCtrl.text,
                             'isi': isiCtrl.text,
                             'tanggal': isEditing ? (pengumuman['tanggal'] ?? tanggalStr) : tanggalStr,
                             'guru_id': widget.userData['id'],
                             'author': widget.userData['nama'],
+                            'kategori': formKategori,
                           };
                           final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
                           try {
@@ -191,7 +243,9 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
       },
     );
   }
@@ -199,7 +253,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
   List<dynamic> get _filtered {
     var list = _pengumumanList;
     if (_selectedKategori != 'Semua') {
-      list = list.where((p) => _getKategori(p['judul']?.toString()).label == _selectedKategori).toList();
+      list = list.where((p) => _getKategori(p['kategori']?.toString()).label == _selectedKategori).toList();
     }
     if (_search.isNotEmpty) {
       final q = _search.toLowerCase();
@@ -255,9 +309,12 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
             ),
             const SizedBox(height: 12),
             // Category chips
-            SizedBox(
-              height: 38,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: SizedBox(
+              height: 46,
               child: ListView(
+                clipBehavior: Clip.none,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 children: _kategoriMap.keys.map((k) {
@@ -293,6 +350,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                   );
                 }).toList(),
               ),
+            ),
             ).animate().fadeIn(delay: 80.ms),
             const SizedBox(height: 12),
             Expanded(
@@ -432,7 +490,7 @@ class _GuruPengumumanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tanggal = _formatDate(pengumuman['tanggal']?.toString());
     final author = pengumuman['author']?.toString();
-    final cfg = _getKategori(pengumuman['judul']?.toString());
+    final cfg = _getKategori(pengumuman['kategori']?.toString());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
