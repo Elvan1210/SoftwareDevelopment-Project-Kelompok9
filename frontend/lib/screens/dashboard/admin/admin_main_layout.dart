@@ -416,8 +416,8 @@ import 'kelas_management_view.dart';
 import '../shared/messages_screen.dart'; // IMPORT SCREEN MESSAGES
 import 'admin_materi_view.dart';
 import 'admin_tugas_view.dart';
-import 'admin_nilai_view.dart';
 import 'admin_pengumuman_view.dart';
+// admin_nilai_view removed per user request
 import 'admin_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/theme_toggle.dart';
@@ -438,7 +438,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   int _selectedIndex = 0;
   late List<Widget> _views;
 
-  // Urutan Tab: 0: Dashboard, 1: Users, 2: Kelas, 3: Messages, 4: Materi, 5: Tugas, 6: Nilai, 7: Pengumuman, 8: Profil
+  // Urutan Tab: 0: Dashboard, 1: Users, 2: Kelas, 3: Messages, 4: Materi, 5: Tugas, 6: Pengumuman, 7: Profil
   final List<String> _titles = [
     'Admin Dashboard',
     'User Management',
@@ -446,7 +446,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     'Messages',
     'Materi',
     'Tugas',
-    'Nilai Akademik',
     'Pengumuman',
     'Admin Profil',
   ];
@@ -466,7 +465,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       MessagesScreen(userData: _adminUserData), // VIEW MESSAGES BARU
       AdminMateriView(token: widget.token),
       AdminTugasView(token: widget.token),
-      AdminNilaiView(token: widget.token),
       AdminPengumumanView(token: widget.token),
       AdminProfilView(token: widget.token),
     ];
@@ -504,7 +502,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 SidebarItemData(icon: LucideIcons.messageCircle, selectedIcon: LucideIcons.messageCircle, label: 'Messages'), // TAMBAHAN MESSAGES
                 SidebarItemData(icon: LucideIcons.bookOpen, selectedIcon: LucideIcons.bookOpen, label: 'Materi'),
                 SidebarItemData(icon: LucideIcons.clipboardList, selectedIcon: LucideIcons.clipboardList, label: 'Tugas'),
-                SidebarItemData(icon: LucideIcons.award, selectedIcon: LucideIcons.award, label: 'Nilai Akademik'),
                 SidebarItemData(icon: LucideIcons.megaphone, selectedIcon: LucideIcons.megaphone, label: 'Pengumuman'),
                 SidebarItemData(icon: LucideIcons.user, selectedIcon: LucideIcons.user, label: 'Profil Admin'),
               ],
@@ -559,7 +556,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     final isDark = theme.brightness == Brightness.dark;
 
     // Mapping bottom nav
-    const List<int> mobileTabMapping = [0, 1, 2, 8];
+    const List<int> mobileTabMapping = [0, 1, 2, 7];
 
     int bottomNavIndex = mobileTabMapping.indexOf(_selectedIndex);
     if (bottomNavIndex < 0) bottomNavIndex = -1;
@@ -650,14 +647,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     selectedIcon: LucideIcons.user,
                     label: 'Profil',
                     isSelected: bottomNavIndex == 3,
-                    onTap: () => setState(() => _selectedIndex = 8),
+                    onTap: () => setState(() => _selectedIndex = 7),
                     theme: theme,
                   ),
                   _buildMobileNavItem(
                     icon: LucideIcons.moreHorizontal,
                     selectedIcon: LucideIcons.moreHorizontal,
                     label: 'Lainnya',
-                    isSelected: _selectedIndex >= 3 && _selectedIndex <= 7,
+                    isSelected: _selectedIndex >= 3 && _selectedIndex <= 6,
                     onTap: () => _showMobileMenu(theme, isDark),
                     theme: theme,
                   ),
@@ -729,8 +726,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             _buildMenuTile(LucideIcons.messageCircle, 'Messages', 3, theme, ctx), // MENU MESSAGES DI MOBILE
             _buildMenuTile(LucideIcons.bookOpen, 'Materi', 4, theme, ctx),
             _buildMenuTile(LucideIcons.clipboardList, 'Tugas', 5, theme, ctx),
-            _buildMenuTile(LucideIcons.award, 'Nilai Akademik', 6, theme, ctx),
-            _buildMenuTile(LucideIcons.megaphone, 'Pengumuman', 7, theme, ctx),
+            _buildMenuTile(LucideIcons.megaphone, 'Pengumuman', 6, theme, ctx),
             const SizedBox(height: 12),
             const Divider(),
             const SizedBox(height: 4),
