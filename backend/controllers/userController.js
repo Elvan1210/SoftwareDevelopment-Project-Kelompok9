@@ -39,6 +39,7 @@ exports.create = async (req, res) => {
         password: hashedPassword, 
         role, 
         kelas: kelas || '', 
+        status: 'Available', // <-- Default status
         waktu_daftar: new Date() 
     };
     
@@ -53,8 +54,13 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nama, email, role, password, kelas } = req.body;
+    // Tambahkan status di destructuring body
+    const { nama, email, role, password, kelas, status } = req.body;
+    
     const updateData = { nama, email, role, kelas };
+    // Jika status dikirim dari frontend, masukkan ke data update
+    if (status) updateData.status = status;
+    
     if (password && password.trim() !== '') {
       const salt = await bcrypt.genSalt(10);
       updateData.password = await bcrypt.hash(password, salt);

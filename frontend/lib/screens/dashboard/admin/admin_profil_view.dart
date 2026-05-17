@@ -1,62 +1,88 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
 import '../../auth/login_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../config/theme.dart';
 
-class AdminProfilView extends StatelessWidget {
+class AdminProfilView extends StatefulWidget {
   final String token;
   const AdminProfilView({super.key, required this.token});
 
   @override
+  State<AdminProfilView> createState() => _AdminProfilViewState();
+}
+
+class _AdminProfilViewState extends State<AdminProfilView> {
+  Map<String, dynamic> _userData = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final data = await AuthService.getUserData();
+    if (mounted) {
+      setState(() {
+        _userData = data ?? {};
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF075864); // Violet for Admin
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
 
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: AuthService.getUserData(),
-      builder: (context, snapshot) {
-        final userData = snapshot.data ?? {};
-        final String nama = userData['nama'] ?? 'Admin';
-        final String email = userData['email'] ?? '-';
-        final String role = userData['role'] ?? 'Admin';
-        final String initials = nama.isNotEmpty
-            ? nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
-            : 'AD';
+    const Color primaryColor = Color(0xFF075864);
+    final String userId = _userData['id'] ?? _userData['uid'] ?? _userData['_id'] ?? '';
+    final String nama = _userData['nama'] ?? 'Admin';
+    final String email = _userData['email'] ?? '-';
+    final String role = _userData['role'] ?? 'Admin';
+    final String currentStatus = _userData['status'] ?? 'Available';
+    final String initials = nama.isNotEmpty
+        ? nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        : 'AD';
 
-        return Scaffold(
-            backgroundColor: Colors.transparent,
-            body: LayoutBuilder(builder: (ctx, constraints) {
-              final w = constraints.maxWidth;
-              final padding = Breakpoints.screenPadding(w);
-              final isWide = w >= Breakpoints.tablet;
-              return SingleChildScrollView(
-                child: Column(children: [
-                  _AdminHeroHeader(initials: initials, nama: nama, role: role, primaryColor: primaryColor),
-                  const SizedBox(height: 32),
-                  Padding(
-                    padding: padding,
-                    child: isWide
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: _InfoCard(email: email, role: role, primaryColor: primaryColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _LogoutCard(context: context)),
-                            ],
-                          )
-                        : Column(children: [
-                            _InfoCard(email: email, role: role, primaryColor: primaryColor),
-                            const SizedBox(height: 16),
-                            _LogoutCard(context: context),
-                          ]),
-                  ),
-                  const SizedBox(height: 32),
-                ]),
-              );
-            }),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: LayoutBuilder(builder: (ctx, constraints) {
+        final w = constraints.maxWidth;
+        final padding = Breakpoints.screenPadding(w);
+        final isWide = w >= Breakpoints.tablet;
+        return SingleChildScrollView(
+          child: Column(children: [
+            _AdminHeroHeader(initials: initials, nama: nama, role: role, primaryColor: primaryColor),
+            const SizedBox(height: 32),
+            Padding(
+              padding: padding,
+              child: isWide
+                  ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Expanded(child: _InfoCard(email: email, role: role, primaryColor: primaryColor, userId: userId, initialStatus: currentStatus, onStatusChanged: _loadUserData)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _LogoutCard()),
+                    ])
+                  : Column(children: [
+                      _InfoCard(email: email, role: role, primaryColor: primaryColor, userId: userId, initialStatus: currentStatus, onStatusChanged: _loadUserData),
+                      const SizedBox(height: 16),
+                      _LogoutCard(),
+                    ]),
+            ),
+            const SizedBox(height: 32),
+          ]),
         );
-      },
+      }),
     );
   }
 }
@@ -72,11 +98,7 @@ class _AdminHeroHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 72, bottom: 56, left: 32, right: 32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primaryColor, primaryColor.withAlpha(160)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: LinearGradient(colors: [primaryColor, primaryColor.withAlpha(160)], begin: Alignment.topLeft, end: Alignment.bottomRight),
         borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(48), bottomRight: Radius.circular(48)),
         boxShadow: [BoxShadow(color: primaryColor.withAlpha(100), blurRadius: 40, offset: const Offset(0, 20))],
       ),
@@ -104,9 +126,10 @@ class _AdminHeroHeader extends StatelessWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  final String email, role;
+  final String email, role, userId, initialStatus;
   final Color primaryColor;
-  const _InfoCard({required this.email, required this.role, required this.primaryColor});
+  final VoidCallback onStatusChanged;
+  const _InfoCard({required this.email, required this.role, required this.primaryColor, required this.userId, required this.initialStatus, required this.onStatusChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +142,12 @@ class _InfoCard extends StatelessWidget {
         _row(context, LucideIcons.mail, 'Email', email),
         const SizedBox(height: 16),
         _row(context, LucideIcons.shieldCheck, 'Role', role),
+        const SizedBox(height: 24),
+        const Divider(),
+        const SizedBox(height: 16),
+        const Text('Pengaturan Status Chat', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        _StatusDropdown(userId: userId, currentStatus: initialStatus, onStatusChanged: onStatusChanged),
       ]),
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
   }
@@ -136,9 +165,69 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
+class _StatusDropdown extends StatefulWidget {
+  final String userId, currentStatus;
+  final VoidCallback onStatusChanged;
+  const _StatusDropdown({required this.userId, required this.currentStatus, required this.onStatusChanged});
+
+  @override
+  State<_StatusDropdown> createState() => _StatusDropdownState();
+}
+
+class _StatusDropdownState extends State<_StatusDropdown> {
+  late String selectedStatus;
+  final List<String> statusOptions = ['Available', 'Busy', 'Do Not Disturb', 'Be Right Back', 'Appear Away', 'Appear Offline'];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedStatus = statusOptions.contains(widget.currentStatus) ? widget.currentStatus : 'Available';
+  }
+
+  @override
+  void didUpdateWidget(_StatusDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentStatus != widget.currentStatus) {
+      setState(() => selectedStatus = widget.currentStatus);
+    }
+  }
+
+  Future<void> updateStatus(String newStatus) async {
+    setState(() => selectedStatus = newStatus);
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(widget.userId).update({'status': newStatus});
+      final userData = await AuthService.getUserData();
+      if (userData != null) {
+        userData['status'] = newStatus;
+        await AuthService.saveUserData(userData);
+      }
+      widget.onStatusChanged();
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Status chat berhasil diperbarui!')));
+    } catch (e) {
+      debugPrint("Error updating status: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: selectedStatus,
+      decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+      items: statusOptions.map((status) => DropdownMenuItem(
+        value: status,
+        child: Row(children: [
+          Container(width: 12, height: 12, decoration: BoxDecoration(color: AppTheme.getStatusColor(status), shape: BoxShape.circle)),
+          const SizedBox(width: 12),
+          Text(status, style: const TextStyle(fontSize: 14)),
+        ]),
+      )).toList(),
+      onChanged: (val) { if (val != null) updateStatus(val); },
+    );
+  }
+}
+
 class _LogoutCard extends StatelessWidget {
-  final BuildContext context;
-  const _LogoutCard({required this.context});
+  const _LogoutCard();
 
   @override
   Widget build(BuildContext context) {
@@ -159,28 +248,16 @@ class _LogoutCard extends StatelessWidget {
                   content: const Text('Kamu yakin ingin logout dari akun ini?'),
                   actions: [
                     TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, foregroundColor: Colors.white),
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Keluar'),
-                    ),
+                    ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, foregroundColor: Colors.white), onPressed: () => Navigator.pop(ctx, true), child: const Text('Keluar')),
                   ],
                 ),
               );
               if (ok == true) {
                 await AuthService.logout();
-                if (context.mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false);
-                }
+                if (context.mounted) Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false);
               }
             },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red.shade400,
-              side: BorderSide(color: Colors.red.shade300),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade400, side: BorderSide(color: Colors.red.shade300), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
             icon: const Icon(LucideIcons.logOut),
             label: const Text('Keluar dari Akun', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
@@ -189,4 +266,3 @@ class _LogoutCard extends StatelessWidget {
     ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1);
   }
 }
-

@@ -41,7 +41,14 @@ exports.login = async (req, res) => {
     res.status(200).json({
       message: 'Login berhasil',
       token: token,
-      user: { id: userId, nama: userData.nama, role: userData.role, email: userData.email, kelas: userData.kelas }
+      user: { 
+        id: userId, 
+        nama: userData.nama, 
+        role: userData.role, 
+        email: userData.email, 
+        kelas: userData.kelas,
+        status: userData.status || 'Available' // <-- Tambahan status
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Error server', error: error.message });
@@ -54,33 +61,24 @@ exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email wajib diisi' });
 
-    // Cek apakah email terdaftar
     const snapshot = await db.collection('users').where('email', '==', email).get();
     if (snapshot.empty) return res.status(404).json({ message: 'Email tidak terdaftar dalam sistem' });
 
     let userData;
     snapshot.forEach(doc => { userData = doc.data(); });
 
-    // Generate OTP & hitung waktu kadaluarsa (10 menit)
     const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 menit
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
 
-    // Hapus OTP lama jika ada
     const existingOtp = await db.collection('otpCodes').where('email', '==', email).get();
     const deletePromises = [];
     existingOtp.forEach(doc => deletePromises.push(doc.ref.delete()));
     await Promise.all(deletePromises);
 
-    // Simpan OTP baru ke Firestore
     await db.collection('otpCodes').add({
-      email,
-      code: otp,
-      expiresAt: expiresAt.toISOString(),
-      used: false,
-      createdAt: new Date().toISOString(),
+      email, code: otp, expiresAt: expiresAt.toISOString(), used: false, createdAt: new Date().toISOString(),
     });
 
-    // Kirim email
     const mailOptions = {
       from: `"MyPSKD" <${process.env.GMAIL_USER}>`,
       to: email,
@@ -119,7 +117,6 @@ exports.forgotPassword = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-
     res.status(200).json({ message: 'Kode verifikasi telah dikirim ke email kamu' });
   } catch (error) {
     res.status(500).json({ message: 'Gagal mengirim email', error: error.message });
@@ -165,7 +162,6 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Password minimal 6 karakter' });
     }
 
-    // Validasi OTP
     const otpSnapshot = await db.collection('otpCodes')
       .where('email', '==', email)
       .where('code', '==', code)
@@ -182,7 +178,6 @@ exports.resetPassword = async (req, res) => {
     const expiresAt = new Date(otpData.expiresAt);
     if (now > expiresAt) return res.status(400).json({ message: 'Kode verifikasi sudah kadaluarsa' });
 
-    // Cari user dan update password
     const userSnapshot = await db.collection('users').where('email', '==', email).get();
     if (userSnapshot.empty) return res.status(404).json({ message: 'User tidak ditemukan' });
 
@@ -193,9 +188,7 @@ exports.resetPassword = async (req, res) => {
     });
     await Promise.all(updatePromises);
 
-    // Tandai OTP sebagai sudah digunakan & hapus
     await otpDoc.ref.delete();
-
     res.status(200).json({ message: 'Password berhasil diperbarui' });
   } catch (error) {
     res.status(500).json({ message: 'Error server', error: error.message });
