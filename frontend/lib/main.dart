@@ -9,9 +9,18 @@ import 'services/auth_service.dart';
 import 'services/theme_provider.dart';
 import 'config/theme.dart';
 import 'widgets/smooth_scroll.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyPSKDApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
+  
+  // Ubah bagian ini, tambahkan opsi default
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  ); 
+
+  runApp(const MyPSKDApp()); 
 }
 
 class MyPSKDApp extends StatelessWidget {

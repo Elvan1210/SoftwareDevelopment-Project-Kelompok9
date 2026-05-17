@@ -39,9 +39,9 @@ class AppTheme {
   // ─── Legacy Aliases (backward compat) ─────────────────────────────────
   static const Color tealDeep    = indigoPrimary;
   static const Color tealLight   = purpleLight;
-  static const Color orangeVivid = amber;       // was #F27F33, now amber
-  static const Color bgDarkest   = darkBg;      // was #121212, now darkBg
-  static const Color bgDarker    = darkCard;    // was #1E1E1E, now darkCard
+  static const Color orangeVivid = amber;       
+  static const Color bgDarkest   = darkBg;      
+  static const Color bgDarker    = darkCard;    
 
   static Color getAccent(BuildContext context) => indigoPrimary;
 
@@ -187,5 +187,18 @@ class AppTheme {
         color: darkBorder, thickness: 1,
       ),
     );
+  }
+
+  // ─── TAMBAHAN: Helper Warna Status ─────────────────────────────────────────
+  static Color getStatusColor(String? status) {
+    switch (status) {
+      case 'Available': return emerald;
+      case 'Busy':
+      case 'Do Not Disturb': return rose;
+      case 'Be Right Back':
+      case 'Appear Away': return amber;
+      case 'Appear Offline':
+      default: return Colors.grey;
+    }
   }
 }
