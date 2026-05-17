@@ -71,12 +71,12 @@ class _AdminProfilViewState extends State<AdminProfilView> {
                   ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Expanded(child: _InfoCard(email: email, role: role, primaryColor: primaryColor, userId: userId, initialStatus: currentStatus, onStatusChanged: _loadUserData)),
                       const SizedBox(width: 16),
-                      Expanded(child: _LogoutCard()),
+                      Expanded(child: const _LogoutCard()),  // FIX: const
                     ])
                   : Column(children: [
                       _InfoCard(email: email, role: role, primaryColor: primaryColor, userId: userId, initialStatus: currentStatus, onStatusChanged: _loadUserData),
                       const SizedBox(height: 16),
-                      _LogoutCard(),
+                      const _LogoutCard(),  // FIX: const
                     ]),
             ),
             const SizedBox(height: 32),
@@ -211,7 +211,6 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      // FIX: 'value' deprecated → gunakan initialValue
       initialValue: selectedStatus,
       decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
       items: statusOptions.map((status) => DropdownMenuItem(
