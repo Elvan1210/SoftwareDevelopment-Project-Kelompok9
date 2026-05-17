@@ -71,12 +71,12 @@ class _AdminProfilViewState extends State<AdminProfilView> {
                   ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Expanded(child: _InfoCard(email: email, role: role, primaryColor: primaryColor, userId: userId, initialStatus: currentStatus, onStatusChanged: _loadUserData)),
                       const SizedBox(width: 16),
-                      Expanded(child: const _LogoutCard()),  // FIX: const
+                      const Expanded(child: _LogoutCard()),  // FIX: const Expanded
                     ])
                   : Column(children: [
                       _InfoCard(email: email, role: role, primaryColor: primaryColor, userId: userId, initialStatus: currentStatus, onStatusChanged: _loadUserData),
                       const SizedBox(height: 16),
-                      const _LogoutCard(),  // FIX: const
+                      const _LogoutCard(),
                     ]),
             ),
             const SizedBox(height: 32),

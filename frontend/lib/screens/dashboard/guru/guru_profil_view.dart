@@ -76,7 +76,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
                           onStatusChanged: _loadUserData,
                         )),
                         const SizedBox(width: 16),
-                        Expanded(child: const _LogoutSection()),  // FIX: const
+                        const Expanded(child: _LogoutSection()),  // FIX: const Expanded
                       ])
                     : Column(children: [
                         _InfoSection(
@@ -85,7 +85,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
                           onStatusChanged: _loadUserData,
                         ),
                         const SizedBox(height: 16),
-                        const _LogoutSection(),  // FIX: const
+                        const _LogoutSection(),
                       ]),
               ),
               const SizedBox(height: 32),
