@@ -252,6 +252,7 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   @override
   void didUpdateWidget(_StatusDropdown oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // FIX: tambah curly braces pada if statement (curly_braces_in_flow_control_structures)
     if (oldWidget.currentStatus != widget.currentStatus) {
       selectedStatus = statusOptions.contains(widget.currentStatus) ? widget.currentStatus : 'Available';
     }
@@ -273,8 +274,10 @@ class _StatusDropdownState extends State<_StatusDropdown> {
 
       widget.onStatusChanged(); // ✅ Trigger reload userData di parent
 
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Status chat berhasil diperbarui!')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Status chat berhasil diperbarui!')));
+      }
     } catch (e) {
       debugPrint("Error updating status: $e");
     }
@@ -283,7 +286,8 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: selectedStatus,
+      // FIX: 'value' deprecated → gunakan initialValue
+      initialValue: selectedStatus,
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

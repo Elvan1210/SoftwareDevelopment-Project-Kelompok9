@@ -211,7 +211,8 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: selectedStatus,
+      // FIX: 'value' deprecated → gunakan initialValue
+      initialValue: selectedStatus,
       decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
       items: statusOptions.map((status) => DropdownMenuItem(
         value: status,

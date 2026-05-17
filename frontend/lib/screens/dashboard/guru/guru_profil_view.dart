@@ -100,6 +100,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
 class _ProfileHeroHeader extends StatelessWidget {
   final String initials, nama, role;
   final Color primaryColor;
+  // FIX: tambah const pada constructor
   const _ProfileHeroHeader({required this.initials, required this.nama, required this.role, required this.primaryColor});
 
   @override
@@ -125,6 +126,7 @@ class _ProfileHeroHeader extends StatelessWidget {
         const SizedBox(height: 20),
         Text(nama, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5)).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
         const SizedBox(height: 10),
+        // FIX: tambah const pada Container dan BoxDecoration
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(color: Colors.white.withAlpha(160), borderRadius: BorderRadius.circular(100), border: Border.all(color: Colors.white.withAlpha(160))),
@@ -138,6 +140,7 @@ class _ProfileHeroHeader extends StatelessWidget {
 class _InfoSection extends StatelessWidget {
   final String email, extra, extraLabel, userId, initialStatus;
   final VoidCallback onStatusChanged;
+  // FIX: tambah const pada constructor
   const _InfoSection({required this.email, required this.extra, required this.extraLabel, required this.userId, required this.initialStatus, required this.onStatusChanged});
 
   @override
@@ -220,7 +223,8 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: selectedStatus,
+      // FIX: 'value' deprecated → gunakan initialValue
+      initialValue: selectedStatus,
       decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
       items: statusOptions.map((status) => DropdownMenuItem(
         value: status,
