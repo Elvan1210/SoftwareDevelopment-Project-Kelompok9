@@ -13,6 +13,8 @@ import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
+import '../../../widgets/jitsi_embed.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -34,6 +36,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
   String _activeTabID = 'dashboard'; 
   String _activeTitle = 'Dashboard Tim';
   int _pendingCount = 0;
+  String _liveStatus = 'inactive';
+  String? _currentMeetingId;
 
   List<dynamic> _channels = [];
   final TextEditingController _channelNameCtrl = TextEditingController();
@@ -45,6 +49,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     super.initState();
     _fetchPendingCount();
     _fetchChannels();
+    _fetchLiveStatus();
   }
 
   @override
@@ -68,6 +73,42 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       }
     } catch (e) {
       debugPrint('Error fetching pending count: $e');
+    }
+  }
+
+  Future<void> _fetchLiveStatus() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/kelas/$_kelasId/live-status'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (mounted) {
+          setState(() {
+            _liveStatus = data['live_status'] ?? 'inactive';
+            _currentMeetingId = data['meeting_id'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Err fetch live status: $e');
+    }
+  }
+
+  Future<void> _endLiveClass() async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/kelas/$_kelasId/end-live'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        if (mounted) {
+          setState(() => _liveStatus = 'inactive');
+        }
+      }
+    } catch (e) {
+      debugPrint('Err end live class: $e');
     }
   }
 
@@ -213,6 +254,39 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     }
   }
 
+  Future<void> _startLiveClass() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/kelas/$_kelasId/live-url'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final meetingId = data['meetingId'];
+        if (meetingId != null) {
+          if (mounted) {
+            setState(() {
+              _liveStatus = 'active';
+              _currentMeetingId = meetingId;
+            });
+          }
+          if (!mounted) return;
+          await joinJitsiMeeting(
+            context: context,
+            meetingId: meetingId,
+            serverUrl: 'https://meet.ffmuc.net',
+            userName: widget.userData['nama'] ?? 'Guru',
+            userEmail: widget.userData['email'] ?? '',
+            subject: 'Kelas Live: ${widget.teamData['nama_kelas']}',
+            onClosed: _endLiveClass,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Err start live class: $e');
+    }
+  }
+
   Widget _buildDashboardView() {
     return Center(
       child: GlassCard(
@@ -233,6 +307,60 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
               textAlign: TextAlign.center,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65), fontWeight: FontWeight.w600),
             ),
+            const SizedBox(height: 24),
+            if (_liveStatus == 'inactive')
+              ElevatedButton.icon(
+                onPressed: _startLiveClass,
+                icon: const Icon(LucideIcons.video, size: 18),
+                label: const Text('Mulai Kelas Live', style: TextStyle(fontWeight: FontWeight.w800)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              )
+            else
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      if (_currentMeetingId != null) {
+                        joinJitsiMeeting(
+                          context: context,
+                          meetingId: _currentMeetingId!,
+                          serverUrl: 'https://meet.ffmuc.net',
+                          userName: widget.userData['nama'] ?? 'Guru',
+                          userEmail: widget.userData['email'] ?? '',
+                          subject: 'Kelas Live: ${widget.teamData['nama_kelas']}',
+                          onClosed: _endLiveClass,
+                        );
+                      }
+                    },
+                    icon: const Icon(LucideIcons.video, size: 18),
+                    label: const Text('Gabung Kembali', style: TextStyle(fontWeight: FontWeight.w800)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: _endLiveClass,
+                    icon: const Icon(LucideIcons.phoneOff, size: 18),
+                    label: const Text('Akhiri Sesi', style: TextStyle(fontWeight: FontWeight.w800)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

@@ -24,6 +24,7 @@ dependencies:
   socket_io_client: ^3.0.0
   firebase_core: ^3.9.0
   cloud_firestore: ^5.6.0
+  jitsi_meet_wrapper: ^0.2.0+1
 
 dev_dependencies:
   flutter_test:

@@ -218,8 +218,9 @@ const quizController = {
           const studentAnswers = answers ? answers[q.id] : undefined;
           const correctAnswers = q.correctAnswers || [];
           if (Array.isArray(studentAnswers) && Array.isArray(correctAnswers)) {
-            const sortedStudent = [...studentAnswers].sort();
-            const sortedCorrect = [...correctAnswers].sort();
+            // Ensure both are arrays of strings/numbers before sorting to prevent weird type crashes
+            const sortedStudent = studentAnswers.map(String).sort();
+            const sortedCorrect = correctAnswers.map(String).sort();
             if (sortedStudent.length === sortedCorrect.length &&
                 sortedStudent.every((v, i) => v === sortedCorrect[i])) {
               score += pts;
@@ -320,7 +321,23 @@ const quizController = {
         timestamp: new Date().toISOString()
       });
 
-      res.status(200).json({ message: 'Live violation logged' });
+      const violationsSnapshot = await db.collection('live_violations')
+        .where('quizId', '==', quizId)
+        .where('studentId', '==', userId)
+        .get();
+
+      const violationCount = violationsSnapshot.size;
+      let autoSubmitTriggered = false;
+
+      if (violationCount >= 3) {
+        autoSubmitTriggered = true;
+      }
+
+      res.status(200).json({ 
+        message: 'Live violation logged',
+        violationCount,
+        autoSubmitTriggered
+      });
     } catch (error) {
       res.status(500).json({ message: 'Error logging live violation', error: error.message });
     }
@@ -329,22 +346,26 @@ const quizController = {
   getLiveViolations: async (req, res) => {
     try {
       const quizId = req.params.id;
+      // Fetching all for the quiz to sort in memory without missing index errors
+      // In production with huge classes, a composite index should be added in Firebase
       const snapshot = await db.collection('live_violations')
         .where('quizId', '==', quizId)
-        .limit(50)
         .get();
 
       const violations = [];
       snapshot.forEach(doc => violations.push({ id: doc.id, ...doc.data() }));
 
-      // Sort in memory to avoid missing index error
+      // Sort in memory (descending timestamp)
       violations.sort((a, b) => {
         const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
         const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
         return dateB - dateA;
       });
 
-      res.status(200).json({ data: violations });
+      // After sorting, limit to top 50 latest
+      const topViolations = violations.slice(0, 50);
+
+      res.status(200).json({ data: topViolations });
     } catch (error) {
       res.status(500).json({ message: 'Error fetching live violations', error: error.message });
     }
@@ -416,6 +437,126 @@ const quizController = {
       res.status(200).json({ message: `${activated} kuis diaktifkan`, activated });
     } catch (error) {
       res.status(500).json({ message: 'Error activating scheduled quizzes', error: error.message });
+    }
+  },
+
+  gradeEssay: async (req, res) => {
+    try {
+      const { submissionId } = req.params;
+      const { essayScores } = req.body; // e.g., { "question_1": 15, "question_2": 10 }
+
+      if (!essayScores || typeof essayScores !== 'object') {
+        return res.status(400).json({ message: 'Format essayScores tidak valid' });
+      }
+
+      const submissionRef = db.collection('quiz_submissions').doc(submissionId);
+      const doc = await submissionRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'Submission tidak ditemukan' });
+
+      const data = doc.data();
+      let currentScore = data.score || 0;
+      
+      // If it was already manually graded, subtract old essay scores before adding new ones
+      const oldEssayScores = data.essayScores || {};
+      let scoreAdjustment = 0;
+
+      for (let qId in essayScores) {
+        const newPts = Number(essayScores[qId]) || 0;
+        const oldPts = Number(oldEssayScores[qId]) || 0;
+        scoreAdjustment += (newPts - oldPts);
+        oldEssayScores[qId] = newPts;
+      }
+
+      await submissionRef.update({
+        score: currentScore + scoreAdjustment,
+        essayScores: oldEssayScores,
+        hasEssayGraded: true,
+        updatedAt: new Date().toISOString()
+      });
+
+      res.status(200).json({ message: 'Nilai essay berhasil disimpan', score: currentScore + scoreAdjustment });
+    } catch (error) {
+      res.status(500).json({ message: 'Error grading essay', error: error.message });
+    }
+  },
+
+  aiGradeEssay: async (req, res) => {
+    try {
+      const { submissionId } = req.params;
+      const { GEMINI_API_KEY } = process.env;
+
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ message: 'GEMINI_API_KEY belum dikonfigurasi di server.' });
+      }
+
+      const submissionRef = db.collection('quiz_submissions').doc(submissionId);
+      const subDoc = await submissionRef.get();
+      if (!subDoc.exists) return res.status(404).json({ message: 'Submission tidak ditemukan' });
+
+      const submission = subDoc.data();
+      const quizId = submission.quizId;
+
+      const quizDoc = await db.collection('quizzes').doc(quizId).get();
+      if (!quizDoc.exists) return res.status(404).json({ message: 'Kuis tidak ditemukan' });
+
+      const quiz = quizDoc.data();
+      const questions = quiz.questions || [];
+      const essayAnswers = submission.essayAnswers || {};
+
+      const { GoogleGenAI } = require('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+      const essayScores = {};
+      let totalPoints = 0;
+
+      for (const q of questions) {
+        if (q.questionType === 'essay' && essayAnswers[q.id]) {
+          const studentAnswer = essayAnswers[q.id];
+          const maxPoints = q.points || 10;
+          const prompt = `Anda adalah seorang guru. Tolong nilai jawaban siswa untuk soal berikut.
+Soal: "${q.question || q.text || ''}"
+Kunci Jawaban/Panduan: "${q.correctAnswer || 'Nilai secara logis berdasarkan pemahaman'}"
+Jawaban Siswa: "${studentAnswer}"
+
+Berikan respons dalam format JSON yang valid dengan struktur berikut:
+{
+  "score": <angka dari 0 sampai ${maxPoints}>,
+  "feedback": "<komentar singkat 1-2 kalimat mengapa nilai tersebut diberikan>"
+}
+Pastikan kembalian hanya JSON murni tanpa markdown \`\`\`.`;
+          
+          try {
+            const response = await ai.models.generateContent({
+              model: 'gemini-2.5-flash',
+              contents: prompt,
+            });
+            let resultText = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
+            let parsed = JSON.parse(resultText);
+            
+            let scoreNum = parseInt(parsed.score, 10);
+            if (isNaN(scoreNum)) scoreNum = 0;
+            if (scoreNum > maxPoints) scoreNum = maxPoints;
+            
+            essayScores[q.id] = {
+              score: scoreNum,
+              feedback: parsed.feedback || ''
+            };
+            totalPoints += scoreNum;
+          } catch (aiErr) {
+             console.error("AI Evaluation error:", aiErr.message);
+             essayScores[q.id] = { score: 0, feedback: 'Gagal mengevaluasi dengan AI.' };
+          }
+        }
+      }
+
+      res.status(200).json({ 
+        message: 'Grading AI selesai', 
+        suggestedScores: essayScores,
+        totalSuggested: totalPoints 
+      });
+
+    } catch (error) {
+      res.status(500).json({ message: 'Error AI grading', error: error.message });
     }
   },
 };

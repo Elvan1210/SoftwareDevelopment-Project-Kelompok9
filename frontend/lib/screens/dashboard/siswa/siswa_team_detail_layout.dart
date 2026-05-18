@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'siswa_tugas_view.dart';
 import 'siswa_materi_view.dart';
 import 'siswa_nilai_view.dart';
@@ -12,6 +13,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
+import '../../../widgets/jitsi_embed.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaTeamDetailLayout extends StatefulWidget {
@@ -34,6 +36,9 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   String _activeTabID = 'dashboard'; 
   String _activeTitle = 'Dashboard Kelas';
   List<dynamic> _channels = [];
+  String _liveStatus = 'inactive';
+  String? _currentMeetingId;
+  Timer? _pollTimer;
 
   String get _kelasId => widget.teamData['id']?.toString() ?? '';
 
@@ -41,6 +46,8 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
 void initState() {
   super.initState();
   _fetchChannels();
+  _fetchLiveStatus();
+  _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) => _fetchLiveStatus());
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (mounted) {
       final isM = MediaQuery.of(context).size.width <= 600;
@@ -64,6 +71,32 @@ void initState() {
     }
   });
 }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchLiveStatus() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/kelas/$_kelasId/live-status'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (mounted) {
+          setState(() {
+            _liveStatus = data['live_status'] ?? 'inactive';
+            _currentMeetingId = data['meeting_id'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Err fetch live status: $e');
+    }
+  }
 
   Future<void> _fetchChannels() async {
     try {
@@ -103,25 +136,80 @@ void initState() {
     }
   }
 
+
+
   Widget _buildDashboardView() {
-    return Center(
-      child: GlassCard(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(LucideIcons.layoutDashboard, size: 64, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 24),
-            Text(
-              'Dashboard ${widget.teamData['nama_kelas']}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+    return Column(
+      children: [
+        if (_liveStatus == 'active' && _currentMeetingId != null)
+          Container(
+            margin: const EdgeInsets.only(bottom: 24, left: 32, right: 32, top: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF5B5FC7), Color(0xFF424694)]),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFF5B5FC7).withAlpha(100), blurRadius: 16, offset: const Offset(0, 8)),
+              ],
             ),
-            const SizedBox(height: 8),
-            const Text('Ringkasan aktivitas akan muncul di sini', style: TextStyle(fontWeight: FontWeight.w600)),
-          ],
+            child: Row(
+              children: [
+                const Icon(LucideIcons.video, color: Colors.white, size: 28),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Live Class Sedang Berlangsung', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                      Text('Guru telah memulai sesi video call untuk kelas ini.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    joinJitsiMeeting(
+                      context: context,
+                      meetingId: _currentMeetingId!,
+                      serverUrl: 'https://meet.ffmuc.net',
+                      userName: widget.userData['nama'] ?? 'Siswa',
+                      userEmail: widget.userData['email'] ?? '',
+                      subject: 'Kelas Live: ${widget.teamData['nama_kelas']}',
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF5B5FC7),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Gabung Sekarang', style: TextStyle(fontWeight: FontWeight.w900)),
+                ).animate(onPlay: (c) => c.repeat(reverse: true)).shimmer(duration: const Duration(seconds: 2), color: const Color(0xFF5B5FC7).withAlpha(50)),
+              ],
+            ),
+          ).animate().slideY(begin: -0.2).fade(),
+
+        Expanded(
+          child: Center(
+            child: GlassCard(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(LucideIcons.layoutDashboard, size: 64, color: Theme.of(context).primaryColor),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Dashboard ${widget.teamData['nama_kelas']}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Ringkasan aktivitas akan muncul di sini', style: TextStyle(fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 

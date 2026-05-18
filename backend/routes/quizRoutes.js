@@ -19,5 +19,7 @@ router.post('/:id/live-violation', verifyToken, quizController.reportLiveViolati
 router.get('/:id/live-violations', verifyToken, quizController.getLiveViolations);
 
 router.post('/activate-scheduled', verifyToken, quizController.activateScheduled);
+router.post('/submissions/:submissionId/grade-essay', verifyToken, quizController.gradeEssay);
+router.get('/submissions/:submissionId/ai-grade', verifyToken, quizController.aiGradeEssay);
 
 module.exports = router;
