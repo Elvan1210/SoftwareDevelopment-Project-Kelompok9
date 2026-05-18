@@ -158,17 +158,22 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   bool get _isDesktop =>
       !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
 
-  void _onViolationChanged() {
+  void _onViolationChanged() async {
     if (!mounted) return;
     setState(() {});
     if (_violationService.violations.isNotEmpty) {
       final last = _violationService.violations.last;
       _showWarning(last.typeLabel);
-      QuizService.reportLiveViolation(
+      final res = await QuizService.reportLiveViolation(
         token: widget.token,
         quizId: widget.quiz.id,
         reason: last.typeLabel,
       );
+      if (res['autoSubmitTriggered'] == true) {
+        if (mounted && !_isSubmitted && !_isSubmitting) {
+          _autoSubmit('Batas pelanggaran terlampaui (3 kali)');
+        }
+      }
     }
   }
 

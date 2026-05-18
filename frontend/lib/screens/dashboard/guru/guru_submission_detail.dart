@@ -1,17 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../../models/quiz_model.dart';
 import '../../../config/theme.dart';
+import '../../../config/api_config.dart';
 
-class GuruSubmissionDetail extends StatelessWidget {
+class GuruSubmissionDetail extends StatefulWidget {
   final QuizSubmission submission;
   final Quiz quiz;
+  final String token;
 
   const GuruSubmissionDetail({
     super.key,
     required this.submission,
     required this.quiz,
+    required this.token,
   });
+
+  @override
+  State<GuruSubmissionDetail> createState() => _GuruSubmissionDetailState();
+}
+
+class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
+  Map<String, dynamic>? _aiScores;
+  bool _isGradingAI = false;
+
+  Future<void> _gradeWithAI() async {
+    setState(() => _isGradingAI = true);
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/quiz/submissions/${widget.submission.id}/ai-grade'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() {
+          _aiScores = data['suggestedScores'];
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Berhasil menilai dengan AI!'), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gagal menilai dengan AI.'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('AI Grading Error: $e');
+    } finally {
+      setState(() => _isGradingAI = false);
+    }
+  }
+  Future<void> _acceptAIScores() async {
+    if (_aiScores == null) return;
+    
+    final formattedScores = {};
+    _aiScores!.forEach((k, v) {
+      formattedScores[k] = v['score'];
+    });
+
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/quiz/submissions/${widget.submission.id}/grade-essay'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({'essayScores': formattedScores}),
+      );
+
+      if (res.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Nilai AI berhasil disimpan!'), backgroundColor: Colors.green),
+          );
+          Navigator.pop(context, true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error saving AI scores: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +95,41 @@ class GuruSubmissionDetail extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(submission.studentName),
+        title: Text(widget.submission.studentName),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (_aiScores != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ElevatedButton.icon(
+                onPressed: _acceptAIScores,
+                icon: const Icon(LucideIcons.check, size: 16),
+                label: const Text('Terima & Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          if (widget.quiz.questions.any((q) => q.questionType == 'essay'))
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: ElevatedButton.icon(
+                onPressed: _isGradingAI ? null : _gradeWithAI,
+                icon: _isGradingAI
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(LucideIcons.sparkles, size: 16),
+                label: const Text('Nilai Pakai AI', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.tealDeep,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -36,8 +143,8 @@ class GuruSubmissionDetail extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 16),
-            ...List.generate(quiz.questions.length, (index) {
-              final q = quiz.questions[index];
+            ...List.generate(widget.quiz.questions.length, (index) {
+              final q = widget.quiz.questions[index];
               return _buildQuestionCard(q, index + 1, theme, isDark);
             }),
           ],
@@ -47,8 +154,8 @@ class GuruSubmissionDetail extends StatelessWidget {
   }
 
   Widget _buildScoreHeader(bool isDark, ThemeData theme) {
-    final percent = submission.totalPoints > 0
-        ? (submission.score / submission.totalPoints * 100).round()
+    final percent = widget.submission.totalPoints > 0
+        ? (widget.submission.score / widget.submission.totalPoints * 100).round()
         : 0;
 
     return Container(
@@ -79,12 +186,12 @@ class GuruSubmissionDetail extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  submission.studentEmail?.isNotEmpty == true ? submission.studentEmail! : 'Email tidak tersedia',
+                  widget.submission.studentEmail?.isNotEmpty == true ? widget.submission.studentEmail! : 'Email tidak tersedia',
                   style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Total Skor: ${submission.score} / ${submission.totalPoints}',
+                  'Total Skor: ${widget.submission.score} / ${widget.submission.totalPoints}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -93,7 +200,7 @@ class GuruSubmissionDetail extends StatelessWidget {
                     const Icon(LucideIcons.alertTriangle, size: 16, color: Colors.orange),
                     const SizedBox(width: 6),
                     Text(
-                      '${submission.violations} Pelanggaran tercatat',
+                      '${widget.submission.violations} Pelanggaran tercatat',
                       style: const TextStyle(fontSize: 13, color: Colors.orange),
                     ),
                   ],
@@ -109,8 +216,8 @@ class GuruSubmissionDetail extends StatelessWidget {
   Widget _buildQuestionCard(QuizQuestion q, int index, ThemeData theme, bool isDark) {
     bool isEssay = q.questionType == 'essay';
     dynamic studentAns = isEssay
-        ? submission.essayAnswers[q.id]
-        : submission.answers[q.id];
+        ? widget.submission.essayAnswers[q.id]
+        : widget.submission.answers[q.id];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -167,18 +274,72 @@ class GuruSubmissionDetail extends StatelessWidget {
           const SizedBox(height: 8),
           
           if (isEssay)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.tealDeep.withAlpha(100)),
-              ),
-              child: Text(
-                studentAns?.toString() ?? 'Tidak diisi',
-                style: const TextStyle(fontSize: 14, height: 1.5),
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.tealDeep.withAlpha(100)),
+                  ),
+                  child: Text(
+                    studentAns?.toString() ?? 'Tidak diisi',
+                    style: const TextStyle(fontSize: 14, height: 1.5),
+                  ),
+                ),
+                if (_aiScores != null && _aiScores![q.id] != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF5B247A), Color(0xFF1BCEDF)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(color: const Color(0xFF1BCEDF).withAlpha(80), blurRadius: 16, offset: const Offset(0, 8)),
+                        BoxShadow(color: Colors.purpleAccent.withAlpha(60), blurRadius: 4, spreadRadius: 1),
+                      ],
+                      border: Border.all(color: Colors.white.withAlpha(100), width: 1.5),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.auto_awesome, color: Colors.amberAccent, size: 28)
+                              .animate(onPlay: (c) => c.repeat())
+                              .shimmer(duration: const Duration(seconds: 2), color: Colors.white)
+                              .scaleXY(begin: 0.9, end: 1.1, duration: const Duration(seconds: 1), curve: Curves.easeInOut)
+                              .then().scaleXY(begin: 1.1, end: 0.9, duration: const Duration(seconds: 1), curve: Curves.easeInOut),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Saran Nilai AI: ${_aiScores![q.id]['score']} / ${q.points}',
+                                style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 18, letterSpacing: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('💡 Feedback Gemini:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white70)),
+                        const SizedBox(height: 6),
+                        Text(
+                          _aiScores![q.id]['feedback'] ?? 'Tidak ada feedback.',
+                          style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.6, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(duration: const Duration(milliseconds: 400)).slideY(begin: 0.1, curve: Curves.easeOutBack)
+                   .shimmer(duration: const Duration(seconds: 3), color: Colors.white.withAlpha(40)),
+                ],
+              ],
             )
           else ...[
             _renderObjectiveAnswers(q, studentAns, theme, isDark),

@@ -71,6 +71,27 @@ exports.forgotPassword = async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
 
     const existingOtp = await db.collection('otpCodes').where('email', '==', email).get();
+    
+    // OTP Cooldown check
+    let canSend = true;
+    let timeRemaining = 0;
+    const nowTime = new Date().getTime();
+    existingOtp.forEach(doc => {
+      const otpData = doc.data();
+      if (otpData.createdAt) {
+        const createdAt = new Date(otpData.createdAt).getTime();
+        const diff = nowTime - createdAt;
+        if (diff < 60 * 1000) { // 60 seconds cooldown
+          canSend = false;
+          timeRemaining = Math.ceil((60 * 1000 - diff) / 1000);
+        }
+      }
+    });
+
+    if (!canSend) {
+      return res.status(429).json({ message: `Harap tunggu ${timeRemaining} detik sebelum meminta OTP baru` });
+    }
+
     const deletePromises = [];
     existingOtp.forEach(doc => deletePromises.push(doc.ref.delete()));
     await Promise.all(deletePromises);

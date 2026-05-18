@@ -172,13 +172,13 @@ class QuizService {
     }
   }
 
-  static Future<void> reportLiveViolation({
+  static Future<Map<String, dynamic>> reportLiveViolation({
     required String token,
     required String quizId,
     required String reason,
   }) async {
     try {
-      await http.post(
+      final res = await http.post(
         Uri.parse('$baseUrl/api/quiz/$quizId/live-violation'),
         headers: {
           'Content-Type': 'application/json',
@@ -186,9 +186,13 @@ class QuizService {
         },
         body: jsonEncode({'reason': reason}),
       );
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      }
     } catch (e) {
       debugPrint('reportLiveViolation error: $e');
     }
+    return {};
   }
 
   static Future<List<QuizSubmission>> getSubmissions({

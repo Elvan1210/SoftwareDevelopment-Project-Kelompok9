@@ -12,6 +12,9 @@ router.post('/:id/reject', verifyToken, ctrl.rejectStudent);
 router.post('/:id/accept-all', verifyToken, ctrl.acceptAllStudents);
 router.put('/:id/auto-accept', verifyToken, ctrl.toggleAutoAccept);
 router.get('/:id/members', verifyToken, ctrl.getMembers);
+router.get('/:id/live-url', verifyToken, ctrl.generateLiveClassUrl);
+router.get('/:id/live-status', verifyToken, ctrl.getLiveStatus);
+router.post('/:id/end-live', verifyToken, ctrl.endLiveClass);
 
 // Rute CRUD Utama
 router.get('/', verifyToken, ctrl.getAll);

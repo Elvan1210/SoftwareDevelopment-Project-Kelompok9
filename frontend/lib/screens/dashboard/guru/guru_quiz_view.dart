@@ -746,7 +746,11 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                               return ListTile(
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => GuruSubmissionDetail(submission: sub, quiz: widget.quiz)
+                                    builder: (_) => GuruSubmissionDetail(
+                                      submission: sub, 
+                                      quiz: widget.quiz,
+                                      token: widget.token,
+                                    )
                                   ));
                                 },
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

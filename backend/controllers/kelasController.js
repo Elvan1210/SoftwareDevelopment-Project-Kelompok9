@@ -169,7 +169,8 @@ const kelasController = {
       const updateData = {};
 
       // 3. Logika pemisahan role
-      if (userRole === 'siswa' || userRole === 'Siswa') {
+      const normalizedRole = typeof userRole === 'string' ? userRole.toLowerCase() : '';
+      if (normalizedRole === 'siswa') {
         const currentSiswaIds = kelasData.siswa_ids || [];
         const pendingRequests = kelasData.pending_requests || [];
         
@@ -235,7 +236,7 @@ const kelasController = {
           status: 'pending'
         });
 
-      } else if (userRole === 'guru' || userRole === 'Guru') {
+      } else if (normalizedRole === 'guru') {
         // Ambil nama guru dari users collection
         let guruNama = '-';
         try {
@@ -476,27 +477,95 @@ const kelasController = {
       }
 
       // Fetch user data for each siswa_id
-      const members = [];
-      for (const sid of siswaIds) {
+      const membersPromises = siswaIds.map(async (sid) => {
         try {
           const userDoc = await db.collection('users').doc(sid).get();
           if (userDoc.exists) {
             const userData = userDoc.data();
-            members.push({
+            return {
               id: userDoc.id,
               nama: userData.nama || 'Siswa',
               email: userData.email || '',
               role: userData.role || 'Siswa',
-            });
+            };
           } else {
-            members.push({ id: sid, nama: 'Siswa (tidak ditemukan)', email: '', role: 'Siswa' });
+            return { id: sid, nama: 'Siswa (tidak ditemukan)', email: '', role: 'Siswa' };
           }
         } catch (e) {
-          members.push({ id: sid, nama: 'Siswa', email: '', role: 'Siswa' });
+          return { id: sid, nama: 'Siswa', email: '', role: 'Siswa' };
         }
-      }
+      });
+
+      const members = await Promise.all(membersPromises);
 
       res.status(200).json(members);
+    } catch (error) {
+      res.status(500).json({ message: 'Error server', error: error.message });
+    }
+  },
+
+  // GET /api/kelas/:id/live-url — Generate Jitsi Meet URL
+  generateLiveClassUrl: async (req, res) => {
+    try {
+      const doc = await db.collection('kelas').doc(req.params.id).get();
+      if (!doc.exists) return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+
+      const kelasData = doc.data();
+      
+      const safeClassName = (kelasData.nama_kelas || 'Kelas').replace(/[^a-zA-Z0-9]/g, '');
+      const uniqueSuffix = req.params.id.substring(0, 6);
+      const meetingId = `MyPSKD-${safeClassName}-${uniqueSuffix}`;
+      // Menggunakan server publik Jitsi FFMUC yang tidak mewajibkan host login
+      const jitsiUrl = `https://meet.ffmuc.net/${meetingId}`;
+
+      // Update status kelas menjadi active
+      await db.collection('kelas').doc(req.params.id).update({
+        live_status: 'active',
+        live_started_at: new Date().toISOString(),
+        current_meeting_id: meetingId
+      });
+
+      // Send notification to students
+      const siswaIds = kelasData.siswa_ids || [];
+      for (const sid of siswaIds) {
+        // Send asynchronously without blocking
+        sendNotification({
+          judul: 'Kelas Live Dimulai 📹',
+          pesan: `Guru telah memulai sesi live untuk kelas "${kelasData.nama_kelas}". Buka halaman kelas untuk bergabung!`,
+          targetUserId: sid,
+        }).catch(() => {});
+      }
+
+      res.status(200).json({ url: jitsiUrl, meetingId });
+    } catch (error) {
+      res.status(500).json({ message: 'Error server', error: error.message });
+    }
+  },
+
+  // GET /api/kelas/:id/live-status — Get current live status
+  getLiveStatus: async (req, res) => {
+    try {
+      const doc = await db.collection('kelas').doc(req.params.id).get();
+      if (!doc.exists) return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+      
+      const data = doc.data();
+      res.status(200).json({
+        live_status: data.live_status || 'inactive',
+        meeting_id: data.current_meeting_id || null
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error server', error: error.message });
+    }
+  },
+
+  // POST /api/kelas/:id/end-live — End live class
+  endLiveClass: async (req, res) => {
+    try {
+      await db.collection('kelas').doc(req.params.id).update({
+        live_status: 'inactive',
+        live_ended_at: new Date().toISOString()
+      });
+      res.status(200).json({ message: 'Live class ended successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Error server', error: error.message });
     }
