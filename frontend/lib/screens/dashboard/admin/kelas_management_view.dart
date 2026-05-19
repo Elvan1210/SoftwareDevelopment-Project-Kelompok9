@@ -156,7 +156,7 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                             child: IgnorePointer(
                               child: AppTextField(
                                 controller: kodeCtrl,
-                                labelText: 'Kode Kelas',
+                                labelText: 'Kode Kelas (Auto-Generated)',
                                 prefixIcon: LucideIcons.qrCode,
                               ),
                             ),
