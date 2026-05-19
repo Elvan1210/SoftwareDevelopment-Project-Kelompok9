@@ -106,7 +106,7 @@
 //                       const ThemeToggle(),
 //                       const SizedBox(width: 8),
 //                       NotificationBell(
-//                         userData: widget.userData, 
+//                         userData: widget.userData,
 //                         token: widget.token,
 //                         iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
 //                       ),
@@ -159,7 +159,7 @@
 //                         child: Text(
 //                           _titles[_selectedIndex],
 //                           style: theme.textTheme.titleMedium?.copyWith(
-//                             fontWeight: FontWeight.w900, 
+//                             fontWeight: FontWeight.w900,
 //                             letterSpacing: -0.5,
 //                           ),
 //                           overflow: TextOverflow.ellipsis,
@@ -168,7 +168,7 @@
 //                       const ThemeToggle(),
 //                       const SizedBox(width: 4),
 //                       NotificationBell(
-//                         userData: widget.userData, 
+//                         userData: widget.userData,
 //                         token: widget.token,
 //                         iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
 //                       ),
@@ -176,7 +176,7 @@
 //                   ),
 //                 ),
 //               ),
-              
+
 //               // ── Animated Body Content ──
 //               Expanded(
 //                 child: AnimatedSwitcher(
@@ -185,7 +185,7 @@
 //                   switchOutCurve: Curves.linear,
 //                   transitionBuilder: (child, animation) {
 //                     return FadeTransition(
-//                       opacity: animation, 
+//                       opacity: animation,
 //                       child: child,
 //                     );
 //                   },
@@ -244,6 +244,7 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'guru_dashboard_view.dart';
 import 'guru_teams_view.dart';
 import '../shared/messages_screen.dart'; // IMPORT SCREEN MESSAGES
@@ -282,7 +283,10 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
   void initState() {
     super.initState();
     _views = [
-      GuruDashboardView(userData: widget.userData, token: widget.token),
+      GuruDashboardView(
+          userData: widget.userData,
+          token: widget.token,
+          onNavigate: (index) => setState(() => _selectedIndex = index)),
       GuruTeamsView(userData: widget.userData, token: widget.token),
       MessagesScreen(userData: widget.userData), // VIEW MESSAGES BARU
       GuruPengumumanView(userData: widget.userData, token: widget.token),
@@ -302,13 +306,15 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
             // ── Unified Sidebar ──
             Sidebar(
               selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+              onDestinationSelected: (index) =>
+                  setState(() => _selectedIndex = index),
               userName: widget.userData['nama'] ?? 'Guru',
               userRole: 'Guru',
               onLogout: () async {
                 final navigator = Navigator.of(context);
                 await AuthService.logout();
-                navigator.pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+                navigator.pushReplacement(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()));
               },
               destinations: const [
                 SidebarItemData(
@@ -354,37 +360,41 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     scrolledUnderElevation: 0,
                     title: Text(
                       _titles[_selectedIndex],
-                      style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                      style: GoogleFonts.notoSerif(
+                          fontWeight: FontWeight.w900, letterSpacing: -0.5),
                     ),
                     actions: [
                       const ThemeToggle(),
                       const SizedBox(width: 8),
                       NotificationBell(
-                        userData: widget.userData, 
+                        userData: widget.userData,
                         token: widget.token,
-                        iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
+                        iconColor: theme.iconTheme.color ??
+                            (isDark ? Colors.white : Colors.black87),
                       ),
                       const SizedBox(width: 28),
                     ],
                   ),
-                  body: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    switchInCurve: Curves.linear,
-                    switchOutCurve: Curves.linear,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
-                    },
-                    child: KeyedSubtree(
-                      key: ValueKey(_selectedIndex),
-                      child: _views[_selectedIndex],
+                  body: IndexedStack(
+                    index: _selectedIndex,
+                      children: [
+                        GuruDashboardView(
+                          userData: widget.userData,
+                          token: widget.token,
+                          onNavigate: (index) =>
+                              setState(() => _selectedIndex = index),
+                        ),
+                        GuruTeamsView(
+                            userData: widget.userData, token: widget.token),
+                        MessagesScreen(userData: widget.userData),
+                        GuruPengumumanView(
+                            userData: widget.userData, token: widget.token),
+                        GuruProfilView(userData: widget.userData),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -401,19 +411,23 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 12.0),
                 child: GlassCard(
                   radius: 20,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Text(
                           _titles[_selectedIndex],
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w900, 
+                          style: GoogleFonts.notoSerif(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
                             letterSpacing: -0.5,
+                            color: isDark? Colors.white: Colors.black,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -421,15 +435,15 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                       const ThemeToggle(),
                       const SizedBox(width: 4),
                       NotificationBell(
-                        userData: widget.userData, 
+                        userData: widget.userData,
                         token: widget.token,
-                        iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
+                        iconColor: theme.iconTheme.color ??
+                            (isDark ? Colors.white : Colors.black87),
                       ),
                     ],
                   ),
                 ),
               ),
-              
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
@@ -437,22 +451,34 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                   switchOutCurve: Curves.linear,
                   transitionBuilder: (child, animation) {
                     return FadeTransition(
-                      opacity: animation, 
+                      opacity: animation,
                       child: child,
                     );
                   },
-                  child: KeyedSubtree(
-                    key: ValueKey(_selectedIndex),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      child: _views[_selectedIndex],
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    child: IndexedStack(
+                      index: _selectedIndex,
+                      children: [
+                        GuruDashboardView(
+                          userData: widget.userData,
+                          token: widget.token,
+                          onNavigate: (index) =>
+                              setState(() => _selectedIndex = index),
+                        ),
+                        GuruTeamsView(
+                            userData: widget.userData, token: widget.token),
+                        MessagesScreen(userData: widget.userData),
+                        GuruPengumumanView(
+                            userData: widget.userData, token: widget.token),
+                        GuruProfilView(userData: widget.userData),
+                      ],
                     ),
                   ),
                 ),
               ),
             ],
           ),
-
           Positioned(
             left: 16,
             right: 16,
@@ -520,7 +546,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     required VoidCallback onTap,
     required ThemeData theme,
   }) {
-    final color = isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160);
+    final color = isSelected
+        ? theme.primaryColor
+        : theme.colorScheme.onSurface.withAlpha(160);
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -529,7 +557,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
           duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
+            color: isSelected
+                ? theme.primaryColor.withAlpha(20)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -539,7 +569,10 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
               const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, color: color),
+                style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                    color: color),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

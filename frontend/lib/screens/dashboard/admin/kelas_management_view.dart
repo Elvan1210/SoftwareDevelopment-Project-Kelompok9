@@ -406,7 +406,7 @@ class _TeamsClassCard extends StatelessWidget {
                                     const Icon(LucideIcons.key, size: 12, color: AppTheme.indigoPrimary),
                                     const SizedBox(width: 6),
                                     Text(
-                                      kelas['kode_akses'] ?? 'Generating...',
+                                      kelas['kode_kelas'] ?? 'Generating...',
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 11, 
                                         fontWeight: FontWeight.w900, 
@@ -418,13 +418,13 @@ class _TeamsClassCard extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              if (kelas['kode_akses'] != null)
+                              if (kelas['kode_kelas'] != null)
                                 InkWell(
                                   onTap: () {
-                                    Clipboard.setData(ClipboardData(text: kelas['kode_akses']));
+                                    Clipboard.setData(ClipboardData(text: kelas['kode_kelas']));
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Kode akses "${kelas['kode_akses']}" berhasil disalin!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                                        content: Text('Kode akses "${kelas['kode_kelas']}" berhasil disalin!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
                                         backgroundColor: AppTheme.indigoPrimary,
                                         behavior: SnackBarBehavior.floating,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

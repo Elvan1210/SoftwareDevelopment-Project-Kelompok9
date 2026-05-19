@@ -91,7 +91,7 @@ class AppBackground extends StatelessWidget {
         children: [
           // Base background — flat minimalist white or dark grey
           Container(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFF8F9FC),
+            color: isDark ? AppTheme.darkBg : AppTheme.base, 
           ),
 
           // Top-left primary indigo glow — ultra-subtle for premium depth
