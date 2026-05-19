@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../config/theme.dart';
+import '../../../widgets/premium_ui.dart';
 
 class MessagesScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -184,7 +185,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Tutup"),
+              child: Text("Tutup", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
             ),
           ],
         );
@@ -303,7 +304,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
+            child: Text("Batal", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
           ),
         ],
       ),
@@ -373,9 +374,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Batal"),
+                child: Text("Batal", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
               ),
-              ElevatedButton(
+              PremiumElevatedButton(
+                color: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                radius: 12,
                 onPressed: () {
                   if (groupName.isEmpty || selectedIds.isEmpty) return;
                   Navigator.pop(context);
@@ -694,8 +699,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                 color: isMe
                                     ? Theme.of(context).primaryColor
                                     : (isDark
-                                        ? Colors.white10
-                                        : Colors.grey[200]),
+                                        ? const Color(0xFF1C2230)
+                                        : const Color(0xFFF0F3FF)),
+                                border: isMe
+                                    ? null
+                                    : Border.all(
+                                        color: isDark
+                                            ? const Color(0xFF2E384E)
+                                            : const Color(0xFFC7D2FE),
+                                        width: 1.0,
+                                      ),
                                 borderRadius:
                                     BorderRadius.circular(16).copyWith(
                                   bottomRight: isMe
@@ -773,11 +786,28 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           hintText: "Ketik pesan...",
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withAlpha(10)
-                              : Colors.grey[100],
+                              ? const Color(0xFF101420)
+                              : const Color(0xFFF1F3FF),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE),
+                              width: 1.0,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE),
+                              width: 1.0,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 2.0,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 14),

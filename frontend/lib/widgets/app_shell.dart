@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'smooth_scroll.dart';
 import '../config/theme.dart';
+export 'premium_ui.dart';
+
 
 // ─── Breakpoints ─────────────────────────────────────────────────────────────
 class Breakpoints {
@@ -87,39 +89,23 @@ class AppBackground extends StatelessWidget {
     return RepaintBoundary(
       child: Stack(
         children: [
-          // Base gradient
+          // Base background — flat minimalist white or dark grey
           Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [
-                        const Color(0xFF0D0D1A),
-                        const Color(0xFF0F0F23),
-                        const Color(0xFF0D0D1A),
-                      ]
-                    : [
-                        const Color(0xFFF0EEFF),
-                        const Color(0xFFF8F7FF),
-                        const Color(0xFFEEF2FF),
-                      ],
-              ),
-            ),
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFF8F9FC),
           ),
 
-          // Top-left primary indigo glow
+          // Top-left primary indigo glow — ultra-subtle for premium depth
           Positioned(
-            top: -180,
-            left: -120,
+            top: -220,
+            left: -150,
             child: Container(
-              width: 560,
-              height: 560,
+              width: 500,
+              height: 500,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.indigoPrimary.withAlpha(isDark ? 55 : 30),
+                    AppTheme.indigoPrimary.withAlpha(isDark ? 16 : 8),
                     Colors.transparent,
                   ],
                 ),
@@ -127,18 +113,18 @@ class AppBackground extends StatelessWidget {
             ),
           ),
 
-          // Bottom-right purple glow
+          // Bottom-right purple glow — ultra-subtle
           Positioned(
-            bottom: -220,
-            right: -100,
+            bottom: -250,
+            right: -150,
             child: Container(
-              width: 700,
-              height: 700,
+              width: 600,
+              height: 600,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.purpleSecondary.withAlpha(isDark ? 40 : 20),
+                    AppTheme.purpleSecondary.withAlpha(isDark ? 16 : 6),
                     Colors.transparent,
                   ],
                 ),
@@ -146,32 +132,13 @@ class AppBackground extends StatelessWidget {
             ),
           ),
 
-          // Center-right subtle indigo blob
-          Positioned(
-            top: 200,
-            right: -80,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.indigoLight.withAlpha(isDark ? 20 : 12),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Subtle dot grid overlay (dark only)
+          // Subtle dot grid overlay (dark only) for industrial depth
           if (isDark)
             Positioned.fill(
               child: CustomPaint(painter: _DotGridPainter()),
             ),
 
-          // Noise overlay for light mode texture
+          // Subtle dot grid overlay for light mode texture
           if (!isDark)
             Positioned.fill(
               child: CustomPaint(painter: _NoiseGridPainter()),
@@ -337,19 +304,18 @@ class _PremiumCardState extends State<PremiumCard> {
             width: _hovered ? 1.5 : 1.0,
           ),
           boxShadow: [
-            // Base shadow
+            // Ambient black base shadow
             BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 80 : 12),
-              blurRadius: _hovered ? 20 : 8,
-              offset: Offset(0, _hovered ? 12 : 3),
+              color: Colors.black.withAlpha(isDark ? 85 : 10),
+              blurRadius: _hovered ? 22 : 10,
+              offset: Offset(0, _hovered ? 12 : 4),
             ),
-            // Colored glow on hover
-            if (_hovered)
-              BoxShadow(
-                color: accent.withAlpha(isDark ? 70 : 40),
-                blurRadius: 40,
-                offset: const Offset(0, 16),
-              ),
+            // Elegant colored tint glow (tactile depth)
+            BoxShadow(
+              color: accent.withAlpha(isDark ? (_hovered ? 70 : 25) : (_hovered ? 35 : 15)),
+              blurRadius: _hovered ? 36 : 14,
+              offset: Offset(0, _hovered ? 14 : 5),
+            ),
           ],
         ),
         child: Stack(
@@ -664,15 +630,15 @@ class _AppTextFieldState extends State<AppTextField> {
           suffixIcon: widget.suffix,
           filled: true,
           fillColor: isDark
-              ? AppTheme.darkCard.withAlpha(200)
-              : AppTheme.lightSurface,
+              ? const Color(0xFF101420)
+              : const Color(0xFFF1F3FF),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+            borderSide: BorderSide(color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+            borderSide: BorderSide(color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),

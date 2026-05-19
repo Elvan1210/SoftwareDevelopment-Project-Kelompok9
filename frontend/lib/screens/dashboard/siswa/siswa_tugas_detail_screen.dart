@@ -1,14 +1,17 @@
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import '../../../config/api_config.dart';
+import '../../../config/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:ui';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import '../../../services/notifikasi_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -180,12 +183,15 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFB84A24),
-              foregroundColor: Colors.white,
-            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Batal', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
+          ),
+          PremiumElevatedButton(
+            color: const Color(0xFFB84A24),
+            textColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            radius: 10,
             onPressed: () {
               final link = ctrl.text.trim();
               if (link.isNotEmpty &&
@@ -390,15 +396,19 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: _isTurnedIn
-                    ? OutlinedButton.icon(
+                    ? PremiumOutlinedButton(
                         onPressed: _undoTurnIn,
-                        icon: const Icon(LucideIcons.undo, size: 18),
-                        label: const Text('Batalkan'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                        color: Colors.red,
+                        textColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        radius: 12,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.undo, size: 18),
+                            SizedBox(width: 6),
+                            Text('Batalkan'),
+                          ],
                         ),
                       )
                     : _isPastDeadline
@@ -406,24 +416,28 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.red.withAlpha(160),
+                              color: Colors.red.withAlpha(30),
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.red.withAlpha(100)),
                             ),
                             child: const Text('Terlewat',
                                 style: TextStyle(
                                     color: Colors.red,
                                     fontWeight: FontWeight.bold)),
                           )
-                        : ElevatedButton.icon(
+                        : PremiumElevatedButton(
                             onPressed: _isUploading ? null : _turnIn,
-                            icon: const Icon(Icons.send_rounded, size: 18),
-                            label: const Text('Turn In'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFB84A24),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
+                            color: const Color(0xFFB84A24),
+                            textColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            radius: 12,
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.send_rounded, size: 18),
+                                SizedBox(width: 6),
+                                Text('Turn In'),
+                              ],
                             ),
                           ),
               ),
@@ -687,49 +701,89 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
                           // Tombol tambah (hanya kalau belum Turn In)
                           if (!_isTurnedIn) ...[
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _isUploading
-                                        ? null
-                                        : _pickAndUploadFile,
-                                    icon: const Icon(
+                            const SizedBox(height: 16),
+                            CustomPaint(
+                              painter: DashedNeonPainter(
+                                color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF7B83EB) : const Color(0xFF4C51BF),
+                                strokeWidth: 1.5,
+                                dashWidth: 8.0,
+                                dashSpace: 5.0,
+                                borderRadius: 16.0,
+                              ),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF161925) : const Color(0xFFF3F5FE),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF7B83EB) : const Color(0xFF4C51BF)).withAlpha(20),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
                                         LucideIcons.uploadCloud,
-                                        size: 18),
-                                    label: const Text('File / Foto'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: primaryColor,
-                                      side: BorderSide(color: primaryColor),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
+                                        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                                        size: 28,
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _showAddLinkDialog,
-                                    icon: const Icon(LucideIcons.link,
-                                        size: 18),
-                                    label: const Text('Tambah Link'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.purple,
-                                      side: const BorderSide(
-                                          color: Colors.purple),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Unggah Tugas Anda',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 14,
+                                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : AppTheme.textLight,
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Mendukung PDF, Word, JPG, atau Link website',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context).brightness == Brightness.dark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 18),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: _isUploading ? null : _pickAndUploadFile,
+                                          icon: const Icon(LucideIcons.file, size: 14),
+                                          label: const Text('Pilih File', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFF7B83EB),
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            elevation: 0,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        OutlinedButton.icon(
+                                          onPressed: _showAddLinkDialog,
+                                          icon: const Icon(LucideIcons.link, size: 14),
+                                          label: const Text('Tambah Link', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                                          style: OutlinedButton.styleFrom(
+                                            backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252A42) : const Color(0xFFE2E7FC),
+                                            foregroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9EAAFF) : const Color(0xFF3B41A3),
+                                            side: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF3E4E9E) : const Color(0xFFB5C0F9), width: 1.0),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ],
@@ -776,7 +830,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         const SizedBox(width: 12),
         Text(
           '$label: ',
-          style: const TextStyle(color: Color(0xFF26494F), fontWeight: FontWeight.w500),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w500),
         ),
         Flexible(
           child: Text(
@@ -788,5 +842,77 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         ),
       ],
     );
+  }
+}
+
+class DashedNeonPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+  final double borderRadius;
+
+  DashedNeonPainter({
+    required this.color,
+    this.strokeWidth = 2.0,
+    this.dashWidth = 6.0,
+    this.dashSpace = 4.0,
+    this.borderRadius = 16.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final glowPaint = Paint()
+      ..color = color.withAlpha(80)
+      ..strokeWidth = strokeWidth + 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+
+    final primaryPaint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final RRect rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(borderRadius),
+    );
+
+    final Path path = Path()..addRRect(rrect);
+    final Path dashedPath = _buildDashedPath(path, dashWidth, dashSpace);
+
+    canvas.drawPath(dashedPath, glowPaint);
+    canvas.drawPath(dashedPath, primaryPaint);
+  }
+
+  Path _buildDashedPath(Path source, double dashWidth, double dashSpace) {
+    final Path dest = Path();
+    for (final PathMetric metric in source.computeMetrics()) {
+      double distance = 0.0;
+      bool draw = true;
+      while (distance < metric.length) {
+        final double len = draw ? dashWidth : dashSpace;
+        if (draw) {
+          dest.addPath(
+            metric.extractPath(distance, (distance + len).clamp(0.0, metric.length)),
+            Offset.zero,
+          );
+        }
+        distance += len;
+        draw = !draw;
+      }
+    }
+    return dest;
+  }
+
+  @override
+  bool shouldRepaint(covariant DashedNeonPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.dashWidth != dashWidth ||
+        oldDelegate.dashSpace != dashSpace ||
+        oldDelegate.borderRadius != borderRadius;
   }
 }

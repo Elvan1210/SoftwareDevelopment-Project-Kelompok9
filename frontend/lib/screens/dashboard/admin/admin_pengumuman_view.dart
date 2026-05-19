@@ -12,7 +12,6 @@ import '../../../services/notifikasi_service.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../utils/date_utils.dart';
 
-// ─── Kategori config ──────────────────────────────────────────────────────────
 class _KategoriConfig {
   final String label;
   final IconData icon;
@@ -59,12 +58,10 @@ const _kategoriMap = {
   ),
 };
 
-// Hanya gunakan field kategori eksplisit — tidak ada auto-detect dari judul
 _KategoriConfig _getKategori(String? kategoriField) {
   if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
     return _kategoriMap[kategoriField]!;
   }
-  // Default ke 'Umum' jika field tidak ada / tidak dikenal
   return _kategoriMap['Umum']!;
 }
 
@@ -121,7 +118,7 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
         if (res.statusCode == 200 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Pengumuman dihapus.',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
             backgroundColor: AppTheme.emerald,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -149,139 +146,145 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return StatefulBuilder(
           builder: (ctx, setFormState) => Dialog(
-          backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: SizedBox(
-              width: 520,
-              child: SingleChildScrollView(
-                child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [AppTheme.amber, Color(0xFFF97316)]),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 14),
-                    Text(
-                      isEditing ? 'Edit Pengumuman' : 'Buat Pengumuman Baru',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18,
-                          color: isDark ? Colors.white : AppTheme.textLight),
-                    ),
-                  ]),
-                  const SizedBox(height: 24),
-                  _FormField(controller: judulCtrl, label: 'Judul Pengumuman', icon: LucideIcons.type, isDark: isDark),
-                  const SizedBox(height: 16),
-                  _FormField(controller: isiCtrl, label: 'Isi Pengumuman', icon: LucideIcons.alignLeft, isDark: isDark, maxLines: 5),
-                  const SizedBox(height: 16),
-                  // ── Kategori Picker ──
-                  Text('Kategori', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
-                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: ['Umum', 'Ujian', 'Libur', 'Seminar'].map((k) {
-                      final cfg = _kategoriMap[k]!;
-                      final sel = formKategori == k;
-                      return GestureDetector(
-                        onTap: () => setFormState(() {
-                          formKategori = k;
-                          kategoriError = false;
-                        }),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                          decoration: BoxDecoration(
-                            gradient: sel ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
-                            color: sel ? null : (isDark ? AppTheme.darkBg : const Color(0xFFF5F5FF)),
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                              color: kategoriError && !sel
-                                  ? AppTheme.rose.withAlpha(120)
-                                  : sel ? Colors.transparent : cfg.color.withAlpha(80),
-                            ),
-                            boxShadow: sel ? [BoxShadow(color: cfg.color.withAlpha(70), blurRadius: 8, offset: const Offset(0, 3))] : [],
-                          ),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Icon(cfg.icon, size: 13, color: sel ? Colors.white : cfg.color),
-                            const SizedBox(width: 6),
-                            Text(k, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
-                                color: sel ? Colors.white : cfg.color)),
-                          ]),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  if (kategoriError) ...[
-                    const SizedBox(height: 6),
-                    Text('Pilih kategori terlebih dahulu',
-                        style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.rose)),
-                  ],
-                  const SizedBox(height: 28),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+            backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: SizedBox(
+                width: 520,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text('Batal', style: GoogleFonts.poppins(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      Row(children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [AppTheme.amber, Color(0xFFF97316)]),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 18),
+                        ),
+                        const SizedBox(width: 14),
+                        Text(
+                          isEditing ? 'Edit Pengumuman' : 'Buat Pengumuman Baru',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16.5,
+                            color: isDark ? Colors.white : AppTheme.textLight,
+                          ),
+                        ),
+                      ]),
+                      const SizedBox(height: 24),
+                      _FormField(controller: judulCtrl, label: 'Judul Pengumuman', icon: LucideIcons.type, isDark: isDark),
+                      const SizedBox(height: 16),
+                      _FormField(controller: isiCtrl, label: 'Isi Pengumuman', icon: LucideIcons.alignLeft, isDark: isDark, maxLines: 5),
+                      const SizedBox(height: 16),
+                      Text('Kategori', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: ['Umum', 'Ujian', 'Libur', 'Seminar'].map((k) {
+                          final cfg = _kategoriMap[k]!;
+                          final sel = formKategori == k;
+                          return GestureDetector(
+                            onTap: () => setFormState(() {
+                              formKategori = k;
+                              kategoriError = false;
+                            }),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                              decoration: BoxDecoration(
+                                gradient: sel ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
+                                color: sel ? null : (isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF)),
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(
+                                  color: kategoriError && !sel
+                                      ? AppTheme.rose.withAlpha(120)
+                                      : sel ? Colors.transparent : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                                ),
+                                boxShadow: sel ? [BoxShadow(color: cfg.color.withAlpha(70), blurRadius: 8, offset: const Offset(0, 3))] : [],
+                              ),
+                              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(cfg.icon, size: 13, color: sel ? Colors.white : cfg.color),
+                                const SizedBox(width: 6),
+                                Text(k, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800,
+                                    color: sel ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
+                              ]),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                      const SizedBox(width: 10),
-                      _GradientButton(
-                        label: isEditing ? 'Simpan' : 'Terbitkan',
-                        onPressed: () async {
-                          if (judulCtrl.text.isEmpty || isiCtrl.text.isEmpty) return;
-                          if (formKategori.isEmpty) {
-                            setFormState(() => kategoriError = true);
-                            return;
-                          }
-                          final body = {
-                            'judul': judulCtrl.text,
-                            'isi': isiCtrl.text,
-                            'tanggal': isEditing ? (pengumuman['tanggal'] ?? tanggalStr) : tanggalStr,
-                            'guru_id': 'admin',
-                            'author': 'Administrator',
-                            'kategori': formKategori,
-                          };
-                          final headers = {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ${widget.token}',
-                          };
-                          try {
-                            if (isEditing) {
-                              await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
-                            } else {
-                              await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
-                              NotifikasiService.kirimNotifikasi(
-                                judul: 'Pengumuman Admin: ${judulCtrl.text}',
-                                pesan: isiCtrl.text,
-                                token: widget.token,
-                                targetRole: 'Semua',
-                              );
-                            }
-                            if (ctx.mounted) Navigator.pop(ctx);
-                            _fetchPengumuman();
-                          } catch (e) {
-                            debugPrint('Error saving: $e');
-                          }
-                        },
+                      if (kategoriError) ...[
+                        const SizedBox(height: 6),
+                        Text('Pilih kategori terlebih dahulu',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppTheme.rose, fontWeight: FontWeight.bold)),
+                      ],
+                      const SizedBox(height: 28),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold)),
+                          ),
+                          const SizedBox(width: 10),
+                          _GradientButton(
+                            label: isEditing ? 'Simpan' : 'Terbitkan',
+                            onPressed: () async {
+                              if (judulCtrl.text.isEmpty || isiCtrl.text.isEmpty) return;
+                              if (formKategori.isEmpty) {
+                                setFormState(() => kategoriError = true);
+                                return;
+                              }
+                              final body = {
+                                'judul': judulCtrl.text,
+                                'isi': isiCtrl.text,
+                                'tanggal': isEditing ? (pengumuman['tanggal'] ?? tanggalStr) : tanggalStr,
+                                'guru_id': 'admin',
+                                'author': 'Administrator',
+                                'kategori': formKategori,
+                              };
+                              final headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ${widget.token}',
+                              };
+                              try {
+                                if (isEditing) {
+                                  await http.put(Uri.parse('$baseUrl/api/pengumuman/${pengumuman['id']}'), headers: headers, body: jsonEncode(body));
+                                } else {
+                                  await http.post(Uri.parse('$baseUrl/api/pengumuman'), headers: headers, body: jsonEncode(body));
+                                  NotifikasiService.kirimNotifikasi(
+                                    judul: 'Pengumuman Admin: ${judulCtrl.text}',
+                                    pesan: isiCtrl.text,
+                                    token: widget.token,
+                                    targetRole: 'Semua',
+                                  );
+                                }
+                                if (ctx.mounted) Navigator.pop(ctx);
+                                _fetchPengumuman();
+                              } catch (e) {
+                                debugPrint('Error saving: $e');
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
       },
     );
   }
@@ -333,12 +336,11 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
           foregroundColor: Colors.white,
           elevation: 0,
           icon: const Icon(LucideIcons.megaphone, size: 18),
-          label: Text('Buat Pengumuman', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+          label: Text('Buat Pengumuman', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
         ),
       ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3),
       body: Column(
         children: [
-          // Search
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: _SearchBar(
@@ -347,7 +349,6 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
             ).animate().fadeIn().slideY(begin: -0.1),
           ),
           const SizedBox(height: 12),
-          // Category chips
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: SizedBox(
@@ -370,10 +371,10 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                           gradient: selected
                               ? LinearGradient(colors: [cfg.color, cfg.colorEnd])
                               : null,
-                          color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
+                          color: selected ? null : (isDark ? const Color(0xFF1E2538) : Colors.white),
                           borderRadius: BorderRadius.circular(100),
                           border: Border.all(
-                            color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60),
+                            color: selected ? Colors.transparent : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)), width: 1.2,
                           ),
                           boxShadow: selected
                               ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
@@ -386,10 +387,10 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
                             const SizedBox(width: 6),
                             Text(
                               cfg.label,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: selected ? Colors.white : cfg.color,
+                                fontWeight: FontWeight.w800,
+                                color: selected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                               ),
                             ),
                           ],
@@ -438,7 +439,6 @@ class _AdminPengumumanViewState extends State<AdminPengumumanView> {
   }
 }
 
-// ─── Form Field ───────────────────────────────────────────────────────────────
 class _FormField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -451,27 +451,26 @@ class _FormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkBg : const Color(0xFFF9F9FF),
+        color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
-        style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
+        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w700),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          labelStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w700),
+          prefixIcon: Icon(icon, size: 16, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
   }
 }
 
-// ─── Gradient Button ──────────────────────────────────────────────────────────
 class _GradientButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
@@ -479,28 +478,17 @@ class _GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [AppTheme.amber, Color(0xFFF97316)]),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: AppTheme.amber.withAlpha(80), blurRadius: 12, offset: const Offset(0, 4))],
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
-          foregroundColor: Colors.white, elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-        ),
-        child: Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w800)),
-      ),
+    return PremiumElevatedButton(
+      color: AppTheme.amber,
+      textColor: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      radius: 12,
+      onPressed: onPressed,
+      child: Text(label),
     );
   }
 }
 
-// ─── Search Bar ───────────────────────────────────────────────────────────────
 class _SearchBar extends StatelessWidget {
   final bool isDark;
   final ValueChanged<String> onChanged;
@@ -510,27 +498,25 @@ class _SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(isDark ? 40 : 6), blurRadius: 12, offset: const Offset(0, 4))],
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
       ),
       child: TextField(
         onChanged: onChanged,
-        style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
+        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w700),
         decoration: InputDecoration(
           hintText: 'Cari pengumuman...',
-          hintStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w700),
+          prefixIcon: Icon(LucideIcons.search, size: 16, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
   }
 }
 
-// ─── Admin Card ───────────────────────────────────────────────────────────────
 class _AdminPengumumanCard extends StatelessWidget {
   final dynamic pengumuman;
   final bool isDark;
@@ -553,139 +539,139 @@ class _AdminPengumumanCard extends StatelessWidget {
     final author = pengumuman['author']?.toString() ?? pengumuman['guru_nama']?.toString();
     final cfg = _getKategori(pengumuman['kategori']?.toString());
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: cfg.color.withAlpha(isDark ? 55 : 35)),
-        boxShadow: [
-          BoxShadow(color: cfg.color.withAlpha(isDark ? 30 : 12), blurRadius: 18, offset: const Offset(0, 6)),
-          BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Top band ──
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                cfg.color.withAlpha(isDark ? 45 : 28),
-                cfg.colorEnd.withAlpha(isDark ? 20 : 10),
-              ]),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
-              border: Border(bottom: BorderSide(color: cfg.color.withAlpha(isDark ? 40 : 25))),
-            ),
-            child: Row(
-              children: [
-                // Icon box bold
-                Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [cfg.color, cfg.colorEnd],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
-                    boxShadow: [BoxShadow(color: cfg.color.withAlpha(100), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                  child: Icon(cfg.icon, color: Colors.white, size: 16),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Kategori label
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: cfg.color.withAlpha(isDark ? 40 : 22),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          cfg.label.toUpperCase(),
-                          style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: cfg.color, letterSpacing: 0.8),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        pengumuman['judul'] ?? '-',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: -0.3,
-                            color: isDark ? Colors.white : AppTheme.textLight),
-                        maxLines: 2, overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                if (tanggal.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: cfg.color.withAlpha(isDark ? 35 : 20),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(tanggal,
-                        style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: cfg.color)),
-                  ),
-                ],
-              ],
-            ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(20),
           ),
-
-          // ── Body ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  pengumuman['isi'] ?? '-',
-                  style: GoogleFonts.poppins(fontSize: 13, height: 1.7,
-                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  maxLines: 4, overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [
+                    cfg.color.withAlpha(20),
+                    cfg.colorEnd.withAlpha(10),
+                  ]),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2)),
                 ),
-                const SizedBox(height: 12),
-                Divider(height: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-                const SizedBox(height: 12),
-                Row(
+                child: Row(
                   children: [
-                    if (author != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
-                          borderRadius: BorderRadius.circular(7),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [cfg.color, cfg.colorEnd],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        child: const Icon(LucideIcons.user, size: 11, color: AppTheme.indigoPrimary),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text('Oleh: $author',
-                            style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.indigoPrimary),
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                      child: Icon(cfg.icon, color: Colors.white, size: 14),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: cfg.color.withAlpha(30),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              cfg.label.toUpperCase(),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 8.5, fontWeight: FontWeight.w900, color: cfg.color, letterSpacing: 0.8),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            pengumuman['judul'] ?? '-',
+                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14,
+                                color: isDark ? Colors.white : AppTheme.textLight),
+                            maxLines: 2, overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
+                    ),
+                    if (tanggal.isNotEmpty) ...[
                       const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: cfg.color.withAlpha(20),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: cfg.color.withAlpha(30)),
+                        ),
+                        child: Text(tanggal,
+                            style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: cfg.color)),
+                      ),
                     ],
-                    _ActionButton(icon: LucideIcons.edit2, label: 'Edit', color: AppTheme.indigoPrimary, isDark: isDark, onTap: onEdit),
-                    const SizedBox(width: 8),
-                    _ActionButton(icon: LucideIcons.trash2, label: 'Hapus', color: AppTheme.rose, isDark: isDark, onTap: onDelete),
                   ],
                 ),
-              ],
-            ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pengumuman['isi'] ?? '-',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 12.5, height: 1.6,
+                          fontWeight: FontWeight.w600, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                      maxLines: 4, overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (author != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: AppTheme.indigoPrimary.withAlpha(20),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(LucideIcons.user, size: 10, color: AppTheme.indigoPrimary),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text('Oleh: $author',
+                                style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppTheme.indigoPrimary),
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        _ActionButton(icon: LucideIcons.edit2, label: 'Edit', color: AppTheme.indigoPrimary, isDark: isDark, onTap: onEdit),
+                        const SizedBox(width: 8),
+                        _ActionButton(icon: LucideIcons.trash2, label: 'Hapus', color: AppTheme.rose, isDark: isDark, onTap: onDelete),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-// ─── Action Button ────────────────────────────────────────────────────────────
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -701,14 +687,14 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withAlpha(isDark ? 30 : 15),
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: color.withAlpha(isDark ? 60 : 40)),
+          color: color.withAlpha(20),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withAlpha(40), width: 1.2),
         ),
         child: Row(children: [
-          Icon(icon, size: 12, color: color),
+          Icon(icon, size: 11, color: color),
           const SizedBox(width: 5),
-          Text(label, style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+          Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w800, color: color)),
         ]),
       ),
     );

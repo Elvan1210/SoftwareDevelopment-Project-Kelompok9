@@ -4,12 +4,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/api_config.dart';
+import '../../../config/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
 import '../../../services/upload_service.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -153,11 +155,15 @@ class _GuruTugasViewState extends State<GuruTugasView> {
             }
           }
 
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           return AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+            ),
             title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru',
-                style: const TextStyle(fontWeight: FontWeight.w900)),
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppTheme.textLight)),
             content: SizedBox(
               width: MediaQuery.of(ctx).size.width * 0.9, 
               child: SingleChildScrollView(
@@ -171,37 +177,43 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .outline
-                                .withAlpha(100)),
+                        color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                        border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: TextField(
                         controller: deskripsiCtrl,
-                        maxLines: 5,
+                        maxLines: 4,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight),
                         keyboardType: TextInputType.multiline,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Deskripsi Detail',
-                          prefixIcon: Icon(LucideIcons.fileText),
+                          labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                          prefixIcon: const Icon(LucideIcons.fileText, size: 18),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: selectedChannelId,
+                      dropdownColor: isDark ? const Color(0xFF161B27) : Colors.white,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w600),
                       decoration: InputDecoration(
                         labelText: 'Bagikan ke Channel...',
-                        prefixIcon:
-                            const Icon(LucideIcons.messageSquare, size: 16),
+                        labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                        prefixIcon: const Icon(LucideIcons.messageSquare, size: 16),
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
                       items: [
                         const DropdownMenuItem(
@@ -250,25 +262,27 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFF8DBCC3)),
-                            borderRadius: BorderRadius.circular(12)),
+                          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                          border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Row(children: [
                           Icon(LucideIcons.calendar,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.65),
-                              size: 20),
+                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                              size: 18),
                           const SizedBox(width: 12),
-                          Text(deadlineStr,
-                              style: TextStyle(
-                                  color: selectedDeadline != null
-                                      ? Colors.black
-                                      : Colors.grey.shade600,
-                                  fontSize: 16)),
+                          Text(
+                            deadlineStr,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: selectedDeadline != null
+                                  ? (isDark ? Colors.white : AppTheme.textLight)
+                                  : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ]),
                       ),
                     ),
@@ -279,30 +293,29 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12))),
                             onPressed: isUploading ? null : handleUploadFile,
                             icon: isUploading
                                 ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white, strokeWidth: 2))
-                                : const Icon(LucideIcons.upload),
-                            label: Text(isUploading
-                                ? 'Mengunggah...' : 'Upload Lampiran',
-                                style: const TextStyle(fontSize: 13),),
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : const Icon(LucideIcons.uploadCloud, size: 14),
+                            label: Text(
+                              isUploading ? 'Mengunggah...' : 'Upload Lampiran Soal',
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    // Tampilkan link jika sudah ada
+                    const SizedBox(height: 16),
                     AppTextField(
                         controller: linkCtrl,
                         labelText: 'Link File (Terisi Otomatis/Manual)',
@@ -314,29 +327,22 @@ class _GuruTugasViewState extends State<GuruTugasView> {
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Batal')),
+                  child: Text('Batal', style: TextStyle(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600))),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    foregroundColor: Colors.white),
                 onPressed: () async {
                   final body = {
                     'judul': judulCtrl.text,
                     'deskripsi': deskripsiCtrl.text,
                     'deadline': selectedDeadline?.toIso8601String() ??
                         (isEditing ? tugas['deadline'] : null),
-                    'link': linkCtrl.text, // Link tersimpan di database
-                    'mapel': widget.teamData['mapel'] ??
-                        widget.userData['kelas'] ??
-                        '-',
+                    'link': linkCtrl.text,
+                    'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
                     'kelas': widget.teamData['nama_kelas'],
                     'kelas_id': widget.teamData['id'],
                     'guru_id': widget.userData['id'],
                     'guru_nama': widget.userData['nama'],
-                    'channel_id':
-                        selectedChannelId, // Menyimpan channel_id spesifik
-                    'waktu': DateTime.now()
-                        .toIso8601String(), // Waktu posting untuk channel feed
+                    'channel_id': selectedChannelId,
+                    'waktu': DateTime.now().toIso8601String(),
                   };
                   final url = isEditing
                       ? '$baseUrl/api/tugas/${tugas['id']}'
@@ -361,7 +367,14 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     _fetchTugas();
                   }
                 },
-                child: const Text('Simpan'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -431,18 +444,31 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       final key = groupKeys[i];
                       final items = groups[key]!;
 
+                      final isDark = Theme.of(context).brightness == Brightness.dark;
                       slivers.add(SliverToBoxAdapter(
                         child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                              padding.left, 24, padding.right, 16),
-                          child: Text(key,
-                              style: TextStyle(
-                                  fontSize: 18,
+                          padding: EdgeInsets.fromLTRB(padding.left + 4, 24, padding.right + 4, 12),
+                          child: Row(
+                            children: [
+                              Text(
+                                key.toUpperCase(),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w900,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.65))),
+                                  color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Divider(
+                                  color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ));
 
@@ -515,11 +541,12 @@ class _GuruTugasCard extends StatelessWidget {
   final dynamic tugas;
   final VoidCallback onEdit, onDelete, onDetail;
 
-  const _GuruTugasCard(
-      {required this.tugas,
-      required this.onEdit,
-      required this.onDelete,
-      required this.onDetail});
+  const _GuruTugasCard({
+    required this.tugas,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onDetail,
+  });
 
   String _formatDeadline(String? dl) {
     if (dl == null || dl.isEmpty) return '-';
@@ -533,97 +560,180 @@ class _GuruTugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = Theme.of(context).colorScheme.secondary;
+    final isDark = theme.brightness == Brightness.dark;
+    final accent = theme.colorScheme.secondary;
 
-    return PremiumCard(
-      accentColor: accent,
-      padding: const EdgeInsets.all(20),
+    return GestureDetector(
       onTap: onDetail,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    color: accent.withAlpha(20),
-                    borderRadius: BorderRadius.circular(12)),
-                child: Icon(LucideIcons.clipboardList, color: accent, size: 22),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tugas['judul'] ?? '-',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w900, fontSize: 16),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
-                    Text('Kelas: ${tugas['kelas'] ?? '-'}',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: theme.colorScheme.onSurface.withAlpha(160))),
-                  ],
-                ),
-              ),
-              PopupMenuButton(
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'delete') onDelete();
-                },
-                icon: Icon(LucideIcons.moreVertical,
-                    color: theme.colorScheme.onSurface.withAlpha(160)),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                itemBuilder: (_) => [
-                  const PopupMenuItem(
-                      value: 'edit',
-                      child: Row(children: [
-                        Icon(LucideIcons.edit2, size: 20),
-                        SizedBox(width: 12),
-                        Text('Edit')
-                      ])),
-                  const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(children: [
-                        Icon(LucideIcons.trash, color: Colors.red, size: 20),
-                        SizedBox(width: 12),
-                        Text('Hapus', style: TextStyle(color: Colors.red))
-                      ])),
-                ],
-              ),
-            ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: accent.withAlpha(isDark ? 55 : 30),
+            width: 1.2,
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (tugas['deadline'] != null)
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 60 : 8),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(19),
+              border: Border.all(
+                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                width: 1.0,
+              ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Row(
                   children: [
-                    Icon(LucideIcons.clock,
-                        size: 14,
-                        color: theme.colorScheme.secondary.withAlpha(180)),
-                    const SizedBox(width: 6),
-                    Text(_formatDeadline(tugas['deadline']),
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.secondary)),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: accent.withAlpha(isDark ? 25 : 15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: accent.withAlpha(isDark ? 60 : 40),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Icon(LucideIcons.clipboardList, color: accent, size: 20),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tugas['judul'] ?? '-',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14.5,
+                              color: isDark ? Colors.white : AppTheme.textLight,
+                              letterSpacing: -0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Kelas: ${tugas['kelas'] ?? '-'}',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      onSelected: (val) {
+                        if (val == 'edit') onEdit();
+                        if (val == 'delete') onDelete();
+                      },
+                      icon: Icon(
+                        LucideIcons.moreVertical,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        size: 18,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(LucideIcons.edit2, size: 16),
+                              SizedBox(width: 10),
+                              Text('Edit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(LucideIcons.trash, color: Colors.red, size: 16),
+                              SizedBox(width: 10),
+                              Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              Text('Detail >',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: accent.withAlpha(200))),
-            ],
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (tugas['deadline'] != null)
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.clock,
+                            size: 12,
+                            color: const Color(0xFFF59E0B).withAlpha(180),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _formatDeadline(tugas['deadline']),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFFF59E0B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: accent.withAlpha(isDark ? 20 : 12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: accent.withAlpha(isDark ? 55 : 35),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Detail',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: accent,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(LucideIcons.chevronRight, color: accent, size: 10),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -5,6 +5,9 @@ import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'guru_team_detail_layout.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import '../../../config/theme.dart';
 
 class GuruTeamsView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -169,96 +172,243 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                       padding: const EdgeInsets.all(24),
                       sliver: SliverGrid(
                         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 350,
+                          maxCrossAxisExtent: 380,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: 1.32,
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final tim = _myTeams[index];
                             final color = Color(int.parse(tim['warna_card'] ?? '0xFF075864'));
+                            final isDark = Theme.of(context).brightness == Brightness.dark;
                             
-                            return PremiumCard(
-                              accentColor: color,
-                              padding: EdgeInsets.zero,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GuruTeamDetailLayout(
-                                      userData: widget.userData,
-                                      token: widget.token,
-                                      teamData: tim,
+                            String initials = "??";
+                            final nama = (tim['nama_kelas'] as String? ?? "").trim();
+                            if (nama.isNotEmpty) {
+                              final parts = nama.split(' ');
+                              if (parts.length >= 2) {
+                                initials = (parts[0][0] + parts[1][0]).toUpperCase();
+                              } else {
+                                initials = parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+                              }
+                            }
+
+                            void onTap() {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => GuruTeamDetailLayout(
+                                    userData: widget.userData,
+                                    token: widget.token,
+                                    teamData: tim,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: color.withAlpha(isDark ? 55 : 30),
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(isDark ? 80 : 12),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                  BoxShadow(
+                                    color: color.withAlpha(isDark ? 30 : 15),
+                                    blurRadius: 28,
+                                    offset: const Offset(0, 12),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                                      width: 1.0,
                                     ),
                                   ),
-                                );
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: Container(
-                                      color: color,
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Icon(Icons.class_rounded, color: Colors.white.withAlpha(200)),
-                                              const Icon(Icons.more_vert, color: Colors.white),
-                                            ],
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                            tim['nama_kelas'] ?? '-',
-                                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                            maxLines: 1, overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Text(
-                                            tim['mapel'] ?? '-',
-                                            style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  // Bottom section
-                                  Expanded(
-                                    flex: 2,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      color: Theme.of(context).colorScheme.surface,
-                                      child: Row(
-                                        children: [
-                                          Flexible(
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF76AFB8).withAlpha(20),
-                                                border: Border.all(color: const Color(0xFF76AFB8).withAlpha(50)),
-                                                borderRadius: BorderRadius.circular(8),
+                                          // Initials Orb with Gradient
+                                          Container(
+                                            width: 46,
+                                            height: 46,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  color,
+                                                  color.withAlpha(160),
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
                                               ),
+                                              borderRadius: BorderRadius.circular(12),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: color.withAlpha(80),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 3),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
                                               child: Text(
-                                                'Kode: ${tim['kode_akses']}',
-                                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF76AFB8)),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                                initials,
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 16,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Icon(Icons.people_alt_outlined, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
-                                          const SizedBox(width: 4),
-                                          Text('${(tim['siswa_ids'] as List?)?.length ?? 0}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                if (tim['kode_kelas'] != null)
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                    decoration: BoxDecoration(
+                                                      color: color.withAlpha(isDark ? 30 : 20),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                      border: Border.all(
+                                                        color: color.withAlpha(isDark ? 80 : 50),
+                                                        width: 1.0,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'CLASS CODE: ${tim['kode_kelas']}',
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 8,
+                                                        fontWeight: FontWeight.w900,
+                                                        letterSpacing: 0.8,
+                                                        color: color,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  tim['nama_kelas'] ?? '-',
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: isDark ? Colors.white : AppTheme.textLight,
+                                                    height: 1.25,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
-                                    ),
+                                      const Spacer(),
+                                      // Divider
+                                      Container(
+                                        height: 1,
+                                        width: double.infinity,
+                                        color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      // Bottom Row with Info & Concentric Button-in-Button
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            LucideIcons.users,
+                                            size: 13,
+                                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              '${(tim['siswa_ids'] as List?)?.length ?? 0} Siswa',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // Premium Button-in-Button design
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: onTap,
+                                              borderRadius: BorderRadius.circular(30),
+                                              child: Container(
+                                                padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+                                                decoration: BoxDecoration(
+                                                  color: color,
+                                                  borderRadius: BorderRadius.circular(30),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: color.withAlpha(90),
+                                                      blurRadius: 12,
+                                                      offset: const Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      'Kelola',
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        color: Colors.white,
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w900,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Container(
+                                                      width: 18,
+                                                      height: 18,
+                                                      decoration: const BoxDecoration(
+                                                        color: Colors.white24,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: const Center(
+                                                        child: Icon(
+                                                          LucideIcons.arrowUpRight,
+                                                          size: 10,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ).animate(delay: (index * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
                           },

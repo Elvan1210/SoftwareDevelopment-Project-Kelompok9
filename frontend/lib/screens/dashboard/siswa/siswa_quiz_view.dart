@@ -7,7 +7,7 @@ import '../../../config/theme.dart';
 import '../../../services/quiz_service.dart';
 import '../../../models/quiz_model.dart';
 import 'siswa_exam_screen.dart';
-import '../../../widgets/app_shell.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SiswaQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -79,7 +79,10 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
     if (_submittedMap[quiz.id] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Anda sudah mengerjakan kuis ini'),
+          content: Text(
+            'Anda sudah mengerjakan kuis ini',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+          ),
           backgroundColor: AppTheme.orangeVivid,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -120,10 +123,12 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.tealDeep))
           : _quizzes.isEmpty
-              ? _buildEmptyState(theme)
+              ? _buildEmptyState(theme, isDark)
               : RefreshIndicator(
                   onRefresh: _loadQuizzes,
+                  color: AppTheme.indigoPrimary,
                   child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(24),
                     itemCount: _quizzes.length,
                     itemBuilder: (context, index) {
@@ -144,7 +149,7 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState(ThemeData theme, bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -152,26 +157,28 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
           Container(
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: AppTheme.tealDeep.withAlpha(20),
+              color: AppTheme.indigoPrimary.withAlpha(20),
               shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50), width: 1.5),
             ),
-            child: Icon(LucideIcons.clipboardCheck, size: 56, color: AppTheme.tealDeep.withAlpha(180)),
+            child: Icon(LucideIcons.clipboardCheck, size: 56, color: AppTheme.indigoPrimary.withAlpha(180)),
           ),
           const SizedBox(height: 24),
           Text(
             'Belum ada kuis tersedia',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w900,
               fontSize: 18,
-              color: theme.colorScheme.onSurface.withAlpha(170),
+              color: isDark ? Colors.white : AppTheme.textLight,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Kuis dari guru akan muncul di sini',
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.colorScheme.onSurface.withAlpha(160),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
             ),
           ),
         ],
@@ -195,8 +202,6 @@ class _QuizTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     bool isUpcoming = false;
     if (quiz.isScheduled && quiz.scheduledAt != null && !quiz.isActive) {
       if (quiz.scheduledAt!.isAfter(DateTime.now())) {
@@ -209,153 +214,185 @@ class _QuizTile extends StatelessWidget {
       isClosed = true;
     }
 
-    return PremiumCard(
-      padding: const EdgeInsets.all(20),
+    final accentColor = isSubmitted ? Colors.green : AppTheme.indigoPrimary;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isSubmitted
-                          ? [Colors.green.withAlpha(160), Colors.green.withAlpha(15)]
-                          : [AppTheme.tealDeep.withAlpha(30), AppTheme.tealDeep.withAlpha(15)],
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: accentColor.withAlpha(isDark ? 55 : 30),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 60 : 8),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(19),
+            border: Border.all(
+              color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: accentColor.withAlpha(20),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: accentColor.withAlpha(80)),
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    child: Icon(
+                      isSubmitted ? LucideIcons.checkCircle : (quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.fileText),
+                      color: accentColor,
+                      size: 22,
+                    ),
                   ),
-                  child: Icon(
-                    isSubmitted ? LucideIcons.checkCircle : (quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.fileText),
-                    color: isSubmitted ? Colors.green : AppTheme.tealDeep,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        quiz.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 17,
-                          color: theme.colorScheme.onSurface,
-                          letterSpacing: -0.3,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          quiz.title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            color: isDark ? Colors.white : AppTheme.textLight,
+                            letterSpacing: -0.3,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${quiz.subject} • oleh ${quiz.createdByName}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurface.withAlpha(160),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${quiz.subject} • oleh ${quiz.createdByName}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                ],
+              ),
+
+              if (quiz.description.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Text(
+                  quiz.description,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    height: 1.45,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
 
-            if (quiz.description.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                quiz.description,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: theme.colorScheme.onSurface.withAlpha(160),
-                  height: 1.4,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 16),
+
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _InfoTag(icon: LucideIcons.helpCircle, label: '${quiz.questions.length} Soal', isDark: isDark, color: Colors.blue),
+                  _InfoTag(icon: LucideIcons.clock, label: '${quiz.durationMinutes} Menit', isDark: isDark, color: Colors.teal),
+                  _InfoTag(icon: LucideIcons.target, label: '${quiz.totalPoints} Poin', isDark: isDark, color: Colors.orange),
+                  if (quiz.isSecureMode)
+                    _InfoTag(icon: LucideIcons.shieldAlert, label: 'Secure Mode', isDark: isDark, color: Colors.red),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                child: isClosed
+                    ? OutlinedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(LucideIcons.xCircle, size: 15),
+                        label: Text(
+                          'Ujian Telah Ditutup',
+                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: isDark ? const Color(0xFF3D1B1B) : const Color(0xFFFCE8E8),
+                          foregroundColor: Colors.red,
+                          side: BorderSide(color: isDark ? const Color(0xFF5C2E2E) : const Color(0xFFECA3A3), width: 1.0),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      )
+                    : isUpcoming
+                        ? OutlinedButton.icon(
+                            onPressed: null,
+                            icon: const Icon(LucideIcons.calendarClock, size: 15),
+                            label: Text(
+                              'Tersedia: ${DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!)}',
+                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: isDark ? const Color(0xFF3D2D1B) : const Color(0xFFFEF3C7),
+                              foregroundColor: Colors.orange,
+                              side: BorderSide(color: isDark ? const Color(0xFF5C472E) : const Color(0xFFFCD34D), width: 1.0),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          )
+                        : isSubmitted
+                            ? OutlinedButton.icon(
+                                onPressed: null,
+                                icon: const Icon(LucideIcons.checkCircle, size: 15),
+                                label: Text(
+                                  'Sudah Dikerjakan',
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
+                                  foregroundColor: Colors.green,
+                                  side: BorderSide(color: isDark ? const Color(0xFF2E5C3E) : const Color(0xFF82C793), width: 1.0),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: onStart,
+                                icon: const Icon(LucideIcons.play, size: 15),
+                                label: Text(
+                                  'Mulai Ujian',
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.indigoPrimary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  elevation: 0,
+                                ),
+                              ),
               ),
             ],
-
-            const SizedBox(height: 16),
-
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              children: [
-                _InfoTag(icon: LucideIcons.helpCircle, label: '${quiz.questions.length} Soal', isDark: isDark),
-                _InfoTag(icon: LucideIcons.clock, label: '${quiz.durationMinutes} Menit', isDark: isDark),
-                _InfoTag(icon: LucideIcons.target, label: '${quiz.totalPoints} Poin', isDark: isDark),
-                if (quiz.isSecureMode)
-                  _InfoTag(icon: LucideIcons.lock, label: 'Secure', isDark: isDark, color: Colors.red),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            SizedBox(
-              width: double.infinity,
-              child: isClosed
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withAlpha(20),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.red.withAlpha(160)),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.xCircle, size: 18, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text(
-                            'Ujian Telah Ditutup',
-                            style: TextStyle(fontWeight: FontWeight.w800, color: Colors.red),
-                          ),
-                        ],
-                      ),
-                    )
-                  : isUpcoming
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withAlpha(20),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.orange.withAlpha(40)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(LucideIcons.calendarClock, size: 18, color: Colors.orange),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Tersedia pada: ${DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!)}',
-                                style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.orange),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ElevatedButton.icon(
-                      onPressed: isSubmitted ? null : onStart,
-                      icon: Icon(
-                        isSubmitted ? LucideIcons.checkCircle : LucideIcons.play,
-                        size: 18,
-                      ),
-                      label: Text(
-                        isSubmitted ? 'Sudah Dikerjakan' : 'Mulai Ujian',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isSubmitted ? Colors.green.withAlpha(160) : AppTheme.tealDeep,
-                        foregroundColor: isSubmitted ? Colors.green : Colors.white,
-                        disabledBackgroundColor: Colors.green.withAlpha(isDark ? 30 : 15),
-                        disabledForegroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-          ],
+          ),
         ),
+      ),
     );
   }
 }
@@ -364,20 +401,39 @@ class _InfoTag extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isDark;
-  final Color? color;
+  final Color color;
 
-  const _InfoTag({required this.icon, required this.label, required this.isDark, this.color});
+  const _InfoTag({
+    required this.icon,
+    required this.label,
+    required this.isDark,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.onSurface.withAlpha(160);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: c),
-        const SizedBox(width: 5),
-        Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c)),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withAlpha(isDark ? 25 : 15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(isDark ? 60 : 40), width: 1.0),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -391,60 +447,69 @@ class _ExamStartDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 420),
         padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.tealDeep.withAlpha(30), AppTheme.orangeVivid.withAlpha(15)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Colors.red.withAlpha(isDark ? 25 : 15),
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.red.withAlpha(80), width: 1.5),
               ),
-              child: const Icon(LucideIcons.shieldAlert, size: 40, color: AppTheme.tealDeep),
+              child: const Icon(LucideIcons.shieldAlert, size: 36, color: Colors.red),
             ),
             const SizedBox(height: 20),
 
             Text(
               'Mulai Ujian?',
-              style: TextStyle(
-                fontSize: 22,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 20,
                 fontWeight: FontWeight.w900,
-                color: theme.colorScheme.onSurface,
+                color: isDark ? Colors.white : AppTheme.textLight,
                 letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               quiz.title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.tealDeep,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.indigoPrimary,
               ),
               textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: 20),
 
-            GlassCard(
+            Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.0),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'PERATURAN UJIAN:',
-                    style: TextStyle(
-                      fontSize: 11,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.5,
                       color: Colors.red,
@@ -473,11 +538,13 @@ class _ExamStartDialog extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF2D3A54) : const Color(0xFFF3F4F6),
+                      foregroundColor: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                      side: BorderSide(color: isDark ? const Color(0xFF2E384D) : const Color(0xFFE5E7EB), width: 1.0),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      side: BorderSide(color: theme.colorScheme.onSurface.withAlpha(160)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w700)),
+                    child: Text('Batal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -485,13 +552,16 @@ class _ExamStartDialog extends StatelessWidget {
                   flex: 2,
                   child: ElevatedButton.icon(
                     onPressed: onStart,
-                    icon: const Icon(LucideIcons.play, size: 18),
-                    label: const Text('Mulai Sekarang', style: TextStyle(fontWeight: FontWeight.w800)),
+                    icon: const Icon(LucideIcons.play, size: 16),
+                    label: Text(
+                      'Mulai Sekarang',
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
+                    ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.tealDeep,
+                      backgroundColor: AppTheme.indigoPrimary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
                   ),
@@ -514,7 +584,12 @@ class _ExamStartDialog extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 13, color: Colors.red.withAlpha(200), height: 1.3),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                color: Colors.red.withAlpha(200),
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

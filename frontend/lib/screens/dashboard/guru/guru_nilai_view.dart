@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
+import '../../../config/theme.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -12,11 +13,12 @@ class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
   final dynamic teamData;
-  const GuruNilaiView(
-      {super.key,
-      required this.userData,
-      required this.token,
-      required this.teamData});
+  const GuruNilaiView({
+    super.key,
+    required this.userData,
+    required this.token,
+    required this.teamData,
+  });
 
   @override
   State<GuruNilaiView> createState() => _GuruNilaiViewState();
@@ -52,7 +54,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       
       List<dynamic> allNilai = [];
 
-      // Parse Tugas to filter assignments by this class
       final Map<String, String> tugasMap = {};
       if (responses[3].statusCode == 200) {
         final decTugas = jsonDecode(responses[3].body);
@@ -64,7 +65,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         }
       }
 
-      // 1. Parse Nilai Manual (Lainnya) & Tugas (Assignment)
       if (responses[0].statusCode == 200) {
         final dec = jsonDecode(responses[0].body);
         List data = dec is List ? dec : [];
@@ -73,7 +73,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           if (n['guru_id'].toString() != widget.userData['id'].toString()) continue;
 
           if (n['tugas_id'] != null) {
-            // Assignment: Only include if the tugas belongs to this class
             final tId = n['tugas_id'].toString();
             if (tugasMap.containsKey(tId)) {
               n['tipe'] = 'Assignment';
@@ -83,9 +82,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
               allNilai.add(n);
             }
           } else {
-            // Manual Grade: Only include if kelas_id matches
             if (kelasId.isNotEmpty && n['kelas_id']?.toString() == kelasId) {
-              n['tipe'] = n['tipe'] ?? 'Lainnya'; // Enforce type
+              n['tipe'] = n['tipe'] ?? 'Lainnya';
               n['isManual'] = true;
               allNilai.add(n);
             } else if (kelasId.isEmpty) {
@@ -97,7 +95,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         }
       }
 
-      // 2. Parse Quiz Submissions
       if (responses[2].statusCode == 200) {
         final decQuiz = jsonDecode(responses[2].body);
         final listQuiz = decQuiz['data'] is List ? decQuiz['data'] : [];
@@ -132,7 +129,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         }
       }
 
-      // Sort all from newest to oldest
       allNilai.sort((a, b) {
         final dA = DateTime.tryParse(a['tanggal']?.toString() ?? '') ?? DateTime(2000);
         final dB = DateTime.tryParse(b['tanggal']?.toString() ?? '') ?? DateTime(2000);
@@ -141,7 +137,6 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       
       _nilaiList = allNilai;
 
-      // Parse Users (Class Members)
       if (responses[1].statusCode == 200) {
         final dec = jsonDecode(responses[1].body);
         List users = dec is List ? dec : [];
@@ -161,7 +156,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           headers: {'Authorization': 'Bearer ${widget.token}'},
         );
         _fetchData();
-        if (mounted) Navigator.pop(context); // Close detail dialog if open
+        if (mounted) Navigator.pop(context);
       } catch (e) {
         debugPrint('Error: $e');
       }
@@ -170,6 +165,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
 
   void _showNilaiForm([Map<String, dynamic>? nilai]) {
     final isEditing = nilai != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     String? selectedSiswaId = isEditing ? nilai['siswa_id'].toString() : null;
     final mapelCtrl = TextEditingController(
         text: isEditing ? nilai['mapel'] : widget.userData['kelas'] ?? '');
@@ -182,10 +178,16 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text(isEditing ? 'Edit Nilai' : 'Input Nilai Siswa',
-              style: const TextStyle(fontWeight: FontWeight.w900)),
+          backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          ),
+          title: Text(
+            isEditing ? 'Edit Nilai' : 'Input Nilai Siswa',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+          ),
           content: SizedBox(
             width: 500,
             child: SingleChildScrollView(
@@ -193,62 +195,72 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
+                  
                   DropdownButtonFormField<String>(
                     initialValue: selectedSiswaId,
                     isExpanded: true,
+                    dropdownColor: isDark ? const Color(0xFF161B27) : Colors.white,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : AppTheme.textLight,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Pilih Siswa',
-                      prefixIcon: const Icon(LucideIcons.user),
-                      fillColor:
-                          Theme.of(context).colorScheme.surface.withAlpha(50),
+                      labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                      prefixIcon: Icon(LucideIcons.user, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
+                      ),
                     ),
-                    hint: const Text('Pilih siswa...'),
+                    hint: Text('Pilih siswa...', style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                     items: _userList.map<DropdownMenuItem<String>>((u) {
                       return DropdownMenuItem<String>(
-                          value: u['id'].toString(),
-                          child: Text(u['nama'] ?? '-'));
+                        value: u['id'].toString(),
+                        child: Text(u['nama'] ?? '-'),
+                      );
                     }).toList(),
-                    onChanged: (val) =>
-                        setDialogState(() => selectedSiswaId = val),
+                    onChanged: (val) => setDialogState(() => selectedSiswaId = val),
                   ),
+                  
                   const SizedBox(height: 16),
-                  AppTextField(
-                      controller: mapelCtrl,
-                      labelText: 'Judul / Topik',
-                      prefixIcon: LucideIcons.bookOpen),
+                  
+                  _buildFormInput('Judul / Topik', mapelCtrl, LucideIcons.bookOpen, isDark),
+                  
                   const SizedBox(height: 16),
-                  AppTextField(
-                      controller: nilaiCtrl,
-                      labelText: 'Nilai (0-100)',
-                      prefixIcon: LucideIcons.award,
-                      keyboardType: TextInputType.number),
+                  
+                  _buildFormInput('Nilai (0-100)', nilaiCtrl, LucideIcons.award, isDark, isNumber: true),
+                  
                   const SizedBox(height: 16),
-                  AppTextField(
-                      controller: keteranganCtrl,
-                      labelText: 'Keterangan / Catatan',
-                      prefixIcon: LucideIcons.messageSquare,
-                      keyboardType: TextInputType.multiline),
+                  
+                  _buildFormInput('Keterangan / Catatan', keteranganCtrl, LucideIcons.messageSquare, isDark, isMultiLine: true),
                 ],
               ),
             ),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Batal')),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                ),
               ),
+            ),
+            ElevatedButton(
               onPressed: () async {
                 if (selectedSiswaId == null || nilaiCtrl.text.isEmpty) return;
                 final siswa = _userList
@@ -288,11 +300,59 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   _fetchData();
                 }
               },
-              child: Text(isEditing ? 'Simpan' : 'Simpan Nilai',
-                  style: const TextStyle(fontWeight: FontWeight.w800)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.indigoPrimary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: Text(
+                isEditing ? 'Simpan' : 'Simpan Nilai',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFormInput(
+    String label,
+    TextEditingController ctrl,
+    IconData icon,
+    bool isDark, {
+    bool isNumber = false,
+    bool isMultiLine = false,
+  }) {
+    return TextFormField(
+      controller: ctrl,
+      keyboardType: isNumber ? TextInputType.number : (isMultiLine ? TextInputType.multiline : TextInputType.text),
+      maxLines: isMultiLine ? 3 : 1,
+      style: GoogleFonts.plusJakartaSans(
+        fontWeight: FontWeight.w700,
+        color: isDark ? Colors.white : AppTheme.textLight,
+        fontSize: 13,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+        prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -339,53 +399,64 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                color: isDark ? const Color(0xFF1E2538) : Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                border: Border(
+                  top: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.5),
+                ),
               ),
               child: Column(
                 children: [
-                  // Header
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                     decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: theme.dividerColor.withAlpha(50))),
+                      border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB))),
                     ),
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: theme.primaryColor.withAlpha(30),
+                          backgroundColor: AppTheme.indigoPrimary.withAlpha(20),
                           radius: 24,
-                          child: Icon(LucideIcons.user, color: theme.primaryColor),
+                          child: const Icon(LucideIcons.user, color: AppTheme.indigoPrimary),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(siswa['nama'] ?? '-', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18)),
+                              Text(
+                                siswa['nama'] ?? '-', 
+                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight),
+                              ),
                               const SizedBox(height: 2),
-                              Text('Detail Nilai Siswa', style: TextStyle(color: theme.textTheme.bodySmall?.color, fontWeight: FontWeight.w600)),
+                              Text(
+                                'Rekapitulasi Nilai Siswa', 
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, 
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(LucideIcons.x, size: 28),
+                          icon: Icon(LucideIcons.x, size: 24, color: isDark ? Colors.white : AppTheme.textLight),
                           onPressed: () => Navigator.pop(ctx),
                         )
                       ],
                     ),
                   ),
                   
-                  // Filter Chips
                   Container(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                    height: 56, // 40 for chip + 16 for padding
+                    height: 56,
                     child: ListView(
                       clipBehavior: Clip.none,
                       scrollDirection: Axis.horizontal,
                       children: ['Semua', 'Assignment', 'Kuis', 'Lainnya'].map((k) {
                         final selected = activeFilter == k;
-                        Color colorStart = theme.colorScheme.primary;
+                        Color colorStart = AppTheme.indigoPrimary;
                         Color colorEnd = const Color(0xFF818CF8);
                         IconData icon = LucideIcons.layoutGrid;
 
@@ -412,20 +483,23 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 gradient: selected ? LinearGradient(colors: [colorStart, colorEnd]) : null,
-                                color: selected ? null : (isDark ? const Color(0xFF27273A) : const Color(0xFFF1F5F9)),
+                                color: selected ? null : (isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF)),
                                 borderRadius: BorderRadius.circular(100),
-                                border: Border.all(color: selected ? Colors.transparent : colorStart.withAlpha(isDark ? 80 : 60)),
-                                boxShadow: selected
-                                    ? [BoxShadow(color: colorStart.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
-                                    : [],
+                                border: Border.all(color: selected ? Colors.transparent : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB))),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(icon, size: 13, color: selected ? Colors.white : colorStart),
                                   const SizedBox(width: 6),
-                                  Text(k, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
-                                      color: selected ? Colors.white : colorStart)),
+                                  Text(
+                                    k, 
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11.5, 
+                                      fontWeight: FontWeight.w900,
+                                      color: selected ? Colors.white : colorStart,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -435,216 +509,280 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     ),
                   ),
 
-                  // List Nilai
                   Expanded(
                     child: filteredNilai.isEmpty
-                        ? Center(child: Text('Belum ada nilai yang diinput.', style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(150))))
-                        : ListView.separated(
+                        ? Center(
+                            child: Text(
+                              'Belum ada entri nilai.', 
+                              style: GoogleFonts.plusJakartaSans(
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
                             padding: const EdgeInsets.all(24),
                             itemCount: filteredNilai.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 16),
                             itemBuilder: (ctx, i) {
                               final n = filteredNilai[i];
-                          final val = double.tryParse(n['nilai'].toString()) ?? 0;
-                          final tipe = n['tipe'] ?? 'Lainnya';
-                          
-                          IconData iconData = LucideIcons.fileText;
-                          Color colorStart = theme.colorScheme.primary;
-                          Color colorEnd = const Color(0xFF818CF8);
-                          
-                          if (tipe == 'Kuis') {
-                            iconData = LucideIcons.helpCircle;
-                            colorStart = const Color(0xFFF59E0B);
-                            colorEnd = const Color(0xFFFBBF24);
-                          } else if (tipe == 'Assignment') {
-                            iconData = LucideIcons.clipboardList;
-                            colorStart = const Color(0xFF10B981);
-                            colorEnd = const Color(0xFF34D399);
-                          } else {
-                            colorStart = const Color(0xFF6366F1); // Indigo for Lainnya
-                            colorEnd = const Color(0xFF818CF8);
-                          }
-                          
-                          String dateStr = '';
-                          if (n['tanggal'] != null) {
-                            dateStr = _formatDateStr(n['tanggal']);
-                          }
-                          
-                          final colorScore = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+                              final val = double.tryParse(n['nilai'].toString()) ?? 0;
+                              final tipe = n['tipe'] ?? 'Lainnya';
+                              
+                              IconData iconData = LucideIcons.fileText;
+                              Color colorStart = AppTheme.indigoPrimary;
+                              Color colorEnd = const Color(0xFF818CF8);
+                              
+                              if (tipe == 'Kuis') {
+                                iconData = LucideIcons.helpCircle;
+                                colorStart = const Color(0xFFF59E0B);
+                                colorEnd = const Color(0xFFFBBF24);
+                              } else if (tipe == 'Assignment') {
+                                iconData = LucideIcons.clipboardList;
+                                colorStart = const Color(0xFF10B981);
+                                colorEnd = const Color(0xFF34D399);
+                              } else {
+                                colorStart = const Color(0xFF6366F1);
+                                colorEnd = const Color(0xFF818CF8);
+                              }
+                              
+                              String dateStr = '';
+                              if (n['tanggal'] != null) {
+                                dateStr = _formatDateStr(n['tanggal']);
+                              }
+                              
+                              final colorScore = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: colorStart.withAlpha(isDark ? 55 : 35)),
-                              boxShadow: [
-                                BoxShadow(color: colorStart.withAlpha(isDark ? 30 : 12), blurRadius: 18, offset: const Offset(0, 6)),
-                                BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 4)),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // ── Top band ──
-                                Container(
-                                  padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(colors: [
-                                      colorStart.withAlpha(isDark ? 45 : 28),
-                                      colorEnd.withAlpha(isDark ? 20 : 10),
-                                    ]),
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
-                                    border: Border(bottom: BorderSide(color: colorStart.withAlpha(isDark ? 40 : 25))),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      // Icon box
-                                      Container(
-                                        padding: const EdgeInsets.all(9),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(colors: [colorStart, colorEnd], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                                          borderRadius: BorderRadius.circular(11),
-                                          boxShadow: [BoxShadow(color: colorStart.withAlpha(100), blurRadius: 10, offset: const Offset(0, 4))],
-                                        ),
-                                        child: Icon(iconData, color: Colors.white, size: 16),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Category & Title
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: colorStart.withAlpha(isDark ? 40 : 22),
-                                                borderRadius: BorderRadius.circular(6),
-                                              ),
-                                              child: Text(tipe.toUpperCase(),
-                                                  style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: colorStart, letterSpacing: 0.8)),
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(n['mapel'] ?? '-',
-                                                style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: -0.3,
-                                                    color: isDark ? Colors.white : const Color(0xFF1E293B)),
-                                                maxLines: 2, overflow: TextOverflow.ellipsis),
-                                          ],
-                                        ),
-                                      ),
-                                      // Date
-                                      if (dateStr.isNotEmpty) ...[
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: colorStart.withAlpha(isDark ? 35 : 20),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Text(dateStr, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: colorStart)),
-                                        ),
-                                      ],
-                                    ]
-                                  )
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: colorStart.withAlpha(isDark ? 55 : 35), width: 1.2),
                                 ),
-                                
-                                // ── Body ──
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                                padding: const EdgeInsets.all(4),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: colorStart.withAlpha(20)),
+                                  ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                                        textBaseline: TextBaseline.alphabetic,
-                                        children: [
-                                          Text('Skor:', style: GoogleFonts.poppins(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
-                                          const SizedBox(width: 8),
-                                          Text(val.toStringAsFixed(0), style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w900, color: colorScore)),
-                                          const Text(' / 100', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey)),
-                                        ],
-                                      ),
-                                      if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty) ...[
-                                        const SizedBox(height: 8),
-                                        Text('${n['keterangan']}',
-                                            style: GoogleFonts.poppins(fontSize: 13, height: 1.7,
-                                                color: isDark ? Colors.white60 : Colors.black87),
-                                            maxLines: 4, overflow: TextOverflow.ellipsis),
-                                      ],
-                                      
-                                      if (n['isManual'] == true) ...[
-                                        const SizedBox(height: 12),
-                                        Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
-                                        const SizedBox(height: 12),
-                                        Row(
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(colors: [
+                                            colorStart.withAlpha(isDark ? 40 : 25),
+                                            colorEnd.withAlpha(isDark ? 20 : 10),
+                                          ]),
+                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                                          border: Border(bottom: BorderSide(color: colorStart.withAlpha(isDark ? 35 : 20))),
+                                        ),
+                                        child: Row(
                                           children: [
-                                            Icon(LucideIcons.user, size: 14, color: colorStart.withAlpha(200)),
-                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(colors: [colorStart, colorEnd]),
+                                                borderRadius: BorderRadius.circular(9),
+                                              ),
+                                              child: Icon(iconData, color: Colors.white, size: 14),
+                                            ),
+                                            const SizedBox(width: 12),
                                             Expanded(
-                                              child: Text('Input Manual', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: colorStart)),
-                                            ),
-                                            InkWell(
-                                              onTap: () {
-                                                Navigator.pop(ctx); 
-                                                _showNilaiForm(n);
-                                              },
-                                              borderRadius: BorderRadius.circular(8),
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                decoration: BoxDecoration(
-                                                  color: colorStart.withAlpha(25),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  border: Border.all(color: colorStart.withAlpha(50)),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Icon(LucideIcons.edit2, size: 12, color: colorStart),
-                                                    const SizedBox(width: 4),
-                                                    Text('Edit', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: colorStart)),
-                                                  ],
-                                                ),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: colorStart.withAlpha(isDark ? 30 : 15),
+                                                      borderRadius: BorderRadius.circular(5),
+                                                    ),
+                                                    child: Text(
+                                                      tipe.toUpperCase(),
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 8.5, 
+                                                        fontWeight: FontWeight.w900, 
+                                                        color: colorStart, 
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    n['mapel'] ?? '-',
+                                                    style: GoogleFonts.plusJakartaSans(
+                                                      fontWeight: FontWeight.w800, 
+                                                      fontSize: 13,
+                                                      color: isDark ? Colors.white : AppTheme.textLight,
+                                                    ),
+                                                    maxLines: 1, 
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
-                                            InkWell(
-                                              onTap: () {
-                                                Navigator.pop(ctx);
-                                                _deleteNilai(n['id'].toString());
-                                              },
-                                              borderRadius: BorderRadius.circular(8),
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            if (dateStr.isNotEmpty) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.red.withAlpha(25),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  border: Border.all(color: Colors.red.withAlpha(50)),
+                                                  color: colorStart.withAlpha(20),
+                                                  borderRadius: BorderRadius.circular(6),
                                                 ),
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(LucideIcons.trash, size: 12, color: Colors.red),
-                                                    const SizedBox(width: 4),
-                                                    Text('Hapus', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.red)),
-                                                  ],
+                                                child: Text(
+                                                  dateStr, 
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 9.5, 
+                                                    fontWeight: FontWeight.w800, 
+                                                    color: colorStart,
+                                                  ),
                                                 ),
                                               ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                                              textBaseline: TextBaseline.alphabetic,
+                                              children: [
+                                                Text(
+                                                  'Skor:', 
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 12.5, 
+                                                    fontWeight: FontWeight.bold,
+                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  val.toStringAsFixed(0), 
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 22, 
+                                                    fontWeight: FontWeight.w900, 
+                                                    color: colorScore,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  ' / 100', 
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 11.5, 
+                                                    fontWeight: FontWeight.bold,
+                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ]
-                                        )
-                                      ]
-                                    ]
-                                  )
-                                )
-                              ]
-                            )
-                          );
-                        },
-                      ),
-                  )
+                                            if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty) ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                '${n['keterangan']}',
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontSize: 12, 
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                                ),
+                                                maxLines: 2, 
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                            
+                                            if (n['isManual'] == true) ...[
+                                              const SizedBox(height: 12),
+                                              Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                                              const SizedBox(height: 12),
+                                              Row(
+                                                children: [
+                                                  Icon(LucideIcons.pencil, size: 12, color: colorStart),
+                                                  const SizedBox(width: 6),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Input Manual', 
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 11, 
+                                                        fontWeight: FontWeight.w800, 
+                                                        color: colorStart,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      Navigator.pop(ctx); 
+                                                      _showNilaiForm(n);
+                                                    },
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                      decoration: BoxDecoration(
+                                                        color: colorStart.withAlpha(20),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border: Border.all(color: colorStart.withAlpha(50)),
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(LucideIcons.edit3, size: 11, color: colorStart),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            'Edit', 
+                                                            style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w900, color: colorStart),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      Navigator.pop(ctx);
+                                                      _deleteNilai(n['id'].toString());
+                                                    },
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red.withAlpha(20),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border: Border.all(color: Colors.red.withAlpha(50)),
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          const Icon(LucideIcons.trash2, size: 11, color: Colors.red),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            'Hapus', 
+                                                            style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w900, color: Colors.red),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
                 ],
               ),
             );
-          }
+          },
         );
       },
     );
@@ -658,12 +796,10 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       return AppShell(child: _buildSkeleton());
     }
 
-    // Filter by search query
     final filteredUsers = _searchQuery.isEmpty 
       ? _userList 
       : _userList.where((u) => (u['nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
-    // Grouping by student
     final Map<String, List<dynamic>> groupedNilai = {};
     for (var u in filteredUsers) {
       groupedNilai[u['id'].toString()] = [];
@@ -678,10 +814,13 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: AppFAB(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _showNilaiForm(),
-          icon: LucideIcons.lineChart,
-          label: 'Input Nilai',
+          backgroundColor: AppTheme.indigoPrimary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          icon: const Icon(LucideIcons.plusCircle, size: 18),
+          label: Text('Input Nilai', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13)),
         ),
         body: _userList.isEmpty
             ? const EmptyState(
@@ -694,20 +833,17 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                        color: isDark ? const Color(0xFF1E2538) : Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withAlpha(isDark ? 40 : 10), blurRadius: 10, offset: const Offset(0, 4)),
-                        ],
+                        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
                       ),
                       child: TextField(
                         onChanged: (val) => setState(() => _searchQuery = val),
-                        style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
                         decoration: InputDecoration(
                           hintText: 'Cari nama siswa...',
-                          hintStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? Colors.white54 : Colors.black45),
-                          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? Colors.white54 : Colors.black45),
+                          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
@@ -718,7 +854,16 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     child: RefreshIndicator(
                       onRefresh: _fetchData,
                       child: filteredUsers.isEmpty 
-                        ? Center(child: Text('Siswa tidak ditemukan.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150))))
+                        ? Center(
+                            child: Text(
+                              'Siswa tidak ditemukan.', 
+                              style: GoogleFonts.plusJakartaSans(
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
                         : LayoutBuilder(
                             builder: (ctx, c) {
                               final w = c.maxWidth;
@@ -733,7 +878,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                   crossAxisCount: crossCount,
                                   crossAxisSpacing: 16,
                                   mainAxisSpacing: 16,
-                                  childAspectRatio: crossCount == 1 ? 2.5 : 1.8,
+                                  childAspectRatio: crossCount == 1 ? 2.5 : 1.6,
                                 ),
                                 itemCount: filteredUsers.length,
                                 itemBuilder: (_, i) {
@@ -789,8 +934,12 @@ class _GuruRekapCard extends StatelessWidget {
   final int count;
   final VoidCallback onTap;
 
-  const _GuruRekapCard(
-      {required this.siswa, required this.avg, required this.count, required this.onTap});
+  const _GuruRekapCard({
+    required this.siswa,
+    required this.avg,
+    required this.count,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -803,69 +952,110 @@ class _GuruRekapCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: PremiumCard(
-        accentColor: color,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: count == 0 ? (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)) : color.withAlpha(isDark ? 55 : 30),
+            width: 1.2,
+          ),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: count == 0 ? Colors.transparent : color.withAlpha(15)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                        color: theme.primaryColor.withAlpha(isDark ? 40 : 25), shape: BoxShape.circle),
-                    child: Icon(LucideIcons.user, color: theme.primaryColor, size: 16)),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: Text(siswa['nama'] ?? '-',
-                        style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w800, fontSize: 14),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis)),
-                Icon(LucideIcons.chevronRight, size: 18, color: theme.colorScheme.onSurface.withAlpha(100))
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(count == 0 ? '-' : avg.toStringAsFixed(1),
-                        style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w900,
-                            color: count == 0 ? theme.disabledColor : color,
-                            letterSpacing: -1)),
-                    if (count > 0)
-                      Padding(
-                          padding: const EdgeInsets.only(bottom: 6, left: 4),
-                          child: Text('avg',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: theme.colorScheme.onSurface.withAlpha(120)))),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: count == 0 ? theme.disabledColor.withAlpha(30) : color.withAlpha(20),
-                    borderRadius: BorderRadius.circular(8)
+                      color: AppTheme.indigoPrimary.withAlpha(15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.indigoPrimary.withAlpha(30)),
+                    ),
+                    child: const Icon(LucideIcons.user, color: AppTheme.indigoPrimary, size: 14),
                   ),
-                  child: Text(count == 0 ? 'Belum ada nilai' : '$count Entri Nilai',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: count == 0 ? theme.disabledColor : color)),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      siswa['nama'] ?? '-',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w800, 
+                        fontSize: 13.5,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(LucideIcons.chevronRight, size: 16, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            count == 0 ? '-' : avg.toStringAsFixed(1),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: count == 0 ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt) : color,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          if (count > 0) ...[
+                            const SizedBox(width: 4),
+                            Text(
+                              'rata-rata',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: count == 0 ? (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)) : color.withAlpha(20),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      count == 0 ? 'Belum Ada Nilai' : '$count Entri Nilai',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        color: count == 0 ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt) : color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

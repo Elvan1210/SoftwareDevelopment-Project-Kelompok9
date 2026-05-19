@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/api_config.dart';
+import '../../../config/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -60,6 +62,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
   void _showUserForm([Map<String, dynamic>? user]) {
     final isEditing = user != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final namaCtrl = TextEditingController(text: isEditing ? user['nama'] : '');
     final emailCtrl = TextEditingController(text: isEditing ? user['email'] : '');
     final passCtrl = TextEditingController();
@@ -69,96 +72,146 @@ class _UserManagementViewState extends State<UserManagementView> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text(isEditing ? 'Edit User' : 'Tambah User Baru', style: const TextStyle(fontWeight: FontWeight.w900)),
-          content: SizedBox(
-            width: 500,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  AppTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: LucideIcons.user),
-                  const SizedBox(height: 16),
-                  AppTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: LucideIcons.mail, keyboardType: TextInputType.emailAddress),
-                  const SizedBox(height: 16),
-                  AppTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: LucideIcons.lock, obscureText: true),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: role,
-                    decoration: InputDecoration(
-                      labelText: 'Role',
-                      prefixIcon: const Icon(LucideIcons.shieldCheck),
-                      filled: true,
-                      fillColor: Theme.of(context).colorScheme.surface.withAlpha(50),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: SizedBox(
+              width: 500,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.indigoPrimary.withAlpha(20),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(LucideIcons.userPlus, color: AppTheme.indigoPrimary, size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        Text(
+                          isEditing ? 'Edit User' : 'Tambah User Baru',
+                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppTheme.textLight),
+                        ),
+                      ],
                     ),
-                    items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-                    onChanged: (val) => setDialogState(() => role = val!),
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: LucideIcons.library),
-                ],
+                    const SizedBox(height: 24),
+                    AppTextField(controller: namaCtrl, labelText: 'Nama Lengkap', prefixIcon: LucideIcons.user),
+                    const SizedBox(height: 16),
+                    AppTextField(controller: emailCtrl, labelText: 'Email Address', prefixIcon: LucideIcons.mail, keyboardType: TextInputType.emailAddress),
+                    const SizedBox(height: 16),
+                    AppTextField(controller: passCtrl, labelText: isEditing ? 'Password Baru (Opsional)' : 'Password', prefixIcon: LucideIcons.lock, obscureText: true),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: role,
+                      dropdownColor: isDark ? const Color(0xFF161B27) : Colors.white,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                      ),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                        labelText: 'Role',
+                        labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        prefixIcon: Icon(LucideIcons.shieldCheck, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
+                        ),
+                      ),
+                      items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)))).toList(),
+                      onChanged: (val) => setDialogState(() => role = val!),
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: LucideIcons.library),
+                    const SizedBox(height: 28),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text('Batal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                        ),
+                        const SizedBox(width: 12),
+                        PremiumElevatedButton(
+                          color: AppTheme.indigoPrimary,
+                          textColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          radius: 12,
+                          onPressed: () async {
+                            final body = {
+                              'nama': namaCtrl.text,
+                              'email': emailCtrl.text,
+                              'role': role,
+                              'kelas': kelasCtrl.text,
+                            };
+                            if (!isEditing || passCtrl.text.isNotEmpty) {
+                              body['password'] = passCtrl.text;
+                            }
+
+                            final url = isEditing ? Uri.parse('$baseUrl/api/users/${user['id']}') : Uri.parse('$baseUrl/api/users');
+                            final response = await (isEditing
+                                ? http.put(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
+                                : http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
+
+                            if (response.statusCode == 200 || response.statusCode == 201) {
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              _fetchUsers();
+                              
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(
+                                    content: Text('User berhasil disimpan!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                                    backgroundColor: AppTheme.indigoPrimary,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                );
+                              }
+                            } else {
+                              final data = jsonDecode(response.body);
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(
+                                    content: Text(data['message'] ?? 'Gagal menyimpan user', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                                    backgroundColor: AppTheme.rose,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: Text('Simpan User', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              onPressed: () async {
-                final body = {
-                  'nama': namaCtrl.text,
-                  'email': emailCtrl.text,
-                  'role': role,
-                  'kelas': kelasCtrl.text,
-                };
-                if (!isEditing || passCtrl.text.isNotEmpty) {
-                  body['password'] = passCtrl.text;
-                }
-
-                final url = isEditing ? Uri.parse('$baseUrl/api/users/${user['id']}') : Uri.parse('$baseUrl/api/users');
-                final response = await (isEditing
-                    ? http.put(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body))
-                    : http.post(url, headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'}, body: jsonEncode(body)));
-
-                if (response.statusCode == 200 || response.statusCode == 201) {
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  _fetchUsers();
-                  
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(
-                        content: const Text('User berhasil disimpan!'),
-                        backgroundColor: Theme.of(ctx).colorScheme.secondary,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    );
-                  }
-                } else {
-                  final data = jsonDecode(response.body);
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(
-                        content: Text(data['message'] ?? 'Gagal menyimpan user'),
-                        backgroundColor: const Color(0xFFF27F33),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text('Simpan User', style: TextStyle(fontWeight: FontWeight.w800)),
-            ),
-          ],
         ),
       ),
     );
@@ -180,6 +233,8 @@ class _UserManagementViewState extends State<UserManagementView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
       return _buildSkeleton();
     }
@@ -190,95 +245,108 @@ class _UserManagementViewState extends State<UserManagementView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-        floatingActionButton: AppFAB(
-          onPressed: () => _showUserForm(),
-          icon: LucideIcons.userPlus,
-          label: 'Tambah User',
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-              child: Row(
-                children: [
-                  _buildStatCard('Total User', totalUsers.toString(), Theme.of(context).colorScheme.secondary),
-                  const SizedBox(width: 16),
-                  _buildStatCard('Guru', totalTeachers.toString(), Theme.of(context).colorScheme.secondary),
-                  const SizedBox(width: 16),
-                  _buildStatCard('Siswa', totalStudents.toString(), Theme.of(context).primaryColor),
-                ],
-              ).animate().fadeIn().slideY(begin: -0.1),
-            ),
+      floatingActionButton: AppFAB(
+        onPressed: () => _showUserForm(),
+        icon: LucideIcons.userPlus,
+        label: 'Tambah User',
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            child: Row(
+              children: [
+                _buildStatCard('Total User', totalUsers.toString(), AppTheme.indigoPrimary, isDark),
+                const SizedBox(width: 16),
+                _buildStatCard('Guru', totalTeachers.toString(), AppTheme.tealDeep, isDark),
+                const SizedBox(width: 16),
+                _buildStatCard('Siswa', totalStudents.toString(), AppTheme.amber, isDark),
+              ],
+            ).animate().fadeIn().slideY(begin: -0.1),
+          ),
 
-            RepaintBoundary(child: _buildHeader()),
+          RepaintBoundary(child: _buildHeader(isDark)),
 
-            Expanded(
-              child: _filteredUsers.isEmpty
-                  ? EmptyState(icon: LucideIcons.users, message: 'Tidak ada user ditemukan.', color: Theme.of(context).colorScheme.secondary)
-                  : RepaintBoundary(
-                      child: RefreshIndicator(
-                        onRefresh: _fetchUsers,
-                        child: LayoutBuilder(
-                          builder: (ctx, c) {
-                            final w = c.maxWidth;
-                            final padding = Breakpoints.screenPadding(w);
-                            final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
+          Expanded(
+            child: _filteredUsers.isEmpty
+                ? const EmptyState(icon: LucideIcons.users, message: 'Tidak ada user ditemukan.', color: AppTheme.indigoPrimary)
+                : RepaintBoundary(
+                    child: RefreshIndicator(
+                      onRefresh: _fetchUsers,
+                      color: AppTheme.indigoPrimary,
+                      child: LayoutBuilder(
+                        builder: (ctx, c) {
+                          final w = c.maxWidth;
+                          final padding = Breakpoints.screenPadding(w);
+                          final crossCount = w >= Breakpoints.tablet ? 3 : (w >= Breakpoints.mobile ? 2 : 1);
 
-                            return CustomScrollView(
-                              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                              slivers: [
-                                SliverPadding(
-                                  padding: padding,
-                                  sliver: SliverGrid(
-                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: crossCount,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      childAspectRatio: crossCount == 1 ? 2.2 : 1.4,
-                                    ),
-                                    delegate: SliverChildBuilderDelegate(
-                                      (context, index) {
-                                        final u = _filteredUsers[index];
-                                          return _UserCard(
-                                            user: u,
-                                            onEdit: () => _showUserForm(u),
-                                            onDelete: () => _deleteUser(u['id'].toString()),
-                                          ).animate(delay: (index * 40).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutCubic);
-                                      },
-                                      childCount: _filteredUsers.length,
-                                    ),
+                          return CustomScrollView(
+                            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                            slivers: [
+                              SliverPadding(
+                                padding: padding,
+                                sliver: SliverGrid(
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossCount,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    childAspectRatio: crossCount == 1 ? 2.2 : 1.4,
+                                  ),
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final u = _filteredUsers[index];
+                                      return _UserCard(
+                                        user: u,
+                                        onEdit: () => _showUserForm(u),
+                                        onDelete: () => _deleteUser(u['id'].toString()),
+                                        isDark: isDark,
+                                      ).animate(delay: (index * 40).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutCubic);
+                                    },
+                                    childCount: _filteredUsers.length,
                                   ),
                                 ),
-                              ],
-                            );
-                          },
-                        ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
-            ),
-          ],
-        ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color) {
+  Widget _buildStatCard(String label, String value, Color color, bool isDark) {
     return Expanded(
-      child: PremiumCard(
-        accentColor: color,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color.withAlpha(180))),
-            const SizedBox(height: 4),
-            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
-          ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: color)),
+              const SizedBox(height: 4),
+              Text(value, style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight, letterSpacing: -0.5)),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDark) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       child: Column(
@@ -296,18 +364,15 @@ class _UserManagementViewState extends State<UserManagementView> {
                 final isSelected = _selectedRole == r;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: AnimatedContainer(
-                    duration: 300.ms,
-                    child: ChoiceChip(
-                      label: Text(r),
-                      selected: isSelected,
-                      onSelected: (val) => setState(() => _selectedRole = r),
-                      backgroundColor: Colors.transparent,
-                      selectedColor: Theme.of(context).colorScheme.secondary.withAlpha(isSelected ? 40 : 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey.withAlpha(160))),
-                      labelStyle: TextStyle(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.grey),
-                      showCheckmark: false,
-                    ),
+                  child: ChoiceChip(
+                    label: Text(r),
+                    selected: isSelected,
+                    onSelected: (val) => setState(() => _selectedRole = r),
+                    backgroundColor: Colors.transparent,
+                    selectedColor: AppTheme.indigoPrimary.withAlpha(20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? AppTheme.indigoPrimary : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)), width: 1.2)),
+                    labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700, color: isSelected ? AppTheme.indigoPrimary : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                    showCheckmark: false,
                   ),
                 );
               }).toList(),
@@ -341,82 +406,95 @@ class _UserManagementViewState extends State<UserManagementView> {
 class _UserCard extends StatelessWidget {
   final dynamic user;
   final VoidCallback onEdit, onDelete;
+  final bool isDark;
 
-  const _UserCard({required this.user, required this.onEdit, required this.onDelete});
+  const _UserCard({required this.user, required this.onEdit, required this.onDelete, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final String role = user['role'] ?? 'Siswa';
-    final roleColor = role == 'Guru' ? theme.colorScheme.secondary : (role == 'Admin' ? Theme.of(context).colorScheme.secondary : theme.primaryColor);
+    final roleColor = role == 'Guru' ? AppTheme.tealDeep : (role == 'Admin' ? AppTheme.rose : AppTheme.indigoPrimary);
 
-    return PremiumCard(
-      accentColor: roleColor,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [roleColor, roleColor.withAlpha(80)]),
-                  borderRadius: BorderRadius.circular(16),
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [roleColor, roleColor.withAlpha(160)]),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [BoxShadow(color: roleColor.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))],
+                  ),
+                  child: Center(
+                    child: Icon(role == 'Guru' ? LucideIcons.penTool : (role == 'Admin' ? LucideIcons.key : LucideIcons.user), color: Colors.white, size: 20),
+                  ),
                 ),
-                child: Center(
-                  child: Icon(role == 'Guru' ? LucideIcons.penTool : (role == 'Admin' ? LucideIcons.key : LucideIcons.user), color: Colors.white, size: 24),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(user['nama'] ?? '-', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 15, color: isDark ? Colors.white : AppTheme.textLight, letterSpacing: -0.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 3),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(color: roleColor.withAlpha(20), borderRadius: BorderRadius.circular(6), border: Border.all(color: roleColor.withAlpha(40), width: 1.2)),
+                        child: Text(role.toUpperCase(), style: GoogleFonts.plusJakartaSans(fontSize: 8.5, fontWeight: FontWeight.w900, color: roleColor, letterSpacing: 0.5)),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(user['nama'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.5), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: roleColor.withAlpha(20), borderRadius: BorderRadius.circular(4)),
-                      child: Text(role.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: roleColor, letterSpacing: 0.5)),
-                    ),
+                PopupMenuButton<String>(
+                  onSelected: (val) {
+                    if (val == 'edit') onEdit();
+                    if (val == 'delete') onDelete();
+                  },
+                  icon: Icon(LucideIcons.moreHorizontal, size: 20, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  color: isDark ? const Color(0xFF161B27) : Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'edit', child: Row(children: [const Icon(LucideIcons.edit2, size: 16), const SizedBox(width: 12), Text('Edit', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold))])),
+                    PopupMenuItem(value: 'delete', child: Row(children: [const Icon(LucideIcons.trash, color: AppTheme.rose, size: 16), const SizedBox(width: 12), Text('Hapus', style: GoogleFonts.plusJakartaSans(color: AppTheme.rose, fontWeight: FontWeight.bold))])),
                   ],
                 ),
-              ),
-              PopupMenuButton<String>(
-                onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  if (val == 'delete') onDelete();
-                },
-                icon: Icon(LucideIcons.moreHorizontal, size: 20, color: theme.colorScheme.onSurface.withAlpha(160)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.edit2, size: 20), SizedBox(width: 12), Text('Edit')])),
-                  const PopupMenuItem(value: 'delete', child: Row(children: [Icon(LucideIcons.trash, color: Colors.red, size: 20), SizedBox(width: 12), Text('Hapus', style: TextStyle(color: Colors.red))])),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(LucideIcons.atSign, size: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                const SizedBox(width: 8),
+                Expanded(child: Text(user['email'] ?? '-', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              ],
+            ),
+            if ((user['kelas'] ?? '').toString().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(LucideIcons.library, size: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  const SizedBox(width: 8),
+                  Text(user['kelas'], style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? Colors.white.withAlpha(220) : AppTheme.textLight)),
                 ],
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(LucideIcons.atSign, size: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
-              const SizedBox(width: 8),
-              Expanded(child: Text(user['email'] ?? '-', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-          if ((user['kelas'] ?? '').toString().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(LucideIcons.library, size: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
-                const SizedBox(width: 8),
-                Text(user['kelas'], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
-              ],
-            ),
           ],
-        ],
+        ),
       ),
     );
   }

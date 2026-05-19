@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// ═══════════════════════════════════════════════════════════════════════════
-/// MyPSKD Design System v2.0 — "Deep Space" Dark SaaS
-/// Primary: Indigo #6366F1  |  Secondary: Purple #8B5CF6
+/// MyPSKD Design System v3.0 — "SMART LMS" Clean Edu Style
+/// Primary: Periwinkle #7B83EB  |  Sidebar: Deep Indigo #2D2F7E
+/// Background: Lavender Mist #F0F2FF
 /// ═══════════════════════════════════════════════════════════════════════════
 class AppTheme {
   // ─── Core Brand Colors ──────────────────────────────────────────────────
-  static const Color indigoPrimary   = Color(0xFF6366F1); // #6366F1
-  static const Color indigoLight     = Color(0xFF818CF8); // #818CF8
-  static const Color indigoDark      = Color(0xFF4F46E5); // #4F46E5
-  static const Color purpleSecondary = Color(0xFF8B5CF6); // #8B5CF6
-  static const Color purpleLight     = Color(0xFFA78BFA); // #A78BFA
+  static const Color indigoPrimary   = Color(0xFF7B83EB); // Periwinkle #7B83EB
+  static const Color indigoLight     = Color(0xFF9BA3F5); // Light periwinkle
+  static const Color indigoDark      = Color(0xFF5B63CB); // Dark periwinkle
+  static const Color purpleSecondary = Color(0xFF8B5CF6); // Purple
+  static const Color purpleLight     = Color(0xFFA78BFA); // Light purple
+
+  // ─── Sidebar & Dark UI ──────────────────────────────────────────────────
+  static const Color sidebarDark     = Color(0xFF2D2F7E); // Deep indigo sidebar
+  static const Color sidebarDarker   = Color(0xFF1E2060); // Deeper sidebar shade
+  static const Color sidebarActive   = Color(0xFF3D3F9E); // Active sidebar item
 
   // ─── Accent Colors ──────────────────────────────────────────────────────
   static const Color amber     = Color(0xFFF59E0B); // Warm yellow
@@ -20,28 +26,28 @@ class AppTheme {
   static const Color sky       = Color(0xFF38BDF8); // Info blue
 
   // ─── Dark Mode Backgrounds ──────────────────────────────────────────────
-  static const Color darkBg      = Color(0xFF0D0D1A); // Deep space navy
-  static const Color darkSurface = Color(0xFF13131F); // Elevated surface
-  static const Color darkCard    = Color(0xFF1C1C2E); // Card background
-  static const Color darkBorder  = Color(0xFF2A2A42); // Subtle border
+  static const Color darkBg      = Color(0xFF161D2B); // Premium dark charcoal
+  static const Color darkSurface = Color(0xFF161B27); // Elevated dark surface
+  static const Color darkCard    = Color(0xFF1C2230); // Clean minimalist dark card
+  static const Color darkBorder  = Color(0xFF252D3D); // Sharp neutral dark border
 
-  // ─── Light Mode Backgrounds ─────────────────────────────────────────────
-  static const Color lightBg      = Color(0xFFF5F5FF); // Warm white + purple tinge
+  // ─── Light Mode Backgrounds (SMART LMS Style) ───────────────────────────
+  static const Color lightBg      = Color(0xFFF8F9FC); // Clean off-white background
   static const Color lightSurface = Color(0xFFFFFFFF); // Pure white card
-  static const Color lightBorder  = Color(0xFFE8E6FF); // Soft purple border
+  static const Color lightBorder  = Color(0xFFE5E7EB); // Soft neutral light border
 
   // ─── Text ───────────────────────────────────────────────────────────────
   static const Color textDark    = Color(0xFFF8F8FF); // Almost white
-  static const Color textMutedDk = Color(0xFF9999CC); // Muted purple-gray
+  static const Color textMutedDk = Color(0xFF9FA3CC); // Muted purple-gray
   static const Color textLight   = Color(0xFF1A1A3E); // Deep navy
-  static const Color textMutedLt = Color(0xFF6B6B99); // Muted purple
+  static const Color textMutedLt = Color(0xFF6B7099); // Muted cool gray
 
   // ─── Legacy Aliases (backward compat) ─────────────────────────────────
   static const Color tealDeep    = indigoPrimary;
   static const Color tealLight   = purpleLight;
-  static const Color orangeVivid = amber;       
-  static const Color bgDarkest   = darkBg;      
-  static const Color bgDarker    = darkCard;    
+  static const Color orangeVivid = amber;
+  static const Color bgDarkest   = darkBg;
+  static const Color bgDarker    = darkCard;
 
   static Color getAccent(BuildContext context) => indigoPrimary;
 
@@ -99,7 +105,7 @@ class AppTheme {
     );
   }
 
-  // ─── Light Theme ────────────────────────────────────────────────────────
+  // ─── Light Theme (SMART LMS Style) ─────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
@@ -113,8 +119,8 @@ class AppTheme {
         surface: lightSurface,
         onSurface: textLight,
         onPrimary: Colors.white,
-        primaryContainer: Color(0xFFEDE9FE),
-        secondaryContainer: Color(0xFFF3E8FF),
+        primaryContainer: Color(0xFFDDE1FF),
+        secondaryContainer: Color(0xFFEDE9FE),
         error: rose,
       ),
       textTheme: _textTheme(Brightness.light),
@@ -132,9 +138,9 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: lightSurface,
         elevation: 0,
+        shadowColor: const Color(0x197B83EB),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: lightBorder, width: 1.0),
         ),
       ),
       dividerColor: lightBorder,
@@ -158,7 +164,7 @@ class AppTheme {
         surface: darkCard,
         onSurface: textDark,
         onPrimary: Colors.white,
-        primaryContainer: Color(0xFF312E81),
+        primaryContainer: Color(0xFF2D2F7E),
         secondaryContainer: Color(0xFF4C1D95),
         error: rose,
       ),
