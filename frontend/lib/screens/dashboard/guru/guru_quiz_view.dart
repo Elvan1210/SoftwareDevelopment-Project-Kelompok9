@@ -11,6 +11,7 @@ import 'guru_quiz_create_screen.dart';
 import 'guru_submission_detail.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GuruQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -53,25 +54,38 @@ class _GuruQuizViewState extends State<GuruQuizView> {
   }
 
   Future<void> _deleteQuiz(String quizId) async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Hapus Kuis?', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: const Text('Kuis dan semua jawaban siswa akan dihapus permanen.'),
+        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        title: Text(
+          'Hapus Kuis?', 
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+        ),
+        content: Text(
+          'Kuis dan semua jawaban siswa akan dihapus secara permanen.',
+          style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white70 : AppTheme.textLight),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Text(
+              'Batal', 
+              style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
             ),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          PremiumElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            color: Colors.red,
+            textColor: Colors.white,
+            radius: 10,
+            child: Text('Hapus', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -134,53 +148,85 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     if (quiz.shareCode != null) {
       Clipboard.setData(ClipboardData(text: quiz.shareCode!));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kode Share Kuis berhasil disalin! Bagikan ke guru/kelas lain.'), backgroundColor: Colors.green),
+        SnackBar(
+          content: Text('Kode Share Kuis berhasil disalin! Bagikan ke guru/kelas lain.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.green,
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kode Share tidak tersedia untuk kuis ini.'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Kode Share tidak tersedia untuk kuis ini.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
   void _showImportDialog() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final ctrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Tarik Kuis (Import)', style: TextStyle(fontWeight: FontWeight.w900)),
+        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        title: Text(
+          'Tarik Kuis (Import)', 
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Masukkan Kode Share kuis yang ingin Anda tarik ke kelas ini.', style: TextStyle(fontSize: 13)),
+            Text(
+              'Masukkan Kode Share kuis yang ingin Anda tarik ke kelas ini.', 
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white70 : AppTheme.textLight),
+            ),
             const SizedBox(height: 16),
-            TextField(
-              controller: ctrl,
-              decoration: InputDecoration(
-                hintText: 'Contoh: A1B2C3D4',
-                filled: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                borderRadius: BorderRadius.circular(12),
               ),
-              textCapitalization: TextCapitalization.characters,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextField(
+                controller: ctrl,
+                style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white : AppTheme.textLight),
+                decoration: InputDecoration(
+                  hintText: 'Contoh: A1B2C3D4',
+                  hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  border: InputBorder.none,
+                ),
+                textCapitalization: TextCapitalization.characters,
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Batal', 
+              style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
+            ),
+          ),
+          PremiumElevatedButton(
             onPressed: () async {
               final code = ctrl.text.trim().toUpperCase();
               if (code.isEmpty) return;
               Navigator.pop(ctx);
               _importQuiz(code);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.tealDeep,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Import', style: TextStyle(fontWeight: FontWeight.bold)),
+            color: AppTheme.indigoPrimary,
+            textColor: Colors.white,
+            radius: 10,
+            child: Text('Import', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -201,14 +247,13 @@ class _GuruQuizViewState extends State<GuruQuizView> {
       return;
     }
 
-    // Clone it!
     final quizData = quiz.toJson();
     quizData.remove('id');
     quizData.remove('_id');
     quizData['kelasId'] = widget.teamData['id']?.toString() ?? '';
     quizData['createdBy'] = widget.userData['id']?.toString() ?? widget.userData['_id']?.toString() ?? '';
     quizData['createdByName'] = widget.userData['nama'] ?? 'Guru';
-    quizData['isActive'] = false; // Import as draft
+    quizData['isActive'] = false; 
 
     final result = await QuizService.createQuiz(token: widget.token, quizData: quizData);
     
@@ -236,6 +281,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
       backgroundColor: Colors.transparent,
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           FloatingActionButton.small(
             heroTag: 'import_quiz',
@@ -246,25 +292,23 @@ class _GuruQuizViewState extends State<GuruQuizView> {
             child: const Icon(LucideIcons.download),
           ),
           const SizedBox(height: 12),
-          FloatingActionButton.extended(
-            heroTag: 'create_quiz',
+          AppFAB(
             onPressed: _navigateToCreate,
-            backgroundColor: AppTheme.tealDeep,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-            icon: const Icon(LucideIcons.plus),
-            label: const Text('Buat Kuis', style: TextStyle(fontWeight: FontWeight.bold)),
+            icon: LucideIcons.plus,
+            label: 'Buat Kuis',
+            color: AppTheme.tealDeep,
           ),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.tealDeep))
           : _quizzes.isEmpty
-              ? _buildEmptyState(theme)
+              ? _buildEmptyState(theme, isDark)
               : RefreshIndicator(
                   onRefresh: _loadQuizzes,
+                  color: AppTheme.indigoPrimary,
                   child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(24),
                     itemCount: _quizzes.length,
                     itemBuilder: (context, index) {
@@ -285,7 +329,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState(ThemeData theme, bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -293,26 +337,28 @@ class _GuruQuizViewState extends State<GuruQuizView> {
           Container(
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: AppTheme.tealDeep.withAlpha(20),
+              color: AppTheme.indigoPrimary.withAlpha(20),
               shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50), width: 1.5),
             ),
-            child: Icon(LucideIcons.clipboardList, size: 56, color: AppTheme.tealDeep.withAlpha(180)),
+            child: Icon(LucideIcons.clipboardList, size: 56, color: AppTheme.indigoPrimary.withAlpha(180)),
           ),
           const SizedBox(height: 24),
           Text(
             'Belum ada kuis',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w900,
               fontSize: 18,
-              color: theme.colorScheme.onSurface.withAlpha(170),
+              color: isDark ? Colors.white : AppTheme.textLight,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Buat kuis pertama untuk ujian siswa',
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.colorScheme.onSurface.withAlpha(160),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
             ),
           ),
         ],
@@ -342,176 +388,210 @@ class _QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final accentColor = quiz.isSecureMode ? Colors.purple : AppTheme.tealDeep;
 
-    return PremiumCard(
-      padding: const EdgeInsets.all(20),
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.tealDeep.withAlpha(isDark ? 40 : 20),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.clipboardList,
-                    color: AppTheme.tealDeep,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        quiz.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                          color: theme.colorScheme.onSurface,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        quiz.description,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurface.withAlpha(160),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                if (quiz.isScheduled)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withAlpha(isDark ? 40 : 20),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.withAlpha(80)),
-                    ),
-                    child: const Text(
-                      'TERJADWAL',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.orange,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: quiz.isActive
-                          ? Colors.green.withAlpha(isDark ? 40 : 20)
-                          : Colors.grey.withAlpha(isDark ? 40 : 20),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: quiz.isActive ? Colors.green.withAlpha(160) : Colors.grey.withAlpha(160),
-                      ),
-                    ),
-                    child: Text(
-                      quiz.isActive ? 'AKTIF' : 'NONAKTIF',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: quiz.isActive ? Colors.green : Colors.grey,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _InfoChip(
-                  icon: LucideIcons.helpCircle,
-                  label: '${quiz.questions.length} Soal',
-                  color: AppTheme.orangeVivid,
-                  isDark: isDark,
-                ),
-                _InfoChip(
-                  icon: LucideIcons.clock,
-                  label: '${quiz.durationMinutes} Menit',
-                  color: AppTheme.tealLight,
-                  isDark: isDark,
-                ),
-                if (quiz.isScheduled && quiz.scheduledAt != null)
-                  _InfoChip(
-                    icon: LucideIcons.calendarClock,
-                    label: DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!),
-                    color: Colors.orange,
-                    isDark: isDark,
-                  ),
-                if (quiz.isSecureMode)
-                  _InfoChip(
-                    icon: LucideIcons.lock,
-                    label: 'Secure Mode',
-                    color: AppTheme.tealDeep,
-                    isDark: isDark,
-                  ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-
-            Wrap(
-  spacing: 8,
-  runSpacing: 8,
-  children: [
-    _ActionBtn(
-      icon: LucideIcons.barChart2,
-      label: 'Hasil',
-      onTap: onViewSubmissions,
-      color: AppTheme.tealDeep,
-    ),
-    if ((quiz.isActive || quiz.isScheduled) && quiz.isSecureMode)
-      _ActionBtn(
-        icon: LucideIcons.activity,
-        label: 'Live',
-        onTap: onLiveMonitor,
-        color: Colors.redAccent,
-      ),
-    _ActionBtn(
-      icon: LucideIcons.share2,
-      label: 'Share',
-      onTap: onShare,
-      color: Colors.blue,
-    ),
-    _ActionBtn(
-      icon: LucideIcons.edit3,
-      label: 'Edit',
-      onTap: onEdit,
-      color: AppTheme.orangeVivid,
-    ),
-    _ActionBtn(
-      icon: LucideIcons.trash2,
-      label: 'Hapus',
-      onTap: onDelete,
-      color: Colors.red,
-    ),
-  ],
-),
-          ],
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: accentColor.withAlpha(isDark ? 55 : 30),
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 60 : 8),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(19),
+            border: Border.all(
+              color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: accentColor.withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: accentColor.withAlpha(80)),
+                    ),
+                    child: Icon(
+                      quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.clipboardList,
+                      color: accentColor,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          quiz.title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            color: isDark ? Colors.white : AppTheme.textLight,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          quiz.description.isNotEmpty ? quiz.description : 'Tidak ada deskripsi',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12.5,
+                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  if (quiz.isScheduled)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withAlpha(20),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.withAlpha(80)),
+                      ),
+                      child: Text(
+                        'TERJADWAL',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.orange,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: quiz.isActive ? Colors.green.withAlpha(20) : Colors.grey.withAlpha(20),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: quiz.isActive ? Colors.green.withAlpha(160) : Colors.grey.withAlpha(160),
+                        ),
+                      ),
+                      child: Text(
+                        quiz.isActive ? 'AKTIF' : 'NONAKTIF',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: quiz.isActive ? Colors.green : Colors.grey,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _InfoChip(
+                    icon: LucideIcons.helpCircle,
+                    label: '${quiz.questions.length} Soal',
+                    color: AppTheme.orangeVivid,
+                    isDark: isDark,
+                  ),
+                  _InfoChip(
+                    icon: LucideIcons.clock,
+                    label: '${quiz.durationMinutes} Menit',
+                    color: AppTheme.tealLight,
+                    isDark: isDark,
+                  ),
+                  if (quiz.isScheduled && quiz.scheduledAt != null)
+                    _InfoChip(
+                      icon: LucideIcons.calendarClock,
+                      label: DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!),
+                      color: Colors.orange,
+                      isDark: isDark,
+                    ),
+                  if (quiz.isSecureMode)
+                    _InfoChip(
+                      icon: LucideIcons.lock,
+                      label: 'Secure Mode',
+                      color: AppTheme.tealDeep,
+                      isDark: isDark,
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+              Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+              const SizedBox(height: 14),
+
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _ActionBtn(
+                    icon: LucideIcons.barChart2,
+                    label: 'Hasil',
+                    onTap: onViewSubmissions,
+                    color: AppTheme.indigoPrimary,
+                    isDark: isDark,
+                  ),
+                  if ((quiz.isActive || quiz.isScheduled) && quiz.isSecureMode)
+                    _ActionBtn(
+                      icon: LucideIcons.activity,
+                      label: 'Live',
+                      onTap: onLiveMonitor,
+                      color: Colors.redAccent,
+                      isDark: isDark,
+                    ),
+                  _ActionBtn(
+                    icon: LucideIcons.share2,
+                    label: 'Share',
+                    onTap: onShare,
+                    color: Colors.blue,
+                    isDark: isDark,
+                  ),
+                  _ActionBtn(
+                    icon: LucideIcons.edit3,
+                    label: 'Edit',
+                    onTap: onEdit,
+                    color: Colors.purple,
+                    isDark: isDark,
+                  ),
+                  _ActionBtn(
+                    icon: LucideIcons.trash2,
+                    label: 'Hapus',
+                    onTap: onDelete,
+                    color: Colors.red,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -545,9 +625,9 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               color: color,
             ),
           ),
@@ -562,37 +642,31 @@ class _ActionBtn extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final Color color;
+  final bool isDark;
 
   const _ActionBtn({
     required this.icon,
     required this.label,
     required this.onTap,
     required this.color,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 13),
+      label: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 11.5),
+      ),
+      style: OutlinedButton.styleFrom(
+        backgroundColor: color.withAlpha(isDark ? 25 : 15),
+        foregroundColor: color,
+        side: BorderSide(color: color.withAlpha(isDark ? 60 : 40), width: 1.0),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withAlpha(15),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withAlpha(40)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
-            ),
-          ],
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -650,8 +724,9 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
         ),
         child: Column(
           children: [
@@ -660,7 +735,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withAlpha(160),
+                color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -673,17 +748,19 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                   Expanded(
                     child: Text(
                       'Hasil: ${widget.quiz.title}',
-                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  TextButton.icon(
+                  OutlinedButton.icon(
                     onPressed: _exportCsv,
-                    icon: const Icon(LucideIcons.download, size: 16),
-                    label: const Text('Export CSV'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.tealDeep,
-                      backgroundColor: AppTheme.tealDeep.withAlpha(20),
+                    icon: const Icon(LucideIcons.download, size: 14),
+                    label: Text('Export CSV', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
+                      foregroundColor: Colors.green,
+                      side: BorderSide(color: isDark ? const Color(0xFF2E5C3E) : const Color(0xFF82C793), width: 1.0),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ],
@@ -691,9 +768,11 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
             ),
             
             TabBar(
-              labelColor: AppTheme.tealDeep,
-              unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(160),
-              indicatorColor: AppTheme.tealDeep,
+              labelColor: AppTheme.indigoPrimary,
+              unselectedLabelColor: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+              indicatorColor: AppTheme.indigoPrimary,
+              labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
+              unselectedLabelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13),
               tabs: const [
                 Tab(text: 'Daftar Siswa'),
                 Tab(text: 'Statistik'),
@@ -706,18 +785,22 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
               child: Row(
                 children: [
                   Checkbox(
+                    activeColor: AppTheme.indigoPrimary,
                     value: _filterByKelas,
                     onChanged: (val) {
                       setState(() => _filterByKelas = val ?? true);
                       _loadSubmissions();
                     },
                   ),
-                  Text('Hanya tampilkan siswa di kelas ini', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(160))),
+                  Text(
+                    'Hanya tampilkan siswa di kelas ini', 
+                    style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),
           
-          const Divider(height: 1),
+          Divider(height: 1, color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppTheme.tealDeep))
@@ -725,9 +808,10 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                     ? Center(
                         child: Text(
                           'Belum ada siswa yang mengerjakan',
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withAlpha(160),
-                            fontWeight: FontWeight.w600,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
                           ),
                         ),
                       )
@@ -736,66 +820,80 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                           ListView.separated(
                             padding: const EdgeInsets.all(16),
                             itemCount: _submissions.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
                             itemBuilder: (ctx, i) {
                               final sub = _submissions[i];
                               final scorePercent = sub.totalPoints > 0
                                   ? (sub.score / sub.totalPoints * 100).round()
                                   : 0;
+                              final pass = scorePercent >= 70;
+                              final color = pass ? Colors.green : Colors.red;
 
-                              return ListTile(
-                                onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => GuruSubmissionDetail(
-                                      submission: sub, 
-                                      quiz: widget.quiz,
-                                      token: widget.token,
-                                    )
-                                  ));
-                                },
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                tileColor: theme.colorScheme.surface.withAlpha(isDark ? 180 : 255),
-                                leading: CircleAvatar(
-                                  backgroundColor: scorePercent >= 70
-                                      ? Colors.green.withAlpha(160)
-                                      : Colors.red.withAlpha(160),
-                                  child: Text(
-                                    '$scorePercent%',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: scorePercent >= 70 ? Colors.green : Colors.red,
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                                ),
+                                child: ListTile(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(
+                                      builder: (_) => GuruSubmissionDetail(
+                                        submission: sub, 
+                                        quiz: widget.quiz,
+                                        token: widget.token,
+                                      )
+                                    ));
+                                  },
+                                  leading: Container(
+                                    width: 46,
+                                    height: 46,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: color.withAlpha(20),
+                                      border: Border.all(color: color.withAlpha(80), width: 1.5),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '$scorePercent%',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        color: color,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                title: Text(
-                                  sub.studentName,
-                                  style: const TextStyle(fontWeight: FontWeight.w700),
-                                ),
-                                subtitle: Text(
-                                  'Skor: ${sub.score}/${sub.totalPoints} • Pelanggaran: ${sub.violations}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: theme.colorScheme.onSurface.withAlpha(160),
+                                  title: Text(
+                                    sub.studentName,
+                                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
                                   ),
-                                ),
-                                trailing: sub.autoSubmitted
-                                    ? Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: Colors.red.withAlpha(20),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: const Text(
-                                          'AUTO',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.red,
+                                  subtitle: Text(
+                                    'Skor: ${sub.score}/${sub.totalPoints} • Pelanggaran: ${sub.violations}',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12,
+                                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  trailing: sub.autoSubmitted
+                                      ? Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.withAlpha(20),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: Colors.red.withAlpha(80)),
                                           ),
-                                        ),
-                                      )
-                                    : null,
+                                          child: Text(
+                                            'AUTO',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        )
+                                      : const Icon(LucideIcons.chevronRight, size: 16),
+                                ),
                               );
                             },
                           ),
@@ -828,6 +926,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
     final avgScore = (totalScore / _submissions.length).round();
 
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -836,48 +935,69 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.tealDeep.withAlpha(20),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.tealDeep.withAlpha(50)),
+                    color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.tealDeep.withAlpha(isDark ? 55 : 30), width: 1.2),
                   ),
-                  child: Column(
-                    children: [
-                      const Icon(LucideIcons.trendingUp, color: AppTheme.tealDeep),
-                      const SizedBox(height: 10),
-                      const Text('Rata-Rata', style: TextStyle(fontSize: 12)),
-                      Text('$avgScore%', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.tealDeep)),
-                    ],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Icon(LucideIcons.trendingUp, color: AppTheme.tealDeep, size: 20),
+                        const SizedBox(height: 8),
+                        Text('Rata-Rata', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                        const SizedBox(height: 4),
+                        Text('$avgScore%', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.tealDeep)),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(20),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.green.withAlpha(160)),
+                    color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.green.withAlpha(isDark ? 55 : 30), width: 1.2),
                   ),
-                  child: Column(
-                    children: [
-                      const Icon(LucideIcons.checkCircle, color: Colors.green),
-                      const SizedBox(height: 10),
-                      const Text('Lulus (≥70)', style: TextStyle(fontSize: 12)),
-                      Text('$passed', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.green)),
-                    ],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Icon(LucideIcons.checkCircle, color: Colors.green, size: 20),
+                        const SizedBox(height: 8),
+                        Text('Lulus (≥70)', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                        const SizedBox(height: 4),
+                        Text('$passed', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.green)),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 30),
-          const Text('Distribusi Kelulusan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+          Text(
+            'Distribusi Kelulusan', 
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 15, color: isDark ? Colors.white : AppTheme.textLight),
+          ),
+          const SizedBox(height: 16),
           SizedBox(
-            height: 200,
+            height: 180,
             child: PieChart(
               PieChartData(
                 sectionsSpace: 2,
@@ -887,15 +1007,15 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                     color: Colors.green,
                     value: passed.toDouble(),
                     title: passed > 0 ? '$passed' : '',
-                    radius: 50,
-                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                    radius: 46,
+                    titleStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
                   ),
                   PieChartSectionData(
                     color: Colors.red,
                     value: failed.toDouble(),
                     title: failed > 0 ? '$failed' : '',
-                    radius: 50,
-                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                    radius: 46,
+                    titleStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
                   ),
                 ],
               ),
@@ -907,17 +1027,23 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
             children: [
               Row(
                 children: [
-                  Container(width: 12, height: 12, color: Colors.green),
+                  Container(
+                    width: 12, height: 12, 
+                    decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(4)),
+                  ),
                   const SizedBox(width: 6),
-                  const Text('Lulus', style: TextStyle(fontSize: 12)),
+                  Text('Lulus', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppTheme.textLight)),
                 ],
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 24),
               Row(
                 children: [
-                  Container(width: 12, height: 12, color: Colors.red),
+                  Container(
+                    width: 12, height: 12, 
+                    decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
+                  ),
                   const SizedBox(width: 6),
-                  const Text('Tidak Lulus', style: TextStyle(fontSize: 12)),
+                  Text('Tidak Lulus', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppTheme.textLight)),
                 ],
               ),
             ],
@@ -982,8 +1108,9 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
       ),
       child: Column(
         children: [
@@ -992,7 +1119,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withAlpha(160),
+              color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1005,16 +1132,16 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                 Expanded(
                   child: Text(
                     'Live Monitor: ${widget.quiz.title}',
-                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(160),
+                    color: Colors.green.withAlpha(20),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withAlpha(160)),
+                    border: Border.all(color: Colors.green.withAlpha(80)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1024,7 +1151,10 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                         decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
                       ),
                       const SizedBox(width: 6),
-                      const Text('LIVE', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10)),
+                      Text(
+                        'LIVE', 
+                        style: GoogleFonts.plusJakartaSans(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10),
+                      ),
                     ],
                   ),
                 ),
@@ -1039,53 +1169,75 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.shieldCheck, size: 48, color: Colors.green.withAlpha(160)),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withAlpha(20),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.green.withAlpha(80)),
+                              ),
+                              child: const Icon(LucideIcons.shieldCheck, size: 36, color: Colors.green),
+                            ),
                             const SizedBox(height: 16),
-                            const Text('Belum ada pelanggaran', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              'Belum ada pelanggaran', 
+                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white70 : AppTheme.textLight),
+                            ),
                           ],
                         ),
                       )
                     : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.all(16),
                         itemCount: _violations.length,
                         itemBuilder: (ctx, idx) {
                           final v = _violations[idx];
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.red.withAlpha(isDark ? 30 : 15),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red.withAlpha(160)),
+                              color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.red.withAlpha(isDark ? 55 : 30), width: 1.2),
                             ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(LucideIcons.alertTriangle, color: Colors.red, size: 20),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        v['studentName'] ?? 'Unknown',
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        v['reason'] ?? 'Pelanggaran terdeteksi',
-                                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(200)),
-                                      ),
-                                    ],
-                                  ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
                                 ),
-                                Text(
-                                  v['timestamp'] != null 
-                                      ? DateFormat('HH:mm:ss').format(DateTime.parse(v['timestamp']).toLocal())
-                                      : '-',
-                                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.bold),
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(LucideIcons.alertTriangle, color: Colors.red, size: 20),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            v['studentName'] ?? 'Unknown',
+                                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            v['reason'] ?? 'Pelanggaran terdeteksi',
+                                            style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: isDark ? Colors.white70 : AppTheme.textLight, fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      v['timestamp'] != null 
+                                          ? DateFormat('HH:mm:ss').format(DateTime.parse(v['timestamp']).toLocal())
+                                          : '-',
+                                      style: GoogleFonts.plusJakartaSans(fontSize: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w800),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           );
                         },

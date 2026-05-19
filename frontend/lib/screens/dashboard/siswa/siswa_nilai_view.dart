@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../config/api_config.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lucide_icons/lucide_icons.dart';
+import '../../../config/api_config.dart';
 
 class SiswaNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -54,42 +57,61 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
-      return AppShell(
-        child: _buildSkeleton(),
-      );
+      return _buildSkeleton();
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: _nilaiList.isEmpty
-            ? const EmptyState(
-                icon: Icons.workspace_premium_rounded,
-                message: 'Belum ada nilai\nyang diinput guru.',
-                color: Color(0xFF76AFB8))
-            : RefreshIndicator(
-                onRefresh: _fetchNilai,
-                child: LayoutBuilder(
-                  builder: (ctx, c) {
-                    final crossCount = c.maxWidth > 900 ? 3 : (c.maxWidth > 500 ? 2 : 1);
-                    final padding = Breakpoints.screenPadding(c.maxWidth);
-                    return GridView.builder(
-                      padding: padding,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossCount,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: crossCount == 1 ? 3.5 : 1.8,
-                      ),
-                      itemCount: _nilaiList.length,
-                      itemBuilder: (_, i) {
-                        final n = _nilaiList[i];
-                        final color = _gradeColor(n['nilai']);
-                        return RepaintBoundary(
-                          child: PremiumCard(
-                            accentColor: color,
-                            padding: const EdgeInsets.all(20),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: _nilaiList.isEmpty
+          ? const EmptyState(
+              icon: LucideIcons.award,
+              message: 'Belum ada nilai\nyang diinput guru.',
+              color: Color(0xFF76AFB8))
+          : RefreshIndicator(
+              onRefresh: _fetchNilai,
+              child: LayoutBuilder(
+                builder: (ctx, c) {
+                  final crossCount = c.maxWidth > 900 ? 3 : (c.maxWidth > 500 ? 2 : 1);
+                  final padding = Breakpoints.screenPadding(c.maxWidth);
+                  return GridView.builder(
+                    padding: padding,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossCount,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: crossCount == 1 ? 2.5 : 1.6,
+                    ),
+                    itemCount: _nilaiList.length,
+                    itemBuilder: (_, i) {
+                      final n = _nilaiList[i];
+                      final color = _gradeColor(n['nilai']);
+                      final valStr = n['nilai']?.toString() ?? '-';
+                      final val = double.tryParse(valStr) ?? 0;
+
+                      return RepaintBoundary(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: color.withAlpha(isDark ? 55 : 30),
+                              width: 1.2,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: color.withAlpha(20),
+                                width: 1.0,
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,40 +120,100 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(color: color.withAlpha(20), borderRadius: BorderRadius.circular(10)),
-                                      child: Icon(Icons.grade_rounded, color: color, size: 20),
+                                      decoration: BoxDecoration(
+                                        color: color.withAlpha(20),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: color.withAlpha(50)),
+                                      ),
+                                      child: Icon(LucideIcons.award, color: color, size: 16),
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(
-                                      child: Text(n['mapel'] ?? '-',
-                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
+                                      child: Text(
+                                        n['mapel'] ?? '-',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark ? Colors.white : AppTheme.textLight,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(n['nilai']?.toString() ?? '-',
-                                        style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-                                    if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
-                                      Text(n['keterangan'],
-                                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(160)),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                                          textBaseline: TextBaseline.alphabetic,
+                                          children: [
+                                            Text(
+                                              val.toStringAsFixed(0),
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.w900,
+                                                color: color,
+                                                letterSpacing: -1,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '/ 100',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
+                                          Text(
+                                            n['keterangan'],
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: color.withAlpha(20),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        val >= 80 ? 'LULUS' : (val >= 60 ? 'CUKUP' : 'GAGAL'),
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w900,
+                                          color: color,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
                             ),
-                          ).animate(delay: (i * 60).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
-                        );
-                      },
-                    );
-                  },
-                ),
+                          ),
+                        ).animate(delay: (i * 60).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
+                      );
+                    },
+                  );
+                },
               ),
-      ),
+            ),
     );
   }
 
@@ -146,4 +228,3 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     );
   }
 }
-

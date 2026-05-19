@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
+import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'siswa_tugas_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -203,6 +205,8 @@ class _TugasList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     if (tugasList.isEmpty) {
       return EmptyState(
         icon: LucideIcons.clipboardCheck,
@@ -257,8 +261,28 @@ class _TugasList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 24, 4, 16),
-                    child: Text(key, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF26494F))),
+                    padding: const EdgeInsets.fromLTRB(4, 24, 4, 12),
+                    child: Row(
+                      children: [
+                        Text(
+                          key.toUpperCase(),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Divider(
+                            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                            height: 1,
+                            thickness: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   GridView.builder(
                     shrinkWrap: true,
@@ -308,61 +332,128 @@ class _TugasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     const accent = Color(0xFF76AFB8);
 
-    return PremiumCard(
+    return GestureDetector(
       onTap: onTap,
-      accentColor: accent,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: accent.withAlpha(20),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(LucideIcons.clipboardList, color: accent, size: 22),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: accent.withAlpha(isDark ? 55 : 30),
+            width: 1.2,
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 60 : 8),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(19),
+              border: Border.all(
+                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                width: 1.0,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
               children: [
-                Text(tugas['judul'] ?? '-',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text('Mapel: ${tugas['mapel'] ?? '-'}',
-                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(160))),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: accent.withAlpha(isDark ? 25 : 15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: accent.withAlpha(isDark ? 60 : 40),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: const Icon(LucideIcons.clipboardList, color: accent, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        tugas['judul'] ?? '-',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14.5,
+                          color: isDark ? Colors.white : AppTheme.textLight,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Mapel: ${tugas['mapel'] ?? '-'}',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (tugas['deadline'] != null && tugas['deadline'].toString().isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withAlpha(isDark ? 20 : 12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withAlpha(isDark ? 55 : 35),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Text(
+                      _formatDeadline(tugas['deadline']),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFFF59E0B),
+                        letterSpacing: 0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E2235) : const Color(0xFFEFF1FE),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF3F4E9F).withAlpha(120) : const Color(0xFF7B83EB).withAlpha(80),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Icon(
+                    LucideIcons.chevronRight,
+                    color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                    size: 14,
+                  ),
+                ),
               ],
             ),
           ),
-          if (tugas['deadline'] != null)
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withAlpha(20),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  _formatDeadline(tugas['deadline']),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFFF59E0B),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          const SizedBox(width: 8),
-          Icon(LucideIcons.chevronRight, color: theme.colorScheme.onSurface.withAlpha(160)),
-        ],
+        ),
       ),
     );
   }

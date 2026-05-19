@@ -179,11 +179,14 @@ class _AdminMateriCard extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: PremiumElevatedButton(
               onPressed: () => _launchURL(materi['file_url'] ?? materi['link']),
-              style: OutlinedButton.styleFrom(foregroundColor: accent, side: BorderSide(color: accent.withAlpha(80)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              icon: const Icon(LucideIcons.externalLink, size: 16),
-              label: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              icon: LucideIcons.externalLink,
+              iconSize: 16,
+              color: accent.withAlpha(30),
+              textColor: accent,
+              radius: 12,
+              child: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
             ),
           ),
         ],

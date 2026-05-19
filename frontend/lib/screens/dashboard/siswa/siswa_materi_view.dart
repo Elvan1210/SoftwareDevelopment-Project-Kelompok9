@@ -5,17 +5,20 @@ import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../config/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
+  final dynamic teamData; 
 
   const SiswaMateriView({
     super.key, 
     required this.userData, 
     required this.token,
-    required this.teamData, // Wajib diisi
+    required this.teamData, 
   });
 
   @override
@@ -36,7 +39,6 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
   Future<void> _fetchMateri() async {
     setState(() => _isLoading = true);
     try {
-      // UBAHAN: Fetch HANYA materi dari kelas ini berdasarkan ID-nya
       final kelasId = widget.teamData['id'];
       final response = await http.get(
         Uri.parse('$baseUrl/api/materi?kelas_id=$kelasId'), 
@@ -47,7 +49,6 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
         final dec = jsonDecode(response.body);
         List all = dec is List ? dec : [];
         setState(() {
-          // UBAHAN: Tidak perlu difilter secara manual lagi, semua data yang masuk sudah pasti milik kelas ini
           _materiList = all; 
         });
       }
@@ -67,6 +68,8 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
       return _buildSkeleton();
     }
@@ -75,73 +78,111 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-            // ── Antigravity Search Bar ──────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: AppTextField(
-                hintText: 'Cari materi pelajaran...',
-                prefixIcon: Icons.search_rounded,
+          // Glassmorphic Search Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(isDark ? 40 : 5),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
-              ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, curve: Curves.easeOutCubic),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppTheme.textLight,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Cari materi pelajaran...',
+                  hintStyle: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  ),
+                  prefixIcon: Icon(
+                    LucideIcons.search,
+                    size: 18,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
             ),
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, curve: Curves.easeOutCubic),
 
-            Expanded(
-  child: _filtered.isEmpty
-      ? EmptyState(
-          icon: Icons.library_books_rounded,
-          message: _searchQuery.isEmpty ? 'Belum ada materi\ndi kelas ini.' : 'Materi tidak ditemukan.',
-          color: const Color(0xFF10B981))
-      : RefreshIndicator(
-          onRefresh: _fetchMateri,
-          child: LayoutBuilder(
-            builder: (ctx, c) {
-              final w = c.maxWidth;
-              final padding = Breakpoints.screenPadding(w);
+          Expanded(
+            child: _filtered.isEmpty
+                ? EmptyState(
+                    icon: LucideIcons.bookOpen,
+                    message: _searchQuery.isEmpty ? 'Belum ada materi\ndi kelas ini.' : 'Materi tidak ditemukan.',
+                    color: AppTheme.indigoPrimary,
+                  )
+                : RefreshIndicator(
+                    onRefresh: _fetchMateri,
+                    color: AppTheme.indigoPrimary,
+                    child: LayoutBuilder(
+                      builder: (ctx, c) {
+                        final w = c.maxWidth;
+                        final padding = Breakpoints.screenPadding(w);
 
-              return ListView.builder(
-                padding: padding,
-                itemCount: _filtered.length,
-                itemBuilder: (_, i) {
-                  final m = _filtered[i];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _MateriCard(
-                      materi: m,
-                      isDark: Theme.of(context).brightness == Brightness.dark,
-                    ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
-                  );
-                },
-              );
-            },
+                        return ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          padding: padding,
+                          itemCount: _filtered.length,
+                          itemBuilder: (_, i) {
+                            final m = _filtered[i];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _MateriCard(
+                                materi: m,
+                                isDark: isDark,
+                              ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
           ),
-        ),
-),
-      ],),);               
-      }
-              
+        ],
+      ),
+    );               
   }
 
   Widget _buildSkeleton() {
     return Column(
       children: [
         const Padding(
-          padding: EdgeInsets.all(24),
-          child: SkeletonLoader(height: 56, radius: 16),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: SkeletonLoader(height: 54, radius: 16),
         ),
         Expanded(
           child: GridView.count(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             crossAxisCount: 2,
-            childAspectRatio: 1.4,
+            childAspectRatio: 1.3,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
+            children: List.generate(6, (_) => const SkeletonLoader(radius: 20)),
           ),
         ),
       ],
     );
   }
-
+}
 
 class _MateriCard extends StatelessWidget {
   final dynamic materi;
@@ -154,14 +195,31 @@ class _MateriCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
         title: Row(
           children: [
-            const Icon(Icons.description_outlined, color: accent),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accent.withAlpha(20),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(LucideIcons.fileText, color: accent, size: 20),
+            ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(materi['judul'] ?? '-',
-                  style: const TextStyle(fontWeight: FontWeight.w900)),
+              child: Text(
+                materi['judul'] ?? '-',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: isDark ? Colors.white : AppTheme.textLight,
+                ),
+              ),
             ),
           ],
         ),
@@ -171,37 +229,65 @@ class _MateriCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (materi['mapel'] != null) ...[
-                const Text('Mata Pelajaran',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                Text(
+                  'Mata Pelajaran',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(materi['mapel'],
-                    style: const TextStyle(fontSize: 14)),
+                Text(
+                  materi['mapel'],
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white70 : AppTheme.textLight,
+                  ),
+                ),
                 const SizedBox(height: 16),
               ],
-              if (materi['deskripsi'] != null &&
-                  materi['deskripsi'].toString().isNotEmpty) ...[
-                const Text('Deskripsi',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+              if (materi['deskripsi'] != null && materi['deskripsi'].toString().isNotEmpty) ...[
+                Text(
+                  'Deskripsi',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(materi['deskripsi'],
-                    style: const TextStyle(fontSize: 14, height: 1.6)),
-                const SizedBox(height: 16),
+                Text(
+                  materi['deskripsi'],
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white70 : AppTheme.textLight,
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
-              if (materi['file_url'] != null &&
-                  materi['file_url'].toString().isNotEmpty)
+              if (materi['file_url'] != null && materi['file_url'].toString().isNotEmpty)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
+                    onPressed: () => _launchURL(materi['file_url']),
+                    icon: const Icon(LucideIcons.downloadCloud, size: 16),
+                    label: Text(
+                      'Buka File Materi',
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accent,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
                     ),
-                    onPressed: () => _launchURL(materi['file_url']),
-                    icon: const Icon(Icons.download_rounded, size: 18),
-                    label: const Text('Buka File Materi',
-                        style: TextStyle(fontWeight: FontWeight.w800)),
                   ),
                 ),
             ],
@@ -210,7 +296,13 @@ class _MateriCard extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Tutup'),
+            child: Text(
+              'Tutup',
+              style: GoogleFonts.plusJakartaSans(
+                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -220,71 +312,115 @@ class _MateriCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const accent = Color(0xFF76AFB8);
-    final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => _showDetail(context), // ← card bisa diklik
-      child: PremiumCard(
-        accentColor: accent,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
+      onTap: () => _showDetail(context),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: accent.withAlpha(isDark ? 55 : 30),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 60 : 8),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(19),
+              border: Border.all(
+                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                width: 1.0,
+              ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: accent.withAlpha(20),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.description_outlined, color: accent, size: 22),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: accent.withAlpha(20),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(LucideIcons.fileText, color: accent, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        materi['mapel'] ?? '-',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                          letterSpacing: 0.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(materi['mapel'] ?? '-',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.onSurface.withAlpha(160), letterSpacing: 0.5),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 12),
+                Text(
+                  materi['judul'] ?? '-',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14.5,
+                    color: isDark ? Colors.white : AppTheme.textLight,
+                    letterSpacing: -0.3,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  materi['deskripsi'] ?? '-',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showDetail(context),
+                    icon: const Icon(LucideIcons.eye, size: 14),
+                    label: const Text(
+                      'Lihat Detail',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF1B3539) : const Color(0xFFE6F5F7),
+                      foregroundColor: accent,
+                      side: BorderSide(
+                        color: isDark ? const Color(0xFF28565C) : const Color(0xFF9AD5DE),
+                        width: 1.0,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(materi['judul'] ?? '-',
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.3),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text(materi['deskripsi'] ?? '-',
-                style: TextStyle(fontSize: 12, height: 1.4,
-                color: theme.colorScheme.onSurface.withAlpha(160)),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-                ],
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _showDetail(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accent.withAlpha(isDark ? 50 : 30),
-                  foregroundColor: accent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                label: const Text('Lihat Detail',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -298,6 +434,3 @@ class _MateriCard extends StatelessWidget {
     }
   }
 }
-
-
-

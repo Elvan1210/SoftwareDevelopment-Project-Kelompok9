@@ -318,70 +318,255 @@ class _GreetingBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.indigoPrimary.withAlpha(isDark ? 60 : 35),
-            AppTheme.purpleSecondary.withAlpha(isDark ? 40 : 20),
-          ],
-        ),
+        color: isDark ? const Color(0xFF161B27) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.indigoPrimary.withAlpha(isDark ? 60 : 40),
-          width: 1.2,
+          color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
+          width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 90 : 10),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: AppTheme.indigoPrimary.withAlpha(isDark ? 20 : 10),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$_greeting, $name! 👋',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : AppTheme.textLight,
-                    letterSpacing: -0.5,
-                  ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // A beautiful ambient tag
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.indigoPrimary.withAlpha(isDark ? 30 : 15),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: AppTheme.indigoPrimary.withAlpha(isDark ? 60 : 30),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _greeting.contains('Pagi')
+                                ? LucideIcons.sun
+                                : (_greeting.contains('Siang') || _greeting.contains('Sore')
+                                    ? LucideIcons.cloudSun
+                                    : LucideIcons.moon),
+                            size: 12,
+                            color: AppTheme.indigoPrimary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _greeting.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.indigoPrimary,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Terdaftar di ${kelasList.length} kelas aktif hari ini.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Kamu terdaftar di ${kelasList.length} kelas aktif.',
+              ),
+              const SizedBox(width: 16),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.indigoPrimary.withAlpha(120),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.school_rounded, color: Colors.white, size: 32),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Divider(height: 1, thickness: 1),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'Selamat belajar & tingkatkan prestasimu! ✨',
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                     color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.indigoPrimary.withAlpha(100),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
+              const SizedBox(width: 8),
+              PremiumElevatedButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (ctx) => _MotivationalSheet(isDark: isDark),
+                  );
+                },
+                color: AppTheme.indigoPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                radius: 12,
+                child: Text('Motivasi Hari Ini', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 11)),
+              ),
+            ],
           ),
         ],
       ),
     ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.05);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Motivational Bottom Sheet
+// ─────────────────────────────────────────────────────────────────────────────
+class _MotivationalSheet extends StatelessWidget {
+  final bool isDark;
+  const _MotivationalSheet({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1.5),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: (isDark ? Colors.white : AppTheme.textLight).withAlpha(40),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(LucideIcons.sparkles, color: AppTheme.indigoPrimary, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quotes of the Day',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                      ),
+                    ),
+                    Text(
+                      'Inspirasi belajar harianmu',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkCard : const Color(0xFFF8F9FC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+            ),
+            child: Text(
+              '"Pendidikan adalah senjata paling mematikan di dunia, karena dengan pendidikan, Anda dapat mengubah dunia."\n\n— Nelson Mandela',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.6,
+                color: isDark ? Colors.white : AppTheme.textLight,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            child: PremiumElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              color: AppTheme.indigoPrimary,
+              child: const Text('Siap Belajar! 🚀'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -396,9 +581,9 @@ class _StatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _StatItem(LucideIcons.clipboardList, 'Belum Dikumpul', stats['belum'] ?? 0, AppTheme.amber),
-      _StatItem(LucideIcons.alertTriangle, 'Lewat Deadline', stats['lewat'] ?? 0, AppTheme.rose),
-      _StatItem(LucideIcons.checkCircle2, 'Selesai', stats['selesai'] ?? 0, AppTheme.emerald),
+      _StatItem(LucideIcons.clipboardList, 'Belum Dikumpul', stats['belum'] ?? 0, [AppTheme.amber, const Color(0xFFD97706)]),
+      _StatItem(LucideIcons.alertTriangle, 'Lewat Deadline', stats['lewat'] ?? 0, [AppTheme.rose, const Color(0xFFBE185D)]),
+      _StatItem(LucideIcons.checkCircle2, 'Selesai', stats['selesai'] ?? 0, [AppTheme.emerald, const Color(0xFF059669)]),
     ];
 
     return Row(
@@ -408,7 +593,7 @@ class _StatRow extends StatelessWidget {
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(right: isLast ? 0 : 12),
-            child: StatCard(icon: item.icon, label: item.label, value: '${item.value}', color: item.color)
+            child: CosmicStatCard(icon: item.icon, label: item.label, value: '${item.value}', gradient: item.gradient)
                 .animate(delay: (100 + e.key * 80).ms)
                 .fadeIn(duration: 400.ms)
                 .scale(begin: const Offset(0.85, 0.85), curve: Curves.elasticOut, duration: 700.ms),
@@ -423,8 +608,8 @@ class _StatItem {
   final IconData icon;
   final String label;
   final int value;
-  final Color color;
-  const _StatItem(this.icon, this.label, this.value, this.color);
+  final List<Color> gradient;
+  const _StatItem(this.icon, this.label, this.value, this.gradient);
 }
 
 
@@ -543,9 +728,10 @@ class _TugasCard extends StatelessWidget {
               ),
             ),
 
-            // Right: deadline pill + chevron
+            // Right: deadline pill
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Status pill
                 Container(
@@ -575,9 +761,20 @@ class _TugasCard extends StatelessWidget {
                 ]),
               ],
             ),
-            const SizedBox(width: 8),
-            Icon(LucideIcons.chevronRight,
-                size: 16, color: (isDark ? Colors.white : AppTheme.textLight).withAlpha(80)),
+            const SizedBox(width: 14),
+            PremiumElevatedButton(
+              onPressed: onTap,
+              color: accent,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              radius: 10,
+              child: Text(
+                submitted ? 'Buka' : 'Kerjakan',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ],
         ),
     );

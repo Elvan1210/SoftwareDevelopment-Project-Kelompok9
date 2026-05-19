@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../services/presensi_service.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class GuruPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -105,7 +108,6 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     final student = _students.firstWhere((s) => s['id'] == studentId);
     final nowTime = DateFormat('HH:mm').format(DateTime.now());
 
-    // Optimistic Update
     setState(() {
       _attendanceRecords[studentId] = {
         if (existing != null) ...existing,
@@ -128,8 +130,6 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
 
     try {
       await PresensiService.upsertPresensi(widget.token, payload);
-      // Jika mode rekap mungkin terpengaruh dan tanggalnya cocok, kita bisa refresh rekap jika rajin,
-      // tetapi untuk kesederhanaan, biarkan rekap di-refresh manual jika mode di-switch bolak-balik.
       if (_recapDateRange != null &&
           !_selectedDate.isBefore(_recapDateRange!.start) &&
           !_selectedDate.isAfter(_recapDateRange!.end)) {
@@ -139,7 +139,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Gagal menyimpan'), backgroundColor: Colors.red));
-        _loadData(); // Revert on failure
+        _loadData();
       }
     }
   }
@@ -190,7 +190,6 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Toggle Bar & Header ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -198,38 +197,38 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LayoutBuilder(builder: (ctx, constraints) {
-                      final isWeb = MediaQuery.of(context).size.width > 600;
-                      return Text(
-                        _isRecapMode ? 'Rekap Kehadiran' : 'Jurnal Kehadiran',
-                        style: (isWeb
-                                ? theme.textTheme.headlineMedium
-                                : theme.textTheme.titleLarge)
-                            ?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                        ),
-                      );
-                    }),
+                    Text(
+                      _isRecapMode ? 'Rekap Kehadiran' : 'Jurnal Kehadiran',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                      ),
+                    ),
                     const SizedBox(height: 5),
                     Text(
                       'Pantau kehadiran kelas ${widget.teamData != null ? widget.teamData['nama_kelas'] : ''}',
-                      style: TextStyle(
-                          color: theme.colorScheme.onSurface.withAlpha(160),
-                          fontWeight: FontWeight.w600),
+                      style: GoogleFonts.plusJakartaSans(
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
                     ),
                   ],
                 ),
               ),
-              GlassCard(
-                radius: 100,
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                ),
                 padding: const EdgeInsets.all(4),
                 child: Row(
                   children: [
-                    _buildModeBtn('Harian', Icons.today_rounded, !_isRecapMode,
-                        theme, isDark),
-                    _buildModeBtn('Rekap', Icons.date_range_rounded,
-                        _isRecapMode, theme, isDark),
+                    _buildModeBtn('Harian', LucideIcons.calendar, !_isRecapMode, theme, isDark),
+                    _buildModeBtn('Rekap', LucideIcons.barChart2, _isRecapMode, theme, isDark),
                   ],
                 ),
               ),
@@ -238,7 +237,6 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
 
           const SizedBox(height: 24),
 
-          // ── Date Pickers ──
           if (!_isRecapMode)
             _buildDailyHeader(theme, isDark)
           else
@@ -246,7 +244,6 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
 
           const SizedBox(height: 24),
 
-          // ── Content ──
           if (!_isRecapMode) ...[
             if (!_isLoading && _students.isNotEmpty)
               _buildStatsDashboard(theme)
@@ -256,12 +253,10 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
             const SizedBox(height: 24),
             Expanded(
               child: _isLoading
-                  ? Center(
-                      child:
-                          CircularProgressIndicator(color: theme.primaryColor))
+                  ? const Center(child: CircularProgressIndicator())
                   : _students.isEmpty
                       ? const EmptyState(
-                          icon: Icons.people_alt_outlined,
+                          icon: LucideIcons.users,
                           message: 'Belum ada siswa di kelas ini.')
                       : ListView.builder(
                           itemCount: _students.length,
@@ -277,24 +272,21 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                     record?['waktu'], theme, isDark)
                                 .animate(delay: (index * 40).ms)
                                 .fadeIn()
-                                .slideX(
-                                    begin: 0.05, curve: Curves.easeOutQuart);
+                                .slideX(begin: 0.05, curve: Curves.easeOutQuart);
                           },
                         ),
             ),
           ] else ...[
             Expanded(
               child: _isLoadingRecap || _isLoading
-                  ? Center(
-                      child:
-                          CircularProgressIndicator(color: theme.primaryColor))
+                  ? const Center(child: CircularProgressIndicator())
                   : _recapDateRange == null
                       ? const EmptyState(
-                          icon: Icons.date_range_rounded,
+                          icon: LucideIcons.calendar,
                           message: 'Pilih rentang tanggal terlebih dahulu.')
                       : _students.isEmpty
                           ? const EmptyState(
-                              icon: Icons.people_alt_outlined,
+                              icon: LucideIcons.users,
                               message: 'Belum ada siswa di kelas ini.')
                           : ListView.builder(
                               itemCount: _students.length,
@@ -305,9 +297,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                 return _buildRecapStudentCard(s, theme, isDark)
                                     .animate(delay: (index * 40).ms)
                                     .fadeIn()
-                                    .slideX(
-                                        begin: 0.05,
-                                        curve: Curves.easeOutQuart);
+                                    .slideX(begin: 0.05, curve: Curves.easeOutQuart);
                               },
                             ),
             ),
@@ -335,36 +325,26 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       },
       borderRadius: BorderRadius.circular(100),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? theme.primaryColor : Colors.transparent,
+          color: isSelected ? AppTheme.indigoPrimary : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: theme.primaryColor.withAlpha(80),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2))
-                ]
-              : [],
         ),
         child: Row(
           children: [
-            Icon(icon,
-                size: 14,
-                color: isSelected
-                    ? Colors.white
-                    : theme.colorScheme.onSurface.withAlpha(160)),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                 fontSize: 12,
-                color: isSelected
-                    ? Colors.white
-                    : theme.colorScheme.onSurface.withAlpha(160),
+                color: isSelected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
               ),
             ),
           ],
@@ -376,15 +356,21 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
   Widget _buildDailyHeader(ThemeData theme, bool isDark) {
     return Row(
       children: [
-        Text('Pencatatan Harian',
-            style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-                color: theme.colorScheme.onSurface)),
+        Text(
+          'Pencatatan Harian',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            fontSize: 15.5,
+            color: isDark ? Colors.white : AppTheme.textLight,
+          ),
+        ),
         const Spacer(),
-        GlassCard(
-          radius: 12,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E2538) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          ),
           child: InkWell(
             onTap: () async {
               final date = await showDatePicker(
@@ -392,34 +378,29 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                 initialDate: _selectedDate,
                 firstDate: DateTime(2024),
                 lastDate: DateTime(2030),
-                builder: (context, child) {
-                  return Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: isDark
-                          ? ColorScheme.dark(primary: theme.primaryColor)
-                          : ColorScheme.light(primary: theme.primaryColor),
-                    ),
-                    child: child!,
-                  );
-                },
               );
               if (date != null) {
                 setState(() => _selectedDate = date);
                 _loadData();
               }
             },
-            child: Row(
-              children: [
-                Icon(Icons.calendar_month_rounded,
-                    color: theme.primaryColor, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  DateFormat('dd MMM yyyy').format(_selectedDate),
-                  style: TextStyle(
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.calendar, color: AppTheme.tealDeep, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    DateFormat('dd MMM yyyy').format(_selectedDate),
+                    style: GoogleFonts.plusJakartaSans(
                       fontWeight: FontWeight.w800,
-                      color: theme.colorScheme.onSurface),
-                ),
-              ],
+                      color: isDark ? Colors.white : AppTheme.textLight,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ).animate().fadeIn(delay: 100.ms),
@@ -438,18 +419,20 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     return Row(
       children: [
         Text(
-          MediaQuery.of(context).size.width > 600
-              ? 'Ringkasan Rentang Waktu' // web: full
-              : 'Rentang Waktu', // mobile: singkat
-          style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-              color: theme.colorScheme.onSurface),
+          'Rentang Waktu Rekap',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            fontSize: 15.5,
+            color: isDark ? Colors.white : AppTheme.textLight,
+          ),
         ),
         const Spacer(),
-        GlassCard(
-          radius: 12,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E2538) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          ),
           child: InkWell(
             onTap: () async {
               final range = await showDateRangePicker(
@@ -457,34 +440,29 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                 firstDate: DateTime(2024),
                 lastDate: DateTime(2030),
                 initialDateRange: _recapDateRange,
-                builder: (context, child) {
-                  return Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: isDark
-                          ? ColorScheme.dark(primary: theme.primaryColor)
-                          : ColorScheme.light(primary: theme.primaryColor),
-                    ),
-                    child: child!,
-                  );
-                },
               );
               if (range != null) {
                 setState(() => _recapDateRange = range);
                 _loadRecapData();
               }
             },
-            child: Row(
-              children: [
-                Icon(Icons.date_range_outlined,
-                    color: theme.primaryColor, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  '$startStr - $endStr',
-                  style: TextStyle(
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.calendar, color: AppTheme.tealDeep, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$startStr - $endStr',
+                    style: GoogleFonts.plusJakartaSans(
                       fontWeight: FontWeight.w800,
-                      color: theme.colorScheme.onSurface),
-                ),
-              ],
+                      color: isDark ? Colors.white : AppTheme.textLight,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ).animate().fadeIn(delay: 100.ms),
@@ -496,61 +474,66 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     final stats = _getStats();
     return Row(
       children: [
-        Expanded(
-            child: _buildStatCard(
-                'Hadir', stats['Hadir']!, const Color(0xFF10B981))),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _buildStatCard(
-                'Izin', stats['Izin']!, const Color(0xFF76AFB8))),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _buildStatCard(
-                'Sakit', stats['Sakit']!, const Color(0xFFF59E0B))),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _buildStatCard(
-                'Alpa', stats['Alpa']!, const Color(0xFFEF4444))),
+        Expanded(child: _buildStatCard('Hadir', stats['Hadir']!, const Color(0xFF10B981))),
+        const SizedBox(width: 10),
+        Expanded(child: _buildStatCard('Izin', stats['Izin']!, const Color(0xFF76AFB8))),
+        const SizedBox(width: 10),
+        Expanded(child: _buildStatCard('Sakit', stats['Sakit']!, const Color(0xFFF59E0B))),
+        const SizedBox(width: 10),
+        Expanded(child: _buildStatCard('Alpa', stats['Alpa']!, const Color(0xFFEF4444))),
       ],
     );
   }
 
   Widget _buildStatCard(String label, int count, Color color) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GlassCard(
-      radius: 16,
-      overrideColor: color.withAlpha(isDark ? 30 : 15),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: color.withAlpha(isDark ? 40 : 30),
-                shape: BoxShape.circle),
-            child: Text(
-              label[0],
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.w900, fontSize: 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withAlpha(isDark ? 55 : 30),
+          width: 1.2,
+        ),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withAlpha(15)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                label[0],
+                style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w900, fontSize: 13),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            count.toString(),
-            style: TextStyle(
-                fontSize: 24,
+            const SizedBox(height: 8),
+            Text(
+              count.toString(),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 20,
                 fontWeight: FontWeight.w900,
-                color: theme.colorScheme.onSurface),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w700, color: color),
-          ),
-        ],
+                color: isDark ? Colors.white : AppTheme.textLight,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w800, color: color),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -561,84 +544,91 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: GlassCard(
-        padding: const EdgeInsets.all(16),
-        radius: 16,
-        overrideColor: isRecorded
-            ? theme.colorScheme.surface.withAlpha(isDark ? 150 : 255)
-            : theme.colorScheme.surface.withAlpha(isDark ? 50 : 100),
-        child: Row(
-          children: [
-            // Avatar
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    theme.primaryColor.withAlpha(180),
-                    theme.primaryColor.withAlpha(80)
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+            width: 1.2,
+          ),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.indigoPrimary,
+                      AppTheme.indigoPrimary.withAlpha(120),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  s['nama'].substring(0, 1).toUpperCase(),
-                  style: const TextStyle(
+                child: Center(
+                  child: Text(
+                    s['nama'].substring(0, 1).toUpperCase(),
+                    style: GoogleFonts.plusJakartaSans(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
-                      fontSize: 20),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s['nama'],
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      color: isRecorded
-                          ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurface.withAlpha(160),
+                      fontSize: 18,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        isRecorded
-                            ? Icons.access_time_filled_rounded
-                            : Icons.access_time_rounded,
-                        size: 14,
-                        color: theme.colorScheme.onSurface.withAlpha(160),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        isRecorded ? 'Tercatat: $time' : 'Belum dicatat',
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface.withAlpha(160),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 14),
 
-            // Toggles
-            _buildModernStatusSelector(s['id'], currentStatus),
-          ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s['nama'],
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          LucideIcons.clock,
+                          size: 13,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isRecorded ? 'Tercatat: $time' : 'Belum dicatat',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              _buildModernStatusSelector(s['id'], currentStatus, isDark),
+            ],
+          ),
         ),
       ),
     );
@@ -651,195 +641,194 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     final pct = total > 0 ? (stats['Hadir']! / total) : 0.0;
     final isExpanded = _expandedState[s['id']] ?? false;
 
-    Color pctColor = const Color(0xFF22C55E); // Hijau
-    if (pct < 0.8) pctColor = const Color(0xFFF59E0B); // Kuning/Orange
-    if (pct < 0.6) pctColor = const Color(0xFFEF4444); // Merah
+    Color pctColor = const Color(0xFF22C55E);
+    if (pct < 0.8) pctColor = const Color(0xFFF59E0B);
+    if (pct < 0.6) pctColor = const Color(0xFFEF4444);
     if (total == 0) pctColor = Colors.grey;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: GlassCard(
-        padding: EdgeInsets.zero,
-        radius: 16,
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _expandedState[s['id']] = !isExpanded;
-                });
-              },
-              borderRadius: BorderRadius.circular(16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    // Avatar
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: pctColor.withAlpha(30),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          s['nama'].substring(0, 1).toUpperCase(),
-                          style: TextStyle(
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+            width: 1.2,
+          ),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _expandedState[s['id']] = !isExpanded;
+                  });
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: pctColor.withAlpha(20),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            s['nama'].substring(0, 1).toUpperCase(),
+                            style: GoogleFonts.plusJakartaSans(
                               color: pctColor,
                               fontWeight: FontWeight.w900,
-                              fontSize: 18),
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Keterangan + Progress
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  s['nama'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 16,
-                                      color: theme.colorScheme.onSurface),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Text(
-                                total > 0
-                                    ? '${(pct * 100).toStringAsFixed(0)}%'
-                                    : 'Belum ada data',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 14,
-                                    color: pctColor),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // Mini Bar
-                          Container(
-                            height: 6,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.onSurface.withAlpha(20),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Stack(
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 600),
-                                  curve: Curves.easeOutQuart,
-                                  width: total > 0
-                                      ? MediaQuery.of(context).size.width * pct
-                                      : 0,
-                                  decoration: BoxDecoration(
+                                Expanded(
+                                  child: Text(
+                                    s['nama'],
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13.5,
+                                      color: isDark ? Colors.white : AppTheme.textLight,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Text(
+                                  total > 0
+                                      ? '${(pct * 100).toStringAsFixed(0)}%'
+                                      : 'Belum ada data',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
                                     color: pctColor,
-                                    borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: pctColor.withAlpha(100),
-                                          blurRadius: 4)
-                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 6),
+                            Container(
+                              height: 6,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Stack(
+                                children: [
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 500),
+                                    curve: Curves.easeOutQuart,
+                                    width: total > 0
+                                        ? (MediaQuery.of(context).size.width * 0.4) * pct
+                                        : 0,
+                                    decoration: BoxDecoration(
+                                      color: pctColor,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(
-                      isExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      color: theme.colorScheme.onSurface.withAlpha(160),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Expanded Area
-            AnimatedCrossFade(
-              firstChild: const SizedBox(width: double.infinity, height: 0),
-              secondChild: Container(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        theme.colorScheme.onSurface.withAlpha(isDark ? 10 : 5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildRecapMiniStat('Hadir', stats['Hadir']!,
-                          const Color(0xFF10B981), total),
-                      _buildRecapMiniStat('Izin', stats['Izin']!,
-                          const Color(0xFF76AFB8), total),
-                      _buildRecapMiniStat('Sakit', stats['Sakit']!,
-                          const Color(0xFFF59E0B), total),
-                      _buildRecapMiniStat('Alpa', stats['Alpa']!,
-                          const Color(0xFFEF4444), total),
+                      const SizedBox(width: 14),
+                      Icon(
+                        isExpanded
+                            ? LucideIcons.chevronUp
+                            : LucideIcons.chevronDown,
+                        size: 16,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                      ),
                     ],
                   ),
                 ),
               ),
-              crossFadeState: isExpanded
-                  ? CrossFadeState.showSecond
-                  : CrossFadeState.showFirst,
-              duration: const Duration(milliseconds: 250),
-            ),
-          ],
+
+              AnimatedCrossFade(
+                firstChild: const SizedBox(width: double.infinity, height: 0),
+                secondChild: Container(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildRecapMiniStat('Hadir', stats['Hadir']!, const Color(0xFF10B981)),
+                        _buildRecapMiniStat('Izin', stats['Izin']!, const Color(0xFF76AFB8)),
+                        _buildRecapMiniStat('Sakit', stats['Sakit']!, const Color(0xFFF59E0B)),
+                        _buildRecapMiniStat('Alpa', stats['Alpa']!, const Color(0xFFEF4444)),
+                      ],
+                    ),
+                  ),
+                ),
+                crossFadeState: isExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 200),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRecapMiniStat(String label, int count, Color color, int total) {
+  Widget _buildRecapMiniStat(String label, int count, Color color) {
     return Column(
       children: [
-        Text(count.toString(),
-            style: TextStyle(
-                fontWeight: FontWeight.w900, fontSize: 18, color: color)),
-        Text(label,
-            style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: color.withAlpha(200))),
+        Text(
+          count.toString(),
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16, color: color),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w800, color: color.withAlpha(200)),
+        ),
       ],
     );
   }
 
-  Widget _buildModernStatusSelector(String studentId, String currentStatus) {
+  Widget _buildModernStatusSelector(String studentId, String currentStatus, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.black26
-            : Colors.black.withAlpha(10),
+        color: isDark ? const Color(0xFF1E2538) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE2E8F0)),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(3),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildStatusBtn(studentId, 'Hadir', 'H', const Color(0xFF10B981),
-              currentStatus == 'Hadir'),
-          _buildStatusBtn(studentId, 'Izin', 'I', const Color(0xFF76AFB8),
-              currentStatus == 'Izin'),
-          _buildStatusBtn(studentId, 'Sakit', 'S', const Color(0xFFF59E0B),
-              currentStatus == 'Sakit'),
-          _buildStatusBtn(studentId, 'Alpa', 'A', const Color(0xFFEF4444),
-              currentStatus == 'Alpa'),
+          _buildStatusBtn(studentId, 'Hadir', 'H', const Color(0xFF10B981), currentStatus == 'Hadir'),
+          _buildStatusBtn(studentId, 'Izin', 'I', const Color(0xFF76AFB8), currentStatus == 'Izin'),
+          _buildStatusBtn(studentId, 'Sakit', 'S', const Color(0xFFF59E0B), currentStatus == 'Sakit'),
+          _buildStatusBtn(studentId, 'Alpa', 'A', const Color(0xFFEF4444), currentStatus == 'Alpa'),
         ],
       ),
     );
@@ -851,32 +840,22 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _updateStatus(studentId, status),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          width: 30,
-          height: 30,
+          duration: const Duration(milliseconds: 150),
+          width: 28,
+          height: 28,
           decoration: BoxDecoration(
             color: isSelected ? color : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                        color: color.withAlpha(100),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2))
-                  ]
-                : [],
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
             child: Text(
               short,
-              style: TextStyle(
-                color: isSelected
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.onSurface.withAlpha(160),
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-                fontSize: 12,
+              style: GoogleFonts.plusJakartaSans(
+                color: isSelected ? Colors.white : color.withAlpha(180),
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w800,
+                fontSize: 11.5,
               ),
             ),
           ),

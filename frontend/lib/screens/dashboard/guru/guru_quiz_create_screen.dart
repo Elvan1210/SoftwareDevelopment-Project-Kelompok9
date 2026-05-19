@@ -10,6 +10,7 @@ import '../../../services/quiz_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../services/notifikasi_service.dart';
 import '../../../models/quiz_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GuruQuizCreateScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -92,24 +93,22 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
   }
 
   void _onJumlahSoalChanged(String val) {
-  final n = int.tryParse(val);
-  if (n == null || n <= 0 || n > 50) return;
-  
-  setState(() {
-    if (n > _questions.length) {
-      // Tambah soal baru
-      for (int i = _questions.length; i < n; i++) {
-        _questions.add(_QuestionForm());
+    final n = int.tryParse(val);
+    if (n == null || n <= 0 || n > 50) return;
+    
+    setState(() {
+      if (n > _questions.length) {
+        for (int i = _questions.length; i < n; i++) {
+          _questions.add(_QuestionForm());
+        }
+      } else if (n < _questions.length) {
+        for (int i = _questions.length - 1; i >= n; i--) {
+          _questions[i].dispose();
+          _questions.removeAt(i);
+        }
       }
-    } else if (n < _questions.length) {
-      // Kurangi soal dari belakang
-      for (int i = _questions.length - 1; i >= n; i--) {
-        _questions[i].dispose();
-        _questions.removeAt(i);
-      }
-    }
-  });
-}
+    });
+  }
 
   Future<void> _pickSchedule() async {
     final date = await showDatePicker(
@@ -216,7 +215,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       'kelasId': widget.teamData['id']?.toString() ?? '',
       'questions': questions,
       'durationMinutes': int.tryParse(_durationCtrl.text) ?? 60,
-      'maxViolations': 5, // Default fallback for backward compatibility
+      'maxViolations': 5, 
       'isSecureMode': _isSecureMode,
       'isActive': _isActive,
       'isScheduled': _isScheduled,
@@ -263,7 +262,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditing ? 'Kuis berhasil diupdate!' : 'Kuis berhasil dibuat!'),
+            content: Text(isEditing ? 'Kuis berhasil diupdate!' : 'Kuis berhasil dibuat!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -279,7 +278,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
+        content: Text(msg, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -317,29 +316,29 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
           ),
           title: Text(
             isEditing ? 'Edit Kuis' : 'Buat Kuis Baru',
-            style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, letterSpacing: -0.5),
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: ElevatedButton.icon(
+              padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+              child: PremiumElevatedButton(
                 onPressed: _isSaving ? null : _save,
-                icon: _isSaving
+                icon: _isSaving ? null : LucideIcons.save,
+                iconSize: 14,
+                color: AppTheme.indigoPrimary,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                radius: 12,
+                child: _isSaving
                     ? const SizedBox(
-                        width: 16,
-                        height: 16,
+                        width: 14,
+                        height: 14,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Icon(LucideIcons.save, size: 18),
-                label: Text(
-                  _isSaving ? 'Menyimpan...' : 'Simpan',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.tealDeep,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
+                    : Text(
+                        'Simpan',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
               ),
             ),
           ],
@@ -347,12 +346,13 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
         body: Form(
           key: _formKey,
           child: ListView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(24),
             children: [
               const _SectionLabel(label: 'INFORMASI KUIS', icon: LucideIcons.info),
               const SizedBox(height: 12),
 
-              _buildField('Judul Kuis', _titleCtrl, 'Masukkan judul kuis', LucideIcons.type, theme, isDark),
+              _buildField('Judul Ujian', _titleCtrl, 'Masukkan judul kuis', LucideIcons.type, theme, isDark),
               const SizedBox(height: 14),
               _buildField('Deskripsi', _descCtrl, 'Deskripsi singkat kuis', LucideIcons.alignLeft, theme, isDark),
               const SizedBox(height: 24),
@@ -461,30 +461,37 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
               const SizedBox(height: 28),
 
               Row(
-  children: [
-    _SectionLabel(label: 'SOAL (${_questions.length})', icon: LucideIcons.helpCircle),
-    const Spacer(),
-    // GANTI TextButton jadi input jumlah soal
-    SizedBox(
-      width: 80,
-      child: TextFormField(
-        controller: _jumlahSoalCtrl,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        textAlign: TextAlign.center,
-        onChanged: _onJumlahSoalChanged,
-        decoration: InputDecoration(
-          labelText: 'Jumlah',
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
-    ),
-    const SizedBox(width: 8),
-    Text('soal', style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
-  ],
-),
+                children: [
+                  const _SectionLabel(label: 'DAFTAR SOAL UJIAN', icon: LucideIcons.helpCircle),
+                  const Spacer(),
+                  Container(
+                    width: 90,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: TextFormField(
+                      controller: _jumlahSoalCtrl,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      textAlign: TextAlign.center,
+                      onChanged: _onJumlahSoalChanged,
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Jml',
+                        hintStyle: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 11),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(160))),
+                ],
+              ),
               const SizedBox(height: 12),
 
               ...List.generate(_questions.length, (i) {
@@ -505,16 +512,16 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _addQuestion,
-                  icon: const Icon(LucideIcons.plusCircle),
-                  label: const Text('Tambah Soal', style: TextStyle(fontWeight: FontWeight.w800)),
+                  icon: const Icon(LucideIcons.plusCircle, size: 16),
+                  label: Text('Tambah Soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.tealDeep,
-                    side: const BorderSide(color: AppTheme.tealDeep),
+                    foregroundColor: AppTheme.indigoPrimary,
+                    side: const BorderSide(color: AppTheme.indigoPrimary, width: 1.2),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    ),
-                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 100),
             ],
           ),
@@ -531,23 +538,32 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
     required ValueChanged<bool> onChanged,
     required ThemeData theme,
     required bool isDark,
-    Color activeColor = AppTheme.tealDeep,
+    Color activeColor = AppTheme.indigoPrimary,
     Widget? extraAction,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: value ? activeColor.withAlpha(60) : theme.colorScheme.onSurface.withAlpha(20),
+          color: value ? activeColor.withAlpha(isDark ? 55 : 30) : isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+          width: 1.2,
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: value ? activeColor : theme.colorScheme.onSurface.withAlpha(160),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: value ? activeColor.withAlpha(20) : isDark ? const Color(0xFF2D3A54) : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: value ? activeColor : isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -556,16 +572,19 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.w800,
-                    color: theme.colorScheme.onSurface,
+                    fontSize: 13.5,
+                    color: isDark ? Colors.white : AppTheme.textLight,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurface.withAlpha(160),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                   ),
                 ),
               ],
@@ -590,24 +609,26 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : null,
       validator: (v) => (v == null || v.trim().isEmpty) ? '$label wajib diisi' : null,
-      style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
+      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: isDark ? Colors.white : AppTheme.textLight, fontSize: 13.5),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
         hintText: hint,
-        prefixIcon: Icon(icon, size: 20),
+        hintStyle: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 13),
+        prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
         filled: true,
-        fillColor: theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
+        fillColor: isDark ? const Color(0xFF1E2538) : Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: theme.colorScheme.onSurface.withAlpha(20)),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: theme.colorScheme.onSurface.withAlpha(20)),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.tealDeep, width: 2),
+          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -625,15 +646,15 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.tealDeep),
+        Icon(icon, size: 14, color: AppTheme.indigoPrimary),
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
             fontWeight: FontWeight.w900,
             letterSpacing: 1.0,
-            color: AppTheme.tealDeep,
+            color: AppTheme.indigoPrimary,
           ),
         ),
       ],
@@ -794,18 +815,12 @@ class _QuestionCardState extends State<_QuestionCard> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: widget.theme.colorScheme.surface.withAlpha(widget.isDark ? 200 : 255),
+        color: widget.isDark ? const Color(0xFF1E2538) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: widget.isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8),
+          color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+          width: 1.2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(widget.isDark ? 40 : 6),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -813,40 +828,43 @@ class _QuestionCardState extends State<_QuestionCard> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.tealDeep.withAlpha(20),
+                  color: AppTheme.indigoPrimary.withAlpha(20),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50)),
                 ),
                 child: Text(
-                  '${widget.index + 1}',
-                  style: const TextStyle(
+                  'Soal ${widget.index + 1}',
+                  style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                    color: AppTheme.tealDeep,
+                    fontSize: 12.5,
+                    color: AppTheme.indigoPrimary,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               
               Expanded(
-                child: DropdownButtonHideUnderline(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: widget.theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: widget.theme.colorScheme.onSurface.withAlpha(160)),
-                    ),
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                  ),
+                  child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: form.questionType,
                       isExpanded: true,
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: widget.theme.colorScheme.onSurface),
+                      dropdownColor: widget.isDark ? const Color(0xFF161B27) : Colors.white,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w800, color: widget.isDark ? Colors.white : AppTheme.textLight),
                       items: const [
                         DropdownMenuItem(value: 'multipleChoice', child: Text('Pilihan Ganda')),
                         DropdownMenuItem(value: 'multipleAnswer', child: Text('Pilihan Ganda (Banyak Jawaban)')),
                         DropdownMenuItem(value: 'complexCheckbox', child: Text('Pilihan Ganda (Kompleks)')),
-                        DropdownMenuItem(value: 'essay', child: Text('Uraian', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'essay', child: Text('Uraian')),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -869,23 +887,36 @@ class _QuestionCardState extends State<_QuestionCard> {
               
               const SizedBox(width: 12),
               SizedBox(
-                width: 80,
+                width: 75,
+                height: 40,
                 child: TextFormField(
                   controller: form.pointsCtrl,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 13, color: widget.isDark ? Colors.white : AppTheme.textLight),
                   decoration: InputDecoration(
                     labelText: 'Poin',
+                    labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 11),
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppTheme.indigoPrimary),
+                    ),
                   ),
                 ),
               ),
               if (widget.onRemove != null) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 IconButton(
                   icon: const Icon(LucideIcons.trash2, size: 18, color: Colors.red),
                   onPressed: widget.onRemove,
@@ -900,27 +931,28 @@ class _QuestionCardState extends State<_QuestionCard> {
           TextFormField(
             controller: form.questionCtrl,
             maxLines: 3,
-            style: TextStyle(fontWeight: FontWeight.w600, color: widget.theme.colorScheme.onSurface),
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: widget.isDark ? Colors.white : AppTheme.textLight, fontSize: 13.5),
             decoration: InputDecoration(
-              hintText: 'Tulis pertanyaan di sini...',
+              hintText: 'Tulis pertanyaan kuis di sini...',
+              hintStyle: GoogleFonts.plusJakartaSans(color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 13),
               filled: true,
-              fillColor: widget.theme.colorScheme.surface.withAlpha(widget.isDark ? 150 : 240),
+              fillColor: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: widget.theme.colorScheme.onSurface.withAlpha(20)),
+                borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: widget.theme.colorScheme.onSurface.withAlpha(20)),
+                borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppTheme.tealDeep, width: 2),
+                borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           if (form.imageUrl != null)
             Stack(
@@ -955,9 +987,14 @@ class _QuestionCardState extends State<_QuestionCard> {
               onPressed: _isUploading ? null : _pickAndUploadImage,
               icon: _isUploading 
                 ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(LucideIcons.image, size: 16),
-              label: Text(_isUploading ? 'Mengupload...' : 'Sisipkan Gambar', style: const TextStyle(fontSize: 12)),
+                : const Icon(LucideIcons.image, size: 14),
+              label: Text(
+                _isUploading ? 'Mengupload...' : 'Sisipkan Gambar', 
+                style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.bold),
+              ),
               style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.indigoPrimary,
+                side: const BorderSide(color: AppTheme.indigoPrimary, width: 1.0),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
@@ -970,14 +1007,14 @@ class _QuestionCardState extends State<_QuestionCard> {
               form.questionType == 'multipleChoice' 
                   ? 'OPSI JAWABAN (Pilih satu jawaban benar)'
                   : 'OPSI JAWABAN (Pilih semua jawaban benar)',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w900,
                 letterSpacing: 0.5,
-                color: widget.theme.colorScheme.onSurface.withAlpha(160),
+                color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
 
             ...List.generate(form.optionCtrls.length, (oi) {
               final isCorrect = form.correctAnswers.contains(oi);
@@ -1000,6 +1037,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                             color: form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
                                 ? Colors.green
                                 : widget.theme.colorScheme.onSurface.withAlpha(160),
+                            size: 22,
                           ),
                         ),
                       )
@@ -1021,40 +1059,42 @@ class _QuestionCardState extends State<_QuestionCard> {
                     Expanded(
                       child: TextFormField(
                         controller: form.optionCtrls[oi],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: widget.theme.colorScheme.onSurface,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: widget.isDark ? Colors.white : AppTheme.textLight,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Opsi ${String.fromCharCode(65 + oi)}',
+                          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           filled: true,
                           fillColor: isCorrect
                               ? Colors.green.withAlpha(widget.isDark ? 20 : 10)
-                              : widget.theme.colorScheme.surface.withAlpha(widget.isDark ? 150 : 240),
+                              : widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: isCorrect ? Colors.green.withAlpha(160) : widget.theme.colorScheme.onSurface.withAlpha(15),
+                              color: isCorrect ? Colors.green.withAlpha(160) : widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: isCorrect ? Colors.green.withAlpha(160) : widget.theme.colorScheme.onSurface.withAlpha(15),
+                              color: isCorrect ? Colors.green.withAlpha(160) : widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppTheme.tealDeep, width: 2),
+                            borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
                           ),
                         ),
                       ),
                     ),
                     if (form.optionCtrls.length > 2)
                       IconButton(
-                        icon: const Icon(LucideIcons.x, size: 18, color: Colors.red),
+                        icon: const Icon(LucideIcons.x, size: 16, color: Colors.red),
                         onPressed: () => _removeOption(oi),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -1066,35 +1106,36 @@ class _QuestionCardState extends State<_QuestionCard> {
             if (form.optionCtrls.length < 6)
               TextButton.icon(
                 onPressed: _addOption,
-                icon: const Icon(LucideIcons.plusCircle, size: 16),
-                label: const Text('Tambah Opsi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                icon: const Icon(LucideIcons.plusCircle, size: 14),
+                label: Text('Tambah Opsi', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800)),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.tealDeep.withAlpha(180),
+                  foregroundColor: AppTheme.indigoPrimary,
                 ),
               ),
           ] else ...[
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: widget.theme.colorScheme.surface.withAlpha(widget.isDark ? 150 : 240),
+                color: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: widget.theme.colorScheme.onSurface.withAlpha(20)),
+                border: Border.all(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
               ),
               child: Row(
-  children: [
-    Icon(LucideIcons.alignLeft, size: 16, color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-    const SizedBox(width: 10),
-    Expanded( // ← TAMBAH EXPANDED
-      child: Text(
-        'Siswa akan menjawab berupa teks uraian',
-        style: TextStyle(
-          color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          fontSize: 13,
-        ),
-      ),
-    ),
-  ],
-),
+                children: [
+                  Icon(LucideIcons.alignLeft, size: 15, color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Siswa akan menjawab berupa teks uraian / essay',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

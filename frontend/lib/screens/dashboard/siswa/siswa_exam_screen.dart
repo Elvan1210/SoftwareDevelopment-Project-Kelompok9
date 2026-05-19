@@ -13,6 +13,7 @@ import '../../../services/exam/secure_mode_service.dart';
 import '../../../services/exam/focus_detection_service.dart';
 import '../../../services/exam/keyboard_protection_service.dart';
 import '../../../services/quiz_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SiswaExamScreen extends StatefulWidget {
   final Quiz quiz;
@@ -62,7 +63,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     _initShuffle();
 
     _violationService = ViolationService(
-      maxViolations: 9999, // Removed max violations auto-submit
+      maxViolations: 9999, 
       onMaxViolationsReached: () {},
     );
     _violationService.addListener(_onViolationChanged);
@@ -212,17 +213,14 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     await _submitExam(autoSubmitted: true);
   }
 
-  // ==== LOGIKA OFFLINE YANG SUDAH DISESUAIKAN DENGAN QUIZ SERVICE ====
   Future<void> _submitExam({bool autoSubmitted = false}) async {
     if (_isSubmitted || _isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    // 1. Amankan jawaban ke memori HP sebelum mencoba kirim
     _autoSaveService.updateAllAnswers({..._answers, ..._essayAnswers});
     await _autoSaveService.forceSave();
 
     try {
-      // 2. Coba kirim data ke Server Firebase/Node.js
       final result = await QuizService.submitAnswers(
         token: widget.token,
         quizId: widget.quiz.id,
@@ -235,7 +233,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       );
 
       if (result['success'] == true) {
-        // 3. Jika benar-benar berhasil terkirim, hentikan timer & hapus cache
         _timerService.stop();
         await _autoSaveService.clear();
 
@@ -245,25 +242,21 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           _showResultDialog(result, autoSubmitted);
         }
       } else {
-        // CEK APAKAH INI ERROR OFFLINE ("Koneksi gagal") ATAU DITOLAK SERVER
         if (result['message'] != null && result['message'].toString().contains('Koneksi gagal')) {
-           // MASUK KESINI JIKA HP OFFLINE
            if (mounted) {
             setState(() => _isSubmitting = false);
-            _showOfflineWarningDialog(); // Munculkan pop-up besar
+            _showOfflineWarningDialog(); 
           }
         } else {
-          // JIKA DITOLAK SERVER (Misal ujian sudah ditutup / validasi error)
           if (mounted) {
             setState(() => _isSubmitting = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(result['message'] ?? 'Gagal menyimpan jawaban ke server.')),
+              SnackBar(content: Text(result['message'] ?? 'Gagal menyimpan jawaban ke server.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold))),
             );
           }
         }
       }
     } catch (e) {
-      // Fallback jaga-jaga
       if (mounted) {
         setState(() => _isSubmitting = false);
         _showOfflineWarningDialog();
@@ -271,41 +264,46 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     }
   }
 
-  // ==== DIALOG PEMBERITAHUAN OFFLINE ====
   void _showOfflineWarningDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        title: Row(
           children: [
-            Icon(LucideIcons.wifiOff, color: Colors.red),
-            SizedBox(width: 10),
+            const Icon(LucideIcons.wifiOff, color: Colors.red, size: 24),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text('Koneksi Terputus',
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+              child: Text(
+                'Koneksi Terputus',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppTheme.textLight),
+              ),
             ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Gagal mengirim jawaban karena tidak ada koneksi internet atau server sedang sibuk.\n\n'
           'Jangan panik! Seluruh jawaban Anda sudah tersimpan dengan aman di memori perangkat ini.\n\n'
           'Silakan cari koneksi Wi-Fi atau nyalakan data seluler, lalu tekan tombol Submit kembali.',
-          style: TextStyle(height: 1.5),
+          style: GoogleFonts.plusJakartaSans(height: 1.5, color: isDark ? Colors.white70 : AppTheme.textLight, fontSize: 13.5),
         ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.tealDeep,
+              backgroundColor: AppTheme.indigoPrimary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
             ),
-            child: const Text('Saya Mengerti',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text('Saya Mengerti', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -313,6 +311,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   }
 
   void _showResultDialog(Map<String, dynamic> result, bool autoSubmitted) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final data = result['data'];
     final score = data?['data']?['score'] ?? data?['score'] ?? 0;
     final total = data?['data']?['totalPoints'] ?? data?['totalPoints'] ?? 0;
@@ -324,8 +323,11 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+          ),
+          backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(28),
             child: Column(
@@ -334,18 +336,16 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color:
-                        (result['success'] == true ? Colors.green : Colors.red)
-                            .withAlpha(20),
+                    color: (result['success'] == true ? Colors.green : Colors.red).withAlpha(20),
                     shape: BoxShape.circle,
+                    border: Border.all(color: (result['success'] == true ? Colors.green : Colors.red).withAlpha(80), width: 1.5),
                   ),
                   child: Icon(
                     result['success'] == true
                         ? LucideIcons.checkCircle
                         : LucideIcons.xCircle,
-                    size: 48,
-                    color:
-                        result['success'] == true ? Colors.green : Colors.red,
+                    size: 44,
+                    color: result['success'] == true ? Colors.green : Colors.red,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -353,29 +353,39 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                   autoSubmitted
                       ? 'Ujian Dihentikan Otomatis'
                       : 'Ujian Selesai!',
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w900),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
                 ),
                 const SizedBox(height: 8),
                 if (result['success'] == true) ...[
                   if (hasEssay)
-                    const Text(
-                        'Jawaban berhasil disimpan.\nNilai akhir menunggu penilaian guru untuk soal essay.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: Colors.orange))
+                    Text(
+                      'Jawaban berhasil disimpan.\nNilai akhir menunggu penilaian guru untuk soal essay.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w600),
+                    )
                   else
-                    Text('Skor: $score / $total',
-                        style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.tealDeep)),
+                    Text(
+                      'Skor: $score / $total',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.indigoPrimary,
+                      ),
+                    ),
                   const SizedBox(height: 8),
-                  Text('Pelanggaran: ${_violationService.violationCount}',
-                      style: TextStyle(
-                          fontSize: 14, color: Colors.red.withAlpha(200))),
+                  Text(
+                    'Pelanggaran: ${_violationService.violationCount}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13, 
+                      color: Colors.red,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ] else
-                  Text(result['message'] ?? 'Gagal menyimpan jawaban',
-                      style: const TextStyle(color: Colors.red)),
+                  Text(
+                    result['message'] ?? 'Gagal menyimpan jawaban',
+                    style: GoogleFonts.plusJakartaSans(color: Colors.red, fontWeight: FontWeight.w600),
+                  ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -385,14 +395,13 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.tealDeep,
+                      backgroundColor: AppTheme.indigoPrimary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
                     ),
-                    child: const Text('Kembali',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('Kembali', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -404,32 +413,44 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   }
 
   void _confirmSubmit() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     int answered = _answers.length + _essayAnswers.length;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Submit Jawaban?',
-            style: TextStyle(fontWeight: FontWeight.w900)),
+        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        ),
+        title: Text(
+          'Submit Jawaban?',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+        ),
         content: Text(
           'Dijawab: $answered/${widget.quiz.questions.length} soal.\nPelanggaran: ${_violationService.violationCount}',
+          style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white70 : AppTheme.textLight, fontWeight: FontWeight.w600),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
+            ),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               _submitExam();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.tealDeep,
+              backgroundColor: Colors.green,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
             ),
-            child: const Text('Submit',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text('Submit', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -508,10 +529,9 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withAlpha(isDark ? 230 : 255),
+        color: isDark ? const Color(0xFF161D2B) : Colors.white,
         border: Border(
-            bottom:
-                BorderSide(color: theme.colorScheme.onSurface.withAlpha(15))),
+            bottom: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2)),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withAlpha(isDark ? 40 : 6), blurRadius: 8)
@@ -522,33 +542,41 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.tealDeep.withAlpha(20),
+              color: AppTheme.indigoPrimary.withAlpha(20),
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50)),
             ),
-            child: const Icon(LucideIcons.shieldCheck,
-                color: AppTheme.tealDeep, size: 20),
+            child: const Icon(LucideIcons.shieldCheck, color: AppTheme.indigoPrimary, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.quiz.title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 15,
-                        letterSpacing: -0.3),
-                    overflow: TextOverflow.ellipsis),
                 Text(
-                    'Soal ${_currentIndex + 1} dari ${widget.quiz.questions.length}',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurface.withAlpha(160))),
+                  widget.quiz.title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14.5,
+                    color: isDark ? Colors.white : AppTheme.textLight,
+                    letterSpacing: -0.3,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Soal ${_currentIndex + 1} dari ${widget.quiz.questions.length}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  ),
+                ),
               ],
             ),
           ),
           _buildTimerChip(isDark),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _buildViolationChip(isDark),
         ],
       ),
@@ -567,22 +595,25 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: fg.withAlpha(40))),
+          border: Border.all(color: fg.withAlpha(80), width: 1.0)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(LucideIcons.clock, size: 14, color: fg),
+          Icon(LucideIcons.clock, size: 13, color: fg),
           const SizedBox(width: 6),
-          Text(_timerService.formattedTime,
-              style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                  color: fg,
-                  fontFeatures: const [FontFeature.tabularFigures()])),
+          Text(
+            _timerService.formattedTime,
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+              color: fg,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
         ],
       ),
     );
@@ -590,28 +621,29 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
 
   Widget _buildViolationChip(bool isDark) {
     final count = _violationService.violationCount;
-    final max = _violationService.maxViolations;
-    final danger = count >= max - 1;
+    final danger = count >= 3; 
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: (danger ? Colors.red : AppTheme.orangeVivid).withAlpha(20),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-            color: (danger ? Colors.red : AppTheme.orangeVivid).withAlpha(40)),
+        border: Border.all(color: (danger ? Colors.red : AppTheme.orangeVivid).withAlpha(80), width: 1.0),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(LucideIcons.alertTriangle,
-              size: 14, color: danger ? Colors.red : AppTheme.orangeVivid),
+              size: 13, color: danger ? Colors.red : AppTheme.orangeVivid),
           const SizedBox(width: 5),
-          Text('$count/$max',
-              style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                  color: danger ? Colors.red : AppTheme.orangeVivid)),
+          Text(
+            '$count',
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+              color: danger ? Colors.red : AppTheme.orangeVivid,
+            ),
+          ),
         ],
       ),
     );
@@ -621,23 +653,24 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      color: Colors.red.withAlpha(isDark ? 40 : 20),
+      decoration: BoxDecoration(
+        color: Colors.red.withAlpha(isDark ? 40 : 20),
+        border: Border(bottom: BorderSide(color: Colors.red.withAlpha(80))),
+      ),
       child: Row(
         children: [
-          const Icon(LucideIcons.alertOctagon, color: Colors.red, size: 20),
+          const Icon(LucideIcons.alertOctagon, color: Colors.red, size: 18),
           const SizedBox(width: 10),
           Expanded(
-            child: Text('⚠️ PELANGGARAN: $_lastViolationMsg',
-                style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13)),
+            child: Text(
+              '⚠️ PELANGGARAN: $_lastViolationMsg',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
+              ),
+            ),
           ),
-          Text('${_violationService.remainingViolations} sisa',
-              style: TextStyle(
-                  color: Colors.red.withAlpha(180),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12)),
         ],
       ),
     );
@@ -645,7 +678,12 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
 
   Widget _buildQuestionArea(ThemeData theme, bool isDark) {
     if (widget.quiz.questions.isEmpty) {
-      return const Center(child: Text('Tidak ada soal'));
+      return Center(
+        child: Text(
+          'Tidak ada soal',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+        ),
+      );
     }
 
     final qIndex = _questionOrder[_currentIndex];
@@ -655,22 +693,26 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     final oOrder = _optionOrder[q.id] ?? [];
 
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.tealDeep.withAlpha(15),
+              color: AppTheme.tealDeep.withAlpha(20),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.tealDeep.withAlpha(30)),
+              border: Border.all(color: AppTheme.tealDeep.withAlpha(60)),
             ),
-            child: Text('Soal ${_currentIndex + 1}  •  ${q.points} poin',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    color: AppTheme.tealDeep)),
+            child: Text(
+              'Soal ${_currentIndex + 1}  •  ${q.points} Poin',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+                color: AppTheme.tealDeep,
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           if (q.imageUrl != null) ...[
@@ -684,9 +726,9 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Container(
                     height: 100,
-                    color: (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                    color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFF3F4F6),
                     child: Center(
-                        child: Icon(LucideIcons.imageOff, color: (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
+                        child: Icon(LucideIcons.imageOff, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                   ),
                 ),
               ),
@@ -694,35 +736,37 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
             const SizedBox(height: 20),
           ],
           SelectionContainer.disabled(
-            child: Text(q.question,
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
-                    height: 1.5)),
+            child: Text(
+              q.question,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : AppTheme.textLight,
+                height: 1.5,
+              ),
+            ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
           if (q.questionType == 'essay') ...[
-            TextFormField(
-              key: ValueKey(q.id),
-              initialValue: selectedEssay,
-              maxLines: 8,
-              onChanged: (val) => _selectAnswer(q.id, val, 'essay'),
-              style: TextStyle(color: theme.colorScheme.onSurface),
-              decoration: InputDecoration(
-                hintText: 'Tulis jawaban uraian Anda di sini...',
-                filled: true,
-                fillColor:
-                    theme.colorScheme.surface.withAlpha(isDark ? 200 : 255),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                      color: theme.colorScheme.onSurface.withAlpha(20)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide:
-                      const BorderSide(color: AppTheme.tealDeep, width: 2),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: TextFormField(
+                key: ValueKey(q.id),
+                initialValue: selectedEssay,
+                maxLines: 8,
+                onChanged: (val) => _selectAnswer(q.id, val, 'essay'),
+                style: GoogleFonts.plusJakartaSans(color: isDark ? Colors.white : AppTheme.textLight, fontSize: 13.5),
+                decoration: InputDecoration(
+                  hintText: 'Tulis jawaban uraian Anda di sini...',
+                  hintStyle: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 13),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  border: InputBorder.none,
                 ),
               ),
             ),
@@ -761,65 +805,73 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                       }
                     },
                     borderRadius: BorderRadius.circular(16),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.all(16),
+                    child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppTheme.tealDeep.withAlpha(isDark ? 30 : 15)
-                            : theme.colorScheme.surface
-                                .withAlpha(isDark ? 200 : 255),
+                        color: isDark ? const Color(0xFF1E2538) : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.tealDeep.withAlpha(100)
-                              : theme.colorScheme.onSurface.withAlpha(20),
-                          width: isSelected ? 2 : 1,
+                              ? AppTheme.indigoPrimary.withAlpha(isDark ? 55 : 30)
+                              : isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                          width: 1.2,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppTheme.tealDeep
-                                  : theme.colorScheme.onSurface.withAlpha(15),
-                              borderRadius:
-                                  q.questionType == 'multipleChoice' ||
-                                          q.questionType == 'multipleAnswer'
-                                      ? BorderRadius.circular(18)
-                                      : BorderRadius.circular(8),
-                            ),
-                            child: Center(
+                      padding: const EdgeInsets.all(4),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.indigoPrimary.withAlpha(15)
+                              : isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? AppTheme.indigoPrimary.withAlpha(60) : Colors.transparent,
+                          ),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppTheme.indigoPrimary
+                                    : isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                                borderRadius: q.questionType == 'multipleChoice' ||
+                                              q.questionType == 'multipleAnswer'
+                                        ? BorderRadius.circular(16)
+                                        : BorderRadius.circular(8),
+                              ),
+                              child: Center(
                                 child: Text(
-                              String.fromCharCode(65 + i),
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 15,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : theme.colorScheme.onSurface
-                                          .withAlpha(150)),
-                            )),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: SelectionContainer.disabled(
-                              child: Text(q.options[oi],
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: theme.colorScheme.onSurface)),
+                                  String.fromCharCode(65 + i),
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : isDark ? Colors.white70 : AppTheme.textLight),
+                                ),
+                              ),
                             ),
-                          ),
-                          if (isSelected)
-                            const Icon(LucideIcons.checkCircle,
-                                color: AppTheme.tealDeep, size: 22),
-                        ],
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: SelectionContainer.disabled(
+                                child: Text(
+                                  q.options[oi],
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 13.5,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w800
+                                          : FontWeight.w600,
+                                      color: isDark ? Colors.white : AppTheme.textLight),
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(LucideIcons.checkCircle, color: AppTheme.indigoPrimary, size: 20),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -827,7 +879,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               );
             }),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           _buildQuestionDots(isDark),
         ],
       ),
@@ -863,34 +915,34 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               height: isCurrent ? 32 : 28,
               decoration: BoxDecoration(
                 color: isCurrent
-                    ? AppTheme.tealDeep
+                    ? AppTheme.indigoPrimary
                     : isAnswered
-                        ? AppTheme.tealDeep.withAlpha(isDark ? 50 : 25)
-                        : Colors.transparent,
+                        ? AppTheme.tealDeep.withAlpha(isDark ? 30 : 15)
+                        : isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isCurrent
-                      ? AppTheme.tealDeep
+                      ? AppTheme.indigoPrimary
                       : isAnswered
                           ? AppTheme.tealDeep.withAlpha(80)
-                          : (isDark
-                              ? Colors.white.withAlpha(160)
-                              : Colors.black.withAlpha(15)),
+                          : isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
                   width: isCurrent ? 2 : 1,
                 ),
               ),
               child: Center(
-                  child: Text('${i + 1}',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: isCurrent
-                              ? Colors.white
-                              : isAnswered
-                                  ? AppTheme.tealDeep
-                                  : (isDark
-                                      ? Colors.white.withAlpha(160)
-                                      : Colors.black.withAlpha(160))))),
+                  child: Text(
+                    '${i + 1}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: isCurrent
+                          ? Colors.white
+                          : isAnswered
+                              ? AppTheme.tealDeep
+                              : isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    ),
+                  ),
+              ),
             ),
           );
         }),
@@ -924,9 +976,9 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withAlpha(isDark ? 230 : 255),
+        color: isDark ? const Color(0xFF161D2B) : Colors.white,
         border: Border(
-            top: BorderSide(color: theme.colorScheme.onSurface.withAlpha(15))),
+            top: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2)),
       ),
       child: Row(
         children: [
@@ -934,37 +986,36 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
             onPressed: _currentIndex > 0
                 ? () => setState(() => _currentIndex--)
                 : null,
-            icon: const Icon(LucideIcons.chevronLeft, size: 18),
-            label: const Text('Prev',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            icon: const Icon(LucideIcons.chevronLeft, size: 16),
+            label: Text('Prev', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13)),
             style: OutlinedButton.styleFrom(
+              backgroundColor: isDark ? const Color(0xFF2D3A54) : const Color(0xFFF3F4F6),
+              foregroundColor: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+              side: BorderSide(color: isDark ? const Color(0xFF2E384D) : const Color(0xFFE5E7EB), width: 1.0),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              side:
-                  BorderSide(color: theme.colorScheme.onSurface.withAlpha(160)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
           const Spacer(),
-          Text('$answeredCount/$total dijawab',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.onSurface.withAlpha(160))),
+          Text(
+            '$answeredCount/$total dijawab',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+            ),
+          ),
           const Spacer(),
           if (_currentIndex < total - 1)
             ElevatedButton.icon(
               onPressed: () => setState(() => _currentIndex++),
-              icon: const Text('Next',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
-              label: const Icon(LucideIcons.chevronRight, size: 18),
+              icon: const Icon(LucideIcons.chevronRight, size: 16),
+              label: Text('Next', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.tealDeep,
+                backgroundColor: AppTheme.indigoPrimary,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
             )
@@ -973,20 +1024,17 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
               onPressed: _isSubmitting ? null : _confirmSubmit,
               icon: _isSubmitting
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: 14,
+                      height: 14,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Icon(LucideIcons.send, size: 18),
-              label: Text(_isSubmitting ? 'Mengirim...' : 'Submit',
-                  style: const TextStyle(fontWeight: FontWeight.w800)),
+                  : const Icon(LucideIcons.send, size: 16),
+              label: Text(_isSubmitting ? 'Mengirim...' : 'Submit', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
             ),

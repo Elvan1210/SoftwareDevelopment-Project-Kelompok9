@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../guru/guru_tugas_detail_screen.dart';
 import '../siswa/siswa_tugas_detail_screen.dart';
+import '../../../widgets/premium_ui.dart';
 
 class SaluranView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -137,7 +138,7 @@ class _SaluranViewState extends State<SaluranView> {
 
     return Scaffold(
       backgroundColor:
-          isDark ? const Color(0xFF121212) : const Color(0xFFF3F2F1),
+          isDark ? const Color(0xFF161D2B) : const Color(0xFFF8F9FC),
       body: Column(
         children: [
           Expanded(
@@ -165,10 +166,18 @@ class _SaluranViewState extends State<SaluranView> {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: isDark ? const Color(0xFF1C2230) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE),
+          width: 1.0,
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4)
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 40 : 8),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          )
         ],
       ),
       child: Column(
@@ -403,20 +412,27 @@ class _SaluranViewState extends State<SaluranView> {
   }
 
   Widget _buildNewPostButton(ThemeData theme, bool isDark) {
+    const accentColor = Color(0xFF76AFB8);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
-      child: ElevatedButton.icon(
+      child: PremiumElevatedButton(
         onPressed: () => _showNewPostDialog(),
-        icon: const Icon(Icons.add),
-        label: const Text("Start a new conversation",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        color: accentColor,
+        textColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        radius: 12,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 20),
+            SizedBox(width: 8),
+            Text("Start a new conversation",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
         ),
       ),
     );
@@ -458,15 +474,23 @@ class _SaluranViewState extends State<SaluranView> {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: PremiumElevatedButton(
                     onPressed: _isSending
                         ? null
                         : () {
                             _postMessage(text: _pesanCtrl.text.trim());
                             Navigator.pop(context);
                           },
+                    color: const Color(0xFF76AFB8),
+                    textColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    radius: 12,
                     child: _isSending
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
                         : const Text("Post")),
               ),
               const SizedBox(height: 20),

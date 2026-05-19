@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'guru_team_detail_layout.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../config/theme.dart';
 
 class GuruDashboardView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -167,7 +169,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         crossAxisCount: crossCount,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.6,
+        childAspectRatio: 1.38,
       ),
       itemCount: _kelasList.length,
       itemBuilder: (ctx, i) {
@@ -181,12 +183,11 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   }
 
   Widget _buildStatGrid(double w) {
-    final theme = Theme.of(context);
     final stats = [
-      _StatData(LucideIcons.clipboardList, 'Tugas Dibuat', '$_totalTugas', Theme.of(context).colorScheme.secondary),
-      _StatData(LucideIcons.bookOpen, 'Materi Dibuat', '$_totalMateri', theme.colorScheme.secondary),
-      _StatData(LucideIcons.award, 'Nilai Input', '$_totalNilai', theme.colorScheme.primary),
-      _StatData(LucideIcons.megaphone, 'Pengumuman', '$_totalPengumuman', theme.primaryColor),
+      _StatData(LucideIcons.clipboardList, 'Tugas Dibuat', '$_totalTugas', [const Color(0xFF6366F1), const Color(0xFF4F46E5)]),
+      _StatData(LucideIcons.bookOpen, 'Materi Dibuat', '$_totalMateri', [const Color(0xFFF59E0B), const Color(0xFFD97706)]),
+      _StatData(LucideIcons.award, 'Nilai Input', '$_totalNilai', [const Color(0xFF10B981), const Color(0xFF059669)]),
+      _StatData(LucideIcons.megaphone, 'Pengumuman', '$_totalPengumuman', [const Color(0xFFEC4899), const Color(0xFFBE185D)]),
     ];
 
     final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
@@ -203,7 +204,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       itemCount: stats.length,
       itemBuilder: (_, i) {
         final s = stats[i];
-        return StatCard(icon: s.icon, label: s.label, value: s.value, color: s.color)
+        return CosmicStatCard(icon: s.icon, label: s.label, value: s.value, gradient: s.gradient)
             .animate(delay: (300 + i * 100).ms)
             .fadeIn(duration: 400.ms)
             .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut, duration: 800.ms)
@@ -332,6 +333,7 @@ class _GuruClassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final color = Color(int.parse(kelas['warna_card'] ?? '4282032886'));
     
     String initials = "??";
@@ -371,11 +373,22 @@ class _GuruClassCard extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(10),
+                      color: color.withAlpha(isDark ? 35 : 20),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: color.withAlpha(isDark ? 80 : 50),
+                        width: 1.0,
+                      ),
                     ),
                     child: Center(
-                      child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+                      child: Text(
+                        initials,
+                        style: GoogleFonts.poppins(
+                          color: color,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -386,18 +399,14 @@ class _GuruClassCard extends StatelessWidget {
                       children: [
                         Text(
                           '${kelas['kode_kelas'] ?? ''}',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color),
-                        ),
-                        Text(
-                          kelas['nama_kelas'] ?? '-',
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, height: 1.2),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w800, color: color),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa Terdaftar',
-                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(160)),
+                          kelas['nama_kelas'] ?? '-',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w900, fontSize: 14, height: 1.2),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -413,23 +422,47 @@ class _GuruClassCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildMiniIcon(LucideIcons.clipboardList),
-                const SizedBox(width: 12),
-                _buildMiniIcon(LucideIcons.bookOpen),
-                const SizedBox(width: 12),
-                _buildMiniIcon(LucideIcons.award),
+                Icon(LucideIcons.users, size: 14, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                const SizedBox(width: 6),
+                Text(
+                  '${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa',
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  ),
+                ),
                 const Spacer(),
-                Icon(LucideIcons.settings, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
+                PremiumElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => GuruTeamDetailLayout(
+                          userData: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.userData,
+                          token: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.token,
+                          teamData: kelas,
+                        ),
+                      ),
+                    );
+                  },
+                  color: color,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  radius: 8,
+                  child: Text(
+                    'Kelola',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildMiniIcon(IconData icon) {
-    return Icon(icon, size: 14, color: const Color(0xFF757575));
   }
 }
 
@@ -438,7 +471,7 @@ class _GuruClassCard extends StatelessWidget {
 class _StatData {
   final IconData icon;
   final String label, value;
-  final Color color;
-  const _StatData(this.icon, this.label, this.value, this.color);
+  final List<Color> gradient;
+  const _StatData(this.icon, this.label, this.value, this.gradient);
 }
 

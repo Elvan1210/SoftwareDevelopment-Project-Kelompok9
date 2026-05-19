@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../utils/date_utils.dart';
 
-// ─── Kategori config ──────────────────────────────────────────────────────────
 class _KategoriConfig {
   final String label;
   final IconData icon;
@@ -28,7 +27,6 @@ const _kategoriMap = {
   'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: AppTheme.purpleSecondary, colorEnd: AppTheme.purpleLight),
 };
 
-// Hanya gunakan field kategori eksplisit — tidak ada auto-detect dari judul
 _KategoriConfig _getKategori(String? kategoriField) {
   if (kategoriField != null && _kategoriMap.containsKey(kategoriField)) {
     return _kategoriMap[kategoriField]!;
@@ -122,126 +120,120 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return AppShell(child: _skeleton());
+      return _skeleton();
     }
 
-    return AppShell(
-      child: RefreshIndicator(
-        onRefresh: _fetchPengumuman,
-        color: AppTheme.amber,
-        child: LayoutBuilder(builder: (ctx, c) {
-          final w = c.maxWidth;
-          final padding = Breakpoints.screenPadding(w);
+    return RefreshIndicator(
+      onRefresh: _fetchPengumuman,
+      color: AppTheme.amber,
+      child: LayoutBuilder(builder: (ctx, c) {
+        final w = c.maxWidth;
+        final padding = Breakpoints.screenPadding(w);
 
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: padding.copyWith(bottom: 0),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Header ──
-                      _Header(
-                        isDark: isDark,
-                        count: _filtered.length,
-                        unread: _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length,
-                        showRead: _showRead,
-                        onToggleRead: () => setState(() => _showRead = !_showRead),
-                        onMarkAll: _markAllRead,
-                      ).animate().fadeIn(duration: 400.ms),
-                      const SizedBox(height: 16),
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: padding.copyWith(bottom: 0),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _Header(
+                      isDark: isDark,
+                      count: _filtered.length,
+                      unread: _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length,
+                      showRead: _showRead,
+                      onToggleRead: () => setState(() => _showRead = !_showRead),
+                      onMarkAll: _markAllRead,
+                    ).animate().fadeIn(duration: 400.ms),
+                    const SizedBox(height: 18),
 
-                      // ── Search Bar ──
-                      _SearchBar(
-                        isDark: isDark,
-                        onChanged: (v) => setState(() => _search = v),
-                      ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.05),
-                      const SizedBox(height: 12),
+                    _SearchBar(
+                      isDark: isDark,
+                      onChanged: (v) => setState(() => _search = v),
+                    ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.05),
+                    const SizedBox(height: 14),
 
-                      // ── Category chips ──
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: SizedBox(
-                          height: 46,
-                          child: ListView(
-                            clipBehavior: Clip.none,
-                            scrollDirection: Axis.horizontal,
-                            children: _kategoriMap.keys.map((k) {
-                              final cfg = _kategoriMap[k]!;
-                              final selected = _selectedKategori == k;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: GestureDetector(
-                                  onTap: () => setState(() => _selectedKategori = k),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      gradient: selected ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
-                                      color: selected ? null : (isDark ? AppTheme.darkCard : Colors.white),
-                                      borderRadius: BorderRadius.circular(100),
-                                      border: Border.all(color: selected ? Colors.transparent : cfg.color.withAlpha(isDark ? 80 : 60)),
-                                      boxShadow: selected
-                                          ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
-                                          : [],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
-                                        const SizedBox(width: 6),
-                                        Text(cfg.label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700,
-                                            color: selected ? Colors.white : cfg.color)),
-                                      ],
-                                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: SizedBox(
+                        height: 46,
+                        child: ListView(
+                          clipBehavior: Clip.none,
+                          scrollDirection: Axis.horizontal,
+                          children: _kategoriMap.keys.map((k) {
+                            final cfg = _kategoriMap[k]!;
+                            final selected = _selectedKategori == k;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () => setState(() => _selectedKategori = k),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: selected ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
+                                    color: selected ? null : (isDark ? const Color(0xFF1E2538) : Colors.white),
+                                    borderRadius: BorderRadius.circular(100),
+                                    border: Border.all(color: selected ? Colors.transparent : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)), width: 1.2),
+                                    boxShadow: selected
+                                        ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
+                                        : [],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
+                                      const SizedBox(width: 6),
+                                      Text(cfg.label, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800,
+                                          color: selected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
+                                    ],
                                   ),
                                 ),
-                              );
-                            }).toList(),
-                          ),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      ).animate().fadeIn(delay: 150.ms),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                      ),
+                    ).animate().fadeIn(delay: 150.ms),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
+            ),
 
-              // ── List ──
-              _filtered.isEmpty
-                  ? SliverFillRemaining(
-                      child: EmptyState(
-                        icon: LucideIcons.megaphone,
-                        message: _search.isEmpty ? 'Belum ada pengumuman' : 'Tidak ditemukan',
-                        subtitle: _search.isEmpty ? 'Nantikan pengumuman dari sekolah' : 'Coba kata kunci lain',
-                        color: AppTheme.amber,
-                      ),
-                    )
-                  : SliverPadding(
-                      padding: padding.copyWith(top: 0),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) {
-                            final p = _filtered[i];
-                            final isRead = _readIds.contains(p['id']?.toString());
-                            return _PengumumanDetailCard(
-                              pengumuman: p,
-                              isDark: isDark,
-                              index: i,
-                              isRead: isRead,
-                              onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
-                            );
-                          },
-                          childCount: _filtered.length,
-                        ),
+            _filtered.isEmpty
+                ? SliverFillRemaining(
+                    child: EmptyState(
+                      icon: LucideIcons.megaphone,
+                      message: _search.isEmpty ? 'Belum ada pengumuman' : 'Tidak ditemukan',
+                      subtitle: _search.isEmpty ? 'Nantikan pengumuman dari sekolah' : 'Coba kata kunci lain',
+                      color: AppTheme.amber,
+                    ),
+                  )
+                : SliverPadding(
+                    padding: padding.copyWith(top: 0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) {
+                          final p = _filtered[i];
+                          final isRead = _readIds.contains(p['id']?.toString());
+                          return _PengumumanDetailCard(
+                            pengumuman: p,
+                            isDark: isDark,
+                            index: i,
+                            isRead: isRead,
+                            onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
+                          );
+                        },
+                        childCount: _filtered.length,
                       ),
                     ),
-            ],
-          );
-        }),
-      ),
+                  ),
+          ],
+        );
+      }),
     );
   }
 
@@ -257,7 +249,6 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   }
 }
 
-// ─── Header ──────────────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
   final bool isDark;
   final int count;
@@ -284,7 +275,7 @@ class _Header extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [BoxShadow(color: AppTheme.amber.withAlpha(100), blurRadius: 16, offset: const Offset(0, 6))],
               ),
-              child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 22),
+              child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -292,24 +283,25 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Pengumuman Sekolah',
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900,
                           letterSpacing: -0.5, color: isDark ? Colors.white : AppTheme.textLight)),
+                  const SizedBox(height: 2),
                   Text(unread > 0 ? '$unread belum dibaca' : 'Semua sudah dibaca',
-                      style: GoogleFonts.poppins(fontSize: 12,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w700,
                           color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                 ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         Row(
           children: [
             if (unread > 0)
               GestureDetector(
                 onTap: onMarkAll,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
                     color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
                     borderRadius: BorderRadius.circular(100),
@@ -317,9 +309,9 @@ class _Header extends StatelessWidget {
                   ),
                   child: Row(children: [
                     const Icon(LucideIcons.checkCheck, size: 12, color: AppTheme.emerald),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 6),
                     Text('Tandai Semua Dibaca',
-                        style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
+                        style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.emerald)),
                   ]),
                 ),
               ),
@@ -327,7 +319,7 @@ class _Header extends StatelessWidget {
             GestureDetector(
               onTap: onToggleRead,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
                   color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
                   borderRadius: BorderRadius.circular(100),
@@ -335,9 +327,9 @@ class _Header extends StatelessWidget {
                 ),
                 child: Row(children: [
                   Icon(showRead ? LucideIcons.eyeOff : LucideIcons.eye, size: 12, color: AppTheme.indigoPrimary),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 6),
                   Text(showRead ? 'Sembunyikan Dibaca' : 'Tampilkan Semua',
-                      style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.indigoPrimary)),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.indigoPrimary)),
                 ]),
               ),
             ),
@@ -348,7 +340,6 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ─── Search Bar ───────────────────────────────────────────────────────────────
 class _SearchBar extends StatelessWidget {
   final bool isDark;
   final ValueChanged<String> onChanged;
@@ -356,24 +347,27 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      padding: EdgeInsets.zero,
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+      ),
       child: TextField(
         onChanged: onChanged,
-        style: GoogleFonts.poppins(fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
+        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w700),
         decoration: InputDecoration(
           hintText: 'Cari pengumuman...',
-          hintStyle: GoogleFonts.poppins(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w700),
+          prefixIcon: Icon(LucideIcons.search, size: 16, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
   }
 }
 
-// ─── Pengumuman Detail Card ───────────────────────────────────────────────────
 class _PengumumanDetailCard extends StatelessWidget {
   final dynamic pengumuman;
   final bool isDark;
@@ -398,139 +392,144 @@ class _PengumumanDetailCard extends StatelessWidget {
     final author = pengumuman['author']?.toString();
     final cfg = _getKategori(pengumuman['kategori']?.toString());
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: cfg.color.withAlpha(isDark ? 55 : 35)),
-        boxShadow: [
-          BoxShadow(color: cfg.color.withAlpha(isDark ? 30 : 12), blurRadius: 18, offset: const Offset(0, 6)),
-          BoxShadow(color: Colors.black.withAlpha(isDark ? 60 : 8), blurRadius: 14, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Top band ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                cfg.color.withAlpha(isDark ? 45 : 28),
-                cfg.colorEnd.withAlpha(isDark ? 20 : 10),
-              ]),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
-              border: Border(bottom: BorderSide(color: cfg.color.withAlpha(isDark ? 40 : 25))),
-            ),
-            child: Row(
-              children: [
-                // Icon box bold
-                Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [cfg.color, cfg.colorEnd], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(11),
-                    boxShadow: [BoxShadow(color: cfg.color.withAlpha(100), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                  child: Icon(cfg.icon, color: Colors.white, size: 16),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: cfg.color.withAlpha(isDark ? 40 : 22),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(cfg.label.toUpperCase(),
-                            style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: cfg.color, letterSpacing: 0.8)),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(pengumuman['judul'] ?? '-',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 15,
-                              letterSpacing: -0.3, color: isDark ? Colors.white : AppTheme.textLight),
-                          maxLines: 2, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-                if (tanggal.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: cfg.color.withAlpha(isDark ? 35 : 20),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(tanggal, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: cfg.color)),
-                  ),
-                ],
-              ],
-            ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+            width: 1.2,
           ),
-
-          // ── Body ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(pengumuman['isi'] ?? '-',
-                    style: GoogleFonts.poppins(fontSize: 13, height: 1.7,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                const SizedBox(height: 14),
-                Divider(height: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-                const SizedBox(height: 12),
-                Row(
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [
+                    cfg.color.withAlpha(20),
+                    cfg.colorEnd.withAlpha(10),
+                  ]),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2)),
+                ),
+                child: Row(
                   children: [
-                    if (author != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(LucideIcons.user, size: 12, color: AppTheme.indigoPrimary),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [cfg.color, cfg.colorEnd], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(width: 8),
-                      Text('Oleh: $author',
-                          style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.indigoPrimary)),
-                    ],
-                    const Spacer(),
-                    if (!isRead)
-                      GestureDetector(
-                        onTap: onMarkRead,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
+                      child: Icon(cfg.icon, color: Colors.white, size: 14),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: cfg.color.withAlpha(30),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(cfg.label.toUpperCase(),
+                                style: GoogleFonts.plusJakartaSans(fontSize: 8.5, fontWeight: FontWeight.w900, color: cfg.color, letterSpacing: 0.8)),
                           ),
-                          child: Row(children: [
-                            const Icon(LucideIcons.check, size: 11, color: AppTheme.emerald),
-                            const SizedBox(width: 4),
-                            Text('Tandai Dibaca',
-                                style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.emerald)),
-                          ]),
+                          const SizedBox(height: 4),
+                          Text(pengumuman['judul'] ?? '-',
+                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14,
+                                  color: isDark ? Colors.white : AppTheme.textLight),
+                              maxLines: 2, overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                    ),
+                    if (tanggal.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: cfg.color.withAlpha(20),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: cfg.color.withAlpha(30)),
                         ),
-                      )
-                    else
-                      Row(children: [
-                        Icon(LucideIcons.checkCheck, size: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                        const SizedBox(width: 4),
-                        Text('Dibaca', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600,
-                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                      ]),
+                        child: Text(tanggal, style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: cfg.color)),
+                      ),
+                    ],
                   ],
                 ),
-              ],
-            ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(pengumuman['isi'] ?? '-',
+                        style: GoogleFonts.plusJakartaSans(fontSize: 12.5, height: 1.6,
+                            fontWeight: FontWeight.w600, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                    const SizedBox(height: 14),
+                    Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (author != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: AppTheme.indigoPrimary.withAlpha(20),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(LucideIcons.user, size: 10, color: AppTheme.indigoPrimary),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('Oleh: $author',
+                              style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppTheme.indigoPrimary)),
+                        ],
+                        const Spacer(),
+                        if (!isRead)
+                          GestureDetector(
+                            onTap: onMarkRead,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppTheme.emerald.withAlpha(20),
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(color: AppTheme.emerald.withAlpha(40)),
+                              ),
+                              child: Row(children: [
+                                const Icon(LucideIcons.check, size: 10, color: AppTheme.emerald),
+                                const SizedBox(width: 4),
+                                Text('Tandai Dibaca',
+                                    style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.emerald)),
+                              ]),
+                            ),
+                          )
+                        else
+                          Row(children: [
+                            Icon(LucideIcons.checkCheck, size: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                            const SizedBox(width: 4),
+                            Text('Dibaca', style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.bold,
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                          ]),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     )
         .animate(delay: (index * 60).ms)

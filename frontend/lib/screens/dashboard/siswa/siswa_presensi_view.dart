@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../../../config/theme.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SiswaPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -95,7 +98,6 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -105,29 +107,34 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
                   children: [
                     Text(
                       'Riwayat Kehadiran',
-                      style: theme.textTheme.headlineMedium?.copyWith(
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 22,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
+                        color: isDark ? Colors.white : AppTheme.textLight,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${widget.teamData['nama_kelas'] ?? 'Kelas'} · ${_riwayat.length} catatan',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface.withAlpha(160),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                       ),
                     ),
                   ],
                 ),
               ),
-              GlassCard(
-                radius: 14,
-                padding: const EdgeInsets.all(12),
-                child: InkWell(
-                  onTap: _fetchRiwayat,
-                  child: Icon(Icons.refresh_rounded, color: theme.primaryColor, size: 24),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                ),
+                child: IconButton(
+                  onPressed: _fetchRiwayat,
+                  icon: const Icon(LucideIcons.refreshCw, color: AppTheme.tealDeep, size: 18),
                 ),
               ),
             ],
@@ -136,23 +143,25 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
           const SizedBox(height: 24),
 
           if (_isLoading)
-            const Center(child: CircularProgressIndicator())
+            const Expanded(child: Center(child: CircularProgressIndicator()))
           else ...[
-            // ── Visual Progress & Stats Dashboard ──
             _buildVisualDashboard(theme, isDark).animate().fadeIn(delay: 100.ms).scale(),
 
             const SizedBox(height: 28),
             Text(
               'Detail Riwayat',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: theme.colorScheme.onSurface),
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800, 
+                fontSize: 16, 
+                color: isDark ? Colors.white : AppTheme.textLight,
+              ),
             ).animate().fadeIn(delay: 200.ms),
             const SizedBox(height: 12),
 
-            // ── Riwayat List ──
             Expanded(
               child: _riwayat.isEmpty
                   ? const EmptyState(
-                      icon: Icons.event_available_outlined,
+                      icon: LucideIcons.calendarCheck,
                       message: 'Belum ada catatan presensi.',
                     )
                   : ListView.builder(
@@ -177,73 +186,86 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
     final total = _riwayat.length;
     final pct = total > 0 ? (_hadir / total) : 0.0;
     
-    // Gradasi progres bar berdasarkan persentase
-    Color pctColor = const Color(0xFF22C55E); // Hijau
-    if (pct < 0.75) pctColor = const Color(0xFFF59E0B); // Kuning/Orange
-    if (pct < 0.50) pctColor = const Color(0xFFEF4444); // Merah
+    Color pctColor = const Color(0xFF22C55E);
+    if (pct < 0.75) pctColor = const Color(0xFFF59E0B);
+    if (pct < 0.50) pctColor = const Color(0xFFEF4444);
 
-    return GlassCard(
-      radius: 20,
-      padding: const EdgeInsets.all(24),
-      overrideColor: theme.primaryColor.withAlpha(isDark ? 30 : 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Persentase Kehadiran',
-                style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w800, fontSize: 16),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: pctColor.withAlpha(30),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  '${(pct * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(color: pctColor, fontWeight: FontWeight.w900, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Progress Bar
-          Container(
-            height: 12,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(isDark ? 20 : 60),
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: Stack(
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: pctColor.withAlpha(isDark ? 55 : 30),
+          width: 1.2,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: pctColor.withAlpha(15)),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 1000),
-                  curve: Curves.easeOutQuart,
-                  width: MediaQuery.of(context).size.width * pct,
+                Text(
+                  'Persentase Kehadiran',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: isDark ? Colors.white : AppTheme.textLight, 
+                    fontWeight: FontWeight.w900, 
+                    fontSize: 14.5,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: pctColor,
-                    borderRadius: BorderRadius.circular(100),
-                    boxShadow: [BoxShadow(color: pctColor.withAlpha(100), blurRadius: 10)],
+                    color: pctColor.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${(pct * 100).toStringAsFixed(0)}%',
+                    style: GoogleFonts.plusJakartaSans(color: pctColor, fontWeight: FontWeight.w900, fontSize: 13),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-          // Stats Row
-          Row(
-            children: [
-              _buildStatDetail('Hadir', _hadir, const Color(0xFF22C55E)),
-              _buildStatDetail('Izin', _izin, const Color(0xFF76AFB8)),
-              _buildStatDetail('Sakit', _sakit, const Color(0xFFF59E0B)),
-              _buildStatDetail('Alpa', _alpha, const Color(0xFFEF4444)),
-            ],
-          ),
-        ],
+            const SizedBox(height: 14),
+            Container(
+              height: 8,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: pct.clamp(0.0, 1.0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutQuart,
+                  decoration: BoxDecoration(
+                    color: pctColor,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                _buildStatDetail('Hadir', _hadir, const Color(0xFF22C55E)),
+                _buildStatDetail('Izin', _izin, const Color(0xFF76AFB8)),
+                _buildStatDetail('Sakit', _sakit, const Color(0xFFF59E0B)),
+                _buildStatDetail('Alpa', _alpha, const Color(0xFFEF4444)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -252,9 +274,15 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
     return Expanded(
       child: Column(
         children: [
-          Text(count.toString(), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: color)),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color.withAlpha(200))),
+          Text(
+            count.toString(), 
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 20, color: color),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label, 
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: color.withAlpha(200)),
+          ),
         ],
       ),
     );
@@ -272,60 +300,83 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: GlassCard(
-        radius: 16,
-        padding: const EdgeInsets.all(16),
-        overrideColor: statusConfig.color.withAlpha(isDark ? 15 : 10),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: statusConfig.color.withAlpha(30),
-                borderRadius: BorderRadius.circular(14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: statusConfig.color.withAlpha(isDark ? 55 : 30),
+            width: 1.2,
+          ),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: statusConfig.color.withAlpha(15)),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: statusConfig.color.withAlpha(20),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: statusConfig.color.withAlpha(40)),
+                ),
+                child: Icon(statusConfig.icon, color: statusConfig.color, size: 20),
               ),
-              child: Icon(statusConfig.icon, color: statusConfig.color, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tanggalStr,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time_rounded, size: 14, color: theme.colorScheme.onSurface.withAlpha(160)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Pukul $waktu',
-                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w600),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tanggalStr,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w800, 
+                        fontSize: 13,
+                        color: isDark ? Colors.white : AppTheme.textLight,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: statusConfig.color.withAlpha(isDark ? 30 : 20),
-                borderRadius: BorderRadius.circular(100),
-                border: Border.all(color: statusConfig.color.withAlpha(60)),
-              ),
-              child: Text(
-                status,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  color: statusConfig.color,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(LucideIcons.clock, size: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Pukul $waktu',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11.5, 
+                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, 
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusConfig.color.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: statusConfig.color.withAlpha(40)),
+                ),
+                child: Text(
+                  status.toUpperCase(),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: statusConfig.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -333,10 +384,10 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
 
   _StatusConfig _getStatusConfig(String status) {
     switch (status.toLowerCase()) {
-      case 'hadir': return const _StatusConfig(Color(0xFF22C55E), Icons.check_circle_rounded);
-      case 'izin': return const _StatusConfig(Color(0xFF76AFB8), Icons.insert_drive_file_rounded);
-      case 'sakit': return const _StatusConfig(Color(0xFFF59E0B), Icons.medical_services_rounded);
-      default: return const _StatusConfig(Color(0xFFEF4444), Icons.cancel_rounded);
+      case 'hadir': return const _StatusConfig(Color(0xFF22C55E), LucideIcons.checkSquare);
+      case 'izin': return const _StatusConfig(Color(0xFF76AFB8), LucideIcons.fileText);
+      case 'sakit': return const _StatusConfig(Color(0xFFF59E0B), LucideIcons.activity);
+      default: return const _StatusConfig(Color(0xFFEF4444), LucideIcons.xSquare);
     }
   }
 }
