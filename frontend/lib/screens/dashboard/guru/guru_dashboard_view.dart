@@ -167,16 +167,16 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     children: [
       Text(
         '$_greeting,',
-        style: GoogleFonts.notoSerif(
-          fontSize: 28, fontWeight: FontWeight.w900,
+        style: GoogleFonts.poppins(
+          fontSize: 28, fontWeight: FontWeight.w700,
           color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
           letterSpacing: -0.5, height: 1.1,
         ),
       ),
       Text(
         'Bpk/Ibu. $nama',
-        style: GoogleFonts.notoSerif(
-          fontSize: 28, fontWeight: FontWeight.w900,
+        style: GoogleFonts.poppins(
+          fontSize: 28, fontWeight: FontWeight.w700,
           color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
           letterSpacing: -0.5, height: 1.1,
         ),
@@ -184,7 +184,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       const SizedBox(height: 6),
       Text(
         _subtitle,
-        style: GoogleFonts.notoSerif(
+        style: GoogleFonts.poppins(
           fontSize: 13, fontWeight: FontWeight.w400,
           color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
           height: 1.4,
