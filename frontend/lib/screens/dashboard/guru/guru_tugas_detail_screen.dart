@@ -8,6 +8,7 @@ import '../../../services/notifikasi_service.dart';
 import '../../../config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../widgets/premium_ui.dart';
 
 class GuruTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -166,7 +167,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               ),
             ),
           ),
-          ElevatedButton(
+          PremiumElevatedButton(
             onPressed: () async {
               if (ctrl.text.isEmpty) return;
               final nilaiVal = int.tryParse(ctrl.text) ?? 0;
@@ -213,13 +214,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 debugPrint('Error saving nilai: $e');
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.secondary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
+            color: theme.colorScheme.secondary,
+            textColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            radius: 10,
             child: Text('Simpan', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],

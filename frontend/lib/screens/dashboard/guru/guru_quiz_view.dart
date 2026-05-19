@@ -80,14 +80,11 @@ class _GuruQuizViewState extends State<GuruQuizView> {
               style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
             ),
           ),
-          ElevatedButton(
+          PremiumElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
+            color: Colors.red,
+            textColor: Colors.white,
+            radius: 10,
             child: Text('Hapus', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],
@@ -219,19 +216,16 @@ class _GuruQuizViewState extends State<GuruQuizView> {
               style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
             ),
           ),
-          ElevatedButton(
+          PremiumElevatedButton(
             onPressed: () async {
               final code = ctrl.text.trim().toUpperCase();
               if (code.isEmpty) return;
               Navigator.pop(ctx);
               _importQuiz(code);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.indigoPrimary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
+            color: AppTheme.indigoPrimary,
+            textColor: Colors.white,
+            radius: 10,
             child: Text('Import', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],

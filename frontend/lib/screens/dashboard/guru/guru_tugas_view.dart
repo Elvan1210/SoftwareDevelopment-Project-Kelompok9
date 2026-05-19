@@ -292,25 +292,23 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     Row(
                       children: [
                         Expanded(
-                          child: ElevatedButton.icon(
+                          child: PremiumElevatedButton(
                             onPressed: isUploading ? null : handleUploadFile,
-                            icon: isUploading
+                            icon: isUploading ? null : LucideIcons.uploadCloud,
+                            iconSize: 14,
+                            color: Theme.of(context).primaryColor,
+                            textColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            radius: 10,
+                            child: isUploading
                                 ? const SizedBox(
                                     width: 14,
                                     height: 14,
                                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                : const Icon(LucideIcons.uploadCloud, size: 14),
-                            label: Text(
-                              isUploading ? 'Mengunggah...' : 'Upload Lampiran Soal',
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              elevation: 0,
-                            ),
+                                : const Text(
+                                    'Upload Lampiran Soal',
+                                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                                  ),
                           ),
                         ),
                       ],
@@ -328,7 +326,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
               TextButton(
                   onPressed: () => Navigator.pop(ctx),
                   child: Text('Batal', style: TextStyle(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600))),
-              ElevatedButton(
+              PremiumElevatedButton(
                 onPressed: () async {
                   final body = {
                     'judul': judulCtrl.text,
@@ -367,13 +365,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     _fetchTugas();
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 0,
-                ),
+                color: Theme.of(context).colorScheme.secondary,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                radius: 10,
                 child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],

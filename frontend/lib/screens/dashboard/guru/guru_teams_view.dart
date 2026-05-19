@@ -72,12 +72,10 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
             ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF27F33),
-                  foregroundColor: const Color(0xFF121212),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
+              PremiumElevatedButton(
+                color: const Color(0xFFF27F33),
+                textColor: const Color(0xFF121212),
+                radius: 12,
                 onPressed: isSubmitting ? null : () async {
                   if (codeCtrl.text.trim().isEmpty) return;
                   setDialogState(() => isSubmitting = true);
@@ -115,8 +113,8 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Terjadi kesalahan jaringan'), backgroundColor: Color(0xFFF27F33)),
                         );
-                     }
-                     setDialogState(() => isSubmitting = false);
+                      }
+                      setDialogState(() => isSubmitting = false);
                   }
                 },
                 child: isSubmitting 

@@ -321,26 +321,24 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-              child: ElevatedButton.icon(
+              child: PremiumElevatedButton(
                 onPressed: _isSaving ? null : _save,
-                icon: _isSaving
+                icon: _isSaving ? null : LucideIcons.save,
+                iconSize: 14,
+                color: AppTheme.indigoPrimary,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                radius: 12,
+                child: _isSaving
                     ? const SizedBox(
                         width: 14,
                         height: 14,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Icon(LucideIcons.save, size: 14),
-                label: Text(
-                  _isSaving ? 'Menyimpan' : 'Simpan',
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.indigoPrimary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
+                    : Text(
+                        'Simpan',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
               ),
             ),
           ],

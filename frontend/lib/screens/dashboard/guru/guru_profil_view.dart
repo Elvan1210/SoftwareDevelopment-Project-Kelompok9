@@ -371,7 +371,7 @@ class _LogoutSection extends StatelessWidget {
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
+            child: PremiumElevatedButton(
               onPressed: () async {
                 final ok = await showDialog<bool>(
                   context: context,
@@ -401,14 +401,12 @@ class _LogoutSection extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ElevatedButton(
+                      PremiumElevatedButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade400,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
+                        color: Colors.red.shade400,
+                        textColor: Colors.white,
+                        radius: 10,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
                           'Keluar',
                           style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
@@ -422,18 +420,13 @@ class _LogoutSection extends StatelessWidget {
                   if (context.mounted) Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade400.withAlpha(20),
-                foregroundColor: Colors.red.shade400,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(color: Colors.red.shade400.withAlpha(40), width: 1.2),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              icon: const Icon(LucideIcons.logOut, size: 16),
-              label: Text(
+              color: Colors.red.shade400.withAlpha(20),
+              textColor: Colors.red.shade400,
+              radius: 14,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              icon: LucideIcons.logOut,
+              iconSize: 16,
+              child: Text(
                 'Keluar dari Akun',
                 style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13.5),
               ),

@@ -83,7 +83,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 padding: padding,
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    _buildQuickActions(theme, isDark),
+                    _buildQuickActions(theme, isDark, w),
                     const SizedBox(height: 24),
 
                     _buildStatGrid(w, isDark),
@@ -136,7 +136,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     );
   }
 
-  Widget _buildQuickActions(ThemeData theme, bool isDark) {
+  Widget _buildQuickActions(ThemeData theme, bool isDark, double w) {
+    final columns = w < 600 ? 2 : 4;
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E2538) : Colors.white,
@@ -165,24 +166,26 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
               ],
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: columns,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: w < 600 ? 1.4 : 1.1,
               children: [
-                Expanded(child: _actionBtn(LucideIcons.userPlus, 'Tambah User', AppTheme.indigoPrimary, () {
+                _actionBtn(LucideIcons.userPlus, 'Tambah User', AppTheme.indigoPrimary, () {
                   if (widget.onNavigate != null) widget.onNavigate!(1);
-                }, isDark)),
-                const SizedBox(width: 12),
-                Expanded(child: _actionBtn(LucideIcons.building2, 'Buka Kelas', AppTheme.tealDeep, () {
+                }, isDark),
+                _actionBtn(LucideIcons.building2, 'Buka Kelas', AppTheme.tealDeep, () {
                   if (widget.onNavigate != null) widget.onNavigate!(2);
-                }, isDark)),
-                const SizedBox(width: 12),
-                Expanded(child: _actionBtn(LucideIcons.megaphone, 'Broadcast', AppTheme.amber, () {
+                }, isDark),
+                _actionBtn(LucideIcons.megaphone, 'Broadcast', AppTheme.amber, () {
                   if (widget.onNavigate != null) widget.onNavigate!(7);
-                }, isDark)),
-                const SizedBox(width: 12),
-                Expanded(child: _actionBtn(LucideIcons.settings, 'Preferensi', AppTheme.rose, () {
+                }, isDark),
+                _actionBtn(LucideIcons.settings, 'Preferensi', AppTheme.rose, () {
                   if (widget.onNavigate != null) widget.onNavigate!(8);
-                }, isDark)),
+                }, isDark),
               ],
             ),
           ],
@@ -192,33 +195,35 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   }
 
   Widget _actionBtn(IconData icon, String label, Color color, VoidCallback onTap, bool isDark) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
-          decoration: BoxDecoration(
-            color: color.withAlpha(20),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withAlpha(40), width: 1.2),
+    return PremiumCard(
+      onTap: onTap,
+      accentColor: color,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      radius: 16,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withAlpha(20),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 22),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: isDark ? Colors.white.withAlpha(220) : AppTheme.textLight),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : AppTheme.textLight,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
+        ],
       ),
     );
   }

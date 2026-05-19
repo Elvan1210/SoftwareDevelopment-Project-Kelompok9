@@ -7,6 +7,7 @@ import '../../../models/quiz_model.dart';
 import '../../../config/theme.dart';
 import '../../../config/api_config.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../widgets/premium_ui.dart';
 
 class GuruSubmissionDetail extends StatefulWidget {
   final QuizSubmission submission;
@@ -112,38 +113,34 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
           if (_aiScores != null)
             Padding(
               padding: const EdgeInsets.only(right: 8.0, top: 8, bottom: 8),
-              child: OutlinedButton.icon(
+              child: PremiumElevatedButton(
                 onPressed: _acceptAIScores,
-                icon: const Icon(LucideIcons.check, size: 14),
-                label: const Text('Terima & Simpan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
-                  foregroundColor: Colors.green,
-                  side: BorderSide(color: isDark ? const Color(0xFF2E5C3E) : const Color(0xFF82C793), width: 1.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                icon: LucideIcons.check,
+                iconSize: 14,
+                color: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
+                textColor: Colors.green,
+                radius: 10,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: const Text('Terima & Simpan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
               ),
             ),
           if (widget.quiz.questions.any((q) => q.questionType == 'essay'))
             Padding(
               padding: const EdgeInsets.only(right: 16.0, top: 8, bottom: 8),
-              child: OutlinedButton.icon(
+              child: PremiumElevatedButton(
                 onPressed: _isGradingAI ? null : _gradeWithAI,
-                icon: _isGradingAI
+                icon: _isGradingAI ? null : LucideIcons.sparkles,
+                iconSize: 14,
+                color: isDark ? const Color(0xFF2E243F) : const Color(0xFFF3E8FF),
+                textColor: Colors.purple,
+                radius: 10,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: _isGradingAI
                     ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.purple))
-                    : const Icon(LucideIcons.sparkles, size: 14),
-                label: Text(
-                  _isGradingAI ? 'Menilai...' : 'Nilai Pakai AI',
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-                ),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF2E243F) : const Color(0xFFF3E8FF),
-                  foregroundColor: Colors.purple,
-                  side: BorderSide(color: isDark ? const Color(0xFF4C3A66) : const Color(0xFFC084FC), width: 1.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                    : const Text(
+                        'Nilai Pakai AI',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                      ),
               ),
             ),
         ],
