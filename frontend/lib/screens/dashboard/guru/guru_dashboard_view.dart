@@ -13,8 +13,8 @@ import '../../../config/theme.dart';
 class GuruDashboardView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const GuruDashboardView(
-      {super.key, required this.userData, required this.token});
+  final Function(int)? onNavigate;
+  const GuruDashboardView({super.key, required this.userData, required this.token, this.onNavigate});
 
   @override
   State<GuruDashboardView> createState() => _GuruDashboardViewState();
@@ -25,6 +25,23 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   bool _isLoading = true;
   List<dynamic> _kelasList = [];
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour >= 5  && hour < 11) return 'Selamat pagi';
+    if (hour >= 11 && hour < 15) return 'Selamat siang';
+    if (hour >= 15 && hour < 18) return 'Selamat sore';
+    return 'Selamat malam';
+  }
+
+  String get _subtitle {
+    final hour = DateTime.now().hour;
+    if (hour >= 5  && hour < 11) return 'Semoga hari ini penuh inspirasi dalam mendidik.';
+    if (hour >= 11 && hour < 15) return 'Tetap semangat mengajar, Bpk/Ibu!';
+    if (hour >= 15 && hour < 18) return 'Semoga hari ini penuh inspirasi dalam mendidik.';
+    return 'Terima kasih atas dedikasi mengajar hari ini.';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -33,10 +50,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
 
   Future<void> _fetchInitialData() async {
     setState(() => _isLoading = true);
-    await Future.wait([
-      _fetchStats(),
-      _fetchKelasGuru(),
-    ]);
+    await Future.wait([_fetchStats(), _fetchKelasGuru()]);
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -49,9 +63,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         final dec = jsonDecode(resp.body);
         _kelasList = dec is List ? dec : [];
       }
-    } catch (e) {
-      debugPrint('Error fetch kelas: $e');
-    }
+    } catch (e) { debugPrint('Error fetch kelas: $e'); }
   }
 
   Future<void> _fetchStats() async {
@@ -63,415 +75,507 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/pengumuman'), headers: headers),
       ]);
+      final myId = widget.userData['id'].toString();
       if (results[0].statusCode == 200) {
-        final dec = jsonDecode(results[0].body);
-        List d = dec is List ? dec : [];
-        _totalTugas = d.where((t) => t['guru_id'].toString() == widget.userData['id'].toString()).length;
+        final d = jsonDecode(results[0].body) as List? ?? [];
+        _totalTugas = d.where((t) => t['guru_id'].toString() == myId).length;
       }
       if (results[1].statusCode == 200) {
-        final dec = jsonDecode(results[1].body);
-        List d = dec is List ? dec : [];
-        _totalMateri = d.where((m) => m['guru_id'].toString() == widget.userData['id'].toString()).length;
+        final d = jsonDecode(results[1].body) as List? ?? [];
+        _totalMateri = d.where((m) => m['guru_id'].toString() == myId).length;
       }
       if (results[2].statusCode == 200) {
-        final dec = jsonDecode(results[2].body);
-        List d = dec is List ? dec : [];
-        _totalNilai = d.where((n) => n['guru_id'].toString() == widget.userData['id'].toString()).length;
+        final d = jsonDecode(results[2].body) as List? ?? [];
+        _totalNilai = d.where((n) => n['guru_id'].toString() == myId).length;
       }
       if (results[3].statusCode == 200) {
-        final dec = jsonDecode(results[3].body);
-        List d = dec is List ? dec : [];
-        _totalPengumuman = d.where((p) => p['guru_id'].toString() == widget.userData['id'].toString()).length;
+        final d = jsonDecode(results[3].body) as List? ?? [];
+        _totalPengumuman = d.where((p) => p['guru_id'].toString() == myId).length;
       }
-    } catch (e) {
-      debugPrint('Error: $e');
-    }
+    } catch (e) { debugPrint('Error: $e'); }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    // Name and Role are now in Navbar
-
-    if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
-    }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_isLoading) return AppShell(child: _buildSkeleton());
 
     return AppShell(
       child: RefreshIndicator(
         onRefresh: _fetchInitialData,
-        child: LayoutBuilder(
-          builder: (ctx, constraints) {
-            final w = constraints.maxWidth;
-            final padding = Breakpoints.screenPadding(w);
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: padding,
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // ── Hero Greeting is now in Navbar ──
+        color: AppTheme.primary,
+        child: LayoutBuilder(builder: (ctx, constraints) {
+          final w = constraints.maxWidth;
+          final hPad = w >= Breakpoints.tablet ? 40.0 : 20.0;
 
-                      // ── Your Classes Grid ──────────────────────
-                      const SectionHeader(
-                        title: 'Kelas Ampuan',
-                        subtitle: 'Kelola materi, tugas, dan nilai siswa',
-                        action: null,
-                      ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
-                      _buildClassGrid(w, theme, isDark),
-                      const SizedBox(height: 32),
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(hPad, 20, hPad, 40),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
 
-                      // ── Stats Section ──────────────────────────
-                      const SectionHeader(
-                        title: 'Statistik Konten',
-                        subtitle: 'Ringkasan distribusi pembelajaran kamu',
-                      ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
-                      _buildStatGrid(w),
-                      const SizedBox(height: 32),
+                    // 1. Greeting
+                    _buildGreeting(isDark)
+                        .animate().fadeIn(duration: 350.ms).slideY(begin: -0.04),
+                    const SizedBox(height: 20),
 
-                      // Chart
-                      const SectionHeader(
-                        title: 'Grafik Aktivitas',
-                        subtitle: 'Visualisasi kontribusi mengajar',
-                      ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                      const SizedBox(height: 16),
-                      _buildChart(theme, isDark),
-                      const SizedBox(height: 24),
-                    ]),
-                  ),
+                    // 2. Stat chips
+                    _buildStatChips(isDark)
+                        .animate().fadeIn(delay: 80.ms),
+                    const SizedBox(height: 28),
+
+                    // 3. Aksi Cepat
+                    _buildSectionLabel('AKSI CEPAT', isDark)
+                        .animate().fadeIn(delay: 120.ms),
+                    const SizedBox(height: 12),
+                    _buildQuickActions(w, isDark)
+                        .animate().fadeIn(delay: 150.ms),
+                    const SizedBox(height: 28),
+
+                    // 4. Kelas Ampuan
+                    _buildRowHeader('KELAS AMPUAN', 'LIHAT SEMUA', isDark)
+                        .animate().fadeIn(delay: 200.ms),
+                    const SizedBox(height: 12),
+                    _buildClassGrid(w, isDark)
+                        .animate().fadeIn(delay: 230.ms),
+                    const SizedBox(height: 28),
+
+                    // 5. Grafik
+                    _buildSectionLabel('GRAFIK AKTIVITAS', isDark)
+                        .animate().fadeIn(delay: 280.ms),
+                    const SizedBox(height: 12),
+                    _buildChart(isDark)
+                        .animate().fadeIn(delay: 310.ms),
+
+                  ]),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildClassGrid(double w, ThemeData theme, bool isDark) {
-    if (_kelasList.isEmpty) {
-      return const EmptyState(
-        icon: LucideIcons.layoutGrid,
-        message: 'Kamu belum ditugaskan ke kelas manapun.',
-      );
-    }
+  // ── 1. Greeting ────────────────────────────────────────────────────────────
+  Widget _buildGreeting(bool isDark) {
+    final nama = widget.userData['nama']?.toString() ?? 'Guru';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$_greeting, Bpk/Ibu.',
+          style: GoogleFonts.notoSerif(
+            fontSize: 28, fontWeight: FontWeight.w900,
+            color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+            letterSpacing: -0.5, height:1.1,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          nama,
+          style: GoogleFonts.notoSerif(
+            fontSize: 28, fontWeight: FontWeight.w900,
+            color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+            letterSpacing: -0.5, height: 1.1,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _subtitle,
+          style: GoogleFonts.notoSerif(
+            fontSize: 13, fontWeight: FontWeight.w400,
+            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
 
-    final crossCount = w > 1200 ? 4 : (w > 800 ? 3 : (w > 500 ? 2 : 1));
-    
+  // ── 2. Stat chips ──────────────────────────────────────────────────────────
+  Widget _buildStatChips(bool isDark) {
+    final stats = [
+      ('TUGAS', '$_totalTugas'),
+      ('MATERI', '$_totalMateri'),
+      ('NILAI', '$_totalNilai'),
+      ('PENGUMUMAN', '$_totalPengumuman'),
+    ];
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: stats.map((s) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkCard : AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              s.$1,
+              style: GoogleFonts.inter(
+                fontSize: 11, fontWeight: FontWeight.w700,
+                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              s.$2.padLeft(2, '0'),
+              style: GoogleFonts.poppins(
+                fontSize: 15, fontWeight: FontWeight.w800,
+                color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ],
+        ),
+      )).toList(),
+    );
+  }
+
+  // ── 3. Quick Actions ───────────────────────────────────────────────────────
+  Widget _buildQuickActions(double w, bool isDark) {
+    final actions = [
+      _ActionData(LucideIcons.clipboardList, 'Buat Tugas'),
+      _ActionData(LucideIcons.bookOpen, 'Tambah Materi'),
+      _ActionData(LucideIcons.userCheck, 'Isi Presensi'),
+      _ActionData(LucideIcons.megaphone, 'Buat Pengumuman'),
+    ];
+
+    final crossCount = w >= Breakpoints.tablet ? 4 : 2;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossCount,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.38,
+        childAspectRatio: 1.1,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: actions.length,
+      itemBuilder: (_, i) {
+        final a = actions[i];
+        return _buildActionCard(a, isDark)
+            .animate(delay: (i * 50).ms)
+            .fadeIn(duration: 300.ms)
+            .scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack);
+      },
+    );
+  }
+
+  Widget _buildActionCard(_ActionData a, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        final navMap = {
+        'Buat Tugas': 1,        // → Teams/Kelas
+        'Tambah Materi': 1,     // → Teams/Kelas
+        'Isi Presensi': 1,      // → Teams/Kelas
+        'Buat Pengumuman': 3,   // → Pengumuman
+  };
+      widget.onNavigate?.call(navMap[a.label] ?? 0);
+  },
+       // navigate ke screen terkait
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkCard : AppTheme.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withAlpha(isDark ? 40 : 20),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(a.icon, color: AppTheme.primary, size: 22),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              a.label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12, fontWeight: FontWeight.w700,
+                color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Row / Section headers ──────────────────────────────────────────────────
+  Widget _buildSectionLabel(String label, bool isDark) {
+    return Text(
+      label,
+      style: GoogleFonts.notoSerif(
+        fontSize: 11, fontWeight: FontWeight.w700,
+        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+        letterSpacing: 0.8,
+      ),
+    );
+  }
+
+  Widget _buildRowHeader(String title, String? action, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: GoogleFonts.notoSerif(
+          fontSize: 11, fontWeight: FontWeight.w700,
+          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+          letterSpacing: 0.8,
+        )),
+        if (action != null)
+          Text(action, style: GoogleFonts.inter(
+            fontSize: 11, fontWeight: FontWeight.w700,
+            color: AppTheme.primary, letterSpacing: 0.5,
+          )),
+      ],
+    );
+  }
+
+  // ── 4. Class Grid ──────────────────────────────────────────────────────────
+  Widget _buildClassGrid(double w, bool isDark) {
+    if (_kelasList.isEmpty) {
+      return Container(
+        height: 100,
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkCard : AppTheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+        ),
+        child: Center(child: Text('Belum ada kelas ampuan',
+          style: GoogleFonts.inter(
+            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+          ),
+        )),
+      );
+    }
+
+    final crossCount = w >= Breakpoints.tablet ? 3 : 2;
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossCount,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: crossCount == 2 ? 0.9 : 1.1,
       ),
       itemCount: _kelasList.length,
       itemBuilder: (ctx, i) {
         final k = _kelasList[i];
-        return _GuruClassCard(kelas: k)
-            .animate(delay: (200 + i * 80).ms)
-            .fadeIn(duration: 400.ms)
-            .scale(begin: const Offset(0.9, 0.9), curve: Curves.elasticOut, duration: 800.ms);
+        return _GuruClassCard(kelas: k, isDark: isDark)
+            .animate(delay: (i * 60).ms)
+            .fadeIn(duration: 300.ms)
+            .slideY(begin: 0.06, curve: Curves.easeOutQuart);
       },
     );
   }
 
-  Widget _buildStatGrid(double w) {
-    final stats = [
-      _StatData(LucideIcons.clipboardList, 'Tugas Dibuat', '$_totalTugas', [const Color(0xFF6366F1), const Color(0xFF4F46E5)]),
-      _StatData(LucideIcons.bookOpen, 'Materi Dibuat', '$_totalMateri', [const Color(0xFFF59E0B), const Color(0xFFD97706)]),
-      _StatData(LucideIcons.award, 'Nilai Input', '$_totalNilai', [const Color(0xFF10B981), const Color(0xFF059669)]),
-      _StatData(LucideIcons.megaphone, 'Pengumuman', '$_totalPengumuman', [const Color(0xFFEC4899), const Color(0xFFBE185D)]),
-    ];
-
-    final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossCount,
-        childAspectRatio: w > 1100 ? 2.4 : (w > 600 ? 2.2 : 2.8),
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (_, i) {
-        final s = stats[i];
-        return CosmicStatCard(icon: s.icon, label: s.label, value: s.value, gradient: s.gradient)
-            .animate(delay: (300 + i * 100).ms)
-            .fadeIn(duration: 400.ms)
-            .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut, duration: 800.ms)
-            .slideY(begin: 0.2, curve: Curves.easeOutCubic);
-      },
-    );
-  }
-
-
-
-  Widget _buildChart(ThemeData theme, bool isDark) {
-    final vals = [
-      _totalTugas.toDouble(),
-      _totalMateri.toDouble(),
-      _totalNilai.toDouble(),
-      _totalPengumuman.toDouble(),
-    ];
+  // ── 5. Chart ───────────────────────────────────────────────────────────────
+  Widget _buildChart(bool isDark) {
+    final vals = [_totalTugas.toDouble(), _totalMateri.toDouble(), _totalNilai.toDouble(), _totalPengumuman.toDouble()];
     final maxVal = vals.reduce((a, b) => a > b ? a : b);
-    final maxY = (maxVal * 1.15).clamp(5.0, 1000.0);
-    final colors = [
-      Theme.of(context).colorScheme.secondary,
-      theme.colorScheme.secondary,
-      theme.colorScheme.primary,
-      theme.primaryColor,
-    ];
+    final maxY = (maxVal * 1.2).clamp(5.0, 1000.0);
     final labels = ['Tugas', 'Materi', 'Nilai', 'Pengumuman'];
 
-    return PremiumCard(
-      padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 18, 16, 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+      ),
       child: SizedBox(
-        height: 200,
-        child: RepaintBoundary(
-          child: BarChart(
-            BarChartData(
-              maxY: maxY,
-              barTouchData: BarTouchData(enabled: true),
-              titlesData: FlTitlesData(
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (v, _) {
-                      if (v.toInt() >= labels.length) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(labels[v.toInt()],
-                            style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface.withAlpha(160))),
-                      );
-                    },
-                    reservedSize: 32,
-                  ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: (maxY / 4).clamp(1.0, 1000.0),
-                    getTitlesWidget: (v, _) => Text(
-                      v.toInt().toString(),
-                      style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)),
-                    ),
-                    reservedSize: 28,
-                  ),
-                ),
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              ),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                getDrawingHorizontalLine: (v) => FlLine(
-                  color: theme.colorScheme.onSurface.withAlpha(20),
-                  strokeWidth: 1,
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              barGroups: List.generate(4, (i) {
-                return BarChartGroupData(x: i, barRods: [
-                  BarChartRodData(
-                    toY: vals[i],
-                    color: colors[i],
-                    width: 32,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                    backDrawRodData: BackgroundBarChartRodData(
-                      show: true,
-                      toY: maxY,
-                      color: colors[i].withAlpha(15),
-                    ),
-                  ),
-                ]);
-              }),
+        height: 160,
+        child: RepaintBoundary(child: BarChart(BarChartData(
+          maxY: maxY,
+          barTouchData: BarTouchData(enabled: true),
+          titlesData: FlTitlesData(
+            bottomTitles: AxisTitles(sideTitles: SideTitles(
+              showTitles: true, reservedSize: 28,
+              getTitlesWidget: (v, _) {
+                if (v.toInt() >= labels.length) return const SizedBox.shrink();
+                return Padding(padding: const EdgeInsets.only(top: 6),
+                  child: Text(labels[v.toInt()], style: GoogleFonts.inter(
+                    fontSize: 10, fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  )));
+              },
+            )),
+            leftTitles: AxisTitles(sideTitles: SideTitles(
+              showTitles: true, reservedSize: 22,
+              interval: (maxY / 4).clamp(1.0, 1000.0),
+              getTitlesWidget: (v, _) => Text(v.toInt().toString(),
+                style: GoogleFonts.inter(fontSize: 10,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+            )),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          gridData: FlGridData(
+            show: true, drawVerticalLine: false,
+            getDrawingHorizontalLine: (_) => FlLine(
+              color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, strokeWidth: 1,
             ),
           ),
-        ),
+          borderData: FlBorderData(show: false),
+          barGroups: List.generate(4, (i) => BarChartGroupData(x: i, barRods: [
+            BarChartRodData(
+              toY: vals[i], color: AppTheme.primary, width: 24,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(7)),
+              backDrawRodData: BackgroundBarChartRodData(
+                show: true, toY: maxY, color: AppTheme.primary.withAlpha(12),
+              ),
+            ),
+          ])),
+        ))),
       ),
-    ).animate(delay: 600.ms).fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
+    );
   }
 
   Widget _buildSkeleton() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      padding: const EdgeInsets.all(20),
       child: Column(children: [
-        const SkeletonLoader(height: 100, radius: 24),
+        const SkeletonLoader(height: 80, radius: 12),
+        const SizedBox(height: 16),
+        const SkeletonLoader(height: 44, radius: 20),
         const SizedBox(height: 24),
         GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          childAspectRatio: 1.5,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: List.generate(4, (_) => const SkeletonLoader(radius: 24)),
+          shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2, childAspectRatio: 1.1,
+          crossAxisSpacing: 12, mainAxisSpacing: 12,
+          children: List.generate(4, (_) => const SkeletonLoader(radius: 18)),
         ),
         const SizedBox(height: 24),
-        const SkeletonLoader(height: 220, radius: 24),
+        GridView.count(
+          shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2, childAspectRatio: 0.9,
+          crossAxisSpacing: 12, mainAxisSpacing: 12,
+          children: List.generate(4, (_) => const SkeletonLoader(radius: 16)),
+        ),
       ]),
     );
   }
 }
 
+// ── Class Card ────────────────────────────────────────────────────────────────
 class _GuruClassCard extends StatelessWidget {
   final dynamic kelas;
-  const _GuruClassCard({required this.kelas});
+  final bool isDark;
+  const _GuruClassCard({required this.kelas, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final color = Color(int.parse(kelas['warna_card'] ?? '4282032886'));
-    
-    String initials = "??";
-    final nama = (kelas['nama_kelas'] as String? ?? "").trim();
-    if (nama.isNotEmpty) {
-      final parts = nama.split(' ');
-      if (parts.length >= 2) {
-        initials = (parts[0][0] + parts[1][0]).toUpperCase();
-      } else {
-        initials = parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
-      }
-    }
+    final nama = (kelas['nama_kelas'] as String? ?? '').trim();
+    final kodeKelas = kelas['kode_kelas']?.toString() ?? '';
+    final siswaCount = (kelas['siswa_ids'] as List?)?.length ?? 0;
 
-    return PremiumCard(
-      accentColor: color,
-      padding: EdgeInsets.zero,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => GuruTeamDetailLayout(
-              userData: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.userData,
-              token: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.token,
-              teamData: kelas,
-            ),
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(
+        builder: (_) => GuruTeamDetailLayout(
+          userData: context.findAncestorStateOfType<_GuruDashboardViewState>()!.widget.userData,
+          token: context.findAncestorStateOfType<_GuruDashboardViewState>()!.widget.token,
+          teamData: kelas,
+        ),
+      )),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkCard : AppTheme.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
           ),
-        );
-      },
-      child: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                   Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: color.withAlpha(isDark ? 35 : 20),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: color.withAlpha(isDark ? 80 : 50),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: GoogleFonts.poppins(
-                          color: color,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '${kelas['kode_kelas'] ?? ''}',
-                          style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w800, color: color),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          kelas['nama_kelas'] ?? '-',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w900, fontSize: 14, height: 1.2),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        ),
+        child: Column(
+          children: [
+            // Left accent bar via top band
+            Container(
+              height: 4,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(30))),
-            ),
-            child: Row(
-              children: [
-                Icon(LucideIcons.users, size: 14, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                const SizedBox(width: 6),
-                Text(
-                  '${(kelas['siswa_ids'] as List?)?.length ?? 0} Siswa',
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                  ),
-                ),
-                const Spacer(),
-                PremiumElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => GuruTeamDetailLayout(
-                          userData: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.userData,
-                          token: (context.findAncestorStateOfType<_GuruDashboardViewState>()!).widget.token,
-                          teamData: kelas,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Kode kelas label
+                    if (kodeKelas.isNotEmpty)
+                      Text(kodeKelas,
+                        style: GoogleFonts.inter(
+                          fontSize: 10, fontWeight: FontWeight.w700,
+                          color: color, letterSpacing: 0.5,
                         ),
                       ),
-                    );
-                  },
-                  color: color,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  radius: 8,
-                  child: Text(
-                    'Kelola',
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 4),
+                    // Nama kelas — big
+                    Expanded(
+                      child: Text(nama,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16, fontWeight: FontWeight.w800,
+                          color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+                          height: 1.2, letterSpacing: -0.3,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 3,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    // Siswa count
+                    Row(children: [
+                      Icon(LucideIcons.users, size: 12,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                      const SizedBox(width: 5),
+                      Text('$siswaCount Siswa',
+                        style: GoogleFonts.inter(
+                          fontSize: 11, fontWeight: FontWeight.w600,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        ),
+                      ),
+                    ]),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// ─── Sub Widgets ─────────────────────────────────────────────────────────────
-
 class _StatData {
   final IconData icon;
   final String label, value;
-  final List<Color> gradient;
-  const _StatData(this.icon, this.label, this.value, this.gradient);
+  const _StatData(this.icon, this.label, this.value);
 }
 
+class _ActionData {
+  final IconData icon;
+  final String label;
+  const _ActionData(this.icon, this.label);
+}

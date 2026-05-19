@@ -2,59 +2,58 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// ═══════════════════════════════════════════════════════════════════════════
-/// MyPSKD Design System v3.0 — "SMART LMS" Clean Edu Style
-/// Primary: Periwinkle #7B83EB  |  Sidebar: Deep Indigo #2D2F7E
-/// Background: Lavender Mist #F0F2FF
+/// MyPSKD Design System v4.0
+/// Base: #B4D3D9 | Surface: #F2EAE0 | Accent: #9B8EC7 | Text: #2D2250
 /// ═══════════════════════════════════════════════════════════════════════════
 class AppTheme {
   // ─── Core Brand Colors ──────────────────────────────────────────────────
-  static const Color indigoPrimary   = Color(0xFF7B83EB); // Periwinkle #7B83EB
-  static const Color indigoLight     = Color(0xFF9BA3F5); // Light periwinkle
-  static const Color indigoDark      = Color(0xFF5B63CB); // Dark periwinkle
-  static const Color purpleSecondary = Color(0xFF8B5CF6); // Purple
-  static const Color purpleLight     = Color(0xFFA78BFA); // Light purple
+  static const Color primary     = Color(0xFF9B8EC7); // Soft purple — accent
+  static const Color base        = Color(0xFFB4D3D9); // Teal-blue — background
+  static const Color surface     = Color(0xFFF2EAE0); // Warm cream — cards
+  static const Color textPrimary = Color(0xFF2D2250); // Deep navy — text
 
-  // ─── Sidebar & Dark UI ──────────────────────────────────────────────────
-  static const Color sidebarDark     = Color(0xFF2D2F7E); // Deep indigo sidebar
-  static const Color sidebarDarker   = Color(0xFF1E2060); // Deeper sidebar shade
-  static const Color sidebarActive   = Color(0xFF3D3F9E); // Active sidebar item
+  // ─── Legacy aliases (backward compat) ───────────────────────────────────
+  static const Color indigoPrimary   = primary;
+  static const Color indigoLight     = Color(0xFFBDA6CE);
+  static const Color indigoDark      = Color(0xFF6B5E9E);
+  static const Color purpleSecondary = primary;
+  static const Color purpleLight     = Color(0xFFBDA6CE);
+  static const Color tealDeep        = primary;
+  static const Color tealLight       = base;
+  static const Color sidebarDark     = textPrimary;
+  static const Color sidebarDarker   = Color(0xFF1A1040);
+  static const Color sidebarActive   = primary;
 
-  // ─── Accent Colors ──────────────────────────────────────────────────────
-  static const Color amber     = Color(0xFFF59E0B); // Warm yellow
-  static const Color emerald   = Color(0xFF10B981); // Success green
-  static const Color rose      = Color(0xFFEF4444); // Error red
-  static const Color sky       = Color(0xFF38BDF8); // Info blue
+  // ─── Semantic Colors (tetap sama) ───────────────────────────────────────
+  static const Color amber   = Color(0xFFF59E0B);
+  static const Color emerald = Color(0xFF10B981);
+  static const Color rose    = Color(0xFFA32D2D); // error only
+  static const Color sky     = Color(0xFF38BDF8);
+  static const Color orangeVivid = Color(0xFFF27F33);
 
-  // ─── Dark Mode Backgrounds ──────────────────────────────────────────────
-  static const Color darkBg      = Color(0xFF161D2B); // Premium dark charcoal
-  static const Color darkSurface = Color(0xFF161B27); // Elevated dark surface
-  static const Color darkCard    = Color(0xFF1C2230); // Clean minimalist dark card
-  static const Color darkBorder  = Color(0xFF252D3D); // Sharp neutral dark border
+  // ─── Light Mode ─────────────────────────────────────────────────────────
+  static const Color lightBg      = base;
+  static const Color lightSurface = surface;
+  static const Color lightBorder  = Color(0xFFD4C5B8);
+  static const Color textLight    = textPrimary;
+  static const Color textMutedLt  = Color(0xFF6B5E9E);
 
-  // ─── Light Mode Backgrounds (SMART LMS Style) ───────────────────────────
-  static const Color lightBg      = Color(0xFFF8F9FC); // Clean off-white background
-  static const Color lightSurface = Color(0xFFFFFFFF); // Pure white card
-  static const Color lightBorder  = Color(0xFFE5E7EB); // Soft neutral light border
-
-  // ─── Text ───────────────────────────────────────────────────────────────
-  static const Color textDark    = Color(0xFFF8F8FF); // Almost white
-  static const Color textMutedDk = Color(0xFF9FA3CC); // Muted purple-gray
-  static const Color textLight   = Color(0xFF1A1A3E); // Deep navy
-  static const Color textMutedLt = Color(0xFF6B7099); // Muted cool gray
-
-  // ─── Legacy Aliases (backward compat) ─────────────────────────────────
-  static const Color tealDeep    = indigoPrimary;
-  static const Color tealLight   = purpleLight;
-  static const Color orangeVivid = amber;
+  // ─── Dark Mode ──────────────────────────────────────────────────────────
+  static const Color darkBg      = Color(0xFF1A1040);
+  static const Color darkSurface = Color(0xFF2D2250);
+  static const Color darkCard    = Color(0xFF2D2250);
+  static const Color darkBorder  = Color(0xFF3D3270);
+  static const Color textDark    = surface;
+  static const Color textMutedDk = Color(0xFFBDA6CE);
   static const Color bgDarkest   = darkBg;
   static const Color bgDarker    = darkCard;
 
-  static Color getAccent(BuildContext context) => indigoPrimary;
+  static Color getAccent(BuildContext context) => primary;
 
   // ─── Text Themes ────────────────────────────────────────────────────────
   static TextTheme _textTheme(Brightness b) {
     final isD = b == Brightness.dark;
-    final text = isD ? textDark : textLight;
+    final text  = isD ? textDark    : textLight;
     final muted = isD ? textMutedDk : textMutedLt;
 
     return TextTheme(
@@ -105,22 +104,22 @@ class AppTheme {
     );
   }
 
-  // ─── Light Theme (SMART LMS Style) ─────────────────────────────────────
+  // ─── Light Theme ────────────────────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
       useMaterial3: true,
-      primaryColor: indigoPrimary,
+      primaryColor: primary,
       scaffoldBackgroundColor: lightBg,
       colorScheme: const ColorScheme.light(
-        primary: indigoPrimary,
-        secondary: purpleSecondary,
-        tertiary: purpleLight,
-        surface: lightSurface,
-        onSurface: textLight,
+        primary: primary,
+        secondary: Color(0xFFBDA6CE),
+        tertiary: base,
+        surface: surface,
+        onSurface: textPrimary,
         onPrimary: Colors.white,
-        primaryContainer: Color(0xFFDDE1FF),
-        secondaryContainer: Color(0xFFEDE9FE),
+        primaryContainer: Color(0xFFDDD8F0),
+        secondaryContainer: surface,
         error: rose,
       ),
       textTheme: _textTheme(Brightness.light),
@@ -129,16 +128,16 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: textLight),
+        iconTheme: const IconThemeData(color: textPrimary),
         titleTextStyle: GoogleFonts.poppins(
-          color: textLight, fontSize: 18,
+          color: textPrimary, fontSize: 18,
           fontWeight: FontWeight.w700, letterSpacing: -0.3,
         ),
       ),
       cardTheme: CardThemeData(
-        color: lightSurface,
+        color: surface,
         elevation: 0,
-        shadowColor: const Color(0x197B83EB),
+        shadowColor: primary.withAlpha(30),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -155,17 +154,17 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.dark,
       useMaterial3: true,
-      primaryColor: indigoLight,
+      primaryColor: primary,
       scaffoldBackgroundColor: darkBg,
       colorScheme: const ColorScheme.dark(
-        primary: indigoLight,
-        secondary: purpleLight,
-        tertiary: purpleSecondary,
+        primary: primary,
+        secondary: Color(0xFFBDA6CE),
+        tertiary: base,
         surface: darkCard,
         onSurface: textDark,
         onPrimary: Colors.white,
-        primaryContainer: Color(0xFF2D2F7E),
-        secondaryContainer: Color(0xFF4C1D95),
+        primaryContainer: Color(0xFF3D3270),
+        secondaryContainer: Color(0xFF2D2250),
         error: rose,
       ),
       textTheme: _textTheme(Brightness.dark),
@@ -195,7 +194,6 @@ class AppTheme {
     );
   }
 
-  // ─── TAMBAHAN: Helper Warna Status ─────────────────────────────────────────
   static Color getStatusColor(String? status) {
     switch (status) {
       case 'Available': return emerald;
@@ -203,7 +201,6 @@ class AppTheme {
       case 'Do Not Disturb': return rose;
       case 'Be Right Back':
       case 'Appear Away': return amber;
-      case 'Appear Offline':
       default: return Colors.grey;
     }
   }
