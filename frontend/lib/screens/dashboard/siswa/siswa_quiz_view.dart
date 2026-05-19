@@ -521,7 +521,6 @@ class _ExamStartDialog extends StatelessWidget {
                     _rule('Dilarang pindah aplikasi (Alt+Tab)'),
                     _rule('Dilarang copy, paste, dan klik kanan'),
                     _rule('Setiap pelanggaran akan dicatat'),
-                    _rule('Max ${quiz.maxViolations} pelanggaran → auto submit'),
                   ],
                   _rule('Durasi: ${quiz.durationMinutes} menit'),
                   _rule('Jumlah soal: ${quiz.questions.length}'),

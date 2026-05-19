@@ -329,9 +329,8 @@ const quizController = {
       const violationCount = violationsSnapshot.size;
       let autoSubmitTriggered = false;
 
-      if (violationCount >= 3) {
-        autoSubmitTriggered = true;
-      }
+      // NOTE: Auto-submit on 3 violations is disabled per user request. 
+      // We only log the violations so they are visible to the Guru dashboard.
 
       res.status(200).json({ 
         message: 'Live violation logged',
