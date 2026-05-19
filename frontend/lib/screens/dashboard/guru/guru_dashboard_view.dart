@@ -161,39 +161,38 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
 
   // ── 1. Greeting ────────────────────────────────────────────────────────────
   Widget _buildGreeting(bool isDark) {
-    final nama = widget.userData['nama']?.toString() ?? 'Guru';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$_greeting, Bpk/Ibu.',
-          style: GoogleFonts.notoSerif(
-            fontSize: 28, fontWeight: FontWeight.w900,
-            color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
-            letterSpacing: -0.5, height:1.1,
-          ),
+  final nama = widget.userData['nama']?.toString() ?? 'Guru';
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$_greeting,',
+        style: GoogleFonts.notoSerif(
+          fontSize: 28, fontWeight: FontWeight.w900,
+          color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+          letterSpacing: -0.5, height: 1.1,
         ),
-        const SizedBox(height: 4),
-        Text(
-          nama,
-          style: GoogleFonts.notoSerif(
-            fontSize: 28, fontWeight: FontWeight.w900,
-            color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
-            letterSpacing: -0.5, height: 1.1,
-          ),
+      ),
+      Text(
+        'Bpk/Ibu. $nama',
+        style: GoogleFonts.notoSerif(
+          fontSize: 28, fontWeight: FontWeight.w900,
+          color: isDark ? AppTheme.textDark : AppTheme.textPrimary,
+          letterSpacing: -0.5, height: 1.1,
         ),
-        const SizedBox(height: 6),
-        Text(
-          _subtitle,
-          style: GoogleFonts.notoSerif(
-            fontSize: 13, fontWeight: FontWeight.w400,
-            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-            height: 1.4,
-          ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        _subtitle,
+        style: GoogleFonts.notoSerif(
+          fontSize: 13, fontWeight: FontWeight.w400,
+          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+          height: 1.4,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   // ── 2. Stat chips ──────────────────────────────────────────────────────────
   Widget _buildStatChips(bool isDark) {
