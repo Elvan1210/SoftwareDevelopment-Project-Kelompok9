@@ -18,7 +18,6 @@ class _P {
   static const secCon = Color(0xFFB7EDE7);
   static const tertCon = Color(0xFFFFD1C0);
   static const surfHigh = Color(0xFFCEEDFF);
-  static const surfCon = Color(0xFFDBF1FF);
   static const surfLow = Color(0xFFE8F6FF);
   static const white = Color(0xFFFFFFFF);
   static const muted = Color(0xFF414944);
@@ -539,7 +538,7 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                         ),
                         const SizedBox(height: 3),
                         Row(children: [
-                          Icon(LucideIcons.users, size: 10, color: _P.outline),
+                          const Icon(LucideIcons.users, size: 10, color: _P.outline),
                           const SizedBox(width: 4),
                           Text('$siswa Siswa',
                               style: GoogleFonts.inter(
@@ -662,18 +661,18 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
   }
 
   Widget _buildSkeleton() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return const SingleChildScrollView(
+      padding: EdgeInsets.all(16),
       child: Column(children: [
-        const SkeletonLoader(height: 80, radius: 4),
-        const SizedBox(height: 16),
-        const SkeletonLoader(height: 160, radius: 4),
-        const SizedBox(height: 16),
-        const SkeletonLoader(height: 70, radius: 4),
-        const SizedBox(height: 16),
-        const SkeletonLoader(height: 200, radius: 4),
-        const SizedBox(height: 16),
-        const SkeletonLoader(height: 80, radius: 4),
+        SkeletonLoader(height: 80, radius: 4),
+        SizedBox(height: 16),
+        SkeletonLoader(height: 160, radius: 4),
+        SizedBox(height: 16),
+        SkeletonLoader(height: 70, radius: 4),
+        SizedBox(height: 16),
+        SkeletonLoader(height: 200, radius: 4),
+        SizedBox(height: 16),
+        SkeletonLoader(height: 80, radius: 4),
       ]),
     );
   }
@@ -1110,10 +1109,11 @@ class _PengumumanModalState extends State<_PengumumanModal> {
     final selected = _selectedChannels.contains(id);
     return GestureDetector(
       onTap: () => setState(() {
-        if (selected)
+        if (selected) {
           _selectedChannels.remove(id);
-        else
+        } else {
           _selectedChannels.add(id);
+        }
       }),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 0, 6),
@@ -1166,17 +1166,17 @@ class _PengumumanModalState extends State<_PengumumanModal> {
         filled: true,
         fillColor: _P.white,
         contentPadding: const EdgeInsets.all(14),
-        border: OutlineInputBorder(
+        border: const OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: const BorderSide(color: _P.deepSlate),
+          borderSide: BorderSide(color: _P.deepSlate),
         ),
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: const BorderSide(color: _P.deepSlate),
+          borderSide: BorderSide(color: _P.deepSlate),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: const BorderSide(color: _P.primary, width: 1.5),
+          borderSide: BorderSide(color: _P.primary, width: 1.5),
         ),
       ),
     );

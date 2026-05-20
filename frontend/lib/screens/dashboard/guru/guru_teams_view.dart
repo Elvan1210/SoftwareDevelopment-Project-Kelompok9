@@ -11,18 +11,12 @@ import '../../../config/theme.dart';
 
 // ── Palette ────────────────────────────────────────────────────────────────
 class _P {
-  static const bg = Color(0xFFF4FAFF);
   static const ink = Color(0xFF001E2B);
   static const primary = Color(0xFF3D6754);
-  static const primCon = Color(0xFFB7E5CD);
-  static const secondary = Color(0xFF336763);
-  static const secCon = Color(0xFFB7EDE7);
-  static const tertCon = Color(0xFFFFD1C0);
   static const white = Color(0xFFFFFFFF);
   static const muted = Color(0xFF414944);
   static const outline = Color(0xFF717974);
 }
-
 // Warna header per kelas (cycling)
 const _headerColors = [
   Color(0xFFB7E5CD), // primary container - hijau mint
@@ -161,17 +155,17 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                     filled: true,
                     fillColor: const Color(0xFFDBF1FF),
                     contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    border: OutlineInputBorder(
+                    border: const OutlineInputBorder(
                       borderRadius: BorderRadius.zero,
-                      borderSide: const BorderSide(color: _P.ink, width: 2),
+                      borderSide: BorderSide(color: _P.ink, width: 2),
                     ),
-                    enabledBorder: OutlineInputBorder(
+                    enabledBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.zero,
-                      borderSide: const BorderSide(color: _P.ink, width: 2),
+                      borderSide: BorderSide(color: _P.ink, width: 2),
                     ),
-                    focusedBorder: OutlineInputBorder(
+                    focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.zero,
-                      borderSide: const BorderSide(color: _P.primary, width: 2),
+                      borderSide: BorderSide(color: _P.primary, width: 2),
                     ),
                   ),
                 ),
