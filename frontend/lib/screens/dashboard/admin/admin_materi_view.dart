@@ -6,7 +6,7 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class AdminMateriView extends StatefulWidget {
   final String token;

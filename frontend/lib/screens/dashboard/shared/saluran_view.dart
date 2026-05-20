@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../guru/guru_tugas_detail_screen.dart';
 import '../siswa/siswa_tugas_detail_screen.dart';
 import '../../../widgets/premium_ui.dart';

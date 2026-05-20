@@ -7,7 +7,7 @@ import '../../../config/theme.dart';
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;

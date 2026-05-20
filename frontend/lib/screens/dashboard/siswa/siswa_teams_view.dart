@@ -5,7 +5,7 @@ import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'siswa_team_detail_layout.dart' hide GlassCard;
 import '../../../widgets/app_shell.dart';
 

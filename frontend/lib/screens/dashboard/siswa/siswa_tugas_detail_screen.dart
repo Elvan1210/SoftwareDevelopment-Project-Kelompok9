@@ -10,7 +10,7 @@ import 'package:file_picker/file_picker.dart' as fp;
 import '../../../services/notifikasi_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../widgets/app_shell.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SiswaTugasDetailScreen extends StatefulWidget {

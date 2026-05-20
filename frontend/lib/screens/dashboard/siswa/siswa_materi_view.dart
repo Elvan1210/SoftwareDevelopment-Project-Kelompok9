@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;

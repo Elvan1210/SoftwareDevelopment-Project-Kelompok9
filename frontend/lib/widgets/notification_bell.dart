@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../config/api_config.dart';
 import '../config/theme.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class NotificationBell extends StatefulWidget {
   final Map<String, dynamic> userData;

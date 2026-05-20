@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../services/notifikasi_service.dart';
 import '../../../config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../widgets/premium_ui.dart';
 
 class GuruTugasDetailScreen extends StatefulWidget {

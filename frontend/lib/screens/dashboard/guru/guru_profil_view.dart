@@ -6,7 +6,7 @@ import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/theme.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GuruProfilView extends StatefulWidget {
   final Map<String, dynamic> userData;
