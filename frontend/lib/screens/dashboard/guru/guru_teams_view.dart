@@ -6,7 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'guru_team_detail_layout.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../config/theme.dart';
 
 // ── Palette ────────────────────────────────────────────────────────────────

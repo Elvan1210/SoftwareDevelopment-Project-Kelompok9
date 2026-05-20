@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../config/theme.dart';
 
 class SiswaProfilView extends StatefulWidget {

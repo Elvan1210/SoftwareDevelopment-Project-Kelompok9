@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../services/presensi_service.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GuruPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;

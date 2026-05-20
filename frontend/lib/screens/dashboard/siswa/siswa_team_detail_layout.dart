@@ -15,7 +15,7 @@ import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
 import '../../../widgets/jitsi_embed.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SiswaTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;

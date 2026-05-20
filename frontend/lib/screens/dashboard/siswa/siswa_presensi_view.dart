@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../config/theme.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SiswaPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;
