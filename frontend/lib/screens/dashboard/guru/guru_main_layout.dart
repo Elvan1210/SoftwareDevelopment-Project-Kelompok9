@@ -256,6 +256,7 @@ import '../../../widgets/app_shell.dart';
 import '../../../widgets/sidebar.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
+import '../../../config/theme.dart';
 
 class GuruMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -303,7 +304,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         padding: const EdgeInsets.all(28.0),
         child: Row(
           children: [
-            // ── Unified Sidebar ──
             Sidebar(
               selectedIndex: _selectedIndex,
               onDestinationSelected: (index) =>
@@ -318,37 +318,28 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
               },
               destinations: const [
                 SidebarItemData(
-                  icon: Icons.dashboard_customize_outlined,
-                  selectedIcon: Icons.dashboard_customize_rounded,
-                  label: 'Overview',
-                ),
+                    icon: Icons.dashboard_customize_outlined,
+                    selectedIcon: Icons.dashboard_customize_rounded,
+                    label: 'Overview'),
                 SidebarItemData(
-                  icon: Icons.class_outlined,
-                  selectedIcon: Icons.class_rounded,
-                  label: 'Kelas',
-                ),
-                // MENU MESSAGES DITAMBAHKAN DI SINI
+                    icon: Icons.class_outlined,
+                    selectedIcon: Icons.class_rounded,
+                    label: 'Kelas'),
                 SidebarItemData(
-                  icon: Icons.forum_outlined,
-                  selectedIcon: Icons.forum_rounded,
-                  label: 'Messages',
-                ),
+                    icon: Icons.forum_outlined,
+                    selectedIcon: Icons.forum_rounded,
+                    label: 'Messages'),
                 SidebarItemData(
-                  icon: Icons.campaign_outlined,
-                  selectedIcon: Icons.campaign_rounded,
-                  label: 'Info',
-                ),
+                    icon: Icons.campaign_outlined,
+                    selectedIcon: Icons.campaign_rounded,
+                    label: 'Info'),
                 SidebarItemData(
-                  icon: Icons.manage_accounts_outlined,
-                  selectedIcon: Icons.manage_accounts_rounded,
-                  label: 'Profil',
-                ),
+                    icon: Icons.manage_accounts_outlined,
+                    selectedIcon: Icons.manage_accounts_rounded,
+                    label: 'Profil'),
               ],
             ),
-
             const SizedBox(width: 28),
-
-            // ── Main Content Area ──
             Expanded(
               child: GlassCard(
                 padding: EdgeInsets.zero,
@@ -358,11 +349,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     scrolledUnderElevation: 0,
-                    title: Text(
-                      _titles[_selectedIndex],
-                      style: GoogleFonts.notoSerif(
-                          fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                    ),
+                    title: Text(_titles[_selectedIndex],
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                     actions: [
                       const ThemeToggle(),
                       const SizedBox(width: 8),
@@ -377,24 +366,23 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                   ),
                   body: IndexedStack(
                     index: _selectedIndex,
-                      children: [
-                        GuruDashboardView(
+                    children: [
+                      GuruDashboardView(
                           userData: widget.userData,
                           token: widget.token,
-                          onNavigate: (index) =>
-                              setState(() => _selectedIndex = index),
-                        ),
-                        GuruTeamsView(
-                            userData: widget.userData, token: widget.token),
-                        MessagesScreen(userData: widget.userData),
-                        GuruPengumumanView(
-                            userData: widget.userData, token: widget.token),
-                        GuruProfilView(userData: widget.userData),
-                      ],
-                    ),
+                          onNavigate: (i) =>
+                              setState(() => _selectedIndex = i)),
+                      GuruTeamsView(
+                          userData: widget.userData, token: widget.token),
+                      MessagesScreen(userData: widget.userData),
+                      GuruPengumumanView(
+                          userData: widget.userData, token: widget.token),
+                      GuruProfilView(userData: widget.userData),
+                    ],
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -410,38 +398,39 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         children: [
           Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0, vertical: 12.0),
-                child: GlassCard(
-                  radius: 20,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _titles[_selectedIndex],
-                          style: GoogleFonts.notoSerif(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
-                            letterSpacing: -0.5,
-                            color: isDark? Colors.white: Colors.black,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+              Container(
+                //color: isDark ? AppTheme.darkCard : const Color(0xFFF4FAFF),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : const Color(0xFF001E2B)),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('MyPSKD',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color:
+                              isDark ? Colors.white : const Color(0xFF001E2B),
+                          letterSpacing: -0.5,
+                        )),
+                    Row(children: [
                       const ThemeToggle(),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
                       NotificationBell(
                         userData: widget.userData,
                         token: widget.token,
                         iconColor: theme.iconTheme.color ??
                             (isDark ? Colors.white : Colors.black87),
                       ),
-                    ],
-                  ),
+                    ]),
+                  ],
                 ),
               ),
               Expanded(
