@@ -10,10 +10,9 @@
 
     <application
         tools:replace="android:label"
-        android:label="frontend"
+        android:label="MyPSKD"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        tools:replace="android:label">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"
