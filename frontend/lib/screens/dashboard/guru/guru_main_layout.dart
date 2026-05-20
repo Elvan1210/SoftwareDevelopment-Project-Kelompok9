@@ -270,7 +270,6 @@ class GuruMainLayout extends StatefulWidget {
 
 class _GuruMainLayoutState extends State<GuruMainLayout> {
   int _selectedIndex = 0;
-  late List<Widget> _views;
 
   final List<String> _titles = [
     'Dashboard Overview',
@@ -283,16 +282,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
   @override
   void initState() {
     super.initState();
-    _views = [
-      GuruDashboardView(
-          userData: widget.userData,
-          token: widget.token,
-          onNavigate: (index) => setState(() => _selectedIndex = index)),
-      GuruTeamsView(userData: widget.userData, token: widget.token),
-      MessagesScreen(userData: widget.userData), // VIEW MESSAGES BARU
-      GuruPengumumanView(userData: widget.userData, token: widget.token),
-      GuruProfilView(userData: widget.userData),
-    ];
   }
 
   Widget _buildWebLayout(BuildContext context) {
