@@ -4,10 +4,16 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'siswa_team_detail_layout.dart' hide GlassCard;
 import '../../../widgets/app_shell.dart';
+import '../../../widgets/neo_brutalism.dart';
+
+
+
+
+
+
 
 class SiswaTeamsView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -31,7 +37,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
   Future<void> _fetchMyTeams() async {
     setState(() => _isLoading = true);
     try {
-      final userId = widget.userData['id'] ?? widget.userData['uid'];
+      final userId = Uri.encodeComponent((widget.userData['id'] ?? widget.userData['uid']).toString());
       final response = await http.get(
         Uri.parse('$baseUrl/api/kelas?siswa_id=$userId'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
@@ -55,9 +61,15 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
         builder: (context, setDialogState) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Dialog(
-            backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            child: Padding(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Theme.of(context).dividerColor, width: 2),
+                boxShadow: [
+                  BoxShadow(color: Theme.of(context).dividerColor, offset: const Offset(6, 6), blurRadius: 0),
+                ],
+              ),
               padding: const EdgeInsets.all(28),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -68,50 +80,46 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1C2230) : const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
-                            width: 1.0,
-                          ),
+                          color: isDark ? const Color(0xFF3D3270) : Theme.of(context).colorScheme.primaryContainer,
+                          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
                         ),
                         child: Icon(
                           LucideIcons.userPlus,
-                          color: isDark ? AppTheme.indigoLight : AppTheme.indigoPrimary,
+                          color: isDark ? AppTheme.indigoLight : AppTheme.primary,
                           size: 20,
                         ),
                       ),
                       const SizedBox(width: 14),
                       Text('Gabung ke Kelas',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w800, fontSize: 18,
-                              color: isDark ? Colors.white : AppTheme.textLight)),
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Text('Minta kode akses kepada guru Anda, lalu masukkan di sini.',
-                      style: GoogleFonts.poppins(fontSize: 13,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).textTheme.bodyMedium!.color!)),
                   const SizedBox(height: 20),
                   // Code input
-                  GlassCard(
-                    padding: EdgeInsets.zero,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    ),
                     child: TextField(
                       controller: codeCtrl,
                       maxLength: 8,
                       textCapitalization: TextCapitalization.characters,
-                      style: GoogleFonts.poppins(
-                        fontSize: 22, fontWeight: FontWeight.w900,
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
                         letterSpacing: 8,
-                        color: isDark ? Colors.white : AppTheme.textLight,
-                      ),
+                        color: Theme.of(context).textTheme.bodyLarge!.color!),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'XXXXXXXX',
-                        hintStyle: GoogleFonts.poppins(
-                          fontSize: 22, fontWeight: FontWeight.w900,
+                        hintStyle: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
                           letterSpacing: 8,
-                          color: isDark ? AppTheme.textMutedDk.withAlpha(100) : AppTheme.textMutedLt.withAlpha(100),
+                          color: isDark ? const Color(0xFF9090B0).withAlpha(100) : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt).withAlpha(100),
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -122,14 +130,21 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text('Batal', style: GoogleFonts.poppins(
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(ctx),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                          ),
+                          child: Text('Batal', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        ),
                       ),
-                      const SizedBox(width: 10),
-                      PremiumElevatedButton(
-                        onPressed: isSubmitting ? null : () async {
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: isSubmitting ? null : () async {
                           if (codeCtrl.text.trim().isEmpty) return;
                           setDialogState(() => isSubmitting = true);
                           try {
@@ -149,10 +164,10 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                   content: Text(status == 'accepted'
                                       ? 'Berhasil bergabung ke kelas!'
-                                      : resBody['message'] ?? 'Menunggu persetujuan guru.'),
+                                      : resBody['message'] ?? 'Menunggu persetujuan guru.',
+                                      style: const TextStyle(fontWeight: FontWeight.w800)),
                                   backgroundColor: status == 'accepted' ? AppTheme.emerald : AppTheme.amber,
                                   behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ));
                                 if (status == 'accepted') _fetchMyTeams();
                               }
@@ -175,11 +190,18 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                             setDialogState(() => isSubmitting = false);
                           }
                         },
-                        color: AppTheme.indigoPrimary,
-                        child: isSubmitting
-                            ? const SizedBox(width: 18, height: 18,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text('Gabung Kelas'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary,
+                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
+                          ),
+                          child: isSubmitting
+                              ? const SizedBox(width: 18, height: 18,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : Text('Gabung Kelas', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900, color: Colors.white)),
+                        ),
                       ),
                     ],
                   ),
@@ -202,25 +224,23 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.indigoPrimary,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.indigoPrimary.withAlpha(80),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: _showJoinDialog,
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          icon: const Icon(LucideIcons.userPlus, size: 18),
-          label: Text('Gabung Kelas', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+      floatingActionButton: GestureDetector(
+        onTap: _showJoinDialog,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.userPlus, size: 18, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('Gabung Kelas', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900, color: Colors.white)),
+            ],
+          ),
         ),
       ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3),
       body: _myTeams.isEmpty
@@ -239,12 +259,11 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                   ),
                   const SizedBox(height: 20),
                   Text('Belum bergabung kelas',
-                      style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w800,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800,
                           color: isDark ? Colors.white : AppTheme.textLight)),
                   const SizedBox(height: 8),
                   Text('Gunakan kode dari guru untuk masuk ke kelas.',
-                      style: GoogleFonts.poppins(fontSize: 13,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                 ],
               ),
             )
@@ -254,45 +273,67 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
               child: LayoutBuilder(
                 builder: (ctx, c) {
                   final w = c.maxWidth;
-                  final crossCount = w > 1100 ? 4 : (w > 750 ? 3 : (w > 500 ? 2 : 1));
+                  final pad = w >= 950 ? 24.0 : 16.0;
+                  final isWide = w >= 950;
+                  final crossAxisCount = w >= 1200 ? 3 : (w >= 750 ? 2 : 1);
+                  final maxW = isWide ? 1100.0 : double.infinity;
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossCount,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 1.32,
+                  return SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                    padding: EdgeInsets.fromLTRB(16, 24, pad, 120),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxW),
+                        child: Wrap(
+                          spacing: 20,
+                          runSpacing: 20,
+                          children: List.generate(_myTeams.length, (index) {
+                            final tim   = _myTeams[index];
+                            Color color;
+                            try {
+                              String wc = tim['warna_card']?.toString() ?? '4284705521';
+                              if (wc.startsWith('#')) wc = '0xFF${wc.substring(1)}';
+                              color = Color(int.parse(wc));
+                            } catch (e) {
+                              color = const Color(0xFF6366F1);
+                            }
+                            final nama  = (tim['nama_kelas'] as String? ?? '').trim();
+                            String initials = nama.isEmpty ? '??' : (() {
+                              final parts = nama.split(' ');
+                              return parts.length >= 2
+                                  ? (parts[0][0] + parts[1][0]).toUpperCase()
+                                  : nama.substring(0, nama.length >= 2 ? 2 : 1).toUpperCase();
+                            })();
+
+                            final cardW = crossAxisCount == 1
+                                ? double.infinity
+                                : (isWide && w >= 1200
+                                    ? (1100 - (20 * 2)) / 3
+                                    : (w - pad * 2 - 20) / 2);
+
+                            return SizedBox(
+                              width: cardW,
+                              child: _TeamCard(
+                                tim: tim,
+                                color: color,
+                                initials: initials,
+                                isDark: isDark,
+                                onTap: () => Navigator.push(ctx, MaterialPageRoute(
+                                  builder: (_) => SiswaTeamDetailLayout(
+                                    userData: widget.userData,
+                                    token: widget.token,
+                                    teamData: tim,
+                                  ),
+                                )),
+                              )
+                              .animate(delay: (index * 60).ms)
+                              .fadeIn(duration: 400.ms)
+                              .scale(begin: const Offset(0.92, 0.92), curve: Curves.easeOutBack, duration: 600.ms),
+                            );
+                          }),
+                        ),
+                      ),
                     ),
-                    itemCount: _myTeams.length,
-                    itemBuilder: (ctx, i) {
-                      final tim   = _myTeams[i];
-                      final color = Color(int.parse(tim['warna_card'] ?? '0xFF6366F1'));
-                      final nama  = (tim['nama_kelas'] as String? ?? '').trim();
-                      String initials = nama.isEmpty ? '??' : (() {
-                        final parts = nama.split(' ');
-                        return parts.length >= 2
-                            ? (parts[0][0] + parts[1][0]).toUpperCase()
-                            : nama.substring(0, nama.length >= 2 ? 2 : 1).toUpperCase();
-                      })();
-
-                      return _TeamCard(
-                        tim: tim,
-                        color: color,
-                        initials: initials,
-                        isDark: isDark,
-                        onTap: () => Navigator.push(ctx, MaterialPageRoute(
-                          builder: (_) => SiswaTeamDetailLayout(
-                            userData: widget.userData,
-                            token: widget.token,
-                            teamData: tim,
-                          ),
-                        )),
-                      )
-                          .animate(delay: (i * 60).ms)
-                          .fadeIn(duration: 400.ms)
-                          .scale(begin: const Offset(0.92, 0.92), curve: Curves.easeOutBack, duration: 600.ms);
-                    },
                   );
                 },
               ),
@@ -301,14 +342,34 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
   }
 
   Widget _skeleton() {
-    return GridView.count(
-      padding: const EdgeInsets.all(24),
-      crossAxisCount: 2,
-      childAspectRatio: 1.45,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: List.generate(4, (_) => const SkeletonLoader(radius: 20)),
-    );
+    return LayoutBuilder(builder: (context, c) {
+      final w = c.maxWidth;
+      final pad = w >= 950 ? 24.0 : 16.0;
+      final isWide = w >= 950;
+      final crossAxisCount = w >= 1200 ? 3 : (w >= 750 ? 2 : 1);
+      final maxW = isWide ? 1100.0 : double.infinity;
+
+      return SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(16, 24, pad, 120),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxW),
+            child: Wrap(
+              spacing: 20,
+              runSpacing: 20,
+              children: List.generate(4, (index) {
+                final cardW = crossAxisCount == 1
+                    ? double.infinity
+                    : (isWide && w >= 1200
+                        ? (1100 - (20 * 2)) / 3
+                        : (w - pad * 2 - 20) / 2);
+                return SkeletonLoader(width: cardW, height: 180, radius: 0);
+              }),
+            ),
+          ),
+        ),
+      );
+    });
   }
 }
 
@@ -326,209 +387,103 @@ class _TeamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: color.withAlpha(isDark ? 55 : 30),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 80 : 12),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: color.withAlpha(isDark ? 30 : 15),
-            blurRadius: 28,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-              width: 1.0,
-            ),
-          ),
-          padding: const EdgeInsets.all(14),
-          child: Column(
+    return NeoCard(
+      padding: const EdgeInsets.all(16),
+      color: isDark ? const Color(0xFF1A1040) : color.withAlpha(25),
+      borderColor: Theme.of(context).dividerColor,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Initials Orb with Gradient
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          color,
-                          color.withAlpha(160),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withAlpha(80),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (tim['kode_kelas'] != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: color.withAlpha(isDark ? 30 : 20),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: color.withAlpha(isDark ? 80 : 50),
-                                width: 1.0,
-                              ),
-                            ),
-                            child: Text(
-                              'CLASS CODE: ${tim['kode_kelas']}',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.8,
-                                color: color,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 6),
-                        Text(
-                          tim['nama_kelas'] ?? '-',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : AppTheme.textLight,
-                            height: 1.25,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              NeoIconBox(
+                icon: LucideIcons.book, // Temporary icon since initials was text
+                iconColor: Colors.white,
+                backgroundColor: color,
+                borderColor: Theme.of(context).colorScheme.onSurface,
+                size: 24,
               ),
-              const Spacer(),
-              // Divider
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-              ),
-              const SizedBox(height: 10),
-              // Bottom Row with Info & Concentric Button-in-Button
-              Row(
-                children: [
-                  Icon(
-                    LucideIcons.user,
-                    size: 13,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      tim['guru_nama'] ?? 'Guru belum ditugaskan',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (tim['kode_kelas'] != null)
+                      NeoBadge(
+                        label: 'KODE: ${tim['kode_kelas']}',
+                        color: color,
                       ),
-                      maxLines: 1,
+                    if (tim['kode_kelas'] != null) const SizedBox(height: 6),
+                    Text(
+                      tim['nama_kelas'] ?? '-',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: Theme.of(context).textTheme.bodyLarge!.color!,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Premium Button-in-Button design
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: onTap,
-                      borderRadius: BorderRadius.circular(30),
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: color.withAlpha(90),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Masuk',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 18,
-                              height: 18,
-                              decoration: const BoxDecoration(
-                                color: Colors.white24,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  LucideIcons.arrowUpRight,
-                                  size: 10,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 8),
+          Container(
+            height: 2,
+            width: double.infinity,
+            color: Theme.of(context).dividerColor,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(LucideIcons.user, size: 16, color: Theme.of(context).textTheme.bodyMedium!.color!),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  tim['guru_nama'] ?? 'Guru belum ditugaskan',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.bodyMedium!.color!,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: onTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: color,
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'MASUK',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(LucideIcons.arrowRight, size: 14, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
+

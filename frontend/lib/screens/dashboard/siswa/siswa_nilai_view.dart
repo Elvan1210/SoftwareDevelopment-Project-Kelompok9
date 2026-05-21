@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../../config/theme.dart';
+
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../config/api_config.dart';
+
+
+
 
 class SiswaNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -57,7 +59,6 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
       return _buildSkeleton();
@@ -94,118 +95,91 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                       return RepaintBoundary(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: color.withAlpha(isDark ? 55 : 30),
-                              width: 1.2,
-                            ),
+                            color: Theme.of(context).colorScheme.surface,
+                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
                           ),
-                          padding: const EdgeInsets.all(4),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: color.withAlpha(20),
-                                width: 1.0,
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                                    ),
+                                    child: const Icon(LucideIcons.award, color: Colors.white, size: 16),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      n['mapel'] ?? '-',
+                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
+                                        color: Theme.of(context).textTheme.bodyLarge!.color!),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: color.withAlpha(20),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: color.withAlpha(50)),
-                                      ),
-                                      child: Icon(LucideIcons.award, color: color, size: 16),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        n['mapel'] ?? '-',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 13.5,
-                                          fontWeight: FontWeight.w800,
-                                          color: isDark ? Colors.white : AppTheme.textLight,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                                          textBaseline: TextBaseline.alphabetic,
-                                          children: [
-                                            Text(
-                                              val.toStringAsFixed(0),
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 28,
-                                                fontWeight: FontWeight.w900,
-                                                color: color,
-                                                letterSpacing: -1,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              '/ 100',
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                                        textBaseline: TextBaseline.alphabetic,
+                                        children: [
                                           Text(
-                                            n['keterangan'],
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                            val.toStringAsFixed(0),
+                                            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900,
+                                              color: color,
+                                              letterSpacing: -1),
                                           ),
-                                      ],
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: color.withAlpha(20),
-                                        borderRadius: BorderRadius.circular(6),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '/ 100',
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700,
+                                              color: Theme.of(context).textTheme.bodyMedium!.color!,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      child: Text(
-                                        val >= 80 ? 'LULUS' : (val >= 60 ? 'CUKUP' : 'GAGAL'),
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 9.5,
-                                          fontWeight: FontWeight.w900,
-                                          color: color,
+                                      if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
+                                        Text(
+                                          n['keterangan'],
+                                          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).textTheme.bodyMedium!.color!,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                    child: Text(
+                                      val >= 80 ? 'LULUS' : (val >= 60 ? 'CUKUP' : 'GAGAL'),
+                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
+                                        color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ).animate(delay: (i * 60).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
                       );

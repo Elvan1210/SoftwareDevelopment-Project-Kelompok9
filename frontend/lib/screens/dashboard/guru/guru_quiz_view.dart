@@ -11,7 +11,7 @@ import 'guru_quiz_create_screen.dart';
 import 'guru_submission_detail.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../widgets/app_shell.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../widgets/neo_brutalism.dart';
 
 class GuruQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -59,33 +59,31 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         title: Text(
-          'Hapus Kuis?', 
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+          'Hapus Kuis?',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
         ),
         content: Text(
           'Kuis dan semua jawaban siswa akan dihapus secara permanen.',
-          style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white70 : AppTheme.textLight),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
-              'Batal', 
-              style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
+              'Batal',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
             ),
           ),
-          PremiumElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            color: Colors.red,
-            textColor: Colors.white,
-            radius: 10,
-            child: Text('Hapus', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+          NeoButton(
+            onTap: () => Navigator.pop(ctx, true),
+            text: 'Hapus',
+            color: AppTheme.error,
           ),
         ],
       ),
@@ -148,16 +146,18 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     if (quiz.shareCode != null) {
       Clipboard.setData(ClipboardData(text: quiz.shareCode!));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Kode Share Kuis berhasil disalin! Bagikan ke guru/kelas lain.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.green,
+        const SnackBar(
+          content: Text('Kode Share Kuis berhasil disalin! Bagikan ke guru/kelas lain.',
+            style: TextStyle(fontWeight: FontWeight.w800)),
+          backgroundColor: AppTheme.success,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Kode Share tidak tersedia untuk kuis ini.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text('Kode Share tidak tersedia untuk kuis ini.',
+            style: TextStyle(fontWeight: FontWeight.w800)),
+          backgroundColor: AppTheme.error,
         ),
       );
     }
@@ -170,14 +170,14 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         title: Text(
-          'Tarik Kuis (Import)', 
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+          'Tarik Kuis (Import)',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -185,22 +185,22 @@ class _GuruQuizViewState extends State<GuruQuizView> {
           children: [
             Text(
               'Masukkan Kode Share kuis yang ingin Anda tarik ke kelas ini.', 
-              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white70 : AppTheme.textLight),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight),
             ),
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(color: Theme.of(context).dividerColor),
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: TextField(
                 controller: ctrl,
-                style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white : AppTheme.textLight),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
                 decoration: InputDecoration(
                   hintText: 'Contoh: A1B2C3D4',
-                  hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                   border: InputBorder.none,
                 ),
                 textCapitalization: TextCapitalization.characters,
@@ -212,21 +212,19 @@ class _GuruQuizViewState extends State<GuruQuizView> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Batal', 
-              style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
+              'Batal',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
             ),
           ),
-          PremiumElevatedButton(
-            onPressed: () async {
+          NeoButton(
+            onTap: () async {
               final code = ctrl.text.trim().toUpperCase();
               if (code.isEmpty) return;
               Navigator.pop(ctx);
               _importQuiz(code);
             },
+            text: 'Import',
             color: AppTheme.indigoPrimary,
-            textColor: Colors.white,
-            radius: 10,
-            child: Text('Import', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -241,7 +239,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kuis tidak ditemukan atau kode salah'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Kuis tidak ditemukan atau kode salah'), backgroundColor: AppTheme.error),
         );
       }
       return;
@@ -261,7 +259,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
       setState(() => _isLoading = false);
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kuis berhasil ditarik ke kelas ini!'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Kuis berhasil ditarik ke kelas ini!'), backgroundColor: AppTheme.success),
         );
         _loadQuizzes();
       } else {
@@ -286,7 +284,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
           FloatingActionButton.small(
             heroTag: 'import_quiz',
             onPressed: _showImportDialog,
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: AppTheme.info,
             foregroundColor: Colors.white,
             shape: const CircleBorder(),
             child: const Icon(LucideIcons.download),
@@ -296,12 +294,12 @@ class _GuruQuizViewState extends State<GuruQuizView> {
             onPressed: _navigateToCreate,
             icon: LucideIcons.plus,
             label: 'Buat Kuis',
-            color: AppTheme.tealDeep,
+            color: AppTheme.success,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.tealDeep))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.success))
           : _quizzes.isEmpty
               ? _buildEmptyState(theme, isDark)
               : RefreshIndicator(
@@ -346,20 +344,14 @@ class _GuruQuizViewState extends State<GuruQuizView> {
           const SizedBox(height: 24),
           Text(
             'Belum ada kuis',
-            style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-              color: isDark ? Colors.white : AppTheme.textLight,
-            ),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : AppTheme.textLight),
           ),
           const SizedBox(height: 8),
           Text(
             'Buat kuis pertama untuk ujian siswa',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-            ),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           ),
         ],
       ),
@@ -388,40 +380,17 @@ class _QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = quiz.isSecureMode ? Colors.purple : AppTheme.tealDeep;
+    final accentColor = quiz.isSecureMode ? AppTheme.primary : AppTheme.success;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: accentColor.withAlpha(isDark ? 55 : 30),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 60 : 8),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(19),
-            border: Border.all(
-              color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-              width: 1.0,
-            ),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: NeoCard(
+        color: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.onSurface,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               Row(
                 children: [
                   Container(
@@ -444,21 +413,15 @@ class _QuizCard extends StatelessWidget {
                       children: [
                         Text(
                           quiz.title,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
                             color: isDark ? Colors.white : AppTheme.textLight,
-                            letterSpacing: -0.3,
-                          ),
+                            letterSpacing: -0.3),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           quiz.description.isNotEmpty ? quiz.description : 'Tidak ada deskripsi',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12.5,
-                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                            fontWeight: FontWeight.w600),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -467,42 +430,11 @@ class _QuizCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   if (quiz.isScheduled)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withAlpha(20),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.withAlpha(80)),
-                      ),
-                      child: Text(
-                        'TERJADWAL',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.orange,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    )
+                    const NeoBadge(label: 'TERJADWAL', color: AppTheme.warning)
                   else
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: quiz.isActive ? Colors.green.withAlpha(20) : Colors.grey.withAlpha(20),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: quiz.isActive ? Colors.green.withAlpha(160) : Colors.grey.withAlpha(160),
-                        ),
-                      ),
-                      child: Text(
-                        quiz.isActive ? 'AKTIF' : 'NONAKTIF',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: quiz.isActive ? Colors.green : Colors.grey,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                    NeoBadge(
+                      label: quiz.isActive ? 'AKTIF' : 'NONAKTIF',
+                      color: quiz.isActive ? AppTheme.success : Colors.grey,
                     ),
                 ],
               ),
@@ -522,28 +454,28 @@ class _QuizCard extends StatelessWidget {
                   _InfoChip(
                     icon: LucideIcons.clock,
                     label: '${quiz.durationMinutes} Menit',
-                    color: AppTheme.tealLight,
+                    color: AppTheme.success,
                     isDark: isDark,
                   ),
                   if (quiz.isScheduled && quiz.scheduledAt != null)
                     _InfoChip(
                       icon: LucideIcons.calendarClock,
                       label: DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!),
-                      color: Colors.orange,
+                      color: AppTheme.warning,
                       isDark: isDark,
                     ),
                   if (quiz.isSecureMode)
                     _InfoChip(
                       icon: LucideIcons.lock,
                       label: 'Secure Mode',
-                      color: AppTheme.tealDeep,
+                      color: AppTheme.success,
                       isDark: isDark,
                     ),
                 ],
               ),
 
               const SizedBox(height: 16),
-              Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+              Divider(height: 1, color: Theme.of(context).dividerColor),
               const SizedBox(height: 14),
 
               Wrap(
@@ -562,35 +494,34 @@ class _QuizCard extends StatelessWidget {
                       icon: LucideIcons.activity,
                       label: 'Live',
                       onTap: onLiveMonitor,
-                      color: Colors.redAccent,
+                      color: AppTheme.error,
                       isDark: isDark,
                     ),
                   _ActionBtn(
                     icon: LucideIcons.share2,
                     label: 'Share',
                     onTap: onShare,
-                    color: Colors.blue,
+                    color: AppTheme.info,
                     isDark: isDark,
                   ),
                   _ActionBtn(
                     icon: LucideIcons.edit3,
                     label: 'Edit',
                     onTap: onEdit,
-                    color: Colors.purple,
+                    color: AppTheme.primary,
                     isDark: isDark,
                   ),
                   _ActionBtn(
                     icon: LucideIcons.trash2,
                     label: 'Hapus',
                     onTap: onDelete,
-                    color: Colors.red,
+                    color: AppTheme.error,
                     isDark: isDark,
                   ),
                 ],
               ),
             ],
           ),
-        ),
       ),
     );
   }
@@ -614,9 +545,15 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withAlpha(isDark ? 25 : 12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withAlpha(isDark ? 50 : 30)),
+        color: color.withAlpha(isDark ? 25 : 15),
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.onSurface,
+            offset: const Offset(2, 2),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -625,11 +562,7 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: color),
           ),
         ],
       ),
@@ -654,19 +587,32 @@ class _ActionBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 13),
-      label: Text(
-        label,
-        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 11.5),
-      ),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: color.withAlpha(isDark ? 25 : 15),
-        foregroundColor: color,
-        side: BorderSide(color: color.withAlpha(isDark ? 60 : 40), width: 1.0),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: color.withAlpha(isDark ? 30 : 20),
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.onSurface,
+              offset: const Offset(2, 2),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: color),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -724,9 +670,9 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+          border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         child: Column(
           children: [
@@ -735,33 +681,30 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Padding(
+            NeoCard(
+              color: Theme.of(context).colorScheme.surface,
+              borderColor: Theme.of(context).colorScheme.onSurface,
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Icon(LucideIcons.barChart2, color: AppTheme.tealDeep, size: 22),
+                  const Icon(LucideIcons.barChart2, color: AppTheme.success, size: 22),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Hasil: ${widget.quiz.title}',
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight),
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  OutlinedButton.icon(
-                    onPressed: _exportCsv,
-                    icon: const Icon(LucideIcons.download, size: 14),
-                    label: Text('Export CSV', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12)),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
-                      foregroundColor: Colors.green,
-                      side: BorderSide(color: isDark ? const Color(0xFF2E5C3E) : const Color(0xFF82C793), width: 1.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                  NeoButton(
+                    onTap: _exportCsv,
+                    text: 'Export CSV',
+                    color: AppTheme.success,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
                 ],
               ),
@@ -771,8 +714,8 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
               labelColor: AppTheme.indigoPrimary,
               unselectedLabelColor: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
               indicatorColor: AppTheme.indigoPrimary,
-              labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13),
-              unselectedLabelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13),
+              labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800),
+              unselectedLabelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
               tabs: const [
                 Tab(text: 'Daftar Siswa'),
                 Tab(text: 'Statistik'),
@@ -794,25 +737,22 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                   ),
                   Text(
                     'Hanya tampilkan siswa di kelas ini', 
-                    style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
           
-          Divider(height: 1, color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.tealDeep))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.success))
                 : _submissions.isEmpty
                     ? Center(
                         child: Text(
                           'Belum ada siswa yang mengerjakan',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13.5,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                            fontWeight: FontWeight.w700),
                         ),
                       )
                     : TabBarView(
@@ -827,14 +767,12 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                                   ? (sub.score / sub.totalPoints * 100).round()
                                   : 0;
                               final pass = scorePercent >= 70;
-                              final color = pass ? Colors.green : Colors.red;
+                              final color = pass ? AppTheme.success : AppTheme.error;
 
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
-                                ),
+                              return NeoCard(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderColor: pass ? AppTheme.success : AppTheme.error,
+                                padding: EdgeInsets.zero,
                                 child: ListTile(
                                   onTap: () {
                                     Navigator.push(context, MaterialPageRoute(
@@ -856,40 +794,31 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                                     alignment: Alignment.center,
                                     child: Text(
                                       '$scorePercent%',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        color: color,
-                                      ),
+                                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                                        color: color),
                                     ),
                                   ),
                                   title: Text(
                                     sub.studentName,
-                                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
                                   ),
                                   subtitle: Text(
                                     'Skor: ${sub.score}/${sub.totalPoints} • Pelanggaran: ${sub.violations}',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12,
-                                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                      fontWeight: FontWeight.w600),
                                   ),
                                   trailing: sub.autoSubmitted
                                       ? Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: Colors.red.withAlpha(20),
+                                            color: AppTheme.error.withAlpha(20),
                                             borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(color: Colors.red.withAlpha(80)),
+                                            border: Border.all(color: AppTheme.error.withAlpha(80)),
                                           ),
                                           child: Text(
                                             'AUTO',
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.red,
-                                            ),
+                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
+                                              color: AppTheme.error),
                                           ),
                                         )
                                       : const Icon(LucideIcons.chevronRight, size: 16),
@@ -937,24 +866,24 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppTheme.tealDeep.withAlpha(isDark ? 55 : 30), width: 1.2),
+                    border: Border.all(color: AppTheme.success.withAlpha(isDark ? 55 : 30), width: 1.2),
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        const Icon(LucideIcons.trendingUp, color: AppTheme.tealDeep, size: 20),
+                        const Icon(LucideIcons.trendingUp, color: AppTheme.success, size: 20),
                         const SizedBox(height: 8),
-                        Text('Rata-Rata', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                        Text('Rata-Rata', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                         const SizedBox(height: 4),
-                        Text('$avgScore%', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.tealDeep)),
+                        Text('$avgScore%', style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900, color: AppTheme.success)),
                       ],
                     ),
                   ),
@@ -965,24 +894,24 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.green.withAlpha(isDark ? 55 : 30), width: 1.2),
+                    border: Border.all(color: AppTheme.success.withAlpha(isDark ? 55 : 30), width: 1.2),
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        const Icon(LucideIcons.checkCircle, color: Colors.green, size: 20),
+                        const Icon(LucideIcons.checkCircle, color: AppTheme.success, size: 20),
                         const SizedBox(height: 8),
-                        Text('Lulus (≥70)', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                        Text('Lulus (≥70)', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                         const SizedBox(height: 4),
-                        Text('$passed', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.green)),
+                        Text('$passed', style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900, color: AppTheme.success)),
                       ],
                     ),
                   ),
@@ -993,7 +922,7 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
           const SizedBox(height: 24),
           Text(
             'Distribusi Kelulusan', 
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 15, color: isDark ? Colors.white : AppTheme.textLight),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -1004,18 +933,18 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                 centerSpaceRadius: 40,
                 sections: [
                   PieChartSectionData(
-                    color: Colors.green,
+                    color: AppTheme.success,
                     value: passed.toDouble(),
                     title: passed > 0 ? '$passed' : '',
                     radius: 46,
-                    titleStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                    titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   PieChartSectionData(
-                    color: Colors.red,
+                    color: AppTheme.error,
                     value: failed.toDouble(),
                     title: failed > 0 ? '$failed' : '',
                     radius: 46,
-                    titleStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                    titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ],
               ),
@@ -1029,10 +958,10 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                 children: [
                   Container(
                     width: 12, height: 12, 
-                    decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(4)),
+                    decoration: BoxDecoration(color: AppTheme.success, borderRadius: BorderRadius.circular(4)),
                   ),
                   const SizedBox(width: 6),
-                  Text('Lulus', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppTheme.textLight)),
+                  Text('Lulus', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppTheme.textLight)),
                 ],
               ),
               const SizedBox(width: 24),
@@ -1040,10 +969,10 @@ class _SubmissionsSheetState extends State<_SubmissionsSheet> {
                 children: [
                   Container(
                     width: 12, height: 12, 
-                    decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
+                    decoration: BoxDecoration(color: AppTheme.error, borderRadius: BorderRadius.circular(4)),
                   ),
                   const SizedBox(width: 6),
-                  Text('Tidak Lulus', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppTheme.textLight)),
+                  Text('Tidak Lulus', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: isDark ? Colors.white70 : AppTheme.textLight)),
                 ],
               ),
             ],
@@ -1108,9 +1037,9 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
       ),
       child: Column(
         children: [
@@ -1119,7 +1048,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1127,33 +1056,33 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                const Icon(LucideIcons.activity, color: Colors.redAccent, size: 24),
+                const Icon(LucideIcons.activity, color: AppTheme.error, size: 24),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Live Monitor: ${widget.quiz.title}',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(20),
+                    color: AppTheme.success.withAlpha(20),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withAlpha(80)),
+                    border: Border.all(color: AppTheme.success.withAlpha(80)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         width: 8, height: 8,
-                        decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(color: AppTheme.success, shape: BoxShape.circle),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'LIVE', 
-                        style: GoogleFonts.plusJakartaSans(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10),
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppTheme.success, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -1163,7 +1092,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
           ),
           Expanded(
             child: _isLoading && _violations.isEmpty
-                ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.error))
                 : _violations.isEmpty
                     ? Center(
                         child: Column(
@@ -1172,16 +1101,16 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Colors.green.withAlpha(20),
+                                color: AppTheme.success.withAlpha(20),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.green.withAlpha(80)),
+                                border: Border.all(color: AppTheme.success.withAlpha(80)),
                               ),
-                              child: const Icon(LucideIcons.shieldCheck, size: 36, color: Colors.green),
+                              child: const Icon(LucideIcons.shieldCheck, size: 36, color: AppTheme.success),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Belum ada pelanggaran', 
-                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white70 : AppTheme.textLight),
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : AppTheme.textLight),
                             ),
                           ],
                         ),
@@ -1195,23 +1124,23 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.red.withAlpha(isDark ? 55 : 30), width: 1.2),
+                              border: Border.all(color: AppTheme.error.withAlpha(isDark ? 55 : 30), width: 1.2),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                                  color: Theme.of(context).colorScheme.surface,
                                   borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                                  border: Border.all(color: Theme.of(context).dividerColor),
                                 ),
                                 padding: const EdgeInsets.all(16),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(LucideIcons.alertTriangle, color: Colors.red, size: 20),
+                                    const Icon(LucideIcons.alertTriangle, color: AppTheme.error, size: 20),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
@@ -1219,12 +1148,12 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                                         children: [
                                           Text(
                                             v['studentName'] ?? 'Unknown',
-                                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             v['reason'] ?? 'Pelanggaran terdeteksi',
-                                            style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: isDark ? Colors.white70 : AppTheme.textLight, fontWeight: FontWeight.w500),
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight, fontWeight: FontWeight.w500),
                                           ),
                                         ],
                                       ),
@@ -1233,7 +1162,7 @@ class _LiveMonitorSheetState extends State<_LiveMonitorSheet> {
                                       v['timestamp'] != null 
                                           ? DateFormat('HH:mm:ss').format(DateTime.parse(v['timestamp']).toLocal())
                                           : '-',
-                                      style: GoogleFonts.plusJakartaSans(fontSize: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w800),
+                                      style: Theme.of(context).textTheme.labelLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w800),
                                     ),
                                   ],
                                 ),

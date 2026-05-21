@@ -5,18 +5,10 @@ import '../../../config/api_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'guru_team_detail_layout.dart';
 import '../../../widgets/app_shell.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../config/theme.dart';
+import '../../../widgets/neo_brutalism.dart';
 
-// ── Palette ────────────────────────────────────────────────────────────────
-class _P {
-  static const ink = Color(0xFF001E2B);
-  static const primary = Color(0xFF3D6754);
-  static const white = Color(0xFFFFFFFF);
-  static const muted = Color(0xFF414944);
-  static const outline = Color(0xFF717974);
-}
 // Warna header per kelas (cycling)
 const _headerColors = [
   Color(0xFFB7E5CD), // primary container - hijau mint
@@ -79,206 +71,208 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
 
     showDialog(
       context: context,
-      barrierColor: _P.ink.withAlpha(130),
+      barrierColor: Colors.black.withAlpha(130),
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(20),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            decoration: const BoxDecoration(
-              color: _P.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(8),
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
+        builder: (context, setDialogState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(20),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 400),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurface, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      offset: const Offset(4, 4))
+                ],
               ),
-              border:
-                  Border.fromBorderSide(BorderSide(color: _P.ink, width: 2)),
-              boxShadow: [BoxShadow(color: _P.ink, offset: Offset(4, 4))],
-            ),
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Close button
-                Align(
-                  alignment: Alignment.topRight,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(ctx),
-                    child:
-                        const Icon(LucideIcons.x, size: 20, color: _P.outline),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text('Gabung Kelas',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: _P.ink,
-                    )),
-                const SizedBox(height: 6),
-                Text('Masukkan kode akses kelas yang diberikan oleh Admin.',
-                    style: GoogleFonts.inter(fontSize: 13, color: _P.muted)),
-                const SizedBox(height: 24),
-
-                // Label
-                Text('KODE AKSES',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: _P.muted,
-                      letterSpacing: 0.8,
-                    )),
-                const SizedBox(height: 8),
-
-                // Input kode
-                TextField(
-                  controller: codeCtrl,
-                  textAlign: TextAlign.center,
-                  textCapitalization: TextCapitalization.characters,
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: _P.ink,
-                    letterSpacing: 12,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '______',
-                    hintStyle: GoogleFonts.jetBrainsMono(
-                      fontSize: 24,
-                      color: _P.outline,
-                      letterSpacing: 12,
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFFDBF1FF),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.zero,
-                      borderSide: BorderSide(color: _P.ink, width: 2),
-                    ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.zero,
-                      borderSide: BorderSide(color: _P.ink, width: 2),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.zero,
-                      borderSide: BorderSide(color: _P.primary, width: 2),
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Close button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(ctx),
+                      child: Icon(LucideIcons.x,
+                          size: 20,
+                          color: isDark
+                              ? AppTheme.textMutedDk
+                              : AppTheme.textMutedLt),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  Text('Gabung Kelas',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : AppTheme.textLight)),
+                  const SizedBox(height: 6),
+                  Text(
+                      'Masukkan kode akses kelas yang diberikan oleh Admin.',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: isDark
+                              ? AppTheme.textMutedDk
+                              : AppTheme.textMutedLt)),
+                  const SizedBox(height: 24),
 
-                // Tombol Gabung
-                GestureDetector(
-                  onTap: isSubmitting
-                      ? null
-                      : () async {
-                          if (codeCtrl.text.trim().isEmpty) return;
-                          setDialogState(() => isSubmitting = true);
-                          try {
-                            final response = await http.post(
-                              Uri.parse('$baseUrl/api/kelas/join'),
-                              headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ${widget.token}'
-                              },
-                              body: jsonEncode({
-                                'kode_akses': codeCtrl.text.trim().toUpperCase()
-                              }),
-                            );
-                            final resBody = jsonDecode(response.body);
-                            if (response.statusCode == 200) {
-                              if (ctx.mounted) {
-                                Navigator.pop(ctx);
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content:
-                                      Text(resBody['message'] ?? 'Berhasil!'),
-                                  backgroundColor: _P.primary,
-                                ));
+                  // Label
+                  Text('KODE AKSES',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? AppTheme.textMutedDk
+                              : AppTheme.textMutedLt,
+                          letterSpacing: 0.8)),
+                  const SizedBox(height: 8),
+
+                  // Input kode
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            offset: const Offset(3, 3),
+                            blurRadius: 0)
+                      ],
+                    ),
+                    child: TextField(
+                      controller: codeCtrl,
+                      textAlign: TextAlign.center,
+                      textCapitalization: TextCapitalization.characters,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : AppTheme.textLight,
+                          letterSpacing: 2),
+                      decoration: InputDecoration(
+                        hintText: 'X7KL9M',
+                        hintStyle:
+                            Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: isDark
+                                    ? AppTheme.textMutedDk
+                                    : AppTheme.textMutedLt,
+                                letterSpacing: 2),
+                        border: InputBorder.none,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Tombol Gabung
+                  GestureDetector(
+                    onTap: isSubmitting
+                        ? null
+                        : () async {
+                            if (codeCtrl.text.trim().isEmpty) return;
+                            setDialogState(() => isSubmitting = true);
+                            try {
+                              final response = await http.post(
+                                Uri.parse('$baseUrl/api/kelas/join'),
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': 'Bearer ${widget.token}'
+                                },
+                                body: jsonEncode({
+                                  'kode_akses':
+                                      codeCtrl.text.trim().toUpperCase()
+                                }),
+                              );
+                              final resBody = jsonDecode(response.body);
+                              if (response.statusCode == 200) {
+                                if (ctx.mounted) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                        resBody['message'] ?? 'Berhasil!'),
+                                    backgroundColor: AppTheme.primary,
+                                  ));
+                                }
+                                _fetchMyTeams();
+                              } else {
+                                if (ctx.mounted) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content:
+                                        Text(resBody['message'] ?? 'Gagal'),
+                                    backgroundColor: AppTheme.error,
+                                  ));
+                                }
+                                setDialogState(() => isSubmitting = false);
                               }
-                              _fetchMyTeams();
-                            } else {
-                              if (ctx.mounted) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: Text(resBody['message'] ?? 'Gagal'),
-                                  backgroundColor: AppTheme.rose,
-                                ));
-                              }
+                            } catch (e) {
                               setDialogState(() => isSubmitting = false);
                             }
-                          } catch (e) {
-                            setDialogState(() => isSubmitting = false);
-                          }
-                        },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: const BoxDecoration(
-                      color: _P.primary,
-                      border: Border.fromBorderSide(
-                          BorderSide(color: _P.ink, width: 2)),
-                      boxShadow: [
-                        BoxShadow(color: _P.ink, offset: Offset(4, 4))
-                      ],
-                    ),
-                    child: isSubmitting
-                        ? const Center(
-                            child: SizedBox(
-                                width: 20,
-                                height: 20,
+                          },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isSubmitting
+                            ? AppTheme.primary.withAlpha(150)
+                            : AppTheme.primary,
+                        border: Border.all(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              offset: const Offset(3, 3),
+                              blurRadius: 0)
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isSubmitting) ...[
+                            const SizedBox(
+                                width: 16,
+                                height: 16,
                                 child: CircularProgressIndicator(
-                                    color: _P.white, strokeWidth: 2)))
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                                Text('GABUNG SEKARANG',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800,
-                                      color: _P.white,
-                                      letterSpacing: 0.5,
-                                    )),
-                                const SizedBox(width: 8),
-                                const Icon(LucideIcons.logIn,
-                                    size: 16, color: _P.white),
-                              ]),
+                                    color: Colors.white, strokeWidth: 2)),
+                            const SizedBox(width: 8),
+                          ] else ...[
+                            const Icon(LucideIcons.logIn,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 8),
+                          ],
+                          Text('GABUNG SEKARANG',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5)),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                // Tombol Batal
-                GestureDetector(
-                  onTap: () => Navigator.pop(ctx),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFCEEDFF),
-                      border: Border.all(color: _P.ink, width: 2),
-                      boxShadow: const [
-                        BoxShadow(color: _P.ink, offset: Offset(4, 4))
-                      ],
-                    ),
-                    child: Center(
-                      child: Text('BATAL',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: _P.ink,
-                            letterSpacing: 0.5,
-                          )),
-                    ),
+                  // Tombol Batal
+                  NeoButton(
+                    text: 'BATAL',
+                    color: Theme.of(context).colorScheme.surface,
+                    textColor: isDark ? Colors.white : AppTheme.textLight,
+                    onTap: () => Navigator.pop(ctx),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -287,11 +281,11 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         itemCount: 3,
         itemBuilder: (_, __) => const Padding(
           padding: EdgeInsets.only(bottom: 20),
-          child: SkeletonLoader(height: 280, radius: 4),
+          child: SkeletonLoader(height: 280),
         ),
       );
     }
@@ -303,23 +297,28 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: _P.primary,
-            border: Border.all(color: _P.ink, width: 2),
-            boxShadow: const [
-              BoxShadow(color: _P.ink, offset: Offset(4, 4)),
+            color: AppTheme.primary,
+            border: Border.all(
+                color: Theme.of(context).colorScheme.onSurface, width: 2),
+            boxShadow: [
+              BoxShadow(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  offset: const Offset(4, 4),
+                  blurRadius: 0)
             ],
           ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(LucideIcons.plus, color: _P.white, size: 18),
-            const SizedBox(width: 8),
-            Text('GABUNG KELAS',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: _P.white,
-                  letterSpacing: 0.5,
-                )),
-          ]),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.plus, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text('GABUNG KELAS',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 0.5)),
+            ],
+          ),
         ),
       ).animate().fadeIn().slideY(begin: 0.5),
       body: _myTeams.isEmpty
@@ -327,64 +326,65 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
               icon: LucideIcons.layoutGrid,
               message: 'Belum ada kelas ampuan.',
               subtitle: 'Hubungi admin untuk ditugaskan ke kelas.',
-              color: _P.primary,
+              color: AppTheme.primary,
             )
           : RefreshIndicator(
               onRefresh: _fetchMyTeams,
-              color: _P.primary,
-              child: ListView.builder(
-                physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics()),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                itemCount: _myTeams.length,
-                itemBuilder: (context, index) {
-                  final tim = _myTeams[index];
-                  final headerColor =
-                      _headerColors[index % _headerColors.length];
-                  final accentColor =
-                      _accentColors[index % _accentColors.length];
-                  // Asymmetric per card cycling
-                  final radii = [
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(32),
-                      topRight: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
-                    ),
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                      bottomLeft: Radius.circular(32),
-                      bottomRight: Radius.circular(8),
-                    ),
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(32),
-                    ),
-                  ];
-                  final radius = radii[index % radii.length];
+              color: AppTheme.primary,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final pad = w >= 900 ? 40.0 : 24.0;
+                  final isWide = w >= 900;
+                  final crossAxisCount = w >= 1200 ? 3 : (w >= 750 ? 2 : 1);
+                  final maxW = isWide ? 1100.0 : double.infinity;
 
-                  return _GuruTeamCard(
-                    tim: tim,
-                    headerColor: headerColor,
-                    accentColor: accentColor,
-                    radius: radius,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => GuruTeamDetailLayout(
-                          userData: widget.userData,
-                          token: widget.token,
-                          teamData: tim,
+                  return SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    padding: EdgeInsets.fromLTRB(pad, 24, pad, 120),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxW),
+                        child: Wrap(
+                          spacing: 20,
+                          runSpacing: 20,
+                          children: List.generate(_myTeams.length, (index) {
+                            final tim = _myTeams[index];
+                            final headerColor =
+                                _headerColors[index % _headerColors.length];
+                            final accentColor =
+                                _accentColors[index % _accentColors.length];
+
+                            final cardW = crossAxisCount == 1
+                                ? double.infinity
+                                : (isWide && w >= 1200
+                                    ? (1100 - (20 * 2)) / 3
+                                    : (w - pad * 2 - 20) / 2);
+
+                            return SizedBox(
+                              width: cardW,
+                              child: _GuruTeamCard(
+                                tim: tim,
+                                headerColor: headerColor,
+                                accentColor: accentColor,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => GuruTeamDetailLayout(
+                                      userData: widget.userData,
+                                      token: widget.token,
+                                      teamData: tim,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
                         ),
                       ),
                     ),
-                  )
-                      .animate(delay: (index * 80).ms)
-                      .fadeIn(duration: 350.ms)
-                      .slideY(begin: 0.06, curve: Curves.easeOutQuart);
+                  );
                 },
               ),
             ),
@@ -397,14 +397,12 @@ class _GuruTeamCard extends StatelessWidget {
   final dynamic tim;
   final Color headerColor;
   final Color accentColor;
-  final BorderRadius radius;
   final VoidCallback onTap;
 
   const _GuruTeamCard({
     required this.tim,
     required this.headerColor,
     required this.accentColor,
-    required this.radius,
     required this.onTap,
   });
 
@@ -414,148 +412,124 @@ class _GuruTeamCard extends StatelessWidget {
     final mapel = tim['mapel']?.toString() ?? '';
     final siswaCount = (tim['siswa_ids'] as List?)?.length ?? 0;
     final kodeKelas = tim['kode_kelas']?.toString() ?? '';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: _P.white,
-          borderRadius: radius,
-          border: Border.all(color: _P.ink, width: 2),
-          boxShadow: const [
-            BoxShadow(color: _P.ink, offset: Offset(4, 4)),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: radius,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header color block ──────────────────────────────
-              Container(
-                width: double.infinity,
-                height: 100,
-                color: headerColor,
-                padding: const EdgeInsets.all(16),
-                child: Stack(
-                  children: [
-                    // Mapel label
-                    if (mapel.isNotEmpty)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _P.ink,
-                            border: Border.all(color: _P.ink),
-                          ),
-                          child: Text(
-                            mapel.toUpperCase(),
-                            style: GoogleFonts.inter(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              color: _P.white,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ),
-                      ),
-                    // Kode kelas
-                    if (kodeKelas.isNotEmpty)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _P.white,
-                            border: Border.all(color: _P.ink),
-                          ),
-                          child: Text(
-                            kodeKelas,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: _P.ink,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-
-              // ── Body ───────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Nama kelas
-                    Text(namaKelas,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: _P.ink,
-                          letterSpacing: -0.5,
-                          height: 1.2,
-                        )),
-                    const SizedBox(height: 8),
-
-                    // Siswa count
-                    Row(children: [
-                      const Icon(LucideIcons.users,
-                          size: 14, color: _P.outline),
-                      const SizedBox(width: 6),
-                      Text('$siswaCount Siswa',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: _P.muted,
-                          )),
-                    ]),
-
-                    const SizedBox(height: 16),
-
-                    // Button MASUK KELAS
-                    GestureDetector(
-                      onTap: onTap,
+      child: NeoCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header color block ──────────────────────────────
+            Container(
+              width: double.infinity,
+              height: 100,
+              color: headerColor,
+              padding: const EdgeInsets.all(16),
+              child: Stack(
+                children: [
+                  // Mapel label
+                  if (mapel.isNotEmpty)
+                    Positioned(
+                      top: 0,
+                      left: 0,
                       child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: accentColor,
-                          border: Border.all(color: _P.ink, width: 2),
-                          boxShadow: const [
-                            BoxShadow(color: _P.ink, offset: Offset(3, 3)),
-                          ],
+                          border: Border.all(
+                              color: accentColor,
+                              width: 1),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('MASUK KELAS',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                  color: _P.white,
-                                  letterSpacing: 0.5,
-                                )),
-                            const SizedBox(width: 8),
-                            const Icon(LucideIcons.arrowRight,
-                                size: 16, color: _P.white),
-                          ],
+                        child: Text(
+                          mapel.toUpperCase(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.8),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  // Kode kelas
+                  if (kodeKelas.isNotEmpty)
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                              color: accentColor,
+                              width: 1.5),
+                        ),
+                        child: Text(
+                          kodeKelas,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: accentColor,
+                                  letterSpacing: 1),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            // ── Body ───────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nama kelas
+                  Text(namaKelas,
+                      style: Theme.of(context)
+                          .textTheme
+                          .displayLarge
+                          ?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: isDark ? Colors.white : AppTheme.textLight,
+                              letterSpacing: -0.5,
+                              height: 1.2)),
+                  const SizedBox(height: 8),
+
+                  // Siswa count
+                  Row(children: [
+                    Icon(LucideIcons.users,
+                        size: 14,
+                        color: isDark
+                            ? AppTheme.textMutedDk
+                            : AppTheme.textMutedLt),
+                    const SizedBox(width: 6),
+                    Text('$siswaCount Siswa',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: isDark
+                                ? AppTheme.textMutedDk
+                                : AppTheme.textMutedLt)),
+                  ]),
+
+                  const SizedBox(height: 16),
+
+                  // Button MASUK KELAS
+                  NeoButton(
+                    text: 'MASUK KELAS',
+                    color: accentColor,
+                    onTap: onTap,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

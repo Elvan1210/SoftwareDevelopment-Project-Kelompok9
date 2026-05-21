@@ -11,7 +11,7 @@ class ViolationRecord {
   final String description;
   final DateTime timestamp;
 
-  const ViolationRecord({
+  ViolationRecord({
     required this.type,
     required this.description,
     required this.timestamp,

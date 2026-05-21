@@ -15,9 +15,10 @@ import '../../../config/theme.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
+import '../../../widgets/neo_brutalism.dart';
 import '../../../widgets/jitsi_embed.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -363,62 +364,62 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ─── NEO-BRUTALIST HEADER ───
-          _BrutalBadge(label: 'KELAS AKTIF', isDark: isDark),
+          const NeoBadge(label: 'KELAS AKTIF', color: AppTheme.success),
           const SizedBox(height: 8),
           Text(
             namaKelas,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : const Color(0xFF001E2B),
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : AppTheme.textLight,
               letterSpacing: -1.2,
               height: 1.1,
             ),
           ),
           Text(
             tahunAjar,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: isDark ? Colors.white54 : const Color(0xFF6B6B6B),
-              fontWeight: FontWeight.w400,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+              fontWeight: FontWeight.w700,
             ),
           ),
 
           const SizedBox(height: 20),
 
           // ─── LIVE SESSION BUTTON (Neo-Brutalist) ───
-          _BrutalButton(
-            label: _liveStatus == 'inactive'
-                ? 'BUAT SESI LIVE'
-                : (_currentMeetingId != null ? 'GABUNG LIVE' : 'AKHIRI SESI'),
-            icon: _liveStatus == 'inactive' ? Icons.videocam_rounded : Icons.stop_rounded,
-            onPressed: _liveStatus == 'inactive'
-                ? _startLiveClass
-                : () {
-                    if (_currentMeetingId != null) {
-                      joinJitsiMeeting(
-                        context: context,
-                        meetingId: _currentMeetingId!,
-                        serverUrl: 'https://meet.ffmuc.net',
-                        userName: widget.userData['nama'] ?? 'Guru',
-                        userEmail: widget.userData['email'] ?? '',
-                        subject: 'Kelas Live: $namaKelas',
-                        onClosed: _endLiveClass,
-                      );
-                    } else {
-                      _endLiveClass();
-                    }
-                  },
-            isActive: _liveStatus != 'inactive',
-            isDark: isDark,
+          Row(
+            children: [
+              Expanded(
+                child: NeoButton(
+                  text: _liveStatus == 'inactive'
+                      ? 'BUAT SESI LIVE'
+                      : (_currentMeetingId != null ? 'GABUNG LIVE' : 'AKHIRI SESI'),
+                  color: _liveStatus == 'inactive' ? AppTheme.primary : AppTheme.error,
+                  onTap: _liveStatus == 'inactive'
+                      ? _startLiveClass
+                      : () {
+                          if (_currentMeetingId != null) {
+                            joinJitsiMeeting(
+                              context: context,
+                              meetingId: _currentMeetingId!,
+                              serverUrl: 'https://meet.ffmuc.net',
+                              userName: widget.userData['nama'] ?? 'Guru',
+                              userEmail: widget.userData['email'] ?? '',
+                              subject: 'Kelas Live: $namaKelas',
+                              onClosed: _endLiveClass,
+                            );
+                          } else {
+                            _endLiveClass();
+                          }
+                        },
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),
 
           // ─── KODE KELAS ───
-          _BrutalCard(
-            isDark: isDark,
-            asymmetric: true,
+          NeoCard(
+            color: Theme.of(context).colorScheme.primaryContainer,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -427,28 +428,26 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   children: [
                     Text(
                       'KODE KELAS',
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
                         letterSpacing: 1.5,
-                        color: isDark ? Colors.white54 : const Color(0xFF717974),
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                       ),
                     ),
-                    Icon(Icons.key_rounded, size: 18,
-                        color: isDark ? Colors.white38 : const Color(0xFF9E9E9E)),
+                    Icon(LucideIcons.key, size: 18,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                   ],
                 ),
                 const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0D1117) : Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     border: Border.all(
-                        color: isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B)),
+                        color: Theme.of(context).colorScheme.onSurface, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B),
-                        offset: const Offset(4, 4),
+                        color: Theme.of(context).colorScheme.onSurface,
+                        offset: const Offset(3, 3),
                         blurRadius: 0,
                       ),
                     ],
@@ -462,11 +461,9 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             kodeKelas,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
                               letterSpacing: 3,
-                              color: isDark ? Colors.white : const Color(0xFF001E2B),
+                              color: isDark ? Colors.white : AppTheme.textLight,
                             ),
                           ),
                         ),
@@ -477,15 +474,12 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           if (kodeKelas.isNotEmpty && kodeKelas != '-') {
                             Clipboard.setData(ClipboardData(text: kodeKelas));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.all(20),
-                                backgroundColor: const Color(0xFF3D6754),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4)),
-                                content: Text('Kode $kodeKelas disalin!',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w700, color: Colors.white)),
+                                backgroundColor: AppTheme.success,
+                                content: Text('Kode kelas disalin!',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w900, color: Colors.white)),
                               ),
                             );
                           }
@@ -494,10 +488,10 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           width: 34, height: 34,
                           decoration: BoxDecoration(
                             border: Border.all(
-                                color: isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B)),
+                                color: Theme.of(context).colorScheme.onSurface, width: 2),
                           ),
-                          child: Icon(Icons.content_copy_rounded, size: 16,
-                              color: isDark ? Colors.white70 : const Color(0xFF001E2B)),
+                          child: Icon(LucideIcons.copy, size: 16,
+                              color: isDark ? Colors.white : AppTheme.textLight),
                         ),
                       ),
                     ],
@@ -510,10 +504,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
           const SizedBox(height: 12),
 
           // ─── STATISTIK SISWA ───
-          _BrutalCard(
-            isDark: isDark,
-            asymmetric: true,
-            fillColor: isDark ? const Color(0xFF1E2A1E) : const Color(0xFFE8F5EE),
+          NeoCard(
+            color: Theme.of(context).colorScheme.surface,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -521,43 +513,34 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Statistik Siswa',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14, fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : const Color(0xFF001E2B))),
-                    Icon(Icons.analytics_rounded, size: 18,
-                        color: isDark ? Colors.white38 : const Color(0xFF9E9E9E)),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : AppTheme.textLight)),
+                    Icon(LucideIcons.barChart2, size: 18,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: _BrutalStatMini(
+                      child: NeoStatCard(
                         label: 'TERDAFTAR',
                         value: '$jumlahSiswa',
-                        isDark: isDark,
-                        bgColor: isDark ? const Color(0xFF0D1117) : Colors.white,
-                        shadowColor: isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B),
-                        textColor: isDark ? Colors.white : const Color(0xFF001E2B),
-                        labelColor: isDark ? Colors.white54 : const Color(0xFF6B6B6B),
+                        icon: LucideIcons.users,
+                        color: AppTheme.primary,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
+                      child: NeoStatCard(
+                        label: 'PERMINTAAN',
+                        value: '$_pendingCount',
+                        icon: LucideIcons.userPlus,
+                        color: AppTheme.warning,
                         onTap: () => setState(() {
                           _activeTabID = 'permintaan';
                           _activeTitle = 'Permintaan';
                         }),
-                        child: _BrutalStatMini(
-                          label: 'PERMINTAAN',
-                          value: '$_pendingCount',
-                          isDark: isDark,
-                          bgColor: isDark ? const Color(0xFF2A1A0D) : const Color(0xFFFFF3E8),
-                          shadowColor: const Color(0xFF8D4D33),
-                          textColor: const Color(0xFF8D4D33),
-                          labelColor: const Color(0xFF8D4D33),
-                        ),
                       ),
                     ),
                   ],
@@ -569,113 +552,73 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
 
           const SizedBox(height: 20),
 
-          // ─── MANAJEMEN KELAS SECTION ───
-          Row(
+          const NeoSectionHeader(title: 'Manajemen Kelas'),
+          
+          GridView.count(
+            crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10,
+            shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.7,
             children: [
-              Icon(Icons.grid_view_rounded, size: 18,
-                  color: isDark ? AppTheme.primary : const Color(0xFF3D6754)),
-              const SizedBox(width: 8),
-              Text('Manajemen Kelas',
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16, fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : const Color(0xFF001E2B))),
+              NeoMenuCard(label: 'PRESENSI\nKELAS', icon: LucideIcons.userCheck,
+                color: AppTheme.primary,
+                onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi Kelas'; })),
+              NeoMenuCard(label: 'PENUGASAN\nTUGAS', icon: LucideIcons.clipboardList,
+                color: AppTheme.success,
+                onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Penugasan Tugas'; })),
+              NeoMenuCard(label: 'KUIS &\nUJIAN', icon: LucideIcons.helpCircle,
+                color: AppTheme.warning,
+                onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
+              NeoMenuCard(label: 'NILAI\nSISWA', icon: LucideIcons.award,
+                color: AppTheme.rose,
+                onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai Siswa'; })),
+              NeoMenuCard(label: 'MATERI\nAJAR', icon: LucideIcons.bookOpen,
+                color: AppTheme.sky,
+                onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi Ajar'; })),
             ],
-          ),
-          const SizedBox(height: 12),
-
-          // ─── ROW 1: PRESENSI | PENUGASAN ───
-          SizedBox(
-            height: 100,
-            child: Row(
-              children: [
-                Expanded(
-                  child: _BrutalMenuCard(
-                    label: 'PRESENSI\nKELAS',
-                    icon: Icons.how_to_reg_rounded,
-                    isDark: isDark,
-                    onTap: () => setState(() {
-                      _activeTabID = 'presensi';
-                      _activeTitle = 'Presensi Kelas';
-                    }),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _BrutalMenuCard(
-                    label: 'PENUGASAN\nTUGAS',
-                    icon: Icons.assignment_rounded,
-                    isDark: isDark,
-                    onTap: () => setState(() {
-                      _activeTabID = 'tugas';
-                      _activeTitle = 'Penugasan Tugas';
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // ─── ROW 2: KUIS | NILAI ───
-          SizedBox(
-            height: 100,
-            child: Row(
-              children: [
-                Expanded(
-                  child: _BrutalMenuCard(
-                    label: 'KUIS &\nUJIAN',
-                    icon: Icons.quiz_rounded,
-                    isDark: isDark,
-                    onTap: () => setState(() {
-                      _activeTabID = 'kuis';
-                      _activeTitle = 'Kuis & Ujian';
-                    }),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _BrutalMenuCard(
-                    label: 'NILAI\nSISWA',
-                    icon: Icons.grade_rounded,
-                    isDark: isDark,
-                    onTap: () => setState(() {
-                      _activeTabID = 'nilai';
-                      _activeTitle = 'Nilai Siswa';
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // ─── ROW 3: MATERI AJAR (full width) ───
-          SizedBox(
-            height: 100,
-            width: double.infinity,
-            child: _BrutalMenuCard(
-              label: 'MATERI\nAJAR',
-              icon: Icons.library_books_rounded,
-              isDark: isDark,
-              onTap: () => setState(() {
-                _activeTabID = 'materi';
-                _activeTitle = 'Materi Ajar';
-              }),
-            ),
           ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
 
           const SizedBox(height: 16),
 
           // ─── DISKUSI TAMBAHAN BANNER ───
-          _BrutalInfoBanner(
-            isDark: isDark,
-            title: 'Diskusi Tambahan?',
-            subtitle: 'Jadwalkan sesi tutorial interaktif untuk materi yang sulit.',
-            buttonLabel: 'MULAI SESI',
-            onPressed: () => setState(() {
-              _activeTabID = 'channel_general';
-              _activeTitle = 'General';
-            }),
+          NeoCard(
+            color: AppTheme.indigoPrimary.withAlpha(20),
+            borderColor: AppTheme.indigoPrimary,
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Diskusi Tambahan?',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : AppTheme.textLight,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Jadwalkan sesi tutorial interaktif untuk materi yang sulit.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                NeoButton(
+                  text: 'MULAI SESI',
+                  color: AppTheme.indigoPrimary,
+                  onTap: () => setState(() {
+                    _activeTabID = 'channel_general';
+                    _activeTitle = 'General';
+                  }),
+                ),
+              ],
+            ),
           ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
         ],
       ),
@@ -1290,427 +1233,4 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// NEO-BRUTALIST WIDGET SET
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Small uppercase badge pill — "KELAS AKTIF"
-class _BrutalBadge extends StatelessWidget {
-  final String label;
-  final bool isDark;
-  const _BrutalBadge({required this.label, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3D6754) : const Color(0xFF8D4D33),
-        borderRadius: BorderRadius.zero,
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.5,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
-
-/// Neo-brutalist action button with offset shadow and press animation
-class _BrutalButton extends StatefulWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onPressed;
-  final bool isActive;
-  final bool isDark;
-
-  const _BrutalButton({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-    required this.isActive,
-    required this.isDark,
-  });
-
-  @override
-  State<_BrutalButton> createState() => _BrutalButtonState();
-}
-
-class _BrutalButtonState extends State<_BrutalButton> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = widget.isActive
-        ? const Color(0xFFBA1A1A)
-        : (widget.isDark ? const Color(0xFF3D6754) : const Color(0xFF3D6754));
-    final shadowColor = widget.isDark ? const Color(0xFF001E2B) : const Color(0xFF001E2B);
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) {
-        setState(() => _pressed = false);
-        widget.onPressed();
-      },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 80),
-        transform: Matrix4.translationValues(
-          _pressed ? 2 : 0,
-          _pressed ? 2 : 0,
-          0,
-        ),
-        decoration: BoxDecoration(
-          color: bgColor,
-          border: Border.all(color: shadowColor),
-          boxShadow: _pressed
-              ? []
-              : [
-                  BoxShadow(
-                    color: shadowColor,
-                    offset: const Offset(4, 4),
-                    blurRadius: 0,
-                  ),
-                ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(widget.icon, color: Colors.white, size: 16),
-            const SizedBox(width: 8),
-            Text(
-              widget.label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.0,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Flat card with optional asymmetric border-radius and flat border
-class _BrutalCard extends StatelessWidget {
-  final Widget child;
-  final bool isDark;
-  final bool asymmetric;
-  final Color? fillColor;
-
-  const _BrutalCard({
-    required this.child,
-    required this.isDark,
-    this.asymmetric = false,
-    this.fillColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = fillColor ??
-        (isDark ? const Color(0xFF1A1040) : const Color(0xFFFFFFFF));
-    final borderColor = isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bg,
-        border: Border.all(color: borderColor),
-        borderRadius: asymmetric
-            ? const BorderRadius.only(
-                topRight: Radius.circular(20),
-                topLeft: Radius.circular(2),
-                bottomLeft: Radius.circular(2),
-                bottomRight: Radius.circular(2),
-              )
-            : BorderRadius.circular(2),
-      ),
-      child: child,
-    );
-  }
-}
-
-/// Mini stat box with thick flat shadow
-class _BrutalStatMini extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isDark;
-  final Color bgColor;
-  final Color shadowColor;
-  final Color textColor;
-  final Color labelColor;
-
-  const _BrutalStatMini({
-    required this.label,
-    required this.value,
-    required this.isDark,
-    required this.bgColor,
-    required this.shadowColor,
-    required this.textColor,
-    required this.labelColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border.all(color: shadowColor),
-        boxShadow: [
-          BoxShadow(color: shadowColor, offset: const Offset(4, 4), blurRadius: 0),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-              color: labelColor,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              color: textColor,
-              height: 1.0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Neo-brutalist menu card (square grid item)
-class _BrutalMenuCard extends StatefulWidget {
-  final String label;
-  final IconData icon;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _BrutalMenuCard({
-    required this.label,
-    required this.icon,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  State<_BrutalMenuCard> createState() => _BrutalMenuCardState();
-}
-
-class _BrutalMenuCardState extends State<_BrutalMenuCard> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final borderColor = widget.isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B);
-    final hoverBg = widget.isDark ? const Color(0xFF2D2A4A) : const Color(0xFFB7E5CD);
-    final defaultBg = widget.isDark ? const Color(0xFF1A1040) : Colors.white;
-
-    return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (_) => setState(() => _hovered = true),
-      onTapUp: (_) => setState(() => _hovered = false),
-      onTapCancel: () => setState(() => _hovered = false),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
-            color: _hovered ? hoverBg : defaultBg,
-            border: Border.all(
-              color: _hovered ? const Color(0xFF3D6754) : borderColor,
-            ),
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(20),
-              topLeft: Radius.circular(2),
-              bottomLeft: Radius.circular(2),
-              bottomRight: Radius.circular(2),
-            ),
-          ),
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  AnimatedScale(
-                    scale: _hovered ? 1.12 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      widget.icon,
-                      size: 28,
-                      color: widget.isDark
-                          ? (_hovered ? Colors.white : const Color(0xFFBDA6CE))
-                          : (_hovered ? const Color(0xFF3D6754) : const Color(0xFF001E2B)),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.label,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                      height: 1.4,
-                      color: widget.isDark
-                          ? (_hovered ? Colors.white : const Color(0xFFBDA6CE))
-                          : const Color(0xFF001E2B),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Bottom info banner — "Diskusi Tambahan?"
-class _BrutalInfoBanner extends StatelessWidget {
-  final bool isDark;
-  final String title;
-  final String subtitle;
-  final String buttonLabel;
-  final VoidCallback onPressed;
-
-  const _BrutalInfoBanner({
-    required this.isDark,
-    required this.title,
-    required this.subtitle,
-    required this.buttonLabel,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final borderColor = isDark ? const Color(0xFF3D3270) : const Color(0xFF001E2B);
-    final bgColor = isDark ? const Color(0xFF1E2A3A) : const Color(0xFFCEEDFF);
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border.all(color: borderColor),
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(20),
-          topLeft: Radius.circular(2),
-          bottomLeft: Radius.circular(2),
-          bottomRight: Radius.circular(2),
-        ),
-        boxShadow: [
-          BoxShadow(color: borderColor, offset: const Offset(4, 4), blurRadius: 0),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : const Color(0xFF001E2B),
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: isDark ? Colors.white60 : const Color(0xFF6B6B6B),
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          _BrutalInfoButton(label: buttonLabel, onPressed: onPressed, isDark: isDark),
-        ],
-      ),
-    );
-  }
-}
-
-class _BrutalInfoButton extends StatefulWidget {
-  final String label;
-  final VoidCallback onPressed;
-  final bool isDark;
-  const _BrutalInfoButton({required this.label, required this.onPressed, required this.isDark});
-
-  @override
-  State<_BrutalInfoButton> createState() => _BrutalInfoButtonState();
-}
-
-class _BrutalInfoButtonState extends State<_BrutalInfoButton> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) {
-        setState(() => _pressed = false);
-        widget.onPressed();
-      },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 80),
-        transform: Matrix4.translationValues(_pressed ? 2 : 0, _pressed ? 2 : 0, 0),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF8D4D33),
-          border: Border.all(
-              color: widget.isDark ? const Color(0xFF001E2B) : const Color(0xFF001E2B)),
-          boxShadow: _pressed
-              ? []
-              : [
-                  const BoxShadow(
-                    color: Color(0xFF001E2B),
-                    offset: Offset(2, 2),
-                    blurRadius: 0,
-                  ),
-                ],
-        ),
-        child: Text(
-          widget.label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.0,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-}
 

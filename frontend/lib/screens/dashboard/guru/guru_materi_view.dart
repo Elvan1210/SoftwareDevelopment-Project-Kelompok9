@@ -89,18 +89,15 @@ class _GuruMateriViewState extends State<GuruMateriView> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           return AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+              side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
             ),
             title: Text(
               isEditing ? 'Edit Materi' : 'Tambah Materi Baru', 
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                color: isDark ? Colors.white : AppTheme.textLight,
-              ),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : AppTheme.textLight),
             ),
             content: SizedBox(
               width: 500,
@@ -117,18 +114,18 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                        border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                        color: Theme.of(context).colorScheme.surface,
+                        border: Border.all(color: Theme.of(context).dividerColor),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: TextField(
                         controller: deskripsiCtrl,
                         maxLines: 4,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
                         decoration: InputDecoration(
                           labelText: 'Deskripsi Singkat',
-                          labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                          labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
                           prefixIcon: const Icon(LucideIcons.alignLeft, size: 18),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -141,19 +138,17 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF161D2B) : const Color(0xFFF3F4F6),
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+                        border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'LAMPIRAN MATERI (OPSIONAL)',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
+                              color: AppTheme.primary,
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -172,7 +167,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                                 onPressed: () async {
                                   fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
                                     type: fp.FileType.custom,
-                                    allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
+                                    allowedExtensions: const ['pdf', 'jpg', 'png', 'doc', 'docx'],
                                     withData: true,
                                   );
 
@@ -196,7 +191,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
 
                                     if (url == null && ctx.mounted) {
                                       ScaffoldMessenger.of(ctx).showSnackBar(
-                                        const SnackBar(content: Text('Gagal upload file!'), backgroundColor: Colors.red)
+                                        const SnackBar(content: Text('Gagal upload file!'), backgroundColor: AppTheme.error)
                                       );
                                     }
                                   }
@@ -204,12 +199,12 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                                 icon: const Icon(LucideIcons.uploadCloud, size: 16),
                                 label: Text(
                                   selectedFileName ?? 'Pilih File (PDF/Gambar)',
-                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12),
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  backgroundColor: isDark ? const Color(0xFF1B2C3F) : const Color(0xFFE0EEFF),
+                                  backgroundColor: Theme.of(context).colorScheme.surface,
                                   foregroundColor: theme.primaryColor,
-                                  side: BorderSide(color: isDark ? const Color(0xFF2E4663) : const Color(0xFF82B8FF), width: 1.0),
+                                  side: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1.0),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
@@ -233,7 +228,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(
                   'Batal',
-                  style: GoogleFonts.plusJakartaSans(
+                  style: GoogleFonts.poppins(
                     color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                     fontWeight: FontWeight.w700,
                   ),
@@ -283,7 +278,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                child: Text('Simpan Materi', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                child: Text('Simpan Materi', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
               )
             ],
           );
@@ -308,10 +303,10 @@ class _GuruMateriViewState extends State<GuruMateriView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         title: Row(
           children: [
@@ -327,11 +322,8 @@ class _GuruMateriViewState extends State<GuruMateriView> {
             Expanded(
               child: Text(
                 m['judul'] ?? '-',
-                style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : AppTheme.textLight,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : AppTheme.textLight),
               ),
             ),
           ],
@@ -344,22 +336,16 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               if (m['deskripsi'] != null && m['deskripsi'].toString().isNotEmpty) ...[
                 Text(
                   'Deskripsi',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800,
                     color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    letterSpacing: 0.5,
-                  ),
+                    letterSpacing: 0.5),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   m['deskripsi'],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    height: 1.5,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white70 : AppTheme.textLight,
-                  ),
+                    color: isDark ? Colors.white70 : AppTheme.textLight),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -371,13 +357,13 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     icon: const Icon(LucideIcons.externalLink, size: 14),
                     label: Text(
                       'Buka File Materi',
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1B3539) : const Color(0xFFE6F5F7),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       foregroundColor: accent,
                       side: BorderSide(
-                        color: isDark ? const Color(0xFF28565C) : const Color(0xFF9AD5DE),
+                        color: Theme.of(context).colorScheme.surface,
                         width: 1.0,
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -393,7 +379,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Tutup',
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                 fontWeight: FontWeight.w700,
               ),
@@ -407,9 +393,9 @@ class _GuruMateriViewState extends State<GuruMateriView> {
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
             ),
             style: OutlinedButton.styleFrom(
-              backgroundColor: isDark ? const Color(0xFF2E243F) : const Color(0xFFF3E8FF),
-              foregroundColor: Colors.purple,
-              side: BorderSide(color: isDark ? const Color(0xFF4C3A66) : const Color(0xFFC084FC), width: 1.0),
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: AppTheme.primary,
+              side: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1.0),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
@@ -422,7 +408,6 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
       return const Scaffold(
@@ -433,11 +418,25 @@ class _GuruMateriViewState extends State<GuruMateriView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: AppFAB(
-        onPressed: () => _showMateriForm(),
-        icon: LucideIcons.plusCircle,
-        label: 'Materi Baru',
-      ),
+      floatingActionButton: GestureDetector(
+        onTap: () => _showMateriForm(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          constraints: const BoxConstraints(minHeight: 44),
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(LucideIcons.plusCircle, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text('MATERI BARU', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5,
+            )),
+          ]),
+        ),
+      ).animate().fadeIn().slideY(begin: 0.5),
       body: _materiList.isEmpty
           ? EmptyState(
               icon: LucideIcons.bookOpen,
@@ -455,105 +454,77 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: theme.primaryColor.withAlpha(isDark ? 55 : 30),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(isDark ? 60 : 8),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                          borderRadius: BorderRadius.circular(19),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-                            width: 1.0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary,
+                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                          ),
+                          child: const Icon(LucideIcons.bookOpen, color: Colors.white, size: 22),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                m['judul'] ?? '-',
+                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color!),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                m['deskripsi'] ?? (m['kelas'] ?? '-'),
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Theme.of(context).textTheme.bodyMedium!.color!,
+                                  fontWeight: FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        child: Row(
+                        const SizedBox(width: 10),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: theme.primaryColor.withAlpha(20),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(LucideIcons.bookOpen, color: theme.primaryColor, size: 22),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    m['judul'] ?? '-',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 15,
-                                      color: isDark ? Colors.white : AppTheme.textLight,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    m['deskripsi'] ?? (m['kelas'] ?? '-'),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12,
-                                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                            GestureDetector(
+                              onTap: () => _openFile(m['file_url']),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.emerald,
+                                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                                ),
+                                child: const Icon(LucideIcons.externalLink, color: Colors.white, size: 14),
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                OutlinedButton(
-                                  onPressed: () => _openFile(m['file_url']),
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
-                                    foregroundColor: Colors.green,
-                                    side: BorderSide(color: isDark ? const Color(0xFF2E5C3E) : const Color(0xFF82C793), width: 1.0),
-                                    padding: const EdgeInsets.all(10),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: const Icon(LucideIcons.externalLink, size: 14),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _deleteMateri(m['id'].toString()),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.rose,
+                                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
                                 ),
-                                const SizedBox(width: 8),
-                                OutlinedButton(
-                                  onPressed: () => _deleteMateri(m['id'].toString()),
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: isDark ? const Color(0xFF3D1B1B) : const Color(0xFFFCE8E8),
-                                    foregroundColor: Colors.red,
-                                    side: BorderSide(color: isDark ? const Color(0xFF5C2E2E) : const Color(0xFFECA3A3), width: 1.0),
-                                    padding: const EdgeInsets.all(10),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: const Icon(LucideIcons.trash2, size: 14),
-                                ),
-                              ],
+                                child: const Icon(LucideIcons.trash2, color: Colors.white, size: 14),
+                              ),
                             ),
-                          ],       
+                          ],
                         ),
-                      ),
+                      ],       
                     ),
                   ),
                 ).animate(delay: (i * 50).ms).fadeIn().slideY(begin: 0.1, curve: Curves.easeOutQuart);

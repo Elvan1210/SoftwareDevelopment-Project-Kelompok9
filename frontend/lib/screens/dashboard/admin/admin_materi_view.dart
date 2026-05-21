@@ -1,3 +1,4 @@
+import '../../../config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
@@ -161,7 +162,7 @@ class _AdminMateriCard extends StatelessWidget {
               Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.graduationCap, color: accent, size: 20)),
               const SizedBox(width: 12),
               Expanded(child: Text(materi['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-              IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: Colors.red, size: 20)),
+              IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: AppTheme.error, size: 20)),
             ],
           ),
           Flexible(

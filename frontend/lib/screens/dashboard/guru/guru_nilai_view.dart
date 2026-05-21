@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/theme.dart';
@@ -8,6 +7,7 @@ import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../../widgets/neo_brutalism.dart';
 
 class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -178,15 +178,15 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
           ),
           title: Text(
             isEditing ? 'Edit Nilai' : 'Input Nilai Siswa',
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
           ),
           content: SizedBox(
             width: 500,
@@ -199,32 +199,29 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   DropdownButtonFormField<String>(
                     initialValue: selectedSiswaId,
                     isExpanded: true,
-                    dropdownColor: isDark ? const Color(0xFF161B27) : Colors.white,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : AppTheme.textLight,
-                    ),
+                    dropdownColor: Theme.of(context).colorScheme.surface,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : AppTheme.textLight),
                     decoration: InputDecoration(
                       labelText: 'Pilih Siswa',
-                      labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                      labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                       prefixIcon: Icon(LucideIcons.user, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      fillColor: Theme.of(context).colorScheme.surface,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 2),
                       ),
                     ),
-                    hint: Text('Pilih siswa...', style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                    hint: Text('Pilih siswa...', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                     items: _userList.map<DropdownMenuItem<String>>((u) {
                       return DropdownMenuItem<String>(
                         value: u['id'].toString(),
@@ -254,14 +251,14 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
               onPressed: () => Navigator.pop(ctx),
               child: Text(
                 'Batal',
-                style: GoogleFonts.plusJakartaSans(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                 ),
               ),
             ),
-            ElevatedButton(
-              onPressed: () async {
+            GestureDetector(
+              onTap: () async {
                 if (selectedSiswaId == null || nilaiCtrl.text.isEmpty) return;
                 final siswa = _userList
                     .firstWhere((u) => u['id'].toString() == selectedSiswaId);
@@ -300,15 +297,16 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   _fetchData();
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.indigoPrimary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              ),
-              child: Text(
-                isEditing ? 'Simpan' : 'Simpan Nilai',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: const BoxDecoration(
+                  color: AppTheme.indigoPrimary,
+                ),
+                child: Text(
+                  isEditing ? 'SIMPAN' : 'SIMPAN NILAI',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w900, color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -329,28 +327,25 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       controller: ctrl,
       keyboardType: isNumber ? TextInputType.number : (isMultiLine ? TextInputType.multiline : TextInputType.text),
       maxLines: isMultiLine ? 3 : 1,
-      style: GoogleFonts.plusJakartaSans(
-        fontWeight: FontWeight.w700,
-        color: isDark ? Colors.white : AppTheme.textLight,
-        fontSize: 13,
-      ),
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
+        color: isDark ? Colors.white : AppTheme.textLight),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
         prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
         filled: true,
-        fillColor: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+        fillColor: Theme.of(context).colorScheme.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -399,10 +394,10 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.zero),
                 border: Border(
-                  top: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.5),
+                  top: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
                 ),
               ),
               child: Column(
@@ -410,7 +405,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                     decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB))),
+                      border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
                     ),
                     child: Row(
                       children: [
@@ -426,16 +421,13 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                             children: [
                               Text(
                                 siswa['nama'] ?? '-', 
-                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight),
+                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 'Rekapitulasi Nilai Siswa', 
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, 
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, 
+                                  fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -483,9 +475,9 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 gradient: selected ? LinearGradient(colors: [colorStart, colorEnd]) : null,
-                                color: selected ? null : (isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF)),
-                                borderRadius: BorderRadius.circular(100),
-                                border: Border.all(color: selected ? Colors.transparent : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB))),
+                                color: selected ? null : (Theme.of(context).colorScheme.surface),
+                                borderRadius: BorderRadius.zero,
+                                border: Border.all(color: selected ? Colors.transparent : (Theme.of(context).dividerColor)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -494,11 +486,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                   const SizedBox(width: 6),
                                   Text(
                                     k, 
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 11.5, 
-                                      fontWeight: FontWeight.w900,
-                                      color: selected ? Colors.white : colorStart,
-                                    ),
+                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                                      color: selected ? Colors.white : colorStart),
                                   ),
                                 ],
                               ),
@@ -514,11 +503,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                         ? Center(
                             child: Text(
                               'Belum ada entri nilai.', 
-                              style: GoogleFonts.plusJakartaSans(
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                fontWeight: FontWeight.bold),
                             ),
                           )
                         : ListView.builder(
@@ -553,32 +539,20 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                               
                               final colorScore = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
 
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 16),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: colorStart.withAlpha(isDark ? 55 : 35), width: 1.2),
-                                ),
-                                padding: const EdgeInsets.all(4),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: colorStart.withAlpha(20)),
-                                  ),
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: NeoCard(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderColor: colorStart,
+                                  padding: EdgeInsets.zero,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
                                         decoration: BoxDecoration(
-                                          gradient: LinearGradient(colors: [
-                                            colorStart.withAlpha(isDark ? 40 : 25),
-                                            colorEnd.withAlpha(isDark ? 20 : 10),
-                                          ]),
-                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                                          border: Border(bottom: BorderSide(color: colorStart.withAlpha(isDark ? 35 : 20))),
+                                          color: colorStart.withAlpha(isDark ? 40 : 25),
+                                          border: Border(bottom: BorderSide(color: colorStart, width: 2)),
                                         ),
                                         child: Row(
                                           children: [
@@ -586,7 +560,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                               padding: const EdgeInsets.all(8),
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(colors: [colorStart, colorEnd]),
-                                                borderRadius: BorderRadius.circular(9),
+                                                borderRadius: BorderRadius.zero,
                                               ),
                                               child: Icon(iconData, color: Colors.white, size: 14),
                                             ),
@@ -599,26 +573,20 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                                     decoration: BoxDecoration(
                                                       color: colorStart.withAlpha(isDark ? 30 : 15),
-                                                      borderRadius: BorderRadius.circular(5),
+                                                      borderRadius: BorderRadius.zero,
                                                     ),
                                                     child: Text(
                                                       tipe.toUpperCase(),
-                                                      style: GoogleFonts.plusJakartaSans(
-                                                        fontSize: 8.5, 
-                                                        fontWeight: FontWeight.w900, 
+                                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, 
                                                         color: colorStart, 
-                                                        letterSpacing: 0.5,
-                                                      ),
+                                                        letterSpacing: 0.5),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     n['mapel'] ?? '-',
-                                                    style: GoogleFonts.plusJakartaSans(
-                                                      fontWeight: FontWeight.w800, 
-                                                      fontSize: 13,
-                                                      color: isDark ? Colors.white : AppTheme.textLight,
-                                                    ),
+                                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800, 
+                                                      color: isDark ? Colors.white : AppTheme.textLight),
                                                     maxLines: 1, 
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
@@ -631,15 +599,12 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                 decoration: BoxDecoration(
                                                   color: colorStart.withAlpha(20),
-                                                  borderRadius: BorderRadius.circular(6),
+                                                  borderRadius: BorderRadius.zero,
                                                 ),
                                                 child: Text(
                                                   dateStr, 
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    fontSize: 9.5, 
-                                                    fontWeight: FontWeight.w800, 
-                                                    color: colorStart,
-                                                  ),
+                                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800, 
+                                                    color: colorStart),
                                                 ),
                                               ),
                                             ],
@@ -658,28 +623,19 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                               children: [
                                                 Text(
                                                   'Skor:', 
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    fontSize: 12.5, 
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                                  ),
+                                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold,
+                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                                                 ),
                                                 const SizedBox(width: 6),
                                                 Text(
                                                   val.toStringAsFixed(0), 
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    fontSize: 22, 
-                                                    fontWeight: FontWeight.w900, 
-                                                    color: colorScore,
-                                                  ),
+                                                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900, 
+                                                    color: colorScore),
                                                 ),
                                                 Text(
                                                   ' / 100', 
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    fontSize: 11.5, 
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                                  ),
+                                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold,
+                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                                                 ),
                                               ],
                                             ),
@@ -687,11 +643,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                               const SizedBox(height: 6),
                                               Text(
                                                 '${n['keterangan']}',
-                                                style: GoogleFonts.plusJakartaSans(
-                                                  fontSize: 12, 
-                                                  fontWeight: FontWeight.w600,
-                                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                                ),
+                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600,
+                                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                                                 maxLines: 2, 
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -699,7 +652,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                             
                                             if (n['isManual'] == true) ...[
                                               const SizedBox(height: 12),
-                                              Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                                              Divider(height: 1, color: Theme.of(context).dividerColor),
                                               const SizedBox(height: 12),
                                               Row(
                                                 children: [
@@ -708,11 +661,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                   Expanded(
                                                     child: Text(
                                                       'Input Manual', 
-                                                      style: GoogleFonts.plusJakartaSans(
-                                                        fontSize: 11, 
-                                                        fontWeight: FontWeight.w800, 
-                                                        color: colorStart,
-                                                      ),
+                                                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, 
+                                                        color: colorStart),
                                                     ),
                                                   ),
                                                   InkWell(
@@ -720,12 +670,12 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                       Navigator.pop(ctx); 
                                                       _showNilaiForm(n);
                                                     },
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    borderRadius: BorderRadius.zero,
                                                     child: Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                                       decoration: BoxDecoration(
                                                         color: colorStart.withAlpha(20),
-                                                        borderRadius: BorderRadius.circular(8),
+                                                        borderRadius: BorderRadius.zero,
                                                         border: Border.all(color: colorStart.withAlpha(50)),
                                                       ),
                                                       child: Row(
@@ -734,7 +684,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                           const SizedBox(width: 4),
                                                           Text(
                                                             'Edit', 
-                                                            style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w900, color: colorStart),
+                                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, color: colorStart),
                                                           ),
                                                         ],
                                                       ),
@@ -746,21 +696,21 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                       Navigator.pop(ctx);
                                                       _deleteNilai(n['id'].toString());
                                                     },
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    borderRadius: BorderRadius.zero,
                                                     child: Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.red.withAlpha(20),
-                                                        borderRadius: BorderRadius.circular(8),
-                                                        border: Border.all(color: Colors.red.withAlpha(50)),
+                                                        color: AppTheme.error.withAlpha(20),
+                                                        borderRadius: BorderRadius.zero,
+                                                        border: Border.all(color: AppTheme.error.withAlpha(50)),
                                                       ),
                                                       child: Row(
                                                         children: [
-                                                          const Icon(LucideIcons.trash2, size: 11, color: Colors.red),
+                                                          const Icon(LucideIcons.trash2, size: 11, color: AppTheme.error),
                                                           const SizedBox(width: 4),
                                                           Text(
                                                             'Hapus', 
-                                                            style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w900, color: Colors.red),
+                                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, color: AppTheme.error),
                                                           ),
                                                         ],
                                                       ),
@@ -818,9 +768,9 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           onPressed: () => _showNilaiForm(),
           backgroundColor: AppTheme.indigoPrimary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           icon: const Icon(LucideIcons.plusCircle, size: 18),
-          label: Text('Input Nilai', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13)),
+          label: Text('Input Nilai', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800)),
         ),
         body: _userList.isEmpty
             ? const EmptyState(
@@ -833,16 +783,16 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                     padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                        color: Theme.of(context).colorScheme.surface,
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
                       ),
                       child: TextField(
                         onChanged: (val) => setState(() => _searchQuery = val),
-                        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
                         decoration: InputDecoration(
                           hintText: 'Cari nama siswa...',
-                          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                          hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                           prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -857,11 +807,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                         ? Center(
                             child: Text(
                               'Siswa tidak ditemukan.', 
-                              style: GoogleFonts.plusJakartaSans(
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                fontWeight: FontWeight.bold),
                             ),
                           )
                         : LayoutBuilder(
@@ -923,7 +870,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       childAspectRatio: 1.8,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
+      children: List.generate(6, (_) => const SkeletonLoader()),
     );
   }
 }
@@ -943,119 +890,126 @@ class _GuruRekapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = avg >= 80
         ? const Color(0xFF10B981)
         : (avg >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
-    
-    final isDark = theme.brightness == Brightness.dark;
+    final borderColor = count == 0
+        ? Theme.of(context).colorScheme.onSurface
+        : color;
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: Theme.of(context).colorScheme.surface,
           border: Border.all(
-            color: count == 0 ? (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)) : color.withAlpha(isDark ? 55 : 30),
-            width: 1.2,
+            color: Theme.of(context).colorScheme.onSurface,
+            width: 2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.onSurface,
+              offset: const Offset(4, 4),
+              blurRadius: 0,
+            ),
+          ],
         ),
-        padding: const EdgeInsets.all(4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: count == 0 ? Colors.transparent : color.withAlpha(15)),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.indigoPrimary.withAlpha(15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppTheme.indigoPrimary.withAlpha(30)),
-                    ),
-                    child: const Icon(LucideIcons.user, color: AppTheme.indigoPrimary, size: 14),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      siswa['nama'] ?? '-',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w800, 
-                        fontSize: 13.5,
-                        color: isDark ? Colors.white : AppTheme.textLight,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Icon(LucideIcons.chevronRight, size: 16, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            count == 0 ? '-' : avg.toStringAsFixed(1),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w900,
-                              color: count == 0 ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt) : color,
-                              letterSpacing: -1,
-                            ),
-                          ),
-                          if (count > 0) ...[
-                            const SizedBox(width: 4),
-                            Text(
-                              'rata-rata',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                              ),
-                            ),
-                          ],
-                        ],
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.indigoPrimary.withAlpha(20),
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        offset: const Offset(2, 2),
+                        blurRadius: 0,
                       ),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: count == 0 ? (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)) : color.withAlpha(20),
-                      borderRadius: BorderRadius.circular(8),
+                  child: const Icon(LucideIcons.user, color: AppTheme.indigoPrimary, size: 14),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    siswa['nama'] ?? '-',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppTheme.textLight,
                     ),
-                    child: Text(
-                      count == 0 ? 'Belum Ada Nilai' : '$count Entri Nilai',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 9.5,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Icon(LucideIcons.chevronRight, size: 16,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      count == 0 ? '-' : avg.toStringAsFixed(1),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
                         fontWeight: FontWeight.w900,
-                        color: count == 0 ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt) : color,
+                        color: count == 0
+                            ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)
+                            : borderColor,
+                        letterSpacing: -1,
                       ),
                     ),
+                    if (count > 0) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        'rata-rata',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: count == 0
+                        ? Theme.of(context).colorScheme.onSurface.withAlpha(20)
+                        : borderColor.withAlpha(20),
+                    border: Border.all(
+                      color: count == 0
+                          ? Theme.of(context).colorScheme.onSurface
+                          : borderColor,
+                      width: 1.5,
+                    ),
                   ),
-                ],
-              ),
-            ],
-          ),
+                  child: Text(
+                    count == 0 ? 'BELUM ADA' : '$count NILAI',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: count == 0
+                          ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)
+                          : borderColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

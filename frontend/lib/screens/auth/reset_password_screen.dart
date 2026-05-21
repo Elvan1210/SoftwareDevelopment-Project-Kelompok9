@@ -66,12 +66,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Row(
+              content: Row(
                 children: [
-                  Icon(Icons.check_circle_rounded,
+                  const Icon(Icons.check_circle_rounded,
                       color: Colors.white, size: 20),
-                  SizedBox(width: 10),
-                  Text('Kata sandi berhasil diperbarui! Silakan masuk.'),
+                  const SizedBox(width: 10),
+                  Text('Kata sandi berhasil diperbarui! Silakan masuk.', style: Theme.of(context).textTheme.bodyLarge),
                 ],
               ),
               backgroundColor: const Color(0xFF10B981),
@@ -86,7 +86,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'], style: Theme.of(context).textTheme.bodyLarge),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -118,7 +118,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF6366F1)
                                     .withValues(alpha: 0.08),
@@ -169,12 +169,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                       const SizedBox(height: 24),
 
                       // Title
-                      const Text(
+                      Text(
                         'Buat Kata Sandi Baru',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF0A1628),
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0A1628),
                           letterSpacing: -0.8,
                         ),
                         textAlign: TextAlign.center,
@@ -182,9 +180,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                       const SizedBox(height: 10),
                       Text(
                         'Kata sandi baru kamu harus berbeda dari kata sandi yang pernah digunakan sebelumnya.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black.withValues(alpha: 0.5),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.5),
                           height: 1.6,
                         ),
                         textAlign: TextAlign.center,
@@ -220,9 +216,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                   const SizedBox(width: 6),
                                   Text(
                                     widget.email,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6366F1),
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6366F1),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -315,18 +309,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                         child: CircularProgressIndicator(
                                             color: Colors.white,
                                             strokeWidth: 2.5))
-                                    : const Row(
+                                    : Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.lock_open_rounded,
+                                          const Icon(Icons.lock_open_rounded,
                                               size: 18),
-                                          SizedBox(width: 8),
+                                          const SizedBox(width: 8),
                                           Text(
                                             'Simpan Kata Sandi Baru',
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w700,
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
                                                 letterSpacing: 0.2),
                                           ),
                                         ],
@@ -363,30 +355,23 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
       onFieldSubmitted: onSubmitted,
       validator: validator,
       onChanged: (_) => setState(() {}),
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: Color(0xFF0A1628),
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500,
+        color: const Color(0xFF0A1628),
       ),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(
-          fontSize: 14,
-          color: Colors.black.withValues(alpha: 0.3),
+        hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.3),
         ),
         prefixIcon: Icon(Icons.lock_outline_rounded,
             size: 18, color: Colors.black.withValues(alpha: 0.35)),
-        suffixIcon: GestureDetector(
-          onTap: onToggle,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: Icon(
-              isVisible
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              size: 18,
-              color: Colors.black.withValues(alpha: 0.4),
-            ),
+        suffixIcon: IconButton(
+          onPressed: onToggle,
+          icon: Icon(
+            isVisible
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            size: 18,
+            color: Colors.black.withValues(alpha: 0.4),
           ),
         ),
         suffixIconConstraints:
@@ -419,7 +404,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           borderSide:
               const BorderSide(color: Color(0xFFEF4444), width: 1.5),
         ),
-        errorStyle: const TextStyle(fontSize: 12),
+        errorStyle: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }
@@ -437,7 +422,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           color: color,
         ),
         const SizedBox(width: 6),
-        Text(text, style: TextStyle(fontSize: 12, color: color)),
+        Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color)),
       ],
     );
   }
@@ -445,10 +430,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF6366F1),
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
+        color: const Color(0xFF6366F1),
       ),
     );
   }
@@ -472,12 +455,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
               const Icon(Icons.school_rounded, color: Colors.white, size: 18),
         ),
         const SizedBox(width: 8),
-        const Text(
+        Text(
           'MyPSKD',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF6366F1),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800,
+            color: const Color(0xFF6366F1),
             letterSpacing: -0.5,
           ),
         ),

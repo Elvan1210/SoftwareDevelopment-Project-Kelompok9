@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../services/presensi_service.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GuruPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -69,7 +69,8 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Gagal Memuat: $e'), backgroundColor: Colors.red));
+            content: Text('Gagal Memuat: $e'),
+            backgroundColor: AppTheme.error));
       }
       setState(() => _isLoading = false);
     }
@@ -97,7 +98,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Gagal Memuat Rekap: $e'),
-            backgroundColor: Colors.red));
+            backgroundColor: AppTheme.error));
       }
       setState(() => _isLoadingRecap = false);
     }
@@ -138,7 +139,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Gagal menyimpan'), backgroundColor: Colors.red));
+            content: Text('Gagal menyimpan'), backgroundColor: AppTheme.error));
         _loadData();
       }
     }
@@ -190,60 +191,58 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            runSpacing: 16,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _isRecapMode ? 'Rekap Kehadiran' : 'Jurnal Kehadiran',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        color: isDark ? Colors.white : AppTheme.textLight,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'Pantau kehadiran kelas ${widget.teamData != null ? widget.teamData['nama_kelas'] : ''}',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13.5,
-                      ),
-                    ),
-                  ],
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _isRecapMode ? 'Rekap Kehadiran' : 'Jurnal Kehadiran',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineLarge
+                        ?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            color:
+                                isDark ? Colors.white : AppTheme.textLight),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Pantau kehadiran kelas ${widget.teamData != null ? widget.teamData['nama_kelas'] : ''}',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: isDark
+                            ? AppTheme.textMutedDk
+                            : AppTheme.textMutedLt,
+                        fontWeight: FontWeight.w700),
+                  ),
+                ],
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
                 ),
-                padding: const EdgeInsets.all(4),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildModeBtn('Harian', LucideIcons.calendar, !_isRecapMode, theme, isDark),
+                    _buildModeBtn('Harian', LucideIcons.calendar, !_isRecapMode,
+                        theme, isDark),
                     _buildModeBtn('Rekap', LucideIcons.barChart2, _isRecapMode, theme, isDark),
                   ],
                 ),
               ),
             ],
           ).animate().fadeIn().slideY(begin: -0.05),
-
           const SizedBox(height: 24),
-
           if (!_isRecapMode)
             _buildDailyHeader(theme, isDark)
           else
             _buildRecapHeader(theme, isDark),
-
           const SizedBox(height: 24),
-
           if (!_isRecapMode) ...[
             if (!_isLoading && _students.isNotEmpty)
               _buildStatsDashboard(theme)
@@ -272,7 +271,8 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                     record?['waktu'], theme, isDark)
                                 .animate(delay: (index * 40).ms)
                                 .fadeIn()
-                                .slideX(begin: 0.05, curve: Curves.easeOutQuart);
+                                .slideX(
+                                    begin: 0.05, curve: Curves.easeOutQuart);
                           },
                         ),
             ),
@@ -297,7 +297,9 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                 return _buildRecapStudentCard(s, theme, isDark)
                                     .animate(delay: (index * 40).ms)
                                     .fadeIn()
-                                    .slideX(begin: 0.05, curve: Curves.easeOutQuart);
+                                    .slideX(
+                                        begin: 0.05,
+                                        curve: Curves.easeOutQuart);
                               },
                             ),
             ),
@@ -323,29 +325,34 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
           });
         }
       },
-      borderRadius: BorderRadius.circular(100),
+      borderRadius: BorderRadius.zero,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.indigoPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: BorderRadius.zero,
         ),
         child: Row(
           children: [
             Icon(
               icon,
               size: 14,
-              color: isSelected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
             ),
             const SizedBox(width: 6),
             Text(
               label,
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
-                fontSize: 12,
-                color: isSelected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                            ? AppTheme.textMutedDk
+                            : AppTheme.textMutedLt),
+                  ),
             ),
           ],
         ),
@@ -358,18 +365,17 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       children: [
         Text(
           'Pencatatan Harian',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w800,
-            fontSize: 15.5,
-            color: isDark ? Colors.white : AppTheme.textLight,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppTheme.textLight),
         ),
         const Spacer(),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E2538) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.zero,
+            border:
+                Border.all(color: Theme.of(context).dividerColor, width: 1.2),
           ),
           child: InkWell(
             onTap: () async {
@@ -384,20 +390,18 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                 _loadData();
               }
             },
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(LucideIcons.calendar, color: AppTheme.tealDeep, size: 16),
+                  const Icon(LucideIcons.calendar, color: AppTheme.success, size: 16),
                   const SizedBox(width: 8),
                   Text(
                     DateFormat('dd MMM yyyy').format(_selectedDate),
-                    style: GoogleFonts.plusJakartaSans(
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : AppTheme.textLight,
-                      fontSize: 12.5,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : AppTheme.textLight),
                   ),
                 ],
               ),
@@ -420,18 +424,17 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       children: [
         Text(
           'Rentang Waktu Rekap',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w800,
-            fontSize: 15.5,
-            color: isDark ? Colors.white : AppTheme.textLight,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppTheme.textLight),
         ),
         const Spacer(),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E2538) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.zero,
+            border:
+                Border.all(color: Theme.of(context).dividerColor, width: 1.2),
           ),
           child: InkWell(
             onTap: () async {
@@ -446,20 +449,18 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                 _loadRecapData();
               }
             },
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(LucideIcons.calendar, color: AppTheme.tealDeep, size: 16),
+                  const Icon(LucideIcons.calendar, color: AppTheme.success, size: 16),
                   const SizedBox(width: 8),
                   Text(
                     '$startStr - $endStr',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : AppTheme.textLight,
-                      fontSize: 12.5,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : AppTheme.textLight),
                   ),
                 ],
               ),
@@ -474,66 +475,42 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
     final stats = _getStats();
     return Row(
       children: [
-        Expanded(child: _buildStatCard('Hadir', stats['Hadir']!, const Color(0xFF10B981))),
+        Expanded(
+            child: _buildStatCard('Hadir', stats['Hadir']!, const Color(0xFF10B981))),
         const SizedBox(width: 10),
-        Expanded(child: _buildStatCard('Izin', stats['Izin']!, const Color(0xFF76AFB8))),
+        Expanded(child: _buildStatCard('Izin', stats['Izin']!, AppTheme.info)),
         const SizedBox(width: 10),
-        Expanded(child: _buildStatCard('Sakit', stats['Sakit']!, const Color(0xFFF59E0B))),
+        Expanded(
+            child: _buildStatCard('Sakit', stats['Sakit']!, const Color(0xFFF59E0B))),
         const SizedBox(width: 10),
-        Expanded(child: _buildStatCard('Alpa', stats['Alpa']!, const Color(0xFFEF4444))),
+        Expanded(
+            child: _buildStatCard('Alpa', stats['Alpa']!, const Color(0xFFEF4444))),
       ],
     );
   }
 
   Widget _buildStatCard(String label, int count, Color color) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withAlpha(isDark ? 55 : 30),
-          width: 1.2,
-        ),
+        color: color,
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
       ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withAlpha(15)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: color.withAlpha(20),
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                label[0],
-                style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w900, fontSize: 13),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              count.toString(),
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppTheme.textLight,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w800, color: color),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      child: Column(
+        children: [
+          Text(
+            count.toString(),
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.w900, color: Colors.white),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label.toUpperCase(),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w900, color: Colors.white.withAlpha(200), letterSpacing: 0.5),
+          ),
+        ],
       ),
     );
   }
@@ -546,89 +523,60 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-            width: 1.2,
-          ),
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
         ),
-        padding: const EdgeInsets.all(4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.indigoPrimary,
-                      AppTheme.indigoPrimary.withAlpha(120),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    s['nama'].substring(0, 1).toUpperCase(),
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                    ),
-                  ),
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+              ),
+              child: Center(
+                child: Text(
+                  s['nama'].substring(0, 1).toUpperCase(),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.w900),
                 ),
               ),
-              const SizedBox(width: 14),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      s['nama'],
-                      style: GoogleFonts.plusJakartaSans(
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s['nama'],
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                        color: isDark ? Colors.white : AppTheme.textLight,
+                        color: Theme.of(context).textTheme.bodyLarge!.color!),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.clock, size: 13,
+                        color: Theme.of(context).textTheme.bodyMedium!.color!),
+                      const SizedBox(width: 4),
+                      Text(
+                        isRecorded ? 'Tercatat: $time' : 'Belum dicatat',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: Theme.of(context).textTheme.bodyMedium!.color!,
+                            fontWeight: FontWeight.bold),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          LucideIcons.clock,
-                          size: 13,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          isRecorded ? 'Tercatat: $time' : 'Belum dicatat',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
-
-              _buildModernStatusSelector(s['id'], currentStatus, isDark),
-            ],
-          ),
+            ),
+            _buildModernStatusSelector(s['id'], currentStatus, isDark),
+          ],
         ),
       ),
     );
@@ -650,18 +598,18 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.zero,
           border: Border.all(
-            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+            color: Theme.of(context).dividerColor,
             width: 1.2,
           ),
         ),
         padding: const EdgeInsets.all(4),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(16),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.zero,
           ),
           child: Column(
             children: [
@@ -671,7 +619,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                     _expandedState[s['id']] = !isExpanded;
                   });
                 },
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.zero,
                 child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Row(
@@ -686,11 +634,12 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                         child: Center(
                           child: Text(
                             s['nama'].substring(0, 1).toUpperCase(),
-                            style: GoogleFonts.plusJakartaSans(
-                              color: pctColor,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                    color: pctColor,
+                                    fontWeight: FontWeight.w900),
                           ),
                         ),
                       ),
@@ -705,11 +654,14 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                 Expanded(
                                   child: Text(
                                     s['nama'],
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 13.5,
-                                      color: isDark ? Colors.white : AppTheme.textLight,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark
+                                                ? Colors.white
+                                                : AppTheme.textLight),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -717,11 +669,12 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                   total > 0
                                       ? '${(pct * 100).toStringAsFixed(0)}%'
                                       : 'Belum ada data',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 13,
-                                    color: pctColor,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          color: pctColor),
                                 ),
                               ],
                             ),
@@ -730,8 +683,8 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                               height: 6,
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-                                borderRadius: BorderRadius.circular(10),
+                                color: Theme.of(context).dividerColor,
+                                borderRadius: BorderRadius.zero,
                               ),
                               child: Stack(
                                 children: [
@@ -739,11 +692,13 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                                     duration: const Duration(milliseconds: 500),
                                     curve: Curves.easeOutQuart,
                                     width: total > 0
-                                        ? (MediaQuery.of(context).size.width * 0.4) * pct
+                                        ? (MediaQuery.of(context).size.width *
+                                                0.4) *
+                                            pct
                                         : 0,
                                     decoration: BoxDecoration(
                                       color: pctColor,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.zero,
                                     ),
                                   ),
                                 ],
@@ -758,13 +713,14 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                             ? LucideIcons.chevronUp
                             : LucideIcons.chevronDown,
                         size: 16,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        color: isDark
+                            ? AppTheme.textMutedDk
+                            : AppTheme.textMutedLt,
                       ),
                     ],
                   ),
                 ),
               ),
-
               AnimatedCrossFade(
                 firstChild: const SizedBox(width: double.infinity, height: 0),
                 secondChild: Container(
@@ -772,17 +728,21 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.zero,
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildRecapMiniStat('Hadir', stats['Hadir']!, const Color(0xFF10B981)),
-                        _buildRecapMiniStat('Izin', stats['Izin']!, const Color(0xFF76AFB8)),
-                        _buildRecapMiniStat('Sakit', stats['Sakit']!, const Color(0xFFF59E0B)),
-                        _buildRecapMiniStat('Alpa', stats['Alpa']!, const Color(0xFFEF4444)),
+                        _buildRecapMiniStat(
+                            'Hadir', stats['Hadir']!, const Color(0xFF10B981)),
+                        _buildRecapMiniStat(
+                            'Izin', stats['Izin']!, AppTheme.info),
+                        _buildRecapMiniStat(
+                            'Sakit', stats['Sakit']!, const Color(0xFFF59E0B)),
+                        _buildRecapMiniStat(
+                            'Alpa', stats['Alpa']!, const Color(0xFFEF4444)),
                       ],
                     ),
                   ),
@@ -804,31 +764,40 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       children: [
         Text(
           count.toString(),
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16, color: color),
+          style: Theme.of(context)
+              .textTheme
+              .headlineMedium
+              ?.copyWith(fontWeight: FontWeight.w900, color: color),
         ),
         Text(
           label,
-          style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.w800, color: color.withAlpha(200)),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w800, color: color.withAlpha(200)),
         ),
       ],
     );
   }
 
-  Widget _buildModernStatusSelector(String studentId, String currentStatus, bool isDark) {
+  Widget _buildModernStatusSelector(
+      String studentId, String currentStatus, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE2E8F0)),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.zero,
+        border: Border.all(color: Theme.of(context).colorScheme.surface),
       ),
       padding: const EdgeInsets.all(3),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildStatusBtn(studentId, 'Hadir', 'H', const Color(0xFF10B981), currentStatus == 'Hadir'),
-          _buildStatusBtn(studentId, 'Izin', 'I', const Color(0xFF76AFB8), currentStatus == 'Izin'),
-          _buildStatusBtn(studentId, 'Sakit', 'S', const Color(0xFFF59E0B), currentStatus == 'Sakit'),
-          _buildStatusBtn(studentId, 'Alpa', 'A', const Color(0xFFEF4444), currentStatus == 'Alpa'),
+          _buildStatusBtn(studentId, 'Hadir', 'H', const Color(0xFF10B981),
+              currentStatus == 'Hadir'),
+          _buildStatusBtn(
+              studentId, 'Izin', 'I', AppTheme.info, currentStatus == 'Izin'),
+          _buildStatusBtn(studentId, 'Sakit', 'S', const Color(0xFFF59E0B),
+              currentStatus == 'Sakit'),
+          _buildStatusBtn(studentId, 'Alpa', 'A', const Color(0xFFEF4444),
+              currentStatus == 'Alpa'),
         ],
       ),
     );
@@ -840,19 +809,19 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _updateStatus(studentId, status),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.zero,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           width: 28,
           height: 28,
           decoration: BoxDecoration(
             color: isSelected ? color : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.zero,
           ),
           child: Center(
             child: Text(
               short,
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 color: isSelected ? Colors.white : color.withAlpha(180),
                 fontWeight: isSelected ? FontWeight.w900 : FontWeight.w800,
                 fontSize: 11.5,

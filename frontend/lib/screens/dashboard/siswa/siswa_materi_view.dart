@@ -6,8 +6,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/theme.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+
+
+
 
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -78,43 +81,28 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          // Glassmorphic Search Bar
+          // Neo-brutalist Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Container(
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E2538) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
-                  width: 1.0,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(isDark ? 40 : 5),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
               ),
               child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : AppTheme.textLight,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
+                  color: Theme.of(context).textTheme.bodyLarge!.color!),
                 decoration: InputDecoration(
                   hintText: 'Cari materi pelajaran...',
-                  hintStyle: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.bodyMedium!.color!,
                   ),
                   prefixIcon: Icon(
                     LucideIcons.search,
                     size: 18,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    color: Theme.of(context).textTheme.bodyMedium!.color!,
                   ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -191,236 +179,195 @@ class _MateriCard extends StatelessWidget {
   const _MateriCard({required this.materi, required this.isDark});
 
   void _showDetail(BuildContext context) {
-    const accent = Color(0xFF76AFB8);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: accent.withAlpha(20),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(LucideIcons.fileText, color: accent, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                materi['judul'] ?? '-',
-                style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : AppTheme.textLight,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
+      barrierColor: Colors.black54,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(20),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 480),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(6, 6))],
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (materi['mapel'] != null) ...[
-                Text(
-                  'Mata Pelajaran',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    letterSpacing: 0.5,
+              // Header
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  materi['mapel'],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white70 : AppTheme.textLight,
+                child: Text(
+                  materi['judul'] ?? '-',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5),
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (materi['mapel'] != null) ...[
+                        Text('MATA PELAJARAN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyMedium!.color!, letterSpacing: 1.0)),
+                        const SizedBox(height: 4),
+                        Text(materi['mapel'], style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        const SizedBox(height: 16),
+                      ],
+                      if (materi['deskripsi'] != null && materi['deskripsi'].toString().isNotEmpty) ...[
+                        Text('DESKRIPSI', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyMedium!.color!, letterSpacing: 1.0)),
+                        const SizedBox(height: 4),
+                        Text(materi['deskripsi'], style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          height: 1.5, fontWeight: FontWeight.w500, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        const SizedBox(height: 20),
+                      ],
+                      if (materi['file_url'] != null && materi['file_url'].toString().isNotEmpty)
+                        GestureDetector(
+                          onTap: () => _launchURL(materi['file_url']),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary,
+                              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
+                            ),
+                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              const Icon(LucideIcons.downloadCloud, color: Colors.white, size: 16),
+                              const SizedBox(width: 8),
+                              Text('BUKA FILE MATERI', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                            ]),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
-              if (materi['deskripsi'] != null && materi['deskripsi'].toString().isNotEmpty) ...[
-                Text(
-                  'Deskripsi',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    letterSpacing: 0.5,
-                  ),
+              ),
+              // Footer
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2)),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  materi['deskripsi'],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    height: 1.5,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white70 : AppTheme.textLight,
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-              if (materi['file_url'] != null && materi['file_url'].toString().isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _launchURL(materi['file_url']),
-                    icon: const Icon(LucideIcons.downloadCloud, size: 16),
-                    label: Text(
-                      'Buka File Materi',
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                      ),
+                      child: Text('TUTUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
                   ),
                 ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Tutup',
-              style: GoogleFonts.plusJakartaSans(
-                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const accent = Color(0xFF76AFB8);
-
     return GestureDetector(
       onTap: () => _showDetail(context),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: accent.withAlpha(isDark ? 55 : 30),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 60 : 8),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-              borderRadius: BorderRadius.circular(19),
-              border: Border.all(
-                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-                width: 1.0,
-              ),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: accent.withAlpha(20),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(LucideIcons.fileText, color: accent, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        materi['mapel'] ?? '-',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                          letterSpacing: 0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  materi['judul'] ?? '-',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14.5,
-                    color: isDark ? Colors.white : AppTheme.textLight,
-                    letterSpacing: -0.3,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  child: const Icon(LucideIcons.fileText, color: Colors.white, size: 20),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  materi['deskripsi'] ?? '-',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    height: 1.4,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showDetail(context),
-                    icon: const Icon(LucideIcons.eye, size: 14),
-                    label: const Text(
-                      'Lihat Detail',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    materi['mapel'] ?? '-',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                      color: Theme.of(context).textTheme.bodyMedium!.color!,
+                      letterSpacing: 0.5,
                     ),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1B3539) : const Color(0xFFE6F5F7),
-                      foregroundColor: accent,
-                      side: BorderSide(
-                        color: isDark ? const Color(0xFF28565C) : const Color(0xFF9AD5DE),
-                        width: 1.0,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 12),
+            Text(
+              materi['judul'] ?? '-',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900,
+                color: Theme.of(context).textTheme.bodyLarge!.color!,
+                letterSpacing: -0.3),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              materi['deskripsi'] ?? '-',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4,
+                color: Theme.of(context).textTheme.bodyMedium!.color!,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _showDetail(context),
+                icon: const Icon(LucideIcons.eye, size: 14),
+                label: const Text(
+                  'Lihat Detail',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

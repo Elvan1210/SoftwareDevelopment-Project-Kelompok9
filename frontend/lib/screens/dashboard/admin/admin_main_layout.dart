@@ -18,7 +18,7 @@
 
 // class AdminMainLayout extends StatefulWidget {
 //   final String token;
-//   const AdminMainLayout({super.key, this.token = ''});
+//   AdminMainLayout({super.key, this.token = ''});
 
 //   @override
 //   State<AdminMainLayout> createState() => _AdminMainLayoutState();
@@ -62,7 +62,7 @@
 //     ];
 //   }
 
-//   final Map<String, dynamic> _adminUserData = const {
+//   final Map<String, dynamic> _adminUserData = {
 //     'id': 'admin',
 //     'role': 'Admin',
 //     'nama': 'Administrator',
@@ -79,7 +79,7 @@
 
 //     return AppShell(
 //       child: Padding(
-//         padding: const EdgeInsets.all(28.0),
+//         padding: EdgeInsets.all(28.0),
 //         child: Row(
 //           children: [
 //             Sidebar(
@@ -88,7 +88,7 @@
 //               userName: _adminUserData['nama'] ?? 'Admin',
 //               userRole: 'Admin',
 //               onLogout: _handleLogout,
-//               destinations: const [
+//               destinations: [
 //                 SidebarItemData(icon: LucideIcons.layoutDashboard, selectedIcon: LucideIcons.layoutDashboard, label: 'Dashboard'),
 //                 SidebarItemData(icon: LucideIcons.users, selectedIcon: LucideIcons.users, label: 'User Management'),
 //                 SidebarItemData(icon: LucideIcons.library, selectedIcon: LucideIcons.library, label: 'Kelas Management'),
@@ -99,7 +99,7 @@
 //                 SidebarItemData(icon: LucideIcons.user, selectedIcon: LucideIcons.user, label: 'Profil Admin'),
 //               ],
 //             ),
-//             const SizedBox(width: 28),
+//             SizedBox(width: 28),
 //             Expanded(
 //               child: GlassCard(
 //                 padding: EdgeInsets.zero,
@@ -111,21 +111,21 @@
 //                     scrolledUnderElevation: 0,
 //                     title: Text(
 //                       _titles[_selectedIndex],
-//                       style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+//                       style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
 //                     ),
 //                     actions: [
-//                       const ThemeToggle(),
-//                       const SizedBox(width: 8),
+//                       ThemeToggle(),
+//                       SizedBox(width: 8),
 //                       NotificationBell(
 //                         userData: _adminUserData,
 //                         token: widget.token,
 //                         iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
 //                       ),
-//                       const SizedBox(width: 28),
+//                       SizedBox(width: 28),
 //                     ],
 //                   ),
 //                   body: AnimatedSwitcher(
-//                     duration: const Duration(milliseconds: 200),
+//                     duration: Duration(milliseconds: 200),
 //                     transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
 //                     child: KeyedSubtree(
 //                       key: ValueKey(_selectedIndex),
@@ -170,10 +170,10 @@
 //             children: [
 //               // ── Floating AppBar ──
 //               Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+//                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
 //                 child: GlassCard(
 //                   radius: 20,
-//                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+//                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
 //                   child: Row(
 //                     children: [
 //                       Expanded(
@@ -183,8 +183,8 @@
 //                           overflow: TextOverflow.ellipsis,
 //                         ).animate(key: ValueKey(_selectedIndex)).fade(duration: 300.ms),
 //                       ),
-//                       const ThemeToggle(),
-//                       const SizedBox(width: 4),
+//                       ThemeToggle(),
+//                       SizedBox(width: 4),
 //                       NotificationBell(
 //                         userData: _adminUserData,
 //                         token: widget.token,
@@ -198,12 +198,12 @@
 //               // ── Body ──
 //               Expanded(
 //                 child: AnimatedSwitcher(
-//                   duration: const Duration(milliseconds: 250),
+//                   duration: Duration(milliseconds: 250),
 //                   transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
 //                   child: KeyedSubtree(
 //                     key: ValueKey(_selectedIndex),
 //                     child: Padding(
-//                       padding: const EdgeInsets.only(bottom: 88),
+//                       padding: EdgeInsets.only(bottom: 88),
 //                       child: _views[_selectedIndex],
 //                     ),
 //                   ),
@@ -219,7 +219,7 @@
 //             bottom: 16,
 //             child: GlassCard(
 //               radius: 24,
-//               padding: const EdgeInsets.symmetric(vertical: 4),
+//               padding: EdgeInsets.symmetric(vertical: 4),
 //               child: Row(
 //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //                 children: [
@@ -287,8 +287,8 @@
 //       onTap: onTap,
 //       borderRadius: BorderRadius.circular(16),
 //       child: AnimatedContainer(
-//         duration: const Duration(milliseconds: 250),
-//         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+//         duration: Duration(milliseconds: 250),
+//         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
 //         decoration: BoxDecoration(
 //           color: isSelected ? theme.primaryColor.withAlpha(20) : Colors.transparent,
 //           borderRadius: BorderRadius.circular(16),
@@ -297,7 +297,7 @@
 //           mainAxisSize: MainAxisSize.min,
 //           children: [
 //             Icon(isSelected ? selectedIcon : icon, color: color, size: 22),
-//             const SizedBox(height: 2),
+//             SizedBox(height: 2),
 //             Text(
 //               label,
 //               style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, color: color),
@@ -315,20 +315,20 @@
 //       backgroundColor: Colors.transparent,
 //       builder: (ctx) => GlassCard(
 //         radius: 24,
-//         padding: const EdgeInsets.all(24),
+//         padding: EdgeInsets.all(24),
 //         child: Column(
 //           mainAxisSize: MainAxisSize.min,
 //           crossAxisAlignment: CrossAxisAlignment.start,
 //           children: [
 //             Text('Menu Lainnya', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
-//             const SizedBox(height: 20),
+//             SizedBox(height: 20),
 //             _buildMenuTile(LucideIcons.bookOpen, 'Materi', 3, theme, ctx),
 //             _buildMenuTile(LucideIcons.clipboardList, 'Tugas', 4, theme, ctx),
 //             _buildMenuTile(LucideIcons.award, 'Nilai Akademik', 5, theme, ctx),
 //             _buildMenuTile(LucideIcons.megaphone, 'Pengumuman', 6, theme, ctx),
-//             const SizedBox(height: 12),
-//             const Divider(),
-//             const SizedBox(height: 4),
+//             SizedBox(height: 12),
+//             Divider(),
+//             SizedBox(height: 4),
 //             _buildMenuTile(LucideIcons.logOut, 'Logout', -1, theme, ctx, isLogout: true),
 //           ],
 //         ),
@@ -339,11 +339,11 @@
 //   Widget _buildMenuTile(IconData icon, String label, int targetIndex, ThemeData theme, BuildContext ctx, {bool isLogout = false}) {
 //     final isSelected = !isLogout && _selectedIndex == targetIndex;
 //     final color = isLogout
-//         ? Colors.redAccent
+//         ? AppTheme.errorAccent
 //         : (isSelected ? theme.primaryColor : theme.colorScheme.onSurface.withAlpha(160));
 
 //     return Padding(
-//       padding: const EdgeInsets.only(bottom: 4),
+//       padding: EdgeInsets.only(bottom: 4),
 //       child: InkWell(
 //         onTap: () {
 //           Navigator.pop(ctx);
@@ -355,8 +355,8 @@
 //         },
 //         borderRadius: BorderRadius.circular(12),
 //         child: AnimatedContainer(
-//           duration: const Duration(milliseconds: 200),
-//           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+//           duration: Duration(milliseconds: 200),
+//           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
 //           decoration: BoxDecoration(
 //             color: isSelected ? theme.primaryColor.withAlpha(15) : Colors.transparent,
 //             borderRadius: BorderRadius.circular(12),
@@ -368,7 +368,7 @@
 //           child: Row(
 //             children: [
 //               Icon(icon, color: color, size: 22),
-//               const SizedBox(width: 16),
+//               SizedBox(width: 16),
 //               Expanded(
 //                 child: Text(
 //                   label,
@@ -391,7 +391,7 @@
 //   Future<void> _handleLogout() async {
 //     final navigator = Navigator.of(context);
 //     await AuthService.logout();
-//     navigator.pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+//     navigator.pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
 //   }
 
 //   @override
@@ -411,6 +411,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
+import '../../../widgets/sidebar.dart';
+
 import 'admin_dashboard_view.dart';
 import 'user_management_view.dart';
 import 'kelas_management_view.dart';
@@ -423,6 +425,10 @@ import '../../../widgets/notification_bell.dart';
 import '../../../widgets/theme_toggle.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+
+
 
 class AdminMainLayout extends StatefulWidget {
   final String token;
@@ -468,7 +474,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     ];
   }
 
-  final Map<String, dynamic> _adminUserData = const {
+  final Map<String, dynamic> _adminUserData = {
     'id': 'admin',
     'role': 'Admin',
     'nama': 'Administrator',
@@ -479,161 +485,116 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   // WEB LAYOUT (> 1100px)
   // ═══════════════════════════════════════════════════════════
   Widget _buildWebLayout(BuildContext context) {
-    return AppShell(
-      child: Row(
-        children: [
-          // ── Cosmic Admin Sidebar ──
-          SizedBox(
-            width: 280,
-            child: CosmicBackground(
-              child: SafeArea(
-                right: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Row(children: [
-                          Container(padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: Colors.white.withAlpha(20), borderRadius: BorderRadius.circular(12)),
-                            child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 22)),
-                          const SizedBox(width: 12),
-                          const Text('MyPSKD', style: TextStyle(color: CosmicColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                        ]),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEA580C)]),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text('ADMIN', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                        ),
-                      ]),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        children: [
-                          // ── Main Nav ──
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 0, 8),
-                            child: Text('MENU UTAMA', style: TextStyle(
-                              fontSize: 9.5, fontWeight: FontWeight.w800,
-                              color: Colors.white.withAlpha(80), letterSpacing: 1.4)),
-                          ),
-                          CosmicSidebarItem(icon: Icons.hub_outlined, label: 'Dashboard',
-                            isSelected: _selectedIndex == 0, onTap: () => setState(() => _selectedIndex = 0)),
-                          CosmicSidebarItem(icon: Icons.people_alt_outlined, label: 'User Management',
-                            isSelected: _selectedIndex == 1, onTap: () => setState(() => _selectedIndex = 1)),
-                          CosmicSidebarItem(icon: Icons.school_outlined, label: 'Kelas Management',
-                            isSelected: _selectedIndex == 2, onTap: () => setState(() => _selectedIndex = 2)),
-                          CosmicSidebarItem(icon: Icons.message_outlined, label: 'Messages',
-                            isSelected: _selectedIndex == 3, onTap: () => setState(() => _selectedIndex = 3)),
-                          // ── Content ──
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 16, 0, 8),
-                            child: Text('KONTEN', style: TextStyle(
-                              fontSize: 9.5, fontWeight: FontWeight.w800,
-                              color: Colors.white.withAlpha(80), letterSpacing: 1.4)),
-                          ),
-                          CosmicSidebarItem(icon: Icons.auto_stories_outlined, label: 'Materi',
-                            isSelected: _selectedIndex == 4, onTap: () => setState(() => _selectedIndex = 4)),
-                          CosmicSidebarItem(icon: Icons.assignment_outlined, label: 'Tugas',
-                            isSelected: _selectedIndex == 5, onTap: () => setState(() => _selectedIndex = 5)),
-                          CosmicSidebarItem(icon: Icons.campaign_outlined, label: 'Pengumuman',
-                            isSelected: _selectedIndex == 6, onTap: () => setState(() => _selectedIndex = 6)),
-                          // ── Account ──
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 16, 0, 8),
-                            child: Text('AKUN', style: TextStyle(
-                              fontSize: 9.5, fontWeight: FontWeight.w800,
-                              color: Colors.white.withAlpha(80), letterSpacing: 1.4)),
-                          ),
-                          CosmicSidebarItem(icon: Icons.manage_accounts_outlined, label: 'Profil Admin',
-                            isSelected: _selectedIndex == 7, onTap: () => setState(() => _selectedIndex = 7)),
-                        ],
-                      ),
-                    ),
-                    // Logout footer
-                    GestureDetector(
-                      onTap: _handleLogout,
-                      child: Container(
-                        margin: const EdgeInsets.all(14),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(10),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white.withAlpha(20)),
-                        ),
-                        child: Row(children: [
-                          CircleAvatar(radius: 16, backgroundColor: const Color(0xFFF97316).withAlpha(80),
-                            child: const Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
-                          const SizedBox(width: 10),
-                          const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('Administrator', style: TextStyle(color: CosmicColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 12)),
-                            Text('Admin', style: TextStyle(color: CosmicColors.textMuted, fontSize: 11)),
-                          ])),
-                          const Icon(Icons.logout_rounded, size: 16, color: CosmicColors.textMuted),
-                        ]),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.05),
+    final theme = Theme.of(context);
 
-          // ── Content Area ──
-          Expanded(
-            child: ContentSurface(
-              child: Column(
-                children: [
-                  // Topbar — adaptive surface
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF161B27) : Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), 
-                          width: 1.0,
-                        ),
-                      ),
+    return AppShell(
+      fullWidth: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 24.0, 16.0, 24.0),
+        child: Row(
+          children: [
+            Sidebar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (index) =>
+                  setState(() => _selectedIndex = index),
+              userName: _adminUserData['nama'] ?? 'Admin',
+              userRole: 'Admin',
+              onLogout: _handleLogout,
+              destinations: [
+                SidebarItemData(
+                  icon: Icons.hub_outlined,
+                  selectedIcon: Icons.hub_rounded,
+                  label: 'Dashboard',
+                ),
+                SidebarItemData(
+                  icon: Icons.people_alt_outlined,
+                  selectedIcon: Icons.people_alt_rounded,
+                  label: 'User Management',
+                ),
+                SidebarItemData(
+                  icon: Icons.school_outlined,
+                  selectedIcon: Icons.school_rounded,
+                  label: 'Kelas Management',
+                ),
+                SidebarItemData(
+                  icon: Icons.message_outlined,
+                  selectedIcon: Icons.message_rounded,
+                  label: 'Messages',
+                ),
+                SidebarItemData(
+                  icon: Icons.auto_stories_outlined,
+                  selectedIcon: Icons.auto_stories_rounded,
+                  label: 'Materi',
+                ),
+                SidebarItemData(
+                  icon: Icons.assignment_outlined,
+                  selectedIcon: Icons.assignment_rounded,
+                  label: 'Tugas',
+                ),
+                SidebarItemData(
+                  icon: Icons.campaign_outlined,
+                  selectedIcon: Icons.campaign_rounded,
+                  label: 'Pengumuman',
+                ),
+                SidebarItemData(
+                  icon: Icons.manage_accounts_outlined,
+                  selectedIcon: Icons.manage_accounts_rounded,
+                  label: 'Profil Admin',
+                ),
+              ],
+            ),
+            const SizedBox(width: 24),
+            Expanded(
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+                ),
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  appBar: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    title: Text(
+                      _titles[_selectedIndex],
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w900, letterSpacing: -0.5, color: Theme.of(context).textTheme.bodyLarge!.color!),
                     ),
-                    child: Row(children: [
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(_titles[_selectedIndex],
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 17,
-                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : AppTheme.textLight, 
-                            letterSpacing: -0.3))
-                          .animate(key: ValueKey(_selectedIndex)).fade(duration: 250.ms).slideX(begin: -0.03),
-                      ])),
+                    actions: [
                       const ThemeToggle(),
                       const SizedBox(width: 8),
                       NotificationBell(
-                        userData: _adminUserData, 
-                        token: widget.token, 
-                        iconColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.textMutedDk : AppTheme.textMutedLt
+                        userData: _adminUserData,
+                        token: widget.token,
+                        iconColor: theme.iconTheme.color ??
+                            (Theme.of(context).textTheme.bodyLarge!.color!),
                       ),
-                      const SizedBox(width: 8),
-                    ]),
+                      const SizedBox(width: 28),
+                    ],
                   ),
-                  Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      switchInCurve: Curves.easeOutQuart,
-                      switchOutCurve: Curves.easeInQuart,
-                      child: KeyedSubtree(key: ValueKey(_selectedIndex), child: _views[_selectedIndex]),
+                  body: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    switchInCurve: Curves.linear,
+                    switchOutCurve: Curves.linear,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey(_selectedIndex),
+                      child: _views[_selectedIndex],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ).animate().fadeIn(duration: 800.ms, delay: 150.ms),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -656,10 +617,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               // Mobile topbar — adaptive
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF161B27) : Colors.white,
-                  border: Border(bottom: BorderSide(
-                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
-                  )),
+                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1040) : Colors.white,
+                  border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2)),
                 ),
                 child: SafeArea(
                   bottom: false,
@@ -667,14 +626,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                     child: Row(children: [
                       Container(padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(color: CosmicColors.violet.withAlpha(25), borderRadius: BorderRadius.circular(8)),
-                        child: const Icon(Icons.admin_panel_settings_rounded, color: CosmicColors.violet, size: 18)),
+                        decoration: BoxDecoration(color: AppTheme.primary, border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5), boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)]),
+                        child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 18)),
                       const SizedBox(width: 10),
                       Expanded(child: Text(_titles[_selectedIndex],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800, 
-                          fontSize: 16, 
-                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : AppTheme.textLight,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, 
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Theme.of(context).colorScheme.onSurface,
                         ))
                         .animate(key: ValueKey(_selectedIndex)).fade(duration: 250.ms)),
                       const ThemeToggle(),
@@ -682,7 +639,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                       NotificationBell(
                         userData: _adminUserData, 
                         token: widget.token, 
-                        iconColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        iconColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9090B0) : Theme.of(context).colorScheme.onSurface,
                       ),
                     ]),
                   ),
@@ -708,19 +665,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1E2060) : Colors.white,
-                  borderRadius: BorderRadius.circular(40),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF7B83EB).withAlpha(Theme.of(context).brightness == Brightness.dark ? 40 : 15), 
-                      blurRadius: 20, 
-                      spreadRadius: 2, 
-                      offset: const Offset(0, 4)
-                    )
-                  ],
+                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1040) : Colors.white,
+                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -759,10 +709,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161B27) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            color: Theme.of(context).colorScheme.surface,
             border: Border(
-              top: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.0)
+              top: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2)
             ),
           ),
           child: Column(
@@ -773,16 +722,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 width: 40, height: 4, 
                 margin: const EdgeInsets.only(bottom: 16), 
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE0E0E0), 
-                  borderRadius: BorderRadius.circular(2)
+                  color: Theme.of(context).colorScheme.onSurface, 
                 )
               ),
               Text('Menu Lainnya', 
-                style: TextStyle(
-                  color: isDark ? Colors.white : AppTheme.textLight, 
-                  fontWeight: FontWeight.w900, 
-                  fontSize: 16
-                )
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color!, 
+                  fontWeight: FontWeight.w900)
               ),
               const SizedBox(height: 16),
               _buildMenuTile(Icons.message_outlined, 'Messages', 3, ctx, isDark),
@@ -790,7 +735,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               _buildMenuTile(Icons.assignment_outlined, 'Tugas', 5, ctx, isDark),
               _buildMenuTile(Icons.campaign_outlined, 'Pengumuman', 6, ctx, isDark),
               const SizedBox(height: 8),
-              Divider(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+              Divider(color: Theme.of(context).colorScheme.onSurface, thickness: 1.5),
               _buildMenuTile(Icons.logout_rounded, 'Logout', -1, ctx, isDark, isLogout: true),
             ],
           ),
@@ -801,9 +746,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
 
 
   Widget _buildMenuTile(IconData icon, String label, int targetIndex, BuildContext ctx, bool isDark, {bool isLogout = false}) {
+    final theme = Theme.of(ctx);
     final isSelected = !isLogout && _selectedIndex == targetIndex;
     final color = isLogout ? const Color(0xFFEF4444)
-        : (isSelected ? CosmicColors.violet : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt));
+        : (isSelected ? theme.primaryColor : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt));
 
     return GestureDetector(
       onTap: () {
@@ -819,17 +765,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? CosmicColors.violet.withAlpha(25) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected ? Border.all(color: CosmicColors.violet.withAlpha(60)) : null,
+          color: isSelected ? AppTheme.primary : Colors.transparent,
+          border: isSelected ? Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5) : null,
+          boxShadow: isSelected ? [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)] : null,
         ),
         child: Row(children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: isSelected ? Colors.white : color, size: 20),
           const SizedBox(width: 14),
-          Expanded(child: Text(label, style: TextStyle(
-            color: color, fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, fontSize: 14))),
-          if (isSelected) Container(width: 6, height: 6,
-            decoration: const BoxDecoration(color: CosmicColors.violet, shape: BoxShape.circle)),
+          Expanded(child: Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isSelected ? Colors.white : color, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700))),
         ]),
       ),
     );

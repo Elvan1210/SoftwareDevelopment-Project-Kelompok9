@@ -4,9 +4,8 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../widgets/app_shell.dart';
+import '../../../widgets/neo_brutalism.dart';
 
 class GuruPendingRequestsView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -75,10 +74,10 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$nama berhasil diterima!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+              content: Text('$nama berhasil diterima!',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
               backgroundColor: AppTheme.emerald,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -89,10 +88,10 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(resBody['message'] ?? 'Gagal menerima siswa', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+              content: Text(resBody['message'] ?? 'Gagal menerima siswa',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
               backgroundColor: AppTheme.rose,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -100,11 +99,11 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Terjadi kesalahan jaringan', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+          const SnackBar(
+            content: Text('Terjadi kesalahan jaringan',
+                style: TextStyle(fontWeight: FontWeight.w800)),
             backgroundColor: AppTheme.rose,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -116,59 +115,46 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.rose.withAlpha(20),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.rose.withAlpha(40), width: 1.2),
-                  ),
-                  child: const Icon(LucideIcons.userX, color: AppTheme.rose, size: 20),
-                ),
-                const SizedBox(width: 14),
-                Text('Tolak Permintaan?',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight)),
-              ]),
-              const SizedBox(height: 18),
-              Text('Apakah Anda yakin ingin menolak permintaan bergabung dari $nama?',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13.5, height: 1.5, fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(width: 12),
-                  PremiumElevatedButton(
-                    color: AppTheme.rose,
-                    textColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    radius: 12,
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: Text('Tolak', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
-                  ),
-                ],
-              ),
-            ],
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        title: Row(children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.rose.withAlpha(20),
+              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+            ),
+            child: const Icon(LucideIcons.userX, color: AppTheme.rose, size: 18),
           ),
-        ),
+          const SizedBox(width: 12),
+          Text('Tolak Permintaan?',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : AppTheme.textLight)),
+        ]),
+        content: Text(
+            'Apakah Anda yakin ingin menolak permintaan bergabung dari $nama?',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                height: 1.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Batal',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    fontWeight: FontWeight.bold)),
+          ),
+          NeoButton(
+            onTap: () => Navigator.pop(ctx, true),
+            text: 'Tolak',
+            color: AppTheme.rose,
+          ),
+        ],
       ),
     );
 
@@ -190,10 +176,10 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$nama telah ditolak', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+              content: Text('$nama telah ditolak',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
               backgroundColor: AppTheme.rose,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -210,59 +196,46 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.indigoPrimary.withAlpha(20),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.indigoPrimary.withAlpha(40), width: 1.2),
-                  ),
-                  child: const Icon(LucideIcons.userCheck, color: AppTheme.indigoPrimary, size: 20),
-                ),
-                const SizedBox(width: 14),
-                Text('Terima Semua?',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 16.5, color: isDark ? Colors.white : AppTheme.textLight)),
-              ]),
-              const SizedBox(height: 18),
-              Text('Apakah Anda yakin ingin menerima semua ${_pendingRequests.length} permintaan bergabung sekaligus?',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13.5, height: 1.5, fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: Text('Batal', style: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(width: 12),
-                  PremiumElevatedButton(
-                    color: AppTheme.indigoPrimary,
-                    textColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    radius: 12,
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: Text('Terima Semua', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
-                  ),
-                ],
-              ),
-            ],
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        title: Row(children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.indigoPrimary.withAlpha(20),
+              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+            ),
+            child: const Icon(LucideIcons.userCheck, color: AppTheme.indigoPrimary, size: 18),
           ),
-        ),
+          const SizedBox(width: 12),
+          Text('Terima Semua?',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : AppTheme.textLight)),
+        ]),
+        content: Text(
+            'Apakah Anda yakin ingin menerima semua ${_pendingRequests.length} permintaan bergabung sekaligus?',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                height: 1.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Batal',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                    fontWeight: FontWeight.bold)),
+          ),
+          NeoButton(
+            onTap: () => Navigator.pop(ctx, true),
+            text: 'Terima Semua',
+            color: AppTheme.indigoPrimary,
+          ),
+        ],
       ),
     );
 
@@ -284,10 +257,10 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(resBody['message'] ?? 'Semua siswa diterima!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+              content: Text(resBody['message'] ?? 'Semua siswa diterima!',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
               backgroundColor: AppTheme.emerald,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -317,11 +290,13 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(value ? 'Auto-accept diaktifkan — siswa langsung diterima' : 'Auto-accept dinonaktifkan — siswa perlu persetujuan',
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+              content: Text(
+                  value
+                      ? 'Auto-accept diaktifkan — siswa langsung diterima'
+                      : 'Auto-accept dinonaktifkan — siswa perlu persetujuan',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
               backgroundColor: AppTheme.indigoPrimary,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -334,7 +309,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: AppTheme.indigoPrimary));
     }
@@ -378,64 +353,57 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
   }
 
   Widget _buildAutoAcceptCard(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.indigoPrimary.withAlpha(20),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.indigoPrimary.withAlpha(40), width: 1.2),
-              ),
-              child: const Icon(
-                LucideIcons.shieldAlert,
-                color: AppTheme.indigoPrimary,
-                size: 22,
-              ),
+    return NeoCard(
+      color: Theme.of(context).colorScheme.surface,
+      borderColor: Theme.of(context).colorScheme.onSurface,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.indigoPrimary.withAlpha(20),
+              border: Border.all(
+                  color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    offset: const Offset(2, 2),
+                    blurRadius: 0)
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Penerimaan Otomatis',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _autoAccept
-                        ? 'Siswa langsung diterima saat bergabung'
-                        : 'Siswa memerlukan persetujuan manual',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
+            child: const Icon(LucideIcons.shieldAlert, color: AppTheme.indigoPrimary, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Penerimaan Otomatis',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? Colors.white : AppTheme.textLight),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _autoAccept
+                      ? 'Siswa langsung diterima saat bergabung'
+                      : 'Siswa memerlukan persetujuan manual',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
             ),
-            Switch.adaptive(
-              value: _autoAccept,
-              onChanged: _toggleAutoAccept,
-              activeTrackColor: AppTheme.indigoPrimary,
-            ),
-          ],
-        ),
+          ),
+          Switch.adaptive(
+            value: _autoAccept,
+            onChanged: _toggleAutoAccept,
+            activeTrackColor: AppTheme.indigoPrimary,
+          ),
+        ],
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05);
   }
@@ -446,41 +414,58 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
-            color: const Color(0xFFF27F33).withAlpha(20),
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(color: const Color(0xFFF27F33).withAlpha(50)),
+            color: AppTheme.warning.withAlpha(20),
+            border: Border.all(
+                color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  offset: const Offset(2, 2),
+                  blurRadius: 0)
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(LucideIcons.hourglass, size: 12, color: Color(0xFFF27F33)),
+              const Icon(LucideIcons.hourglass, size: 12, color: AppTheme.warning),
               const SizedBox(width: 6),
               Text(
                 '${_pendingRequests.length} Menunggu Persetujuan',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFFF27F33),
-                ),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.warning,
+                    ),
               ),
             ],
           ),
         ),
         const Spacer(),
         if (_pendingRequests.isNotEmpty)
-          PremiumElevatedButton(
-            onPressed: _isProcessing ? null : _acceptAll,
-            color: AppTheme.indigoPrimary,
-            textColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            radius: 12,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(LucideIcons.checkCheck, size: 14),
-                const SizedBox(width: 6),
-                Text('Terima Semua', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800)),
-              ],
+          GestureDetector(
+            onTap: _isProcessing ? null : _acceptAll,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.indigoPrimary,
+                border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurface, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      offset: const Offset(3, 3),
+                      blurRadius: 0)
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.checkCheck, size: 14, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Text('TERIMA SEMUA',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w900, color: Colors.white)),
+                ],
+              ),
             ),
           ),
       ],
@@ -488,6 +473,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
   }
 
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 60),
@@ -497,29 +483,31 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.indigoPrimary.withAlpha(15),
-                shape: BoxShape.circle,
+                color: AppTheme.indigoPrimary.withAlpha(20),
+                border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurface, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      offset: const Offset(4, 4),
+                      blurRadius: 0)
+                ],
               ),
-              child: const Icon(
-                LucideIcons.inbox,
-                size: 52,
-                color: AppTheme.indigoPrimary,
-              ),
+              child: const Icon(LucideIcons.inbox, size: 52, color: AppTheme.indigoPrimary),
             ),
             const SizedBox(height: 20),
             Text(
               'Tidak Ada Permintaan',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 16.5,
-                fontWeight: FontWeight.w900,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : AppTheme.textLight,
-              ),
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : AppTheme.textLight),
             ),
             const SizedBox(height: 6),
             Text(
               'Permintaan bergabung dari siswa akan muncul di sini.',
-              style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w700,
-                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
             ),
           ],
         ),
@@ -563,122 +551,188 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+        boxShadow: [
+          BoxShadow(
+              color: Theme.of(context).colorScheme.onSurface,
+              offset: const Offset(4, 4),
+              blurRadius: 0)
+        ],
       ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.indigoPrimary.withAlpha(60),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ─── Colored header strip ───
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.indigoPrimary.withAlpha(isDark ? 40 : 20),
+              border: Border(
+                  bottom: BorderSide(
+                      color: Theme.of(context).colorScheme.onSurface, width: 2)),
             ),
-            const SizedBox(width: 16),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nama,
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 14, color: isDark ? Colors.white : AppTheme.textLight),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (email.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      email,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(LucideIcons.clock, size: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                      const SizedBox(width: 5),
-                      Text(
-                        timeAgo,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w700),
-                      ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppTheme.indigoPrimary,
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          offset: const Offset(2, 2),
+                          blurRadius: 0)
                     ],
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onTap: _isProcessing ? null : () => _rejectStudent(userId, nama),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.rose.withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.rose.withAlpha(40), width: 1.2),
+                  child: Center(
+                    child: Text(
+                      initials,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.w900),
                     ),
-                    child: const Icon(LucideIcons.userX, color: AppTheme.rose, size: 18),
                   ),
                 ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _isProcessing ? null : () => _acceptStudent(userId, nama),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.emerald.withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.emerald.withAlpha(40), width: 1.2),
-                    ),
-                    child: const Icon(LucideIcons.userCheck, color: AppTheme.emerald, size: 18),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              width: 1),
+                        ),
+                        child: Text('PERMINTAAN MASUK',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                letterSpacing: 0.8)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(nama,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w900, color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ],
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+
+          // ─── Body ───
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (email.isNotEmpty) ...[
+                  Row(children: [
+                    Icon(LucideIcons.mail,
+                        size: 13,
+                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(email,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ]),
+                  const SizedBox(height: 6),
+                ],
+                Row(children: [
+                  Icon(LucideIcons.clock,
+                      size: 13,
+                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  const SizedBox(width: 6),
+                  Text(timeAgo,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                ]),
+                const SizedBox(height: 14),
+                Divider(
+                    height: 1, color: Theme.of(context).colorScheme.onSurface, thickness: 1.5),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _isProcessing ? null : () => _rejectStudent(userId, nama),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.rose.withAlpha(20),
+                            border: Border.all(
+                                color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  offset: const Offset(2, 2),
+                                  blurRadius: 0)
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(LucideIcons.userX, color: AppTheme.rose, size: 14),
+                              const SizedBox(width: 6),
+                              Text('TOLAK',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      fontWeight: FontWeight.w900, color: AppTheme.rose)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _isProcessing ? null : () => _acceptStudent(userId, nama),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.emerald,
+                            border: Border.all(
+                                color: Theme.of(context).colorScheme.onSurface, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  offset: const Offset(3, 3),
+                                  blurRadius: 0)
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(LucideIcons.userCheck, color: Colors.white, size: 14),
+                              const SizedBox(width: 6),
+                              Text('TERIMA',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      fontWeight: FontWeight.w900, color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

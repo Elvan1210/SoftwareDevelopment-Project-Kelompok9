@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/app_shell.dart';
+import '../../../widgets/neo_brutalism.dart';
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UserManagementView extends StatefulWidget {
   final String token;
@@ -73,11 +74,11 @@ class _UserManagementViewState extends State<UserManagementView> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
-          backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+            side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
           ),
           child: Padding(
             padding: const EdgeInsets.all(28),
@@ -101,7 +102,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         const SizedBox(width: 14),
                         Text(
                           isEditing ? 'Edit User' : 'Tambah User Baru',
-                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppTheme.textLight),
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
                         ),
                       ],
                     ),
@@ -114,33 +115,30 @@ class _UserManagementViewState extends State<UserManagementView> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: role,
-                      dropdownColor: isDark ? const Color(0xFF161B27) : Colors.white,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : AppTheme.textLight,
-                      ),
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppTheme.textLight),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                        fillColor: Theme.of(context).colorScheme.surface,
                         labelText: 'Role',
-                        labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                        labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                         prefixIcon: Icon(LucideIcons.shieldCheck, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
                         ),
                       ),
-                      items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)))).toList(),
+                      items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)))).toList(),
                       onChanged: (val) => setDialogState(() => role = val!),
                     ),
                     const SizedBox(height: 16),
@@ -151,7 +149,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: Text('Batal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                          child: Text('Batal', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                         ),
                         const SizedBox(width: 12),
                         PremiumElevatedButton(
@@ -182,7 +180,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                               if (ctx.mounted) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(
                                   SnackBar(
-                                    content: Text('User berhasil disimpan!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                                    content: Text('User berhasil disimpan!', style: GoogleFonts.poppins(fontWeight: FontWeight.w800)),
                                     backgroundColor: AppTheme.indigoPrimary,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -194,7 +192,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                               if (ctx.mounted) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(
                                   SnackBar(
-                                    content: Text(data['message'] ?? 'Gagal menyimpan user', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                                    content: Text(data['message'] ?? 'Gagal menyimpan user', style: GoogleFonts.poppins(fontWeight: FontWeight.w800)),
                                     backgroundColor: AppTheme.rose,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -203,7 +201,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                               }
                             }
                           },
-                          child: Text('Simpan User', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                          child: Text('Simpan User', style: GoogleFonts.poppins(fontWeight: FontWeight.w800)),
                         ),
                       ],
                     ),
@@ -258,7 +256,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               children: [
                 _buildStatCard('Total User', totalUsers.toString(), AppTheme.indigoPrimary, isDark),
                 const SizedBox(width: 16),
-                _buildStatCard('Guru', totalTeachers.toString(), AppTheme.tealDeep, isDark),
+                _buildStatCard('Guru', totalTeachers.toString(), AppTheme.success, isDark),
                 const SizedBox(width: 16),
                 _buildStatCard('Siswa', totalStudents.toString(), AppTheme.amber, isDark),
               ],
@@ -319,29 +317,16 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildStatCard(String label, String value, Color color, bool isDark) {
+    IconData icon = LucideIcons.users;
+    if (label == 'Guru') icon = LucideIcons.penTool;
+    if (label == 'Siswa') icon = LucideIcons.graduationCap;
+
     return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-        ),
-        padding: const EdgeInsets.all(4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: color)),
-              const SizedBox(height: 4),
-              Text(value, style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight, letterSpacing: -0.5)),
-            ],
-          ),
-        ),
+      child: NeoStatCard(
+        label: label,
+        value: value,
+        icon: icon,
+        color: color,
       ),
     );
   }
@@ -370,8 +355,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                     onSelected: (val) => setState(() => _selectedRole = r),
                     backgroundColor: Colors.transparent,
                     selectedColor: AppTheme.indigoPrimary.withAlpha(20),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? AppTheme.indigoPrimary : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)), width: 1.2)),
-                    labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700, color: isSelected ? AppTheme.indigoPrimary : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100), side: BorderSide(color: isSelected ? AppTheme.indigoPrimary : (Theme.of(context).dividerColor), width: 1.2)),
+                    labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700, color: isSelected ? AppTheme.indigoPrimary : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
                     showCheckmark: false,
                   ),
                 );
@@ -413,49 +398,35 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String role = user['role'] ?? 'Siswa';
-    final roleColor = role == 'Guru' ? AppTheme.tealDeep : (role == 'Admin' ? AppTheme.rose : AppTheme.indigoPrimary);
+    final roleColor = role == 'Guru' ? AppTheme.success : (role == 'Admin' ? AppTheme.rose : AppTheme.indigoPrimary);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [roleColor, roleColor.withAlpha(160)]),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [BoxShadow(color: roleColor.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                  child: Center(
-                    child: Icon(role == 'Guru' ? LucideIcons.penTool : (role == 'Admin' ? LucideIcons.key : LucideIcons.user), color: Colors.white, size: 20),
-                  ),
-                ),
+    return NeoCard(
+      padding: const EdgeInsets.all(20),
+      color: Theme.of(context).colorScheme.surface,
+      borderColor: Theme.of(context).dividerColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              NeoIconBox(
+                icon: role == 'Guru' ? LucideIcons.penTool : (role == 'Admin' ? LucideIcons.key : LucideIcons.user),
+                iconColor: Colors.white,
+                backgroundColor: roleColor,
+                borderColor: Theme.of(context).dividerColor,
+                size: 24,
+              ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user['nama'] ?? '-', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 15, color: isDark ? Colors.white : AppTheme.textLight, letterSpacing: -0.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(user['nama'] ?? '-', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight, letterSpacing: -0.5), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 3),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(color: roleColor.withAlpha(20), borderRadius: BorderRadius.circular(6), border: Border.all(color: roleColor.withAlpha(40), width: 1.2)),
-                        child: Text(role.toUpperCase(), style: GoogleFonts.plusJakartaSans(fontSize: 8.5, fontWeight: FontWeight.w900, color: roleColor, letterSpacing: 0.5)),
+                        child: Text(role.toUpperCase(), style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, color: roleColor, letterSpacing: 0.5)),
                       ),
                     ],
                   ),
@@ -466,11 +437,11 @@ class _UserCard extends StatelessWidget {
                     if (val == 'delete') onDelete();
                   },
                   icon: Icon(LucideIcons.moreHorizontal, size: 20, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  color: isDark ? const Color(0xFF161B27) : Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   itemBuilder: (_) => [
-                    PopupMenuItem(value: 'edit', child: Row(children: [const Icon(LucideIcons.edit2, size: 16), const SizedBox(width: 12), Text('Edit', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold))])),
-                    PopupMenuItem(value: 'delete', child: Row(children: [const Icon(LucideIcons.trash, color: AppTheme.rose, size: 16), const SizedBox(width: 12), Text('Hapus', style: GoogleFonts.plusJakartaSans(color: AppTheme.rose, fontWeight: FontWeight.bold))])),
+                    PopupMenuItem(value: 'edit', child: Row(children: [const Icon(LucideIcons.edit2, size: 16), const SizedBox(width: 12), Text('Edit', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))])),
+                    PopupMenuItem(value: 'delete', child: Row(children: [const Icon(LucideIcons.trash, color: AppTheme.rose, size: 16), const SizedBox(width: 12), Text('Hapus', style: GoogleFonts.poppins(color: AppTheme.rose, fontWeight: FontWeight.bold))])),
                   ],
                 ),
               ],
@@ -480,7 +451,7 @@ class _UserCard extends StatelessWidget {
               children: [
                 Icon(LucideIcons.atSign, size: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                 const SizedBox(width: 8),
-                Expanded(child: Text(user['email'] ?? '-', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                Expanded(child: Text(user['email'] ?? '-', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
               ],
             ),
             if ((user['kelas'] ?? '').toString().isNotEmpty) ...[
@@ -489,13 +460,12 @@ class _UserCard extends StatelessWidget {
                 children: [
                   Icon(LucideIcons.library, size: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                   const SizedBox(width: 8),
-                  Text(user['kelas'], style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? Colors.white.withAlpha(220) : AppTheme.textLight)),
+                  Text(user['kelas'], style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800, color: isDark ? Colors.white.withAlpha(220) : AppTheme.textLight)),
                 ],
               ),
             ],
           ],
         ),
-      ),
     );
   }
 }

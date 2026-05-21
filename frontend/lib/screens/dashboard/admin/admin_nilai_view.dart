@@ -1,3 +1,4 @@
+import '../../../config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
@@ -132,7 +133,7 @@ class _AdminNilaiCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final val = double.tryParse(nilai['nilai'].toString()) ?? 0;
-    final color = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? Colors.orange : Colors.red);
+    final color = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? AppTheme.warning : AppTheme.error);
 
     return PremiumCard(
       accentColor: color,

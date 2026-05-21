@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'reset_password_screen.dart';
 import '../../services/forgot_password_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OtpVerifyScreen extends StatefulWidget {
   final String email;
@@ -75,7 +76,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
     if (code.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Masukkan 6 digit kode verifikasi'),
+          content: Text('Masukkan 6 digit kode verifikasi', style: Theme.of(context).textTheme.bodyLarge),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -110,7 +111,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'], style: Theme.of(context).textTheme.bodyLarge),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -134,7 +135,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
       _focusNodes[0].requestFocus();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Kode baru telah dikirim ke email kamu'),
+          content: Text('Kode baru telah dikirim ke email kamu', style: Theme.of(context).textTheme.bodyLarge),
           backgroundColor: const Color(0xFF6366F1),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -144,7 +145,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'], style: Theme.of(context).textTheme.bodyLarge),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -176,7 +177,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF6366F1)
                                     .withValues(alpha: 0.08),
@@ -227,12 +228,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                       const SizedBox(height: 24),
 
                       // Title
-                      const Text(
+                      Text(
                         'Cek Email Kamu',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF0A1628),
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0A1628),
                           letterSpacing: -0.8,
                         ),
                         textAlign: TextAlign.center,
@@ -241,9 +240,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black.withValues(alpha: 0.5),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.5),
                             height: 1.6,
                           ),
                           children: [
@@ -251,8 +248,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                 text: 'Kode 6 digit telah dikirim ke\n'),
                             TextSpan(
                               text: widget.email,
-                              style: const TextStyle(
-                                color: Color(0xFF6366F1),
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFF6366F1),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -378,9 +375,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                         children: [
                           Text(
                             'Tidak menerima kode? ',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black.withValues(alpha: 0.45),
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.black.withValues(alpha: 0.45),
                             ),
                           ),
                           GestureDetector(
@@ -392,12 +387,13 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
                                     child: CircularProgressIndicator(
                                         color: Color(0xFF6366F1),
                                         strokeWidth: 2))
-                                : const Text(
-                                    'Kirim Ulang',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF6366F1),
-                                      fontWeight: FontWeight.w700,
+                                : Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                                    child: Text(
+                                      'Kirim Ulang',
+                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: const Color(0xFF6366F1),
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
                           ),
@@ -425,10 +421,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
         textAlign: TextAlign.center,
         maxLength: 1,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w900,
-          color: Color(0xFF6366F1),
+        style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
+          color: const Color(0xFF6366F1),
         ),
         decoration: InputDecoration(
           counterText: '',
@@ -485,12 +479,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen>
               const Icon(Icons.school_rounded, color: Colors.white, size: 18),
         ),
         const SizedBox(width: 8),
-        const Text(
+        Text(
           'MyPSKD',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF6366F1),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800,
+            color: const Color(0xFF6366F1),
             letterSpacing: -0.5,
           ),
         ),

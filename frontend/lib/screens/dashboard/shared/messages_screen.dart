@@ -4,8 +4,14 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
 import '../../../config/theme.dart';
 import '../../../widgets/premium_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+
+
+
 
 class MessagesScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -156,13 +162,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
         return AlertDialog(
           title: Text(
             "Info: $activeChatName",
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
           ),
           content: SizedBox(
             width: double.maxFinite,
             height: 300,
             child: entries.isEmpty
-                ? const Center(child: Text("Data anggota tidak tersedia."))
+                ? Center(child: Text("Data anggota tidak tersedia.", style: Theme.of(context).textTheme.titleMedium))
                 : ListView.builder(
                     shrinkWrap: true,
                     itemCount: entries.length,
@@ -175,9 +181,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         leading: _buildAvatar(id, inisial),
                         title: Text(
                           name,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        subtitle: Text(id == myId ? "Anda" : "Anggota"),
+                        subtitle: Text(id == myId ? "Anda" : "Anggota", style: Theme.of(context).textTheme.bodyMedium),
                       );
                     },
                   ),
@@ -185,7 +191,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Tutup", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
+              child: Text("Tutup", style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w700)),
             ),
           ],
         );
@@ -197,7 +203,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -208,12 +214,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
               leading: CircleAvatar(
                 backgroundColor:
                     Theme.of(context).primaryColor.withAlpha(40),
-                child: Icon(Icons.person,
+                child: Icon(LucideIcons.user,
                     color: Theme.of(context).primaryColor),
               ),
-              title: const Text("Chat Pribadi",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Mulai obrolan dengan satu orang"),
+              title: Text("Chat Pribadi",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              subtitle: Text("Mulai obrolan dengan satu orang", style: Theme.of(context).textTheme.bodyLarge),
               onTap: () {
                 Navigator.pop(context);
                 _showUserList(isGroup: false);
@@ -225,11 +231,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 backgroundColor:
                     Theme.of(context).primaryColor.withAlpha(40),
                 child:
-                    Icon(Icons.group, color: Theme.of(context).primaryColor),
+                    Icon(LucideIcons.users, color: Theme.of(context).primaryColor),
               ),
-              title: const Text("Buat Grup Baru",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Mulai obrolan dengan banyak orang"),
+              title: Text("Buat Grup Baru",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              subtitle: Text("Mulai obrolan dengan banyak orang", style: Theme.of(context).textTheme.bodyLarge),
               onTap: () {
                 Navigator.pop(context);
                 _showUserList(isGroup: true);
@@ -274,7 +280,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Pilih Kontak"),
+        title: Text("Pilih Kontak", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         content: SizedBox(
           width: double.maxFinite,
           height: 400,
@@ -287,8 +293,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
               final userId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
               return ListTile(
                 leading: _buildAvatar(userId, namaUser[0].toUpperCase()),
-                title: Text(namaUser),
-                subtitle: Text(user['role'] ?? 'Member'),
+                title: Text(namaUser, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                subtitle: Text(user['role'] ?? 'Member', style: Theme.of(context).textTheme.bodyMedium),
                 onTap: () {
                   Navigator.pop(context);
                   _startConv(
@@ -304,7 +310,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Batal", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
+            child: Text("Batal", style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -321,7 +327,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            title: const Text("Buat Grup Baru"),
+            title: Text("Buat Grup Baru", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
             content: SizedBox(
               width: double.maxFinite,
               height: 400,
@@ -329,17 +335,20 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 children: [
                   TextField(
                     onChanged: (v) => groupName = v,
-                    decoration: const InputDecoration(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    decoration: InputDecoration(
                       hintText: "Masukkan Nama Grup",
-                      border: OutlineInputBorder(),
+                      hintStyle: Theme.of(context).textTheme.titleMedium,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Align(
+                  const SizedBox(height: 12),
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Text("Pilih Anggota:",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                   ),
+                  const SizedBox(height: 6),
                   Expanded(
                     child: ListView.builder(
                       itemCount: users.length,
@@ -348,7 +357,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         final uId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
                         final isSelected = selectedIds.contains(uId);
                         return CheckboxListTile(
-                          title: Text(user['nama'] ?? 'User'),
+                          title: Text(user['nama'] ?? 'User', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
                           value: isSelected,
                           onChanged: (bool? val) {
                             setDialogState(() {
@@ -374,7 +383,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("Batal", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
+                child: Text("Batal", style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w700)),
               ),
               PremiumElevatedButton(
                 color: Theme.of(context).primaryColor,
@@ -396,7 +405,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     groupName: groupName,
                   );
                 },
-                child: const Text("Buat Grup"),
+                child: Text("Buat Grup", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -439,14 +448,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
-  // ✅ FIX: _buildAvatar lebih robust, handle null/empty userId
   Widget _buildAvatar(String? userId, String initial) {
     if (userId == null || userId.isEmpty || userId == 'null') {
-      return CircleAvatar(
-        backgroundColor: Theme.of(context).primaryColor.withAlpha(40),
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+        ),
+        alignment: Alignment.center,
         child: Text(
           initial,
-          style: TextStyle(color: Theme.of(context).primaryColor),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       );
     }
@@ -466,25 +480,30 @@ class _MessagesScreenState extends State<MessagesScreen> {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withAlpha(40),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+              ),
+              alignment: Alignment.center,
               child: Text(
                 initial,
-                style: TextStyle(color: Theme.of(context).primaryColor),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
             Positioned(
-              right: -2,
-              bottom: -2,
+              right: -4,
+              bottom: -4,
               child: Container(
                 width: 14,
                 height: 14,
                 decoration: BoxDecoration(
                   color: AppTheme.getStatusColor(currentStatus),
-                  shape: BoxShape.circle,
                   border: Border.all(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    width: 2,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    width: 1.5,
                   ),
                 ),
               ),
@@ -503,9 +522,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
     _messageController.dispose();
     super.dispose();
-  }
-
-  @override
+  }  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isMobile = MediaQuery.of(context).size.width < 800;
@@ -522,13 +539,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
       child: Column(
         children: [
           ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            title: const Text(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            title: Text(
               "Messages",
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22),
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
             ),
             trailing: IconButton(
-              icon: Icon(Icons.add_comment,
+              icon: Icon(LucideIcons.messageSquarePlus,
                   color: Theme.of(context).primaryColor),
               onPressed: _showNewChatMenu,
             ),
@@ -537,10 +554,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : conversations.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
                           "Belum ada obrolan.\nKlik ikon + untuk mulai.",
                           textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                         ),
                       )
                     : ListView.builder(
@@ -563,18 +581,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                         .withAlpha(40),
                                     child: Text(
                                       inisial,
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor),
+                                      style: GoogleFonts.poppins(
+                                          color: Theme.of(context).primaryColor,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   )
                                 : _buildAvatar(targetId, inisial),
                             title: Text(
                               convName,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
                             ),
                             subtitle: Text(
                               conv['lastMessage'] ?? '...',
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -606,11 +625,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 const SizedBox(height: 16),
                 Text(
                   "Pilih obrolan dari kiri atau mulai chat baru",
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.65),
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.65),
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -639,20 +659,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       children: [
                         Text(
                           activeChatName ?? 'Chat',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
                         ),
                         if (activeConversationType == 'group')
                           Text(
                             "Ketuk untuk info grup",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.normal,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.65),
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.normal,
+                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                           ),
                       ],
                     ),
@@ -664,7 +677,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               ),
               Expanded(
                 child: messages.isEmpty
-                    ? const Center(child: Text("Kirim pesan pertama!"))
+                    ? Center(child: Text("Kirim pesan pertama!", style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)))
                     : ListView.builder(
                         padding: const EdgeInsets.all(24),
                         itemCount: messages.length,
@@ -696,28 +709,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
                               decoration: BoxDecoration(
-                                color: isMe
-                                    ? Theme.of(context).primaryColor
-                                    : (isDark
-                                        ? const Color(0xFF1C2230)
-                                        : const Color(0xFFF0F3FF)),
-                                border: isMe
-                                    ? null
-                                    : Border.all(
-                                        color: isDark
-                                            ? const Color(0xFF2E384E)
-                                            : const Color(0xFFC7D2FE),
-                                        width: 1.0,
-                                      ),
-                                borderRadius:
-                                    BorderRadius.circular(16).copyWith(
-                                  bottomRight: isMe
-                                      ? const Radius.circular(4)
-                                      : const Radius.circular(16),
-                                  bottomLeft: !isMe
-                                      ? const Radius.circular(4)
-                                      : const Radius.circular(16),
-                                ),
+                                color: isMe ? AppTheme.primary : (Theme.of(context).colorScheme.surface),
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,25 +719,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                   if (isGroup && !isMe) ...[
                                     Text(
                                       msg['senderName'] ?? 'User',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold,
                                         color: isDark
-                                            ? Colors.blue[300]
-                                            : Colors.blue[800],
-                                      ),
+                                            ? AppTheme.info
+                                            : AppTheme.info),
                                     ),
                                     const SizedBox(height: 4),
                                   ],
                                   Text(
                                     msg['text'] ?? '',
-                                    style: TextStyle(
+                                    style: GoogleFonts.poppins(
                                       color: isMe
                                           ? Colors.white
                                           : (isDark
                                               ? Colors.white
                                               : Colors.black87),
-                                      fontSize: 15,
+                                      fontSize: 14.5,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -751,9 +742,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                     alignment: Alignment.bottomRight,
                                     child: Text(
                                       timeStr,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: isMe
+                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: isMe
                                             ? Colors.white70
                                             : (isDark
                                                 ? Colors.white54
@@ -773,7 +762,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.black12,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      width: 2,
                     ),
                   ),
                 ),
@@ -782,32 +772,23 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     Expanded(
                       child: TextField(
                         controller: _messageController,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color!, fontWeight: FontWeight.w700),
                         decoration: InputDecoration(
                           hintText: "Ketik pesan...",
+                          hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).textTheme.bodyMedium!.color!, fontWeight: FontWeight.w600),
                           filled: true,
-                          fillColor: isDark
-                              ? const Color(0xFF101420)
-                              : const Color(0xFFF1F3FF),
+                          fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE),
-                              width: 1.0,
-                            ),
+                            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                            borderRadius: BorderRadius.zero,
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE),
-                              width: 1.0,
-                            ),
+                            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                            borderRadius: BorderRadius.zero,
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).primaryColor,
-                              width: 2.0,
-                            ),
+                            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2.5),
+                            borderRadius: BorderRadius.zero,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 14),
@@ -816,14 +797,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(LucideIcons.send, color: Colors.white),
-                        onPressed: _sendMessage,
+                    GestureDetector(
+                      onTap: _sendMessage,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary,
+                          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                        ),
+                        child: const Icon(LucideIcons.send, color: Colors.white, size: 20),
                       ),
                     ),
                   ],

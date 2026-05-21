@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
@@ -125,52 +124,45 @@ class _ProfileHeroHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 72, bottom: 56, left: 32, right: 32),
+      padding: const EdgeInsets.only(top: 56, bottom: 40, left: 32, right: 32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primaryColor, primaryColor.withAlpha(160)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        color: primaryColor,
+        border: Border(
+          bottom: BorderSide(color: Colors.black.withAlpha(160), width: 2),
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(48), bottomRight: Radius.circular(48),
-        ),
+        boxShadow: const [BoxShadow(color: Color(0x44000000), offset: Offset(0, 4))],
       ),
       child: Column(children: [
         Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: Colors.white.withAlpha(50), shape: BoxShape.circle),
-          child: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: Colors.white.withAlpha(80), shape: BoxShape.circle),
-            child: Container(
-              width: 100, height: 100,
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 34, fontWeight: FontWeight.w900, color: primaryColor),
-                ),
-              ),
+          width: 96, height: 96,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black.withAlpha(160), width: 2),
+            boxShadow: const [BoxShadow(color: Color(0x66000000), offset: Offset(4, 4))],
+          ),
+          child: Center(
+            child: Text(
+              initials,
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: primaryColor),
             ),
           ),
         ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
         const SizedBox(height: 20),
         Text(
           nama,
-          style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: -0.5),
           textAlign: TextAlign.center,
         ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(60),
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(color: Colors.white.withAlpha(80)),
+            color: Colors.black.withAlpha(60),
+            border: Border.all(color: Colors.white.withAlpha(120), width: 1.5),
           ),
           child: Text(
             role.toUpperCase(),
-            style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5),
           ),
         ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
       ]),
@@ -193,49 +185,38 @@ class _InfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
       ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Informasi Akun',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppTheme.textLight,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _InfoRow(icon: LucideIcons.mail, label: 'Email', value: email, isDark: isDark),
-            const SizedBox(height: 16),
-            _InfoRow(icon: LucideIcons.graduationCap, label: 'Kelas', value: kelas, isDark: isDark),
-            const SizedBox(height: 16),
-            _InfoRow(icon: LucideIcons.user, label: 'Role', value: role, isDark: isDark),
-            const SizedBox(height: 20),
-            Divider(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
-            const SizedBox(height: 16),
-            Text(
-              'Pengaturan Status Chat',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppTheme.textLight,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _StatusDropdown(userId: userId, currentStatus: initialStatus, onStatusChanged: onStatusChanged, isDark: isDark),
-          ],
-        ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            color: AppTheme.primary,
+            child: Text('INFORMASI AKUN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0,
+            )),
+          ),
+          const SizedBox(height: 20),
+          _InfoRow(icon: LucideIcons.mail, label: 'Email', value: email, isDark: isDark),
+          const SizedBox(height: 16),
+          _InfoRow(icon: LucideIcons.graduationCap, label: 'Kelas', value: kelas, isDark: isDark),
+          const SizedBox(height: 16),
+          _InfoRow(icon: LucideIcons.user, label: 'Role', value: role, isDark: isDark),
+          const SizedBox(height: 20),
+          Container(height: 2, color: Theme.of(context).colorScheme.onSurface.withAlpha(30)),
+          const SizedBox(height: 16),
+          Text(
+            'Pengaturan Status Chat',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
+              color: Theme.of(context).textTheme.bodyLarge!.color!),
+          ),
+          const SizedBox(height: 12),
+          _StatusDropdown(userId: userId, currentStatus: initialStatus, onStatusChanged: onStatusChanged, isDark: isDark),
+        ],
       ),
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
   }
@@ -254,31 +235,25 @@ class _InfoRow extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppTheme.indigoPrimary.withAlpha(20),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.indigoPrimary.withAlpha(30)),
+          color: AppTheme.primary,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
         ),
-        child: Icon(icon, color: AppTheme.indigoPrimary, size: 18),
+        child: Icon(icon, color: Colors.white, size: 18),
       ),
       const SizedBox(width: 16),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
           label,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 10.5,
-            fontWeight: FontWeight.w800,
-            color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-            letterSpacing: 0.5,
-          ),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800,
+            color: Theme.of(context).textTheme.bodyMedium!.color!,
+            letterSpacing: 0.5),
         ),
         const SizedBox(height: 3),
         Text(
           value,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: isDark ? Colors.white : AppTheme.textLight,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800,
+            color: Theme.of(context).textTheme.bodyLarge!.color!),
         ),
       ])),
     ]);
@@ -351,23 +326,20 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       initialValue: selectedStatus,
-      dropdownColor: widget.isDark ? const Color(0xFF161B27) : Colors.white,
-      style: GoogleFonts.plusJakartaSans(
-        fontSize: 13.5,
-        fontWeight: FontWeight.w700,
-        color: widget.isDark ? Colors.white : AppTheme.textLight,
-      ),
+      dropdownColor: Theme.of(context).colorScheme.surface,
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
+        color: widget.isDark ? Colors.white : AppTheme.textLight),
       decoration: InputDecoration(
         filled: true,
-        fillColor: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+        fillColor: Theme.of(context).colorScheme.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -380,7 +352,7 @@ class _StatusDropdownState extends State<_StatusDropdown> {
           child: Row(children: [
             Container(width: 10, height: 10, decoration: BoxDecoration(color: AppTheme.getStatusColor(status), shape: BoxShape.circle)),
             const SizedBox(width: 12),
-            Text(status, style: GoogleFonts.plusJakartaSans(fontSize: 13.5, fontWeight: FontWeight.bold)),
+            Text(status, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
           ]),
         );
       }).toList(),
@@ -397,105 +369,108 @@ class _ActionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
       ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pengaturan Keamanan',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppTheme.textLight,
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      backgroundColor: isDark ? const Color(0xFF1E2538) : Colors.white,
-                      surfaceTintColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-                      ),
-                      title: Text(
-                        'Keluar?',
-                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-                      ),
-                      content: Text(
-                        'Kamu yakin ingin logout dari akun ini?',
-                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: Text(
-                            'Batal',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            color: AppTheme.rose,
+            child: Text('PENGATURAN KEAMANAN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0,
+            )),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                barrierColor: Colors.black54,
+                builder: (ctx) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  insetPadding: const EdgeInsets.all(24),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(6, 6))],
+                    ),
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('KELUAR?', style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        const SizedBox(height: 8),
+                        Text('Kamu yakin ingin logout dari akun ini?',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).textTheme.bodyMedium!.color!)),
+                        const SizedBox(height: 24),
+                        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(ctx, false),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                              ),
+                              child: Text('BATAL', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
                             ),
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade400,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(ctx, true),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppTheme.rose,
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                              ),
+                              child: Text('KELUAR', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w900, color: Colors.white)),
+                            ),
                           ),
-                          child: Text(
-                            'Keluar',
-                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
-                          ),
-                        ),
+                        ]),
                       ],
                     ),
-                  );
-                  if (confirm == true) {
-                    await AuthService.logout();
-                    if (context.mounted) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false,
-                      );
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade400.withAlpha(20),
-                  foregroundColor: Colors.red.shade400,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    side: BorderSide(color: Colors.red.shade400.withAlpha(40), width: 1.2),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                icon: const Icon(LucideIcons.logOut, size: 16),
-                label: Text(
-                  'Keluar dari Akun',
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13.5),
-                ),
+              );
+              if (confirm == true) {
+                await AuthService.logout();
+                if (context.mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false,
+                  );
+                }
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: AppTheme.rose,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
               ),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(LucideIcons.logOut, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                Text('KELUAR DARI AKUN', style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+              ]),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1);
   }

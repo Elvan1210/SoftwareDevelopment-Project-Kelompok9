@@ -143,33 +143,56 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                 if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
                       content: Text('File terunggah!'),
-                      backgroundColor: Colors.green));
+                      backgroundColor: AppTheme.success));
                 }
               } else {
                 if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
                       content: Text('Gagal upload!'),
-                      backgroundColor: Colors.red));
+                      backgroundColor: AppTheme.error));
                 }
               }
             }
           }
 
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          return AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
-            ),
-            title: Text(isEditing ? 'Edit Tugas' : 'Buat Tugas Baru',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, color: isDark ? Colors.white : AppTheme.textLight)),
-            content: SizedBox(
-              width: MediaQuery.of(ctx).size.width * 0.9, 
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(20),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 480),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(6, 6))],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      border: Border(
+                        bottom: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                      ),
+                    ),
+                    child: Text(
+                      isEditing ? 'EDIT TUGAS' : 'BUAT TUGAS BARU',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
+                  // Content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                     AppTextField(
                         controller: judulCtrl,
                         labelText: 'Judul Tugas',
@@ -177,41 +200,37 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                        border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Theme.of(context).colorScheme.surface,
+                        border: Border.all(color: Theme.of(context).dividerColor),
+                        borderRadius: BorderRadius.zero,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: TextField(
                         controller: deskripsiCtrl,
                         maxLines: 4,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight),
                         keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Deskripsi Detail',
-                          labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
-                          prefixIcon: const Icon(LucideIcons.fileText, size: 18),
+                          prefixIcon: Icon(LucideIcons.fileText, size: 18),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: selectedChannelId,
-                      dropdownColor: isDark ? const Color(0xFF161B27) : Colors.white,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w600),
+                      dropdownColor: Theme.of(context).colorScheme.surface,
                       decoration: InputDecoration(
                         labelText: 'Bagikan ke Channel...',
-                        labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
                         prefixIcon: const Icon(LucideIcons.messageSquare, size: 16),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: Theme.of(context).dividerColor),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: Theme.of(context).dividerColor),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
@@ -264,21 +283,21 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                          border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
-                          borderRadius: BorderRadius.circular(12),
+                          color: Theme.of(context).colorScheme.surface,
+                          border: Border.all(color: Theme.of(context).dividerColor),
+                          borderRadius: BorderRadius.zero,
                         ),
                         child: Row(children: [
                           Icon(LucideIcons.calendar,
-                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                              color: Theme.of(context).textTheme.bodyMedium!.color!,
                               size: 18),
                           const SizedBox(width: 12),
                           Text(
                             deadlineStr,
-                            style: GoogleFonts.plusJakartaSans(
+                            style: GoogleFonts.poppins(
                               color: selectedDeadline != null
-                                  ? (isDark ? Colors.white : AppTheme.textLight)
-                                  : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                                  ? Theme.of(context).textTheme.bodyLarge!.color!
+                                  : Theme.of(context).textTheme.bodyMedium!.color!,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -292,23 +311,34 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                     Row(
                       children: [
                         Expanded(
-                          child: PremiumElevatedButton(
-                            onPressed: isUploading ? null : handleUploadFile,
-                            icon: isUploading ? null : LucideIcons.uploadCloud,
-                            iconSize: 14,
-                            color: Theme.of(context).primaryColor,
-                            textColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            radius: 10,
-                            child: isUploading
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                : const Text(
-                                    'Upload Lampiran Soal',
-                                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-                                  ),
+                          child: GestureDetector(
+                            onTap: isUploading ? null : handleUploadFile,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor,
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (!isUploading) ...[
+                                    const Icon(LucideIcons.uploadCloud, size: 14, color: Colors.white),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  isUploading
+                                      ? const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(
+                                              color: Colors.white, strokeWidth: 2))
+                                      : Text('Upload File',
+                                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                              fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -318,60 +348,86 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                         controller: linkCtrl,
                         labelText: 'Link File (Terisi Otomatis/Manual)',
                         prefixIcon: LucideIcons.link),
-                  ],
-                ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Actions
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.pop(ctx),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                            ),
+                            child: Text('BATAL', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface,
+                            )),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () async {
+                            final body = {
+                              'judul': judulCtrl.text,
+                              'deskripsi': deskripsiCtrl.text,
+                              'deadline': selectedDeadline?.toIso8601String() ??
+                                  (isEditing ? tugas['deadline'] : null),
+                              'link': linkCtrl.text,
+                              'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
+                              'kelas': widget.teamData['nama_kelas'],
+                              'kelas_id': widget.teamData['id'],
+                              'guru_id': widget.userData['id'],
+                              'guru_nama': widget.userData['nama'],
+                              'channel_id': selectedChannelId,
+                              'waktu': DateTime.now().toIso8601String(),
+                            };
+                            final url = isEditing
+                                ? '$baseUrl/api/tugas/${tugas['id']}'
+                                : '$baseUrl/api/tugas';
+                            final response = await (isEditing
+                                ? http.put(Uri.parse(url),
+                                    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
+                                    body: jsonEncode(body))
+                                : http.post(Uri.parse(url),
+                                    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
+                                    body: jsonEncode(body)));
+                            if (response.statusCode == 200 || response.statusCode == 201) {
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              _fetchTugas();
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary,
+                              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                            ),
+                            child: Text('SIMPAN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w900, color: Colors.white,
+                            )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text('Batal', style: TextStyle(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600))),
-              PremiumElevatedButton(
-                onPressed: () async {
-                  final body = {
-                    'judul': judulCtrl.text,
-                    'deskripsi': deskripsiCtrl.text,
-                    'deadline': selectedDeadline?.toIso8601String() ??
-                        (isEditing ? tugas['deadline'] : null),
-                    'link': linkCtrl.text,
-                    'mapel': widget.teamData['mapel'] ?? widget.userData['kelas'] ?? '-',
-                    'kelas': widget.teamData['nama_kelas'],
-                    'kelas_id': widget.teamData['id'],
-                    'guru_id': widget.userData['id'],
-                    'guru_nama': widget.userData['nama'],
-                    'channel_id': selectedChannelId,
-                    'waktu': DateTime.now().toIso8601String(),
-                  };
-                  final url = isEditing
-                      ? '$baseUrl/api/tugas/${tugas['id']}'
-                      : '$baseUrl/api/tugas';
-                  final response = await (isEditing
-                      ? http.put(Uri.parse(url),
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ${widget.token}'
-                          },
-                          body: jsonEncode(body))
-                      : http.post(Uri.parse(url),
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ${widget.token}'
-                          },
-                          body: jsonEncode(body)));
-
-                  if (response.statusCode == 200 ||
-                      response.statusCode == 201) {
-                    if (ctx.mounted) Navigator.pop(ctx);
-                    _fetchTugas();
-                  }
-                },
-                color: Theme.of(context).colorScheme.secondary,
-                textColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                radius: 10,
-                child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ],
           );
         },
       ),
@@ -386,11 +442,25 @@ class _GuruTugasViewState extends State<GuruTugasView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: AppFAB(
-        onPressed: () => _showTugasForm(),
-        icon: LucideIcons.plusSquare,
-        label: 'Buat Tugas',
-      ),
+      floatingActionButton: GestureDetector(
+        onTap: () => _showTugasForm(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          constraints: const BoxConstraints(minHeight: 44),
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(LucideIcons.plusSquare, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text('BUAT TUGAS', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5,
+            )),
+          ]),
+        ),
+      ).animate().fadeIn().slideY(begin: 0.5),
       body: _tugasList.isEmpty
           ? EmptyState(
               icon: LucideIcons.clipboardList,
@@ -439,7 +509,6 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                       final key = groupKeys[i];
                       final items = groups[key]!;
 
-                      final isDark = Theme.of(context).brightness == Brightness.dark;
                       slivers.add(SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(padding.left + 4, 24, padding.right + 4, 12),
@@ -447,17 +516,15 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                             children: [
                               Text(
                                 key.toUpperCase(),
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                                  color: AppTheme.primary,
                                   letterSpacing: 1.5,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Divider(
-                                  color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                                  color: Theme.of(context).dividerColor,
                                   height: 1,
                                   thickness: 1,
                                 ),
@@ -526,7 +593,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
       itemCount: 5,
       itemBuilder: (_, __) => const Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: SkeletonLoader(height: 90, radius: 24),
+        child: SkeletonLoader(height: 90, radius: 4),
       ),
     );
   }
@@ -554,180 +621,119 @@ class _GuruTugasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final accent = theme.colorScheme.secondary;
 
     return GestureDetector(
       onTap: onDetail,
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: accent.withAlpha(isDark ? 55 : 30),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 60 : 8),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-              borderRadius: BorderRadius.circular(19),
-              border: Border.all(
-                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-                width: 1.0,
-              ),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: accent.withAlpha(isDark ? 25 : 15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: accent.withAlpha(isDark ? 60 : 40),
-                          width: 1.0,
-                        ),
-                      ),
-                      child: Icon(LucideIcons.clipboardList, color: accent, size: 20),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            tugas['judul'] ?? '-',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 14.5,
-                              color: isDark ? Colors.white : AppTheme.textLight,
-                              letterSpacing: -0.3,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Kelas: ${tugas['kelas'] ?? '-'}',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    PopupMenuButton<String>(
-                      onSelected: (val) {
-                        if (val == 'edit') onEdit();
-                        if (val == 'delete') onDelete();
-                      },
-                      icon: Icon(
-                        LucideIcons.moreVertical,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        size: 18,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(LucideIcons.edit2, size: 16),
-                              SizedBox(width: 10),
-                              Text('Edit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(LucideIcons.trash, color: Colors.red, size: 16),
-                              SizedBox(width: 10),
-                              Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                  ),
+                  child: const Icon(LucideIcons.clipboardList, color: Colors.white, size: 20),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (tugas['deadline'] != null)
-                      Row(
-                        children: [
-                          Icon(
-                            LucideIcons.clock,
-                            size: 12,
-                            color: const Color(0xFFF59E0B).withAlpha(180),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _formatDeadline(tugas['deadline']),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFFF59E0B),
-                            ),
-                          ),
-                        ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tugas['judul'] ?? '-',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: Theme.of(context).textTheme.bodyLarge!.color!,
+                          letterSpacing: -0.3),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: accent.withAlpha(isDark ? 20 : 12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: accent.withAlpha(isDark ? 55 : 35),
-                          width: 1.0,
-                        ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Kelas: ${tugas['kelas'] ?? '-'}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).textTheme.bodyMedium!.color!),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Detail',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              color: accent,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(LucideIcons.chevronRight, color: accent, size: 10),
-                        ],
-                      ),
-                    ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (val) {
+                    if (val == 'edit') onEdit();
+                    if (val == 'delete') onDelete();
+                  },
+                  icon: Icon(LucideIcons.moreVertical,
+                    color: Theme.of(context).textTheme.bodyMedium!.color!, size: 18),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: 'edit', child: Row(children: [
+                      Icon(LucideIcons.edit2, size: 16),
+                      SizedBox(width: 10),
+                      Text('Edit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    ])),
+                    const PopupMenuItem(value: 'delete', child: Row(children: [
+                      Icon(LucideIcons.trash, color: AppTheme.error, size: 16),
+                      SizedBox(width: 10),
+                      Text('Hapus', style: TextStyle(color: AppTheme.error, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ])),
                   ],
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (tugas['deadline'] != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDE68A),
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(LucideIcons.clock, size: 11, color: Theme.of(context).colorScheme.onSurface),
+                      const SizedBox(width: 5),
+                      Text(_formatDeadline(tugas['deadline']),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
+                    ]),
+                  ),
+                ],
+                const Spacer(),
+                GestureDetector(
+                  onTap: onDetail,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Text('DETAIL', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                      const SizedBox(width: 4),
+                      const Icon(LucideIcons.chevronRight, color: Colors.white, size: 12),
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

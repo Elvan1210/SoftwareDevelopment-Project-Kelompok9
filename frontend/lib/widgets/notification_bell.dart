@@ -13,9 +13,9 @@ class NotificationBell extends StatefulWidget {
   final Color iconColor;
 
   const NotificationBell({
-    super.key, 
-    required this.userData, 
-    required this.token, 
+    super.key,
+    required this.userData,
+    required this.token,
     required this.iconColor,
   });
 
@@ -23,7 +23,8 @@ class NotificationBell extends StatefulWidget {
   State<NotificationBell> createState() => _NotificationBellState();
 }
 
-class _NotificationBellState extends State<NotificationBell> with SingleTickerProviderStateMixin {
+class _NotificationBellState extends State<NotificationBell>
+    with SingleTickerProviderStateMixin {
   List<dynamic> _notifikasi = [];
   int _unreadCount = 0;
   late AnimationController _bellController;
@@ -54,19 +55,24 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
       if (response.statusCode == 200) {
         final decAllData = jsonDecode(response.body);
         List allData = decAllData is List ? decAllData : [];
-        
+
         List myNotifs = allData.where((n) {
           if (n['target_user_id'] != null) {
             return n['target_user_id'] == widget.userData['id'];
           }
-          bool roleMatch = n['target_role'] == null || n['target_role'] == 'Semua' || n['target_role'] == widget.userData['role'];
-          bool kelasMatch = n['target_kelas'] == null || n['target_kelas'] == widget.userData['kelas'];
+          bool roleMatch = n['target_role'] == null ||
+              n['target_role'] == 'Semua' ||
+              n['target_role'] == widget.userData['role'];
+          bool kelasMatch = n['target_kelas'] == null ||
+              n['target_kelas'] == widget.userData['kelas'];
           return roleMatch && kelasMatch;
         }).toList();
 
         myNotifs.sort((a, b) {
-          DateTime timeA = DateTime.tryParse(a['waktu'] ?? '') ?? DateTime.now();
-          DateTime timeB = DateTime.tryParse(b['waktu'] ?? '') ?? DateTime.now();
+          DateTime timeA =
+              DateTime.tryParse(a['waktu'] ?? '') ?? DateTime.now();
+          DateTime timeB =
+              DateTime.tryParse(b['waktu'] ?? '') ?? DateTime.now();
           return timeB.compareTo(timeA);
         });
 
@@ -95,7 +101,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     if (dibaca.contains(widget.userData['id'])) return;
 
     dibaca.add(widget.userData['id']);
-    
+
     setState(() {
       notif['dibaca_oleh'] = dibaca;
       _unreadCount = _unreadCount > 0 ? _unreadCount - 1 : 0;
@@ -104,7 +110,10 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     try {
       await http.put(
         Uri.parse('$baseUrl/api/notifikasi/${notif['id']}'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}'
+        },
         body: jsonEncode({'dibaca_oleh': dibaca}),
       );
     } catch (e) {
@@ -153,30 +162,36 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
   // Get icon based on notification title/content
   _NotifMeta _getNotifMeta(Map<String, dynamic> notif) {
     final judul = (notif['judul'] ?? '').toString().toLowerCase();
-    
-    if (judul.contains('diterima') || judul.contains('accepted') || judul.contains('✅')) {
-      return const _NotifMeta(LucideIcons.checkCircle, Color(0xFF22C55E));
+
+    if (judul.contains('diterima') ||
+        judul.contains('accepted') ||
+        judul.contains('✅')) {
+      return _NotifMeta(LucideIcons.checkCircle, const Color(0xFF22C55E));
     }
-    if (judul.contains('ditolak') || judul.contains('rejected') || judul.contains('❌')) {
-      return const _NotifMeta(LucideIcons.xCircle, Color(0xFFEF4444));
+    if (judul.contains('ditolak') ||
+        judul.contains('rejected') ||
+        judul.contains('❌')) {
+      return _NotifMeta(LucideIcons.xCircle, const Color(0xFFEF4444));
     }
-    if (judul.contains('bergabung') || judul.contains('permintaan') || judul.contains('join')) {
-      return const _NotifMeta(LucideIcons.userPlus, Color(0xFFF27F33));
+    if (judul.contains('bergabung') ||
+        judul.contains('permintaan') ||
+        judul.contains('join')) {
+      return _NotifMeta(LucideIcons.userPlus, const Color(0xFFF27F33));
     }
     if (judul.contains('tugas') || judul.contains('assignment')) {
-      return const _NotifMeta(LucideIcons.clipboardList, Color(0xFF76AFB8));
+      return _NotifMeta(LucideIcons.clipboardList, const Color(0xFF76AFB8));
     }
     if (judul.contains('nilai') || judul.contains('grade')) {
-      return const _NotifMeta(LucideIcons.award, Color(0xFF075864));
+      return _NotifMeta(LucideIcons.award, const Color(0xFF075864));
     }
     if (judul.contains('materi') || judul.contains('material')) {
-      return const _NotifMeta(LucideIcons.bookOpen, Color(0xFF0891B2));
+      return _NotifMeta(LucideIcons.bookOpen, const Color(0xFF0891B2));
     }
     if (judul.contains('pengumuman') || judul.contains('broadcast')) {
-      return const _NotifMeta(LucideIcons.megaphone, Color(0xFFEC4899));
+      return _NotifMeta(LucideIcons.megaphone, const Color(0xFFEC4899));
     }
     if (judul.contains('presensi') || judul.contains('hadir')) {
-      return const _NotifMeta(LucideIcons.userCheck, Color(0xFF22C55E));
+      return _NotifMeta(LucideIcons.userCheck, const Color(0xFF22C55E));
     }
     return _NotifMeta(LucideIcons.bell, AppTheme.getAccent(context));
   }
@@ -188,7 +203,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
       final dt = DateTime.tryParse(n['waktu'] ?? '') ?? DateTime.now();
       final now = DateTime.now();
       final diff = now.difference(dt);
-      
+
       String key;
       if (diff.inDays == 0 && dt.day == now.day) {
         key = 'Hari Ini';
@@ -199,7 +214,7 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
       } else {
         key = DateFormat('d MMMM yyyy').format(dt);
       }
-      
+
       grouped.putIfAbsent(key, () => []);
       grouped[key]!.add(n);
     }
@@ -240,9 +255,12 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
               height: MediaQuery.of(context).size.height * 0.75,
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF121212) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
                 border: Border.all(
-                  color: isDark ? Colors.white.withAlpha(15) : Colors.black.withAlpha(8),
+                  color: isDark
+                      ? Colors.white.withAlpha(15)
+                      : Colors.black.withAlpha(8),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -275,7 +293,10 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondary.withAlpha(20),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withAlpha(20),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -302,7 +323,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.secondary,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
                                   ),
                                 ),
                             ],
@@ -321,23 +343,37 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                   },
                                   borderRadius: BorderRadius.circular(12),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.secondary.withAlpha(15),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary
+                                          .withAlpha(15),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Theme.of(context).colorScheme.secondary.withAlpha(40)),
+                                      border: Border.all(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withAlpha(40)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(LucideIcons.checkCheck, size: 14, color: Theme.of(context).colorScheme.secondary),
+                                        Icon(LucideIcons.checkCheck,
+                                            size: 14,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary),
                                         const SizedBox(width: 6),
                                         Text(
                                           'Baca Semua',
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w800,
-                                            color: Theme.of(context).colorScheme.secondary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                           ),
                                         ),
                                       ],
@@ -360,9 +396,11 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                     decoration: BoxDecoration(
                                       color: Colors.red.withAlpha(15),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.red.withAlpha(160)),
+                                      border: Border.all(
+                                          color: Colors.red.withAlpha(160)),
                                     ),
-                                    child: const Icon(Icons.delete_sweep_rounded, size: 16, color: Colors.red),
+                                    child: const Icon(Icons.delete_sweep_rounded,
+                                        size: 16, color: Colors.red),
                                   ),
                                 ),
                               ),
@@ -391,7 +429,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                             physics: const BouncingScrollPhysics(),
                             itemCount: grouped.keys.length,
                             itemBuilder: (context, groupIndex) {
-                              final groupKey = grouped.keys.elementAt(groupIndex);
+                              final groupKey =
+                                  grouped.keys.elementAt(groupIndex);
                               final items = grouped[groupKey]!;
 
                               return Column(
@@ -405,17 +444,21 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        color: theme.colorScheme.onSurface.withAlpha(160),
+                                        color: theme.colorScheme.onSurface
+                                            .withAlpha(160),
                                         letterSpacing: 0.5,
                                       ),
                                     ),
                                   ),
                                   ...items.asMap().entries.map((entry) {
                                     final n = entry.value;
-                                    return _buildNotifCard(n, theme, isDark, setModalState)
+                                    return _buildNotifCard(
+                                            n, theme, isDark, setModalState)
                                         .animate(delay: (entry.key * 30).ms)
                                         .fadeIn(duration: 300.ms)
-                                        .slideX(begin: 0.03, curve: Curves.easeOutQuart);
+                                        .slideX(
+                                            begin: 0.03,
+                                            curve: Curves.easeOutQuart);
                                   }),
                                 ],
                               );
@@ -471,7 +514,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
     ).animate().fadeIn(delay: 200.ms);
   }
 
-  Widget _buildNotifCard(dynamic n, ThemeData theme, bool isDark, StateSetter setModalState) {
+  Widget _buildNotifCard(
+      dynamic n, ThemeData theme, bool isDark, StateSetter setModalState) {
     List dibaca = n['dibaca_oleh'] ?? [];
     bool isRead = dibaca.contains(widget.userData['id']);
     final meta = _getNotifMeta(n);
@@ -513,7 +557,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                   height: 42,
                   decoration: BoxDecoration(
                     color: isRead
-                        ? theme.colorScheme.onSurface.withAlpha(isDark ? 20 : 10)
+                        ? theme.colorScheme.onSurface
+                            .withAlpha(isDark ? 20 : 10)
                         : meta.color.withAlpha(isDark ? 30 : 20),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -538,7 +583,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                             child: Text(
                               n['judul'] ?? 'Notifikasi',
                               style: TextStyle(
-                                fontWeight: isRead ? FontWeight.w600 : FontWeight.w800,
+                                fontWeight:
+                                    isRead ? FontWeight.w600 : FontWeight.w800,
                                 fontSize: 13,
                                 color: isRead
                                     ? theme.colorScheme.onSurface.withAlpha(160)
@@ -567,7 +613,8 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: theme.colorScheme.onSurface.withAlpha(isRead ? 80 : 120),
+                          color: theme.colorScheme.onSurface
+                              .withAlpha(isRead ? 80 : 120),
                           height: 1.4,
                         ),
                         maxLines: 2,
@@ -588,16 +635,19 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                   },
                                   borderRadius: BorderRadius.circular(8),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: meta.color.withAlpha(20),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: meta.color.withAlpha(50)),
+                                      border: Border.all(
+                                          color: meta.color.withAlpha(50)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(LucideIcons.checkCircle, size: 12, color: meta.color),
+                                        Icon(LucideIcons.checkCircle,
+                                            size: 12, color: meta.color),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Tandai dibaca',
@@ -624,13 +674,15 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.onSurface.withAlpha(isDark ? 10 : 5),
+                                    color: theme.colorScheme.onSurface
+                                        .withAlpha(isDark ? 10 : 5),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     Icons.delete_outline_rounded,
                                     size: 14,
-                                    color: theme.colorScheme.onSurface.withAlpha(160),
+                                    color: theme.colorScheme.onSurface
+                                        .withAlpha(160),
                                   ),
                                 ),
                               ),
@@ -714,5 +766,5 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
 class _NotifMeta {
   final IconData icon;
   final Color color;
-  const _NotifMeta(this.icon, this.color);
+  _NotifMeta(this.icon, this.color);
 }

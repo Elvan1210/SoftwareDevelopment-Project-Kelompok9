@@ -4,14 +4,13 @@ import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:ui';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import '../../../services/notifikasi_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../widgets/app_shell.dart';
+import '../../../widgets/neo_brutalism.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -69,10 +68,12 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
       ]);
 
       if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
-        final List allPengumpulan =
-            jsonDecode(responses[0].body) is List ? jsonDecode(responses[0].body) : [];
-        final List allNilai =
-            jsonDecode(responses[1].body) is List ? jsonDecode(responses[1].body) : [];
+        final List allPengumpulan = jsonDecode(responses[0].body) is List
+            ? jsonDecode(responses[0].body)
+            : [];
+        final List allNilai = jsonDecode(responses[1].body) is List
+            ? jsonDecode(responses[1].body)
+            : [];
 
         final submission = allPengumpulan
             .where((p) =>
@@ -131,7 +132,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Gagal membaca file: ${file.name}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.error,
             ),
           );
         }
@@ -155,7 +156,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Gagal upload: ${file.name}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.error,
             ),
           );
         }
@@ -171,7 +172,8 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Tambah Link', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text('Tambah Link',
+            style: TextStyle(fontWeight: FontWeight.w900)),
         content: TextField(
           controller: ctrl,
           decoration: const InputDecoration(
@@ -185,10 +187,15 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Batal', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160))),
+            child: Text('Batal',
+                style: TextStyle(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withAlpha(160))),
           ),
           PremiumElevatedButton(
-            color: const Color(0xFFB84A24),
+            color: AppTheme.warning,
             textColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             radius: 10,
@@ -202,7 +209,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                 ScaffoldMessenger.of(ctx).showSnackBar(
                   const SnackBar(
                     content: Text('Masukkan link yang valid (https://...)'),
-                    backgroundColor: Colors.orange,
+                    backgroundColor: AppTheme.warning,
                   ),
                 );
               }
@@ -218,8 +225,12 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   IconData _getFileIcon(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('.pdf') || lower.contains('/raw/')) return LucideIcons.fileText;
-    if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) {
+    if (lower.contains('.pdf') || lower.contains('/raw/')) {
+      return LucideIcons.fileText;
+    }
+    if (lower.contains('.jpg') ||
+        lower.contains('.jpeg') ||
+        lower.contains('.png')) {
       return LucideIcons.image;
     }
     if (lower.contains('.doc')) return LucideIcons.fileText;
@@ -228,18 +239,24 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   Color _getFileColor(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('.pdf') || lower.contains('/raw/')) return Colors.red;
-    if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) {
-      return Colors.green;
+    if (lower.contains('.pdf') || lower.contains('/raw/')) {
+      return AppTheme.error;
     }
-    if (lower.contains('.doc')) return const Color(0xFF76AFB8);
-    return Colors.purple;
+    if (lower.contains('.jpg') ||
+        lower.contains('.jpeg') ||
+        lower.contains('.png')) {
+      return AppTheme.success;
+    }
+    if (lower.contains('.doc')) return AppTheme.info;
+    return AppTheme.primary;
   }
 
   String _getFileLabel(String url) {
     final lower = url.toLowerCase();
     if (lower.contains('.pdf') || lower.contains('/raw/')) return 'File PDF';
-    if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) {
+    if (lower.contains('.jpg') ||
+        lower.contains('.jpeg') ||
+        lower.contains('.png')) {
       return 'Foto/Gambar';
     }
     if (lower.contains('.doc')) return 'File Word';
@@ -255,7 +272,8 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     String finalUrl = url;
     // Wrap PDF dengan Google Docs Viewer
     if (url.toLowerCase().contains('.pdf') || url.contains('/raw/')) {
-      finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}';
+      finalUrl =
+          'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}';
     }
     final uri = Uri.parse(finalUrl);
     if (await canLaunchUrl(uri)) {
@@ -264,7 +282,9 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak bisa membuka file'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('Tidak bisa membuka file'),
+              backgroundColor: AppTheme.error),
         );
       }
     }
@@ -275,7 +295,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Tambahkan file atau link terlebih dahulu!'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.warning,
         ),
       );
       return;
@@ -322,7 +342,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Tugas berhasil dikumpulkan!'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.success,
             ),
           );
         }
@@ -331,7 +351,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Gagal mengirim: ${response.statusCode}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.error,
             ),
           );
         }
@@ -339,7 +359,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     }
@@ -364,7 +384,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Pengumpulan dibatalkan'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppTheme.warning,
             ),
           );
         }
@@ -372,7 +392,9 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error jaringan: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error jaringan: $e'),
+              backgroundColor: AppTheme.error),
         );
       }
     }
@@ -396,19 +418,23 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: _isTurnedIn
-                    ? PremiumOutlinedButton(
-                        onPressed: _undoTurnIn,
-                        color: Colors.red,
-                        textColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        radius: 12,
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.undo, size: 18),
-                            SizedBox(width: 6),
-                            Text('Batalkan'),
-                          ],
+                    ? GestureDetector(
+                        onTap: _undoTurnIn,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            border: Border.all(color: AppTheme.error, width: 2),
+                            boxShadow: const [BoxShadow(color: AppTheme.error, offset: Offset(3, 3))],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.undo, size: 18, color: AppTheme.error),
+                              SizedBox(width: 6),
+                              Text('Batalkan', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.error)),
+                            ],
+                          ),
                         ),
                       )
                     : _isPastDeadline
@@ -416,28 +442,33 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.red.withAlpha(30),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red.withAlpha(100)),
+                              color: AppTheme.error,
+                              border: Border.all(
+                                  color: Theme.of(context).colorScheme.onSurface, width: 2),
+                              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
                             ),
-                            child: const Text('Terlewat',
+                            child: const Text('TERLEWAT',
                                 style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold)),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                           )
-                        : PremiumElevatedButton(
-                            onPressed: _isUploading ? null : _turnIn,
-                            color: const Color(0xFFB84A24),
-                            textColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            radius: 12,
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.send_rounded, size: 18),
-                                SizedBox(width: 6),
-                                Text('Turn In'),
-                              ],
+                        : GestureDetector(
+                            onTap: _isUploading ? null : _turnIn,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.warning,
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.send_rounded, size: 18, color: Colors.white),
+                                  SizedBox(width: 6),
+                                  Text('TURN IN', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                                ],
+                              ),
                             ),
                           ),
               ),
@@ -452,23 +483,21 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ─── Info Tugas ───────────────────────────────────────
-                      PremiumCard(
-                        accentColor: primaryColor,
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
+                    NeoCard(
+                      color: primaryColor.withAlpha(20),
+                      borderColor: primaryColor,
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: primaryColor.withAlpha(30),
-                                  borderRadius: BorderRadius.circular(16),
+                              NeoIconBox(
+                                  icon: LucideIcons.clipboardList,
+                                  iconColor: primaryColor,
+                                  backgroundColor: primaryColor.withAlpha(50),
+                                  borderColor: primaryColor,
                                 ),
-                                child: Icon(LucideIcons.clipboardList,
-                                    color: primaryColor, size: 28),
-                              ),
                               const SizedBox(width: 20),
                               Expanded(
                                 child: Column(
@@ -487,7 +516,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: _isPastDeadline
-                                            ? Colors.red
+                                            ? AppTheme.error
                                             : primaryColor,
                                       ),
                                     ),
@@ -497,8 +526,8 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             ],
                           ),
                           const Divider(height: 40),
-                          _buildInfoRow(LucideIcons.userCircle,
-                              'Pengajar', widget.tugas['guru_nama'] ?? 'Guru'),
+                          _buildInfoRow(LucideIcons.userCircle, 'Pengajar',
+                              widget.tugas['guru_nama'] ?? 'Guru'),
                           const SizedBox(height: 12),
                           _buildInfoRow(LucideIcons.bookOpen, 'Mata Pelajaran',
                               widget.tugas['mapel'] ?? '-'),
@@ -510,12 +539,12 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
                     // ─── Deskripsi ────────────────────────────────────────
                     if ((widget.tugas['deskripsi'] ?? '').isNotEmpty) ...[
-                      const SectionHeader(title: 'Instruksi'),
+                      const NeoSectionHeader(title: 'Instruksi'),
                       const SizedBox(height: 12),
-                      PremiumCard(
+                      NeoCard(
                         padding: const EdgeInsets.all(24),
                         child: Text(widget.tugas['deskripsi'],
-                            style: const TextStyle(fontSize: 16, height: 1.6)),
+                            style: const TextStyle(fontSize: 16, height: 1.6, fontWeight: FontWeight.w500)),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -523,20 +552,18 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                     // ─── Lampiran Guru ────────────────────────────────────
                     if (widget.tugas['link'] != null &&
                         widget.tugas['link'].toString().isNotEmpty) ...[
-                      const SectionHeader(title: 'Lampiran Soal'),
+                      const NeoSectionHeader(title: 'Lampiran Soal'),
                       const SizedBox(height: 12),
                       InkWell(
-                        onTap: () =>
-                            _openFile(widget.tugas['link'].toString()),
-                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => _openFile(widget.tugas['link'].toString()),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
                             color: primaryColor.withAlpha(20),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color: primaryColor.withAlpha(80)),
+                            border:
+                                Border.all(color: primaryColor, width: 2),
+                            boxShadow: [BoxShadow(color: primaryColor, offset: const Offset(4, 4))],
                           ),
                           child: Row(
                             children: [
@@ -554,7 +581,10 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                     Text('Ketuk untuk membuka',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.65))),
                                   ],
                                 ),
                               ),
@@ -570,53 +600,41 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                     // ─── Pekerjaan Saya ───────────────────────────────────
                     Row(
                       children: [
-                        const Expanded(
-                            child: SectionHeader(title: 'Pekerjaan Saya')),
+                        const Expanded(child: NeoSectionHeader(title: 'Pekerjaan Saya')),
                         if (_nilaiSiswa != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withAlpha(160),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Nilai: $_nilaiSiswa',
-                              style: const TextStyle(
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w900),
-                            ),
+                          NeoBadge(
+                            label: 'NILAI: $_nilaiSiswa',
+                            color: AppTheme.success,
                           ),
                       ],
                     ),
                     const SizedBox(height: 12),
 
-                    PremiumCard(
-                      accentColor:
-                          _isTurnedIn ? Colors.green : const Color(0xFFB84A24),
-                      padding: const EdgeInsets.all(12),
+                    NeoCard(
+                      color: (_isTurnedIn ? AppTheme.success : AppTheme.warning).withAlpha(20),
+                      borderColor: _isTurnedIn ? AppTheme.success : AppTheme.warning,
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
                           // Status badge
                           if (_isTurnedIn)
                             Container(
                               width: double.infinity,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 10),
-                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: Colors.green.withAlpha(20),
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppTheme.success.withAlpha(30),
+                                border: Border.all(color: AppTheme.success, width: 2),
                               ),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(LucideIcons.checkCircle,
-                                      color: Colors.green, size: 18),
+                                      color: AppTheme.success, size: 18),
                                   SizedBox(width: 8),
                                   Text('Sudah Dikumpulkan',
                                       style: TextStyle(
-                                          color: Colors.green,
+                                          color: AppTheme.success,
                                           fontWeight: FontWeight.w800)),
                                 ],
                               ),
@@ -629,7 +647,11 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                               child: Center(
                                 child: Text(
                                     'Belum ada file atau link ditambahkan',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.65))),
                               ),
                             ),
 
@@ -637,40 +659,35 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             final i = entry.key;
                             final url = entry.value;
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
+                              margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
-                                color: _getFileColor(url).withAlpha(15),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: _getFileColor(url).withAlpha(50)),
+                                color: Theme.of(context).colorScheme.surface,
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
                               ),
                               child: ListTile(
                                 leading: Icon(_getFileIcon(url),
                                     color: _getFileColor(url)),
                                 title: Text(_getFileLabel(url),
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w700)),
+                                    style:
+                                        const TextStyle(fontWeight: FontWeight.w700)),
                                 subtitle: Text(url,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style:
-                                        const TextStyle(fontSize: 11)),
+                                    style: const TextStyle(fontSize: 11)),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      icon: const Icon(
-                                          LucideIcons.externalLink,
+                                      icon: const Icon(LucideIcons.externalLink,
                                           size: 18),
                                       onPressed: () => _openFile(url),
                                       tooltip: 'Buka',
                                     ),
                                     if (!_isTurnedIn)
                                       IconButton(
-                                        icon: const Icon(
-                                            LucideIcons.x,
-                                            color: Colors.red,
-                                            size: 18),
+                                        icon: const Icon(LucideIcons.x,
+                                            color: AppTheme.error, size: 18),
                                         onPressed: () => _removeFile(i),
                                         tooltip: 'Hapus',
                                       ),
@@ -694,7 +711,11 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                                           strokeWidth: 2)),
                                   const SizedBox(width: 12),
                                   Text('Mengunggah file...',
-                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65))),
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.65))),
                                 ],
                               ),
                             ),
@@ -702,81 +723,91 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                           // Tombol tambah (hanya kalau belum Turn In)
                           if (!_isTurnedIn) ...[
                             const SizedBox(height: 16),
-                            CustomPaint(
-                              painter: DashedNeonPainter(
-                                color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF7B83EB) : const Color(0xFF4C51BF),
-                                strokeWidth: 1.5,
-                                dashWidth: 8.0,
-                                dashSpace: 5.0,
-                                borderRadius: 16.0,
-                              ),
+                            GestureDetector(
+                              onTap: _isUploading ? null : _pickAndUploadFile,
                               child: Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 24, horizontal: 16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF161925) : const Color(0xFFF3F5FE),
-                                  borderRadius: BorderRadius.circular(16),
+                                  color: AppTheme.primary.withAlpha(30),
+                                  border: Border.all(color: AppTheme.primary, width: 2),
                                 ),
                                 child: Column(
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF7B83EB) : const Color(0xFF4C51BF)).withAlpha(20),
+                                        color: (Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? AppTheme.primary
+                                                : AppTheme.primary)
+                                            .withAlpha(20),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
                                         LucideIcons.uploadCloud,
-                                        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? const Color(0xFF9EAAFF)
+                                            : AppTheme.primary,
                                         size: 28,
                                       ),
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
                                       'Unggah Tugas Anda',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 14,
-                                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : AppTheme.textLight,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : AppTheme.textLight,
+                                          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       'Mendukung PDF, Word, JPG, atau Link website',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                        color: Theme.of(context).brightness == Brightness.dark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                            color:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? AppTheme.textMutedDk
+                                                    : AppTheme.textMutedLt,
+                                          ),
                                     ),
                                     const SizedBox(height: 18),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        ElevatedButton.icon(
-                                          onPressed: _isUploading ? null : _pickAndUploadFile,
-                                          icon: const Icon(LucideIcons.file, size: 14),
-                                          label: const Text('Pilih File', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF7B83EB),
-                                            foregroundColor: Colors.white,
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                            elevation: 0,
-                                          ),
+                                        NeoButton(
+                                          onTap: _isUploading ? () {} : _pickAndUploadFile,
+                                          text: 'PILIH FILE',
                                         ),
                                         const SizedBox(width: 12),
-                                        OutlinedButton.icon(
-                                          onPressed: _showAddLinkDialog,
-                                          icon: const Icon(LucideIcons.link, size: 14),
-                                          label: const Text('Tambah Link', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                                          style: OutlinedButton.styleFrom(
-                                            backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252A42) : const Color(0xFFE2E7FC),
-                                            foregroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9EAAFF) : const Color(0xFF3B41A3),
-                                            side: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF3E4E9E) : const Color(0xFFB5C0F9), width: 1.0),
+                                        GestureDetector(
+                                          onTap: _showAddLinkDialog,
+                                          child: Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            constraints: const BoxConstraints(minHeight: 40),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context).scaffoldBackgroundColor,
+                                              border: Border.all(color: AppTheme.primary, width: 2),
+                                              boxShadow: const [BoxShadow(color: AppTheme.primary, offset: Offset(3, 3))],
+                                            ),
+                                            child: Center(
+                                              child: Text('TAMBAH LINK', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                                fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: 0.5)),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -791,24 +822,23 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                     ),
 
                     // ─── Feedback ─────────────────────────────────────────
-                    if (_feedbackSiswa != null &&
-                        _feedbackSiswa!.isNotEmpty) ...[
+                    if (_feedbackSiswa != null && _feedbackSiswa!.isNotEmpty) ...[
                       const SizedBox(height: 24),
-                      const SectionHeader(title: 'Feedback Pengajar'),
+                      const NeoSectionHeader(title: 'Feedback Pengajar'),
                       const SizedBox(height: 12),
-                      PremiumCard(
-                        accentColor: const Color(0xFF76AFB8),
+                      NeoCard(
+                        color: AppTheme.info.withAlpha(20),
+                        borderColor: AppTheme.info,
+                        padding: const EdgeInsets.all(20),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(LucideIcons.messageSquare,
-                                color: Color(0xFF76AFB8)),
+                            const Icon(LucideIcons.messageSquare, color: Color(0xFF76AFB8)),
                             const SizedBox(width: 16),
                             Expanded(
-                                child: Text(_feedbackSiswa!,
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontStyle: FontStyle.italic))),
+                              child: Text(_feedbackSiswa!,
+                                style: const TextStyle(fontSize: 15, fontStyle: FontStyle.italic)),
+                            ),
                           ],
                         ),
                       ),
@@ -822,7 +852,6 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     );
   }
 
-
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
@@ -830,7 +859,9 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         const SizedBox(width: 12),
         Text(
           '$label: ',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w500),
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(160),
+              fontWeight: FontWeight.w500),
         ),
         Flexible(
           child: Text(
@@ -842,77 +873,5 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         ),
       ],
     );
-  }
-}
-
-class DashedNeonPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-  final double dashWidth;
-  final double dashSpace;
-  final double borderRadius;
-
-  DashedNeonPainter({
-    required this.color,
-    this.strokeWidth = 2.0,
-    this.dashWidth = 6.0,
-    this.dashSpace = 4.0,
-    this.borderRadius = 16.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final glowPaint = Paint()
-      ..color = color.withAlpha(80)
-      ..strokeWidth = strokeWidth + 2.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
-
-    final primaryPaint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final RRect rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(borderRadius),
-    );
-
-    final Path path = Path()..addRRect(rrect);
-    final Path dashedPath = _buildDashedPath(path, dashWidth, dashSpace);
-
-    canvas.drawPath(dashedPath, glowPaint);
-    canvas.drawPath(dashedPath, primaryPaint);
-  }
-
-  Path _buildDashedPath(Path source, double dashWidth, double dashSpace) {
-    final Path dest = Path();
-    for (final PathMetric metric in source.computeMetrics()) {
-      double distance = 0.0;
-      bool draw = true;
-      while (distance < metric.length) {
-        final double len = draw ? dashWidth : dashSpace;
-        if (draw) {
-          dest.addPath(
-            metric.extractPath(distance, (distance + len).clamp(0.0, metric.length)),
-            Offset.zero,
-          );
-        }
-        distance += len;
-        draw = !draw;
-      }
-    }
-    return dest;
-  }
-
-  @override
-  bool shouldRepaint(covariant DashedNeonPainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.dashWidth != dashWidth ||
-        oldDelegate.dashSpace != dashSpace ||
-        oldDelegate.borderRadius != borderRadius;
   }
 }

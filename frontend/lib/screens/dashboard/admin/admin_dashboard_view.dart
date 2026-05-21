@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
+import '../../../widgets/neo_brutalism.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+
+
 
 class AdminDashboardView extends StatefulWidget {
   final String token;
@@ -109,8 +113,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
   Widget _buildStatGrid(double w, bool isDark) {
     final stats = [
-      _StatData(LucideIcons.graduationCap, 'Total Siswa', '$_totalSiswa', AppTheme.tealDeep, const Color(0xFF0EA5E9)),
-      _StatData(LucideIcons.user, 'Total Guru', '$_totalGuru', AppTheme.indigoPrimary, AppTheme.purpleSecondary),
+      _StatData(LucideIcons.graduationCap, 'Total Siswa', '$_totalSiswa', AppTheme.success, const Color(0xFF0EA5E9)),
+      _StatData(LucideIcons.user, 'Total Guru', '$_totalGuru', AppTheme.indigoPrimary, AppTheme.primary),
       _StatData(LucideIcons.library, 'Total Kelas', '$_totalKelas', AppTheme.amber, const Color(0xFFF97316)),
       _StatData(LucideIcons.bookOpen, 'Mata Pelajaran', '$_totalMapel', AppTheme.rose, const Color(0xFFE11D48)),
     ];
@@ -127,10 +131,13 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       itemCount: stats.length,
       itemBuilder: (_, i) {
         final s = stats[i];
-        return CosmicStatCard(icon: s.icon, label: s.label, value: s.value, gradient: [s.color, s.colorEnd])
-            .animate(delay: (100 + i * 80).ms)
+        return NeoStatCard(
+          label: s.label,
+          value: s.value,
+          icon: s.icon,
+          color: s.color,
+        ).animate(delay: (100 + i * 80).ms)
             .fadeIn(duration: 400.ms)
-            .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut, duration: 800.ms)
             .slideY(begin: 0.2, curve: Curves.easeOutCubic);
       },
     );
@@ -138,93 +145,56 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
   Widget _buildQuickActions(ThemeData theme, bool isDark, double w) {
     final columns = w < 600 ? 2 : 4;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text('Aksi Cepat', style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight)),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: AppTheme.indigoPrimary.withAlpha(20), borderRadius: BorderRadius.circular(100)),
-                  child: Text('ADMIN ONLY', style: GoogleFonts.plusJakartaSans(fontSize: 9, fontWeight: FontWeight.w900, color: AppTheme.indigoPrimary)),
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: columns,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: w < 600 ? 1.4 : 1.1,
-              children: [
-                _actionBtn(LucideIcons.userPlus, 'Tambah User', AppTheme.indigoPrimary, () {
-                  if (widget.onNavigate != null) widget.onNavigate!(1);
-                }, isDark),
-                _actionBtn(LucideIcons.building2, 'Buka Kelas', AppTheme.tealDeep, () {
-                  if (widget.onNavigate != null) widget.onNavigate!(2);
-                }, isDark),
-                _actionBtn(LucideIcons.megaphone, 'Broadcast', AppTheme.amber, () {
-                  if (widget.onNavigate != null) widget.onNavigate!(7);
-                }, isDark),
-                _actionBtn(LucideIcons.settings, 'Preferensi', AppTheme.rose, () {
-                  if (widget.onNavigate != null) widget.onNavigate!(8);
-                }, isDark),
-              ],
-            ),
-          ],
-        ),
+    return NeoCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Aksi Cepat', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: AppTheme.indigoPrimary, border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5)),
+                child: Text('ADMIN ONLY', style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, color: Colors.white)),
+              )
+            ],
+          ),
+          const SizedBox(height: 20),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: columns,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: w < 600 ? 1.4 : 1.1,
+            children: [
+              _actionBtn(LucideIcons.userPlus, 'Tambah User', AppTheme.indigoPrimary, () {
+                if (widget.onNavigate != null) widget.onNavigate!(1);
+              }, isDark),
+              _actionBtn(LucideIcons.building2, 'Buka Kelas', AppTheme.success, () {
+                if (widget.onNavigate != null) widget.onNavigate!(2);
+              }, isDark),
+              _actionBtn(LucideIcons.megaphone, 'Broadcast', AppTheme.amber, () {
+                if (widget.onNavigate != null) widget.onNavigate!(7);
+              }, isDark),
+              _actionBtn(LucideIcons.settings, 'Preferensi', AppTheme.rose, () {
+                if (widget.onNavigate != null) widget.onNavigate!(8);
+              }, isDark),
+            ],
+          ),
+        ],
       ),
     ).animate(delay: 200.ms).fadeIn().slideY(begin: -0.1);
   }
 
   Widget _actionBtn(IconData icon, String label, Color color, VoidCallback onTap, bool isDark) {
-    return PremiumCard(
+    return NeoMenuCard(
+      label: label,
+      icon: icon,
+      color: color,
       onTap: onTap,
-      accentColor: color,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      radius: 16,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              color: isDark ? Colors.white : AppTheme.textLight,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
   }
 
@@ -253,46 +223,34 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           color: AppTheme.indigoPrimary,
           title: 'Siswa',
           radius: 50,
-          titleStyle: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
+          titleStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
       PieChartSectionData(
           value: _totalGuru.toDouble(),
-          color: AppTheme.tealDeep,
+          color: AppTheme.success,
           title: 'Guru',
           radius: 50,
-          titleStyle: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
+          titleStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
     ];
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Distribusi Pengguna',
-                style: GoogleFonts.plusJakartaSans(fontSize: 14.5, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppTheme.textLight)),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 180,
-              child: RepaintBoundary(
-                child: PieChart(PieChartData(
-                  sections: sections,
-                  sectionsSpace: 3,
-                  centerSpaceRadius: 40,
-                  pieTouchData: PieTouchData(enabled: true),
-                )),
-              ),
+    return NeoCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Distribusi Pengguna',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 180,
+            child: RepaintBoundary(
+              child: PieChart(PieChartData(
+                sections: sections,
+                sectionsSpace: 3,
+                centerSpaceRadius: 40,
+                pieTouchData: PieTouchData(enabled: true),
+              )),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     ).animate(delay: 600.ms).fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
   }
@@ -302,68 +260,56 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final maxVal = values.reduce((curr, next) => curr > next ? curr : next);
     final maxY = (maxVal * 1.15).clamp(5.0, 1000.0);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Overview Angka',
-                style: GoogleFonts.plusJakartaSans(fontSize: 14.5, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppTheme.textLight)),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 180,
-              child: RepaintBoundary(
-                child: BarChart(BarChartData(
-                  maxY: maxY,
-                  barTouchData: BarTouchData(enabled: true),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (v, _) {
-                          final labels = ['Siswa', 'Guru', 'Kelas', 'Mapel'];
-                          if (v.toInt() >= labels.length) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(labels[v.toInt()],
-                                style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                          );
-                        },
-                        reservedSize: 28,
-                      ),
+    return NeoCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Overview Angka',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 180,
+            child: RepaintBoundary(
+              child: BarChart(BarChartData(
+                maxY: maxY,
+                barTouchData: BarTouchData(enabled: true),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (v, _) {
+                        final labels = ['Siswa', 'Guru', 'Kelas', 'Mapel'];
+                        if (v.toInt() >= labels.length) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(labels[v.toInt()],
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: Theme.of(context).textTheme.bodyMedium!.color!)),
+                        );
+                      },
+                      reservedSize: 28,
                     ),
-                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (_) => FlLine(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), strokeWidth: 1),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: [
-                    _bar(0, _totalSiswa.toDouble(), AppTheme.indigoPrimary, maxY, isDark),
-                    _bar(1, _totalGuru.toDouble(), AppTheme.tealDeep, maxY, isDark),
-                    _bar(2, _totalKelas.toDouble(), AppTheme.amber, maxY, isDark),
-                    _bar(3, _totalMapel.toDouble(), AppTheme.rose, maxY, isDark),
-                  ],
-                )),
-              ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (_) => FlLine(color: Theme.of(context).dividerColor, strokeWidth: 1),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: [
+                  _bar(0, _totalSiswa.toDouble(), AppTheme.indigoPrimary, maxY, isDark),
+                  _bar(1, _totalGuru.toDouble(), AppTheme.success, maxY, isDark),
+                  _bar(2, _totalKelas.toDouble(), AppTheme.amber, maxY, isDark),
+                  _bar(3, _totalMapel.toDouble(), AppTheme.rose, maxY, isDark),
+                ],
+              )),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     ).animate(delay: 700.ms).fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack).slideY(begin: 0.1, curve: Curves.easeOutQuart);
   }
@@ -411,5 +357,5 @@ class _StatData {
   final String label, value;
   final Color color;
   final Color colorEnd;
-  const _StatData(this.icon, this.label, this.value, this.color, this.colorEnd);
+  _StatData(this.icon, this.label, this.value, this.color, this.colorEnd);
 }

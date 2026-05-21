@@ -2,53 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// ═══════════════════════════════════════════════════════════════════════════
-/// MyPSKD Design System v4.0
-/// Base: #B4D3D9 | Surface: #F2EAE0 | Accent: #9B8EC7 | Text: #2D2250
+/// MyPSKD Design System v5.0 (Sleek Slate & Indigo)
 /// ═══════════════════════════════════════════════════════════════════════════
 class AppTheme {
-  // ─── Core Brand Colors ──────────────────────────────────────────────────
-  static const Color primary     = Color(0xFF9B8EC7); // Soft purple — accent
-  static const Color base        = Color(0xFFB4D3D9); // Teal-blue — background
-  static const Color surface     = Color(0xFFF2EAE0); // Warm cream — cards
-  static const Color textPrimary = Color(0xFF2D2250); // Deep navy — text
-
-  // ─── Legacy aliases (backward compat) ───────────────────────────────────
-  static const Color indigoPrimary   = primary;
-  static const Color indigoLight     = Color(0xFFBDA6CE);
-  static const Color indigoDark      = Color(0xFF6B5E9E);
-  static const Color purpleSecondary = primary;
-  static const Color purpleLight     = Color(0xFFBDA6CE);
-  static const Color tealDeep        = primary;
-  static const Color tealLight       = base;
-  static const Color sidebarDark     = textPrimary;
-  static const Color sidebarDarker   = Color(0xFF1A1040);
-  static const Color sidebarActive   = primary;
-
-  // ─── Semantic Colors (tetap sama) ───────────────────────────────────────
-  static const Color amber   = Color(0xFFF59E0B);
-  static const Color emerald = Color(0xFF10B981);
-  static const Color rose    = Color(0xFFA32D2D); // error only
-  static const Color sky     = Color(0xFF38BDF8);
-  static const Color orangeVivid = Color(0xFFF27F33);
+  // ─── Semantic Brand Colors ────────────────────────────────────────────────
+  static const Color primary     = Color(0xFF4F46E5); // Indigo 600
+  static const Color primaryDark = Color(0xFF6366F1); // Indigo 500
+  
+  // ─── Semantic State Colors ────────────────────────────────────────────────
+  static const Color success = Color(0xFF10B981); // Emerald 500
+  static const Color warning = Color(0xFFF59E0B); // Amber 500
+  static const Color error   = Color(0xFFEF4444); // Red 500
+  static const Color info    = Color(0xFF3B82F6); // Blue 500
 
   // ─── Light Mode ─────────────────────────────────────────────────────────
-  static const Color lightBg      = base;
-  static const Color lightSurface = surface;
-  static const Color lightBorder  = Color(0xFFD4C5B8);
-  static const Color textLight    = textPrimary;
-  static const Color textMutedLt  = Color(0xFF6B5E9E);
+  static const Color lightBg      = Color(0xFFF9FAFB); // Gray 50
+  static const Color lightSurface = Color(0xFFFFFFFF); // White
+  static const Color lightBorder  = Color(0xFFE5E7EB); // Gray 200
+  static const Color textLight    = Color(0xFF111827); // Gray 900 (High Contrast)
+  static const Color textMutedLt  = Color(0xFF4B5563); // Gray 600 (High Contrast)
 
   // ─── Dark Mode ──────────────────────────────────────────────────────────
-  static const Color darkBg      = Color(0xFF1A1040);
-  static const Color darkSurface = Color(0xFF2D2250);
-  static const Color darkCard    = Color(0xFF2D2250);
-  static const Color darkBorder  = Color(0xFF3D3270);
-  static const Color textDark    = surface;
-  static const Color textMutedDk = Color(0xFFBDA6CE);
-  static const Color bgDarkest   = darkBg;
-  static const Color bgDarker    = darkCard;
+  static const Color darkBg      = Color(0xFF0F172A); // Slate 900
+  static const Color darkSurface = Color(0xFF1E293B); // Slate 800
+  static const Color darkCard    = Color(0xFF1E293B); // Slate 800
+  static const Color darkBorder  = Color(0xFF334155); // Slate 700
+  static const Color textDark    = Color(0xFFF9FAFB); // Gray 50 (High Contrast)
+  static const Color textMutedDk = Color(0xFF9CA3AF); // Gray 400 (High Contrast)
 
-  static Color getAccent(BuildContext context) => primary;
+  // ─── Legacy aliases (For backward compat during migration) ──────────────
+  static const Color indigoPrimary = primary;
+  static const Color indigoLight   = primaryDark;
+  static const Color indigoDark    = Color(0xFF3730A3);
+  static const Color tealDeep      = success;
+  static const Color tealLight     = Color(0xFF34D399);
+  static const Color amber         = warning;
+  static const Color emerald       = success;
+  static const Color rose          = error;
+  static const Color sky           = info;
+  static const Color orangeVivid   = Color(0xFFF97316);
+
+  static Color getAccent(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? primaryDark : primary;
 
   // ─── Text Themes ────────────────────────────────────────────────────────
   static TextTheme _textTheme(Brightness b) {
@@ -57,47 +51,47 @@ class AppTheme {
     final muted = isD ? textMutedDk : textMutedLt;
 
     return TextTheme(
-      displayLarge: GoogleFonts.poppins(
-        fontSize: 48, fontWeight: FontWeight.w800,
-        color: text, letterSpacing: -1.5,
-      ),
-      headlineLarge: GoogleFonts.poppins(
-        fontSize: 36, fontWeight: FontWeight.w800,
+      displayLarge: GoogleFonts.inter(
+        fontSize: 28, fontWeight: FontWeight.w900,
         color: text, letterSpacing: -1.0,
       ),
-      headlineMedium: GoogleFonts.poppins(
-        fontSize: 28, fontWeight: FontWeight.w700,
+      headlineLarge: GoogleFonts.inter(
+        fontSize: 24, fontWeight: FontWeight.w800,
         color: text, letterSpacing: -0.8,
       ),
-      headlineSmall: GoogleFonts.poppins(
-        fontSize: 22, fontWeight: FontWeight.w700,
+      headlineMedium: GoogleFonts.inter(
+        fontSize: 16, fontWeight: FontWeight.w800,
         color: text, letterSpacing: -0.5,
       ),
-      titleLarge: GoogleFonts.poppins(
-        fontSize: 18, fontWeight: FontWeight.w700,
+      headlineSmall: GoogleFonts.inter(
+        fontSize: 16, fontWeight: FontWeight.w700,
+        color: text, letterSpacing: -0.5,
+      ),
+      titleLarge: GoogleFonts.inter(
+        fontSize: 16, fontWeight: FontWeight.w700,
         color: text, letterSpacing: -0.3,
       ),
-      titleMedium: GoogleFonts.poppins(
-        fontSize: 16, fontWeight: FontWeight.w600,
+      titleMedium: GoogleFonts.inter(
+        fontSize: 15, fontWeight: FontWeight.w600,
         color: text,
       ),
-      titleSmall: GoogleFonts.poppins(
+      titleSmall: GoogleFonts.inter(
         fontSize: 14, fontWeight: FontWeight.w600,
         color: muted,
       ),
-      bodyLarge: GoogleFonts.poppins(
-        fontSize: 15, color: muted, height: 1.7,
+      bodyLarge: GoogleFonts.inter(
+        fontSize: 14, color: text, height: 1.6,
+        fontWeight: FontWeight.w500,
+      ),
+      bodyMedium: GoogleFonts.inter(
+        fontSize: 13, color: muted, height: 1.5,
         fontWeight: FontWeight.w400,
       ),
-      bodyMedium: GoogleFonts.poppins(
-        fontSize: 13, color: muted, height: 1.6,
-        fontWeight: FontWeight.w400,
+      labelLarge: GoogleFonts.inter(
+        fontSize: 12, fontWeight: FontWeight.w600,
+        color: muted, letterSpacing: 0.3,
       ),
-      labelLarge: GoogleFonts.poppins(
-        fontSize: 13, fontWeight: FontWeight.w700,
-        color: text, letterSpacing: 0.3,
-      ),
-      labelMedium: GoogleFonts.poppins(
+      labelMedium: GoogleFonts.inter(
         fontSize: 11, fontWeight: FontWeight.w600,
         color: muted, letterSpacing: 0.5,
       ),
@@ -113,14 +107,14 @@ class AppTheme {
       scaffoldBackgroundColor: lightBg,
       colorScheme: const ColorScheme.light(
         primary: primary,
-        secondary: Color(0xFFBDA6CE),
-        tertiary: base,
-        surface: surface,
-        onSurface: textPrimary,
+        secondary: info,
+        tertiary: lightBg,
+        surface: lightSurface,
+        onSurface: textLight,
         onPrimary: Colors.white,
-        primaryContainer: Color(0xFFDDD8F0),
-        secondaryContainer: surface,
-        error: rose,
+        primaryContainer: Color(0xFFE0E7FF), // Indigo 100
+        secondaryContainer: lightSurface,
+        error: error,
       ),
       textTheme: _textTheme(Brightness.light),
       appBarTheme: AppBarTheme(
@@ -128,18 +122,19 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: textPrimary),
-        titleTextStyle: GoogleFonts.poppins(
-          color: textPrimary, fontSize: 18,
+        iconTheme: const IconThemeData(color: textLight),
+        titleTextStyle: GoogleFonts.inter(
+          color: textLight, fontSize: 18,
           fontWeight: FontWeight.w700, letterSpacing: -0.3,
         ),
       ),
       cardTheme: CardThemeData(
-        color: surface,
+        color: lightSurface,
         elevation: 0,
-        shadowColor: primary.withAlpha(30),
+        shadowColor: Colors.black.withAlpha(10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: lightBorder, width: 1.0),
         ),
       ),
       dividerColor: lightBorder,
@@ -154,18 +149,18 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.dark,
       useMaterial3: true,
-      primaryColor: primary,
+      primaryColor: primaryDark,
       scaffoldBackgroundColor: darkBg,
       colorScheme: const ColorScheme.dark(
-        primary: primary,
-        secondary: Color(0xFFBDA6CE),
-        tertiary: base,
-        surface: darkCard,
+        primary: primaryDark,
+        secondary: info,
+        tertiary: darkBg,
+        surface: darkSurface,
         onSurface: textDark,
         onPrimary: Colors.white,
-        primaryContainer: Color(0xFF3D3270),
-        secondaryContainer: Color(0xFF2D2250),
-        error: rose,
+        primaryContainer: Color(0xFF3730A3), // Indigo 800
+        secondaryContainer: darkSurface,
+        error: error,
       ),
       textTheme: _textTheme(Brightness.dark),
       appBarTheme: AppBarTheme(
@@ -174,14 +169,15 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: textDark),
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: GoogleFonts.inter(
           color: textDark, fontSize: 18,
           fontWeight: FontWeight.w700, letterSpacing: -0.3,
         ),
       ),
       cardTheme: CardThemeData(
-        color: darkCard,
+        color: darkSurface,
         elevation: 0,
+        shadowColor: Colors.black.withAlpha(40),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: darkBorder, width: 1.0),
@@ -196,12 +192,12 @@ class AppTheme {
 
   static Color getStatusColor(String? status) {
     switch (status) {
-      case 'Available': return emerald;
+      case 'Available': return success;
       case 'Busy':
-      case 'Do Not Disturb': return rose;
+      case 'Do Not Disturb': return error;
       case 'Be Right Back':
-      case 'Appear Away': return amber;
-      default: return Colors.grey;
+      case 'Appear Away': return warning;
+      default: return textMutedLt;
     }
   }
 }
