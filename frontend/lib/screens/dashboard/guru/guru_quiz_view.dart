@@ -544,26 +544,20 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withAlpha(isDark ? 25 : 15),
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface,
-            offset: const Offset(2, 2),
-            blurRadius: 0,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withAlpha(80), width: 1.2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 13, color: color),
-          const SizedBox(width: 5),
+          const SizedBox(width: 6),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: color),
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: color, fontSize: 12),
           ),
         ],
       ),
@@ -588,29 +582,24 @@ class _ActionBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: color.withAlpha(isDark ? 30 : 20),
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.onSurface,
-              offset: const Offset(2, 2),
-              blurRadius: 0,
-            ),
-          ],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withAlpha(80), width: 1.2),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 13, color: color),
-            const SizedBox(width: 5),
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: color),
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: color, fontSize: 13),
             ),
           ],
         ),
