@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/theme.dart';
 import '../../../models/quiz_model.dart';
 import '../../../services/exam/violation_service.dart';
@@ -164,11 +165,11 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     setState(() {});
     if (_violationService.violations.isNotEmpty) {
       final last = _violationService.violations.last;
-      _showWarning(last.typeLabel);
+      _showWarning(last.description);
       final res = await QuizService.reportLiveViolation(
         token: widget.token,
         quizId: widget.quiz.id,
-        reason: last.typeLabel,
+        reason: last.description,
       );
       if (res['autoSubmitTriggered'] == true) {
         if (mounted && !_isSubmitted && !_isSubmitting) {
@@ -635,25 +636,62 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   Widget _buildWarningBanner(bool isDark) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.error.withAlpha(isDark ? 40 : 20),
-        border: Border(bottom: BorderSide(color: AppTheme.error.withAlpha(80))),
+        color: AppTheme.error,
+        border: Border.all(color: Colors.black, width: 3),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            offset: Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const Icon(LucideIcons.alertOctagon, color: AppTheme.error, size: 18),
-          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black, width: 2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(LucideIcons.siren, color: AppTheme.error, size: 24),
+          ),
+          const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              '⚠️ PELANGGARAN: $_lastViolationMsg',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.error,
-                fontWeight: FontWeight.bold),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PERINGATAN KECURANGAN!',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _lastViolationMsg,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
-    );
+    ).animate()
+      .fadeIn(duration: 300.ms)
+      .shake(hz: 8, curve: Curves.easeInOutCubic, duration: 500.ms)
+      .shimmer(duration: 1.seconds, color: Colors.white.withAlpha(50));
   }
 
   Widget _buildQuestionArea(ThemeData theme, bool isDark) {

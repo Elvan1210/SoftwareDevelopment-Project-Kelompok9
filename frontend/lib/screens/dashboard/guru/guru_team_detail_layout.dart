@@ -1027,12 +1027,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   duration: const Duration(milliseconds: 280),
                   child: KeyedSubtree(
                     key: ValueKey(_activeTabID),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: _activeTabID == 'dashboard' ? 0 : 80,
-                      ),
-                      child: _getActiveView(),
-                    ),
+                    child: _getActiveView(),
                   ),
                 ),
               ),

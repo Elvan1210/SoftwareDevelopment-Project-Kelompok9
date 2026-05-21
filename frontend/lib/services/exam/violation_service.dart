@@ -63,27 +63,27 @@ class ViolationService extends ChangeNotifier {
   // ── Specific violation helpers ────────────────────────────────────────
   bool recordFocusLost() => addViolation(
     'focus_lost',
-    'Aplikasi kehilangan fokus — kemungkinan Alt+Tab atau pindah aplikasi',
+    'Siswa pindah ke aplikasi/jendela lain (Alt+Tab atau ganti window)',
   );
 
   bool recordFullscreenExit() => addViolation(
     'fullscreen_exit',
-    'User keluar dari mode fullscreen',
+    'Siswa keluar dari mode layar penuh (Fullscreen)',
   );
 
   bool recordShortcutAttempt(String shortcut) => addViolation(
     'shortcut_attempt',
-    'Mencoba shortcut terlarang: $shortcut',
+    'Siswa memencet $shortcut',
   );
 
   bool recordCopyPaste(String action) => addViolation(
     'copy_paste',
-    'Mencoba $action pada soal ujian',
+    'Siswa mencoba $action pada area soal',
   );
 
   bool recordRightClick() => addViolation(
     'right_click',
-    'Mencoba klik kanan pada area ujian',
+    'Siswa memencet klik kanan (Right Click) pada mouse',
   );
 
   // ── Export log ────────────────────────────────────────────────────────
