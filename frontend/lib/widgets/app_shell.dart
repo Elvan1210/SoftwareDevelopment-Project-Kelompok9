@@ -224,7 +224,7 @@ class GlassCard extends StatelessWidget {
               (isDark
                   ? AppTheme.darkCard.withAlpha(240)
                   : AppTheme.lightSurface.withAlpha(252)),
-          borderRadius: BorderRadius.zero,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDark
                 ? AppTheme.indigoPrimary.withAlpha(35)
@@ -305,7 +305,7 @@ class _PremiumCardState extends State<PremiumCard> {
           color: isDark
               ? AppTheme.darkCard
               : AppTheme.lightSurface,
-          borderRadius: BorderRadius.zero,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: _hovered
                 ? accent.withAlpha(isDark ? 120 : 80)
@@ -329,7 +329,7 @@ class _PremiumCardState extends State<PremiumCard> {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.zero,
+                    borderRadius: BorderRadius.circular(20),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -405,7 +405,7 @@ class StatCard extends StatelessWidget {
                   color.withAlpha(isDark ? 30 : 20),
                 ],
               ),
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: color.withAlpha(isDark ? 80 : 50),
                 width: 1.0,
@@ -456,7 +456,7 @@ class StatCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: color.withAlpha(isDark ? 40 : 20),
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 trend!,
@@ -537,7 +537,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                       AppTheme.indigoPrimary.withAlpha(20),
                     ],
             ),
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       ),
@@ -605,7 +605,7 @@ class _AppTextFieldState extends State<AppTextField> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: _focused
             ? [BoxShadow(color: accent.withAlpha(70), blurRadius: 20, spreadRadius: 1)]
             : [],
@@ -637,16 +637,16 @@ class _AppTextFieldState extends State<AppTextField> {
               ? const Color(0xFF101420)
               : const Color(0xFFF1F3FF),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide(color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE)),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide(color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE)),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 2),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         ),
@@ -680,13 +680,13 @@ class SectionHeader extends StatelessWidget {
         Container(
           width: 4,
           height: 22,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [AppTheme.indigoPrimary, AppTheme.primary],
             ),
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
         const SizedBox(width: 12),
@@ -748,7 +748,7 @@ class AppFAB extends StatelessWidget {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: c.withAlpha(100),
@@ -762,7 +762,7 @@ class AppFAB extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         icon: Icon(icon),
         label: Text(
           label,

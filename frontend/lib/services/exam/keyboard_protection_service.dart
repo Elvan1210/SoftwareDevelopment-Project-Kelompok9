@@ -119,12 +119,6 @@ class KeyboardProtectionService {
       return true;
     }
 
-    // ── Ctrl + A (Select All) ──
-    if (isCtrl && key == LogicalKeyboardKey.keyA) {
-      violationService.recordCopyPaste('Select All (Ctrl+A)');
-      debugPrint('🚫 [KeyboardProtection] Select All blocked!');
-      return true;
-    }
 
     // ── Print Screen ──
     if (key == LogicalKeyboardKey.printScreen) {

@@ -530,10 +530,10 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     required VoidCallback onTap,
     required bool isDark,
   }) {
-    const activeColor  = AppTheme.primary;
-    final inactiveColor = Theme.of(context).colorScheme.surface;
-    final bgColor      = isSelected
-        ? (Theme.of(context).colorScheme.surface)
+    final activeColor   = isDark ? Theme.of(context).colorScheme.primaryContainer : AppTheme.indigoPrimary;
+    final inactiveColor = isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt;
+    final bgColor       = isSelected
+        ? (isDark ? const Color(0xFF2A3D35) : AppTheme.indigoPrimary.withAlpha(15))
         : Colors.transparent;
 
     return Expanded(
@@ -541,13 +541,11 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             color: bgColor,
-            border: isSelected
-                ? Border.all(color: Theme.of(context).dividerColor)
-                : null,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
