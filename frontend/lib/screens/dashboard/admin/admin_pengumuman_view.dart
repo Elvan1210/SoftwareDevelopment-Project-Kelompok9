@@ -30,7 +30,7 @@ const _kategoriMap = {
     label: 'Semua',
     icon: LucideIcons.layoutGrid,
     color: AppTheme.indigoPrimary,
-    colorEnd: AppTheme.purpleSecondary,
+    colorEnd: AppTheme.primary,
   ),
   'Ujian': _KategoriConfig(
     label: 'Ujian',
@@ -53,8 +53,8 @@ const _kategoriMap = {
   'Umum': _KategoriConfig(
     label: 'Umum',
     icon: LucideIcons.megaphone,
-    color: AppTheme.purpleSecondary,
-    colorEnd: AppTheme.purpleLight,
+    color: AppTheme.primary,
+    colorEnd: AppTheme.indigoLight,
   ),
 };
 

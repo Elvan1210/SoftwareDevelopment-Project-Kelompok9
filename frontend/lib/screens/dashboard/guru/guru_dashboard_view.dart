@@ -1,3 +1,4 @@
+import '../../../config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
@@ -184,11 +185,8 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Pilih Kelas untuk Presensi',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: _P.ink,
-                )),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700,
+                  color: _P.ink)),
             const SizedBox(height: 16),
             ..._kelasList.map((k) => GestureDetector(
                   onTap: () {
@@ -206,11 +204,8 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                       Expanded(
                           child: Text(
                         k['nama_kelas']?.toString() ?? '-',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _P.ink,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
+                          color: _P.ink),
                       )),
                       const Icon(LucideIcons.chevronRight,
                           size: 16, color: _P.outline),
@@ -256,13 +251,78 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       color: _P.primary,
       child: LayoutBuilder(builder: (ctx, constraints) {
         final w = constraints.maxWidth;
-        final pad = w >= 900 ? 40.0 : 16.0;
+        final isWide = w >= 950;
+        final pad = isWide ? 40.0 : 24.0; // 24px margins on mobile
+
+        if (isWide) {
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(pad, 24, pad, 100),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildGreeting()
+                        .animate()
+                        .fadeIn(duration: 350.ms)
+                        .slideY(begin: -0.04),
+                    const SizedBox(height: 24),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Column
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildRingkasanCard()
+                                  .animate()
+                                  .fadeIn(delay: 80.ms)
+                                  .slideY(begin: 0.05),
+                              const SizedBox(height: 20),
+                              _buildPengumumanCard()
+                                  .animate()
+                                  .fadeIn(delay: 140.ms)
+                                  .slideY(begin: 0.05),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        // Right Column
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildJadwalCard()
+                                  .animate()
+                                  .fadeIn(delay: 200.ms)
+                                  .slideY(begin: 0.05),
+                              const SizedBox(height: 20),
+                              _buildPresensiCard()
+                                  .animate()
+                                  .fadeIn(delay: 260.ms)
+                                  .slideY(begin: 0.05),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
 
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(pad, 16, pad, 100),
+              padding: EdgeInsets.fromLTRB(pad, 24, pad, 100),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // 1. Greeting
@@ -314,24 +374,18 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('$_greeting,',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
               color: _P.ink,
               letterSpacing: -0.8,
-              height: 1.15,
-            )),
+              height: 1.15)),
         Text('Bpk/Ibu. $nama',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
               color: _P.ink,
               letterSpacing: -0.8,
-              height: 1.15,
-            )),
+              height: 1.15)),
         const SizedBox(height: 4),
         Text('$_todayDate • ${_kelasList.length} Kelas aktif',
-            style: GoogleFonts.inter(fontSize: 13, color: _P.muted)),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: _P.muted)),
       ],
     );
   }
@@ -359,16 +413,13 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
               _badge('RINGKASAN KELAS', dark: true),
               const SizedBox(height: 14),
               Text('$_totalSiswa Siswa Terdaftar',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
                     color: _P.ink,
                     letterSpacing: -1.2,
-                    height: 1.1,
-                  )),
+                    height: 1.1)),
               const SizedBox(height: 6),
               Text('$_totalMateri materi · $_totalPengumuman pengumuman',
-                  style: GoogleFonts.inter(fontSize: 13, color: _P.primary)),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: _P.primary)),
               const SizedBox(height: 18),
               _neoButton('LIHAT DATA KELAS',
                   icon: LucideIcons.arrowRight,
@@ -410,14 +461,11 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Buat Pengumuman',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _P.ink,
-                        )),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700,
+                          color: _P.ink)),
                     Text('Kirim ke kelas & channel yang kamu ajar',
                         style:
-                            GoogleFonts.inter(fontSize: 12, color: _P.muted)),
+                            Theme.of(context).textTheme.bodyMedium?.copyWith(color: _P.muted)),
                   ]),
             ),
             const Icon(LucideIcons.chevronRight, size: 18, color: _P.outline),
@@ -447,12 +495,9 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                 GestureDetector(
                   onTap: () => widget.onNavigate?.call(1),
                   child: Text('LIHAT SEMUA',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
                         color: _P.primary,
-                        letterSpacing: 0.5,
-                      )),
+                        letterSpacing: 0.5)),
                 ),
               ],
             ),
@@ -461,18 +506,15 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Text('Kelas Ampuan',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: _P.ink,
-                )),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700,
+                  color: _P.ink)),
           ),
           const SizedBox(height: 14),
           if (_kelasList.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child: Text('Belum ada kelas',
-                  style: GoogleFonts.inter(fontSize: 13, color: _P.outline)),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: _P.outline)),
             )
           else
             ..._kelasList.asMap().entries.map((e) {
@@ -520,31 +562,22 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                       children: [
                         if (mapel.isNotEmpty)
                           Text(mapel.toUpperCase(),
-                              style: GoogleFonts.inter(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
                                 color: color,
-                                letterSpacing: 0.5,
-                              )),
+                                letterSpacing: 0.5)),
                         Text(
                           nama,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: _P.ink,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
+                            color: _P.ink),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 3),
                         Row(children: [
-                          const Icon(LucideIcons.users, size: 10, color: _P.outline),
+                          const Icon(LucideIcons.users, size: 12, color: _P.outline),
                           const SizedBox(width: 4),
                           Text('$siswa Siswa',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: _P.outline,
-                              )),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: _P.outline)),
                         ]),
                       ],
                     )),
@@ -576,34 +609,29 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
               _badge('PRESENSI', color: _P.primCon),
               const SizedBox(height: 10),
               Text('Jurnal Kehadiran',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: _P.ink,
-                  )),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700,
+                    color: _P.ink)),
               const SizedBox(height: 4),
               Text('Catat kehadiran siswa hari ini',
-                  style: GoogleFonts.inter(fontSize: 12, color: _P.muted)),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: _P.muted)),
             ]),
           ),
           GestureDetector(
             onTap: _goToPresensi,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              constraints: const BoxConstraints(minHeight: 44),
               decoration: BoxDecoration(
                 color: _P.primCon,
                 border: Border.all(color: _P.ink),
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Text('ISI PRESENSI',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
                       color: _P.ink,
-                      letterSpacing: 0.5,
-                    )),
+                      letterSpacing: 0.5)),
                 const SizedBox(width: 6),
-                const Icon(LucideIcons.arrowRight, size: 13, color: _P.ink),
+                const Icon(LucideIcons.arrowRight, size: 14, color: _P.ink),
               ]),
             ),
           ),
@@ -621,12 +649,9 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         border: Border.all(color: _P.ink),
       ),
       child: Text(text,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
             color: dark ? _P.bg : _P.ink,
-            letterSpacing: 0.8,
-          )),
+            letterSpacing: 0.8)),
     );
   }
 
@@ -635,7 +660,8 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        constraints: const BoxConstraints(minHeight: 44),
         decoration: BoxDecoration(
           color: _P.bg,
           border: Border.all(color: _P.ink),
@@ -645,15 +671,12 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Text(label,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
                 color: _P.ink,
-                letterSpacing: 0.5,
-              )),
+                letterSpacing: 0.5)),
           if (icon != null) ...[
             const SizedBox(width: 8),
-            Icon(icon, size: 13, color: _P.ink),
+            Icon(icon, size: 14, color: _P.ink),
           ],
         ]),
       ),
@@ -801,14 +824,14 @@ class _PengumumanModalState extends State<_PengumumanModal> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(err['message'] ?? 'Gagal mengirim'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
           ));
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+            SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error));
       }
     }
     if (mounted) setState(() => _isLoading = false);
@@ -839,11 +862,8 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Buat Pengumuman Baru',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: _P.deepSlate,
-                      )),
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700,
+                        color: _P.deepSlate)),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: const Icon(LucideIcons.x,
@@ -909,7 +929,7 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                               color: sel ? cfg.$1 : _P.surfLow,
                               border: Border.all(
                                 color: _kategoriError && !sel
-                                    ? Colors.red
+                                    ? AppTheme.error
                                     : _P.deepSlate,
                               ),
                             ),
@@ -919,11 +939,8 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                                   size: 12, color: sel ? _P.white : cfg.$1),
                               const SizedBox(width: 6),
                               Text(k,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: sel ? _P.white : _P.ink,
-                                  )),
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
+                                    color: sel ? _P.white : _P.ink)),
                             ]),
                           ),
                         );
@@ -932,8 +949,7 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                     if (_kategoriError) ...[
                       const SizedBox(height: 4),
                       Text('Pilih kategori dulu',
-                          style: GoogleFonts.inter(
-                              fontSize: 11, color: Colors.red)),
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.error)),
                     ],
                     const SizedBox(height: 20),
                     const SizedBox(height: 20),
@@ -979,11 +995,8 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(nama,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: _P.ink,
-                                    )),
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
+                                      color: _P.ink)),
                               ]),
                             ),
                           ),
@@ -1005,11 +1018,8 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                                 padding:
                                     const EdgeInsets.only(left: 16, bottom: 6),
                                 child: Text('Pilih Channel:',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: _P.muted,
-                                    )),
+                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
+                                      color: _P.muted)),
                               ),
                               _buildChannelCheckbox(
                                 id: 'general_$id', 
@@ -1055,12 +1065,9 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                         ],
                       ),
                       child: Text('BATAL',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
                             color: _P.ink,
-                            letterSpacing: 0.5,
-                          )),
+                            letterSpacing: 0.5)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1084,12 +1091,9 @@ class _PengumumanModalState extends State<_PengumumanModal> {
                                   strokeWidth: 2, color: _P.primary))
                           : Row(mainAxisSize: MainAxisSize.min, children: [
                               Text('Kirim Pengumuman',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
                                     color: _P.ink,
-                                    letterSpacing: 0.3,
-                                  )),
+                                    letterSpacing: 0.3)),
                               const SizedBox(width: 8),
                               const Icon(LucideIcons.send,
                                   size: 13, color: _P.ink),
@@ -1137,32 +1141,26 @@ class _PengumumanModalState extends State<_PengumumanModal> {
           ),
           const SizedBox(width: 8),
           Text(label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: _P.ink,
-                fontWeight: FontWeight.w500,
-              )),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: _P.ink,
+                fontWeight: FontWeight.w500)),
         ]),
       ),
     );
   }
 
   Widget _label(String text) => Text(text,
-      style: GoogleFonts.inter(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
         color: _P.deepSlate,
-        letterSpacing: 0.5,
-      ));
+        letterSpacing: 0.5));
 
   Widget _field(TextEditingController ctrl, String hint, {int maxLines = 1}) {
     return TextField(
       controller: ctrl,
       maxLines: maxLines,
-      style: GoogleFonts.inter(fontSize: 13, color: _P.ink),
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: _P.ink),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.inter(fontSize: 13, color: _P.outline),
+        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: _P.outline),
         filled: true,
         fillColor: _P.white,
         contentPadding: const EdgeInsets.all(14),

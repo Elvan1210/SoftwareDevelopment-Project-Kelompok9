@@ -262,8 +262,8 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditing ? 'Kuis berhasil diupdate!' : 'Kuis berhasil dibuat!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-            backgroundColor: Colors.green,
+            content: Text(isEditing ? 'Kuis berhasil diupdate!' : 'Kuis berhasil dibuat!', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -278,8 +278,8 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.red,
+        content: Text(msg, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -316,7 +316,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
           ),
           title: Text(
             isEditing ? 'Edit Kuis' : 'Buat Kuis Baru',
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w900, letterSpacing: -0.5),
           ),
           actions: [
             Padding(
@@ -337,7 +337,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                       )
                     : Text(
                         'Simpan',
-                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -455,7 +455,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                 },
                 theme: theme,
                 isDark: isDark,
-                activeColor: Colors.green,
+                activeColor: AppTheme.success,
               ),
 
               const SizedBox(height: 28),
@@ -468,9 +468,9 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                     width: 90,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: TextFormField(
@@ -479,17 +479,17 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       textAlign: TextAlign.center,
                       onChanged: _onJumlahSoalChanged,
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppTheme.textLight),
                       decoration: InputDecoration(
                         isDense: true,
                         hintText: 'Jml',
-                        hintStyle: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 11),
+                        hintStyle: Theme.of(context).textTheme.labelLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                         border: InputBorder.none,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text('soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(160))),
+                  Text('soal', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(160))),
                 ],
               ),
               const SizedBox(height: 12),
@@ -513,7 +513,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _addQuestion,
                   icon: const Icon(LucideIcons.plusCircle, size: 16),
-                  label: Text('Tambah Soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+                  label: Text('Tambah Soal', style: GoogleFonts.poppins(fontWeight: FontWeight.w800)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.indigoPrimary,
                     side: const BorderSide(color: AppTheme.indigoPrimary, width: 1.2),
@@ -544,10 +544,10 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: value ? activeColor.withAlpha(isDark ? 55 : 30) : isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+          color: value ? activeColor.withAlpha(isDark ? 55 : 30) : Theme.of(context).dividerColor,
           width: 1.2,
         ),
       ),
@@ -556,7 +556,7 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: value ? activeColor.withAlpha(20) : isDark ? const Color(0xFF2D3A54) : const Color(0xFFF3F4F6),
+              color: value ? activeColor.withAlpha(20) : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -572,20 +572,14 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13.5,
-                    color: isDark ? Colors.white : AppTheme.textLight,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : AppTheme.textLight),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                  ),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                 ),
               ],
             ),
@@ -609,22 +603,22 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : null,
       validator: (v) => (v == null || v.trim().isEmpty) ? '$label wajib diisi' : null,
-      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: isDark ? Colors.white : AppTheme.textLight, fontSize: 13.5),
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700, color: isDark ? Colors.white : AppTheme.textLight),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
         hintText: hint,
-        hintStyle: GoogleFonts.plusJakartaSans(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 13),
+        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
         prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
         filled: true,
-        fillColor: isDark ? const Color(0xFF1E2538) : Colors.white,
+        fillColor: Theme.of(context).colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -650,12 +644,9 @@ class _SectionLabel extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           label,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
             letterSpacing: 1.0,
-            color: AppTheme.indigoPrimary,
-          ),
+            color: AppTheme.indigoPrimary),
         ),
       ],
     );
@@ -815,10 +806,10 @@ class _QuestionCardState extends State<_QuestionCard> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: widget.isDark ? const Color(0xFF1E2538) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+          color: Theme.of(context).dividerColor,
           width: 1.2,
         ),
       ),
@@ -836,11 +827,8 @@ class _QuestionCardState extends State<_QuestionCard> {
                 ),
                 child: Text(
                   'Soal ${widget.index + 1}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12.5,
-                    color: AppTheme.indigoPrimary,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900,
+                    color: AppTheme.indigoPrimary),
                 ),
               ),
               const SizedBox(width: 12),
@@ -850,16 +838,16 @@ class _QuestionCardState extends State<_QuestionCard> {
                   height: 40,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: form.questionType,
                       isExpanded: true,
-                      dropdownColor: widget.isDark ? const Color(0xFF161B27) : Colors.white,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w800, color: widget.isDark ? Colors.white : AppTheme.textLight),
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800, color: widget.isDark ? Colors.white : AppTheme.textLight),
                       items: const [
                         DropdownMenuItem(value: 'multipleChoice', child: Text('Pilihan Ganda')),
                         DropdownMenuItem(value: 'multipleAnswer', child: Text('Pilihan Ganda (Banyak Jawaban)')),
@@ -894,19 +882,19 @@ class _QuestionCardState extends State<_QuestionCard> {
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 13, color: widget.isDark ? Colors.white : AppTheme.textLight),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900, color: widget.isDark ? Colors.white : AppTheme.textLight),
                   decoration: InputDecoration(
                     labelText: 'Poin',
-                    labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 11),
+                    labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -918,7 +906,7 @@ class _QuestionCardState extends State<_QuestionCard> {
               if (widget.onRemove != null) ...[
                 const SizedBox(width: 4),
                 IconButton(
-                  icon: const Icon(LucideIcons.trash2, size: 18, color: Colors.red),
+                  icon: const Icon(LucideIcons.trash2, size: 18, color: AppTheme.error),
                   onPressed: widget.onRemove,
                   tooltip: 'Hapus soal',
                 ),
@@ -931,19 +919,19 @@ class _QuestionCardState extends State<_QuestionCard> {
           TextFormField(
             controller: form.questionCtrl,
             maxLines: 3,
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: widget.isDark ? Colors.white : AppTheme.textLight, fontSize: 13.5),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700, color: widget.isDark ? Colors.white : AppTheme.textLight),
             decoration: InputDecoration(
               hintText: 'Tulis pertanyaan kuis di sini...',
-              hintStyle: GoogleFonts.plusJakartaSans(color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontSize: 13),
+              hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
               filled: true,
-              fillColor: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+              fillColor: Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -975,7 +963,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                     onTap: _removeImage,
                     child: Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(color: AppTheme.error, shape: BoxShape.circle),
                       child: const Icon(LucideIcons.x, size: 14, color: Colors.white),
                     ),
                   ),
@@ -990,7 +978,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                 : const Icon(LucideIcons.image, size: 14),
               label: Text(
                 _isUploading ? 'Mengupload...' : 'Sisipkan Gambar', 
-                style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.indigoPrimary,
@@ -1007,12 +995,9 @@ class _QuestionCardState extends State<_QuestionCard> {
               form.questionType == 'multipleChoice' 
                   ? 'OPSI JAWABAN (Pilih satu jawaban benar)'
                   : 'OPSI JAWABAN (Pilih semua jawaban benar)',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w900,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
                 letterSpacing: 0.5,
-                color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-              ),
+                color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
             ),
             const SizedBox(height: 10),
 
@@ -1035,7 +1020,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                                 ? LucideIcons.checkCircle2
                                 : LucideIcons.circle,
                             color: form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
-                                ? Colors.green
+                                ? AppTheme.success
                                 : widget.theme.colorScheme.onSurface.withAlpha(160),
                             size: 22,
                           ),
@@ -1054,35 +1039,32 @@ class _QuestionCardState extends State<_QuestionCard> {
                           });
                           widget.onUpdate();
                         },
-                        activeColor: Colors.green,
+                        activeColor: AppTheme.success,
                       ),
                     Expanded(
                       child: TextFormField(
                         controller: form.optionCtrls[oi],
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          color: widget.isDark ? Colors.white : AppTheme.textLight,
-                        ),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
+                          color: widget.isDark ? Colors.white : AppTheme.textLight),
                         decoration: InputDecoration(
                           hintText: 'Opsi ${String.fromCharCode(65 + oi)}',
-                          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           filled: true,
                           fillColor: isCorrect
-                              ? Colors.green.withAlpha(widget.isDark ? 20 : 10)
-                              : widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                              ? AppTheme.success.withAlpha(widget.isDark ? 20 : 10)
+                              : Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: isCorrect ? Colors.green.withAlpha(160) : widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                              color: isCorrect ? AppTheme.success.withAlpha(160) : Theme.of(context).dividerColor,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: isCorrect ? Colors.green.withAlpha(160) : widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                              color: isCorrect ? AppTheme.success.withAlpha(160) : Theme.of(context).dividerColor,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -1094,7 +1076,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                     ),
                     if (form.optionCtrls.length > 2)
                       IconButton(
-                        icon: const Icon(LucideIcons.x, size: 16, color: Colors.red),
+                        icon: const Icon(LucideIcons.x, size: 16, color: AppTheme.error),
                         onPressed: () => _removeOption(oi),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -1107,7 +1089,7 @@ class _QuestionCardState extends State<_QuestionCard> {
               TextButton.icon(
                 onPressed: _addOption,
                 icon: const Icon(LucideIcons.plusCircle, size: 14),
-                label: Text('Tambah Opsi', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800)),
+                label: Text('Tambah Opsi', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800)),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.indigoPrimary,
                 ),
@@ -1116,9 +1098,9 @@ class _QuestionCardState extends State<_QuestionCard> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: widget.isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: widget.isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Row(
                 children: [
@@ -1127,7 +1109,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                   Expanded(
                     child: Text(
                       'Siswa akan menjawab berupa teks uraian / essay',
-                      style: GoogleFonts.plusJakartaSans(
+                      style: GoogleFonts.poppins(
                         color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

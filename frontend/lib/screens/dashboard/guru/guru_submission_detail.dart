@@ -6,7 +6,6 @@ import 'dart:convert';
 import '../../../models/quiz_model.dart';
 import '../../../config/theme.dart';
 import '../../../config/api_config.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/premium_ui.dart';
 
 class GuruSubmissionDetail extends StatefulWidget {
@@ -43,13 +42,13 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Berhasil menilai dengan AI!'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('Berhasil menilai dengan AI!'), backgroundColor: AppTheme.success),
           );
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gagal menilai dengan AI.'), backgroundColor: Colors.red),
+            const SnackBar(content: Text('Gagal menilai dengan AI.'), backgroundColor: AppTheme.error),
           );
         }
       }
@@ -81,7 +80,7 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
       if (res.statusCode == 200) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Nilai AI berhasil disimpan!'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('Nilai AI berhasil disimpan!'), backgroundColor: AppTheme.success),
           );
           Navigator.pop(context, true);
         }
@@ -103,7 +102,7 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
         elevation: 0,
         title: Text(
           widget.submission.studentName,
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : AppTheme.textLight),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
         ),
         leading: IconButton(
           icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppTheme.textLight),
@@ -117,8 +116,8 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                 onPressed: _acceptAIScores,
                 icon: LucideIcons.check,
                 iconSize: 14,
-                color: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE6F4EA),
-                textColor: Colors.green,
+                color: Theme.of(context).colorScheme.surface,
+                textColor: AppTheme.success,
                 radius: 10,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: const Text('Terima & Simpan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
@@ -131,12 +130,12 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                 onPressed: _isGradingAI ? null : _gradeWithAI,
                 icon: _isGradingAI ? null : LucideIcons.sparkles,
                 iconSize: 14,
-                color: isDark ? const Color(0xFF2E243F) : const Color(0xFFF3E8FF),
-                textColor: Colors.purple,
+                color: Theme.of(context).colorScheme.surface,
+                textColor: AppTheme.primary,
                 radius: 10,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: _isGradingAI
-                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.purple))
+                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
                     : const Text(
                         'Nilai Pakai AI',
                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
@@ -157,17 +156,15 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
               children: [
                 Text(
                   'DETAIL JAWABAN',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                    color: AppTheme.primary,
                     letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Divider(
-                    color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB),
+                    color: Theme.of(context).dividerColor,
                     height: 1,
                     thickness: 1,
                   ),
@@ -190,11 +187,11 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
         ? (widget.submission.score / widget.submission.totalPoints * 100).round()
         : 0;
     final isPass = percent >= 70;
-    final color = isPass ? Colors.green : Colors.red;
+    final color = isPass ? AppTheme.success : AppTheme.error;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: color.withAlpha(isDark ? 55 : 30),
@@ -212,10 +209,10 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
         padding: const EdgeInsets.all(4),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(19),
             border: Border.all(
-              color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+              color: Theme.of(context).dividerColor,
               width: 1.0,
             ),
           ),
@@ -239,11 +236,8 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                 alignment: Alignment.center,
                 child: Text(
                   '$percent%',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
+                    color: color),
                 ),
               ),
               const SizedBox(width: 20),
@@ -258,11 +252,8 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                         Expanded(
                           child: Text(
                             widget.submission.studentEmail?.isNotEmpty == true ? widget.submission.studentEmail! : 'Email tidak tersedia',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600,
+                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -272,24 +263,21 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                     const SizedBox(height: 8),
                     Text(
                       'Total Skor: ${widget.submission.score} / ${widget.submission.totalPoints}',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? Colors.white : AppTheme.textLight,
-                      ),
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : AppTheme.textLight),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: widget.submission.violations > 0 
-                            ? Colors.orange.withAlpha(isDark ? 25 : 15) 
-                            : Colors.green.withAlpha(isDark ? 25 : 15),
+                            ? AppTheme.warning.withAlpha(isDark ? 25 : 15) 
+                            : AppTheme.success.withAlpha(isDark ? 25 : 15),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
                           color: widget.submission.violations > 0 
-                              ? Colors.orange.withAlpha(isDark ? 60 : 40) 
-                              : Colors.green.withAlpha(isDark ? 60 : 40),
+                              ? AppTheme.warning.withAlpha(isDark ? 60 : 40) 
+                              : AppTheme.success.withAlpha(isDark ? 60 : 40),
                         ),
                       ),
                       child: Row(
@@ -298,16 +286,13 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                           Icon(
                             widget.submission.violations > 0 ? LucideIcons.alertTriangle : LucideIcons.checkCircle,
                             size: 13,
-                            color: widget.submission.violations > 0 ? Colors.orange : Colors.green,
+                            color: widget.submission.violations > 0 ? AppTheme.warning : AppTheme.success,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             '${widget.submission.violations} Pelanggaran tercatat',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: widget.submission.violations > 0 ? Colors.orange : Colors.green,
-                            ),
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800,
+                              color: widget.submission.violations > 0 ? AppTheme.warning : AppTheme.success),
                           ),
                         ],
                       ),
@@ -331,10 +316,10 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: (isEssay ? Colors.purple : AppTheme.indigoPrimary).withAlpha(isDark ? 55 : 30),
+          color: (isEssay ? AppTheme.primary : AppTheme.indigoPrimary).withAlpha(isDark ? 55 : 30),
           width: 1.2,
         ),
       ),
@@ -342,10 +327,10 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
         padding: const EdgeInsets.all(4),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(19),
             border: Border.all(
-              color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+              color: Theme.of(context).dividerColor,
               width: 1.0,
             ),
           ),
@@ -358,27 +343,21 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: (isEssay ? Colors.purple : AppTheme.indigoPrimary).withAlpha(20),
+                      color: (isEssay ? AppTheme.primary : AppTheme.indigoPrimary).withAlpha(20),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: (isEssay ? Colors.purple : AppTheme.indigoPrimary).withAlpha(80)),
+                      border: Border.all(color: (isEssay ? AppTheme.primary : AppTheme.indigoPrimary).withAlpha(80)),
                     ),
                     child: Text(
                       'Soal $index',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11,
-                        color: isEssay ? Colors.purple : AppTheme.indigoPrimary,
-                      ),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                        color: isEssay ? AppTheme.primary : AppTheme.indigoPrimary),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(
                     '${q.points} Poin',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700,
+                      color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                   ),
                   const Spacer(),
                   if (!isEssay) _buildStatusBadge(q, studentAns),
@@ -397,24 +376,18 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
               ],
               Text(
                 q.question,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w800,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800,
                   color: isDark ? Colors.white : AppTheme.textLight,
-                  height: 1.5,
-                ),
+                  height: 1.5),
               ),
               const SizedBox(height: 16),
-              Divider(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), height: 1),
+              Divider(color: Theme.of(context).dividerColor, height: 1),
               const SizedBox(height: 16),
               Text(
                 'Jawaban Siswa:',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
                   color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                  letterSpacing: 0.5,
-                ),
+                  letterSpacing: 0.5),
               ),
               const SizedBox(height: 8),
               
@@ -426,18 +399,15 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF141824) : const Color(0xFFF3F4F6),
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isDark ? const Color(0xFF222838) : const Color(0xFFE5E7EB)),
+                        border: Border.all(color: Theme.of(context).colorScheme.surface),
                       ),
                       child: Text(
                         studentAns?.toString() ?? 'Tidak diisi',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          height: 1.5,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : AppTheme.textLight,
-                        ),
+                          color: isDark ? Colors.white : AppTheme.textLight),
                       ),
                     ),
                     if (_aiScores != null && _aiScores![q.id] != null) ...[
@@ -454,7 +424,7 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(color: const Color(0xFF1BCEDF).withAlpha(80), blurRadius: 16, offset: const Offset(0, 8)),
-                            BoxShadow(color: Colors.purpleAccent.withAlpha(60), blurRadius: 4, spreadRadius: 1),
+                            BoxShadow(color: AppTheme.primary.withAlpha(60), blurRadius: 4, spreadRadius: 1),
                           ],
                           border: Border.all(color: Colors.white.withAlpha(100), width: 1.5),
                         ),
@@ -472,12 +442,9 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                                 Expanded(
                                   child: Text(
                                     'Saran Nilai AI: ${_aiScores![q.id]['score']} / ${q.points}',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontWeight: FontWeight.w900,
+                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
                                       color: Colors.white,
-                                      fontSize: 17,
-                                      letterSpacing: 0.5,
-                                    ),
+                                      letterSpacing: 0.5),
                                   ),
                                 ),
                               ],
@@ -485,21 +452,15 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
                             const SizedBox(height: 16),
                             Text(
                               '💡 Feedback Gemini:',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: Colors.white70,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold,
+                                color: Colors.white70),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               _aiScores![q.id]['feedback'] ?? 'Tidak ada feedback.',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                color: Colors.white,
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white,
                                 height: 1.6,
-                                fontWeight: FontWeight.w600,
-                              ),
+                                fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),
@@ -537,17 +498,14 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isCorrect ? Colors.green.withAlpha(20) : Colors.red.withAlpha(20),
+        color: isCorrect ? AppTheme.success.withAlpha(20) : AppTheme.error.withAlpha(20),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: isCorrect ? Colors.green.withAlpha(80) : Colors.red.withAlpha(80)),
+        border: Border.all(color: isCorrect ? AppTheme.success.withAlpha(80) : AppTheme.error.withAlpha(80)),
       ),
       child: Text(
         isCorrect ? 'BENAR' : 'SALAH',
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 9, 
-          fontWeight: FontWeight.w900, 
-          color: isCorrect ? Colors.green : Colors.red,
-        ),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, 
+          color: isCorrect ? AppTheme.success : AppTheme.error),
       ),
     );
   }
@@ -571,20 +529,20 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
         IconData? icon;
 
         if (isActuallyCorrect && isStudentSelected) {
-          bgColor = Colors.green.withAlpha(20);
-          borderColor = Colors.green;
+          bgColor = AppTheme.success.withAlpha(20);
+          borderColor = AppTheme.success;
           icon = LucideIcons.checkCircle;
         } else if (isActuallyCorrect && !isStudentSelected) {
-          bgColor = Colors.green.withAlpha(10);
-          borderColor = Colors.green.withAlpha(160);
+          bgColor = AppTheme.success.withAlpha(10);
+          borderColor = AppTheme.success.withAlpha(160);
           icon = LucideIcons.check;
         } else if (!isActuallyCorrect && isStudentSelected) {
-          bgColor = Colors.red.withAlpha(20);
-          borderColor = Colors.red;
+          bgColor = AppTheme.error.withAlpha(20);
+          borderColor = AppTheme.error;
           icon = LucideIcons.xCircle;
         } else {
-          bgColor = isDark ? const Color(0xFF141824) : Colors.white;
-          borderColor = isDark ? const Color(0xFF222838) : const Color(0xFFE5E7EB);
+          bgColor = Theme.of(context).colorScheme.surface;
+          borderColor = Theme.of(context).colorScheme.surface;
         }
 
         return Container(
@@ -604,9 +562,7 @@ class _GuruSubmissionDetailState extends State<GuruSubmissionDetail> {
               Expanded(
                 child: Text(
                   q.options[i],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: isStudentSelected || isActuallyCorrect 
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isStudentSelected || isActuallyCorrect 
                         ? (isDark ? Colors.white : AppTheme.textLight) 
                         : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                     fontWeight: isStudentSelected ? FontWeight.w800 : FontWeight.w600,

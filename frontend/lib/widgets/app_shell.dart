@@ -34,6 +34,7 @@ class AppShell extends StatelessWidget {
   final Widget child;
   final bool transparent;
   final bool useScroll;
+  final bool fullWidth;
   final List<Widget>? backgroundDecorations;
 
   const AppShell({
@@ -41,6 +42,7 @@ class AppShell extends StatelessWidget {
     required this.child,
     this.transparent = false,
     this.useScroll   = false,
+    this.fullWidth   = false,
     this.backgroundDecorations,
   });
 
@@ -55,6 +57,15 @@ class AppShell extends StatelessWidget {
       content = SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: child,
+      );
+    }
+
+    if (isWide && !fullWidth) {
+      content = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: content,
+        ),
       );
     }
 
@@ -91,7 +102,7 @@ class AppBackground extends StatelessWidget {
         children: [
           // Base background — flat minimalist white or dark grey
           Container(
-            color: isDark ? AppTheme.darkBg : Colors.white, 
+            color: isDark ? AppTheme.darkBg : AppTheme.lightBg, 
           ),
 
           // Top-left primary indigo glow — ultra-subtle for premium depth
@@ -124,7 +135,7 @@ class AppBackground extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.purpleSecondary.withAlpha(isDark ? 16 : 6),
+                    AppTheme.primary.withAlpha(isDark ? 16 : 6),
                     Colors.transparent,
                   ],
                 ),
@@ -213,7 +224,7 @@ class GlassCard extends StatelessWidget {
               (isDark
                   ? AppTheme.darkCard.withAlpha(240)
                   : AppTheme.lightSurface.withAlpha(252)),
-          borderRadius: BorderRadius.circular(radius),
+          borderRadius: BorderRadius.zero,
           border: Border.all(
             color: isDark
                 ? AppTheme.indigoPrimary.withAlpha(35)
@@ -294,7 +305,7 @@ class _PremiumCardState extends State<PremiumCard> {
           color: isDark
               ? AppTheme.darkCard
               : AppTheme.lightSurface,
-          borderRadius: BorderRadius.circular(widget.radius),
+          borderRadius: BorderRadius.zero,
           border: Border.all(
             color: _hovered
                 ? accent.withAlpha(isDark ? 120 : 80)
@@ -304,17 +315,10 @@ class _PremiumCardState extends State<PremiumCard> {
             width: _hovered ? 1.5 : 1.0,
           ),
           boxShadow: [
-            // Ambient black base shadow
             BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 85 : 10),
-              blurRadius: _hovered ? 22 : 10,
-              offset: Offset(0, _hovered ? 12 : 4),
-            ),
-            // Elegant colored tint glow (tactile depth)
-            BoxShadow(
-              color: accent.withAlpha(isDark ? (_hovered ? 70 : 25) : (_hovered ? 35 : 15)),
-              blurRadius: _hovered ? 36 : 14,
-              offset: Offset(0, _hovered ? 14 : 5),
+              color: Theme.of(context).colorScheme.onSurface,
+              blurRadius: 0,
+              offset: const Offset(4, 4),
             ),
           ],
         ),
@@ -325,7 +329,7 @@ class _PremiumCardState extends State<PremiumCard> {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(widget.radius),
+                    borderRadius: BorderRadius.zero,
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -401,7 +405,7 @@ class StatCard extends StatelessWidget {
                   color.withAlpha(isDark ? 30 : 20),
                 ],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.zero,
               border: Border.all(
                 color: color.withAlpha(isDark ? 80 : 50),
                 width: 1.0,
@@ -452,7 +456,7 @@ class StatCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: color.withAlpha(isDark ? 40 : 20),
-                borderRadius: BorderRadius.circular(100),
+                borderRadius: BorderRadius.zero,
               ),
               child: Text(
                 trend!,
@@ -533,7 +537,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                       AppTheme.indigoPrimary.withAlpha(20),
                     ],
             ),
-            borderRadius: BorderRadius.circular(widget.radius),
+            borderRadius: BorderRadius.zero,
           ),
         ),
       ),
@@ -601,7 +605,7 @@ class _AppTextFieldState extends State<AppTextField> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.zero,
         boxShadow: _focused
             ? [BoxShadow(color: accent.withAlpha(70), blurRadius: 20, spreadRadius: 1)]
             : [],
@@ -633,16 +637,16 @@ class _AppTextFieldState extends State<AppTextField> {
               ? const Color(0xFF101420)
               : const Color(0xFFF1F3FF),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.zero,
             borderSide: BorderSide(color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE)),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.zero,
             borderSide: BorderSide(color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE)),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.zero,
+            borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         ),
@@ -676,13 +680,13 @@ class SectionHeader extends StatelessWidget {
         Container(
           width: 4,
           height: 22,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+              colors: [AppTheme.indigoPrimary, AppTheme.primary],
             ),
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.zero,
           ),
         ),
         const SizedBox(width: 12),
@@ -740,11 +744,11 @@ class AppFAB extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [c, AppTheme.purpleSecondary],
+          colors: [c, AppTheme.primary],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.zero,
         boxShadow: [
           BoxShadow(
             color: c.withAlpha(100),
@@ -758,7 +762,7 @@ class AppFAB extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         icon: Icon(icon),
         label: Text(
           label,
@@ -804,7 +808,7 @@ class EmptyState extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: [
                     c.withAlpha(isDark ? 40 : 25),
-                    AppTheme.purpleSecondary.withAlpha(isDark ? 25 : 15),
+                    AppTheme.primary.withAlpha(isDark ? 25 : 15),
                   ],
                 ),
                 shape: BoxShape.circle,

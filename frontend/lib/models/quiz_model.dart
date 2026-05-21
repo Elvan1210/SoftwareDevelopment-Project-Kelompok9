@@ -7,7 +7,7 @@ class QuizQuestion {
   final int points;
   final String? imageUrl;
 
-  const QuizQuestion({
+  QuizQuestion({
     required this.id,
     this.questionType = 'multipleChoice',
     required this.question,
@@ -71,7 +71,7 @@ class Quiz {
   final DateTime? closedAt;
   final DateTime createdAt;
 
-  const Quiz({
+  Quiz({
     required this.id,
     required this.title,
     required this.description,
@@ -169,7 +169,7 @@ class QuizSubmission {
   final bool autoSubmitted;
   final DateTime submittedAt;
 
-  const QuizSubmission({
+  QuizSubmission({
     required this.id,
     required this.quizId,
     required this.studentId,

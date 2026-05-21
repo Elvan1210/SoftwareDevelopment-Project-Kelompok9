@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
 import '../../config/api_config.dart';
@@ -81,11 +80,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       content: Row(children: [
         const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
         const SizedBox(width: 10),
-        Expanded(child: Text(msg, style: GoogleFonts.poppins(fontSize: 13))),
+        Expanded(child: Text(msg, style: Theme.of(context).textTheme.bodyLarge)),
       ]),
       backgroundColor: AppTheme.rose,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
     ));
   }
 
@@ -99,14 +98,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       body: Stack(
         children: [
-          _buildBg(isDark),
+          _buildBackground(isDark),
           isWide ? _buildWide(isDark) : _buildNarrow(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildBg(bool isDark) {
+  Widget _buildBackground(bool isDark) {
     return Stack(children: [
       Container(
         decoration: BoxDecoration(
@@ -136,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             child: Container(width: 600, height: 600, decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(colors: [
-                AppTheme.purpleSecondary.withAlpha(isDark ? 45 : 25), Colors.transparent,
+                AppTheme.primary.withAlpha(isDark ? 45 : 25), Colors.transparent,
               ]),
             )),
           ),
@@ -157,13 +156,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             const Spacer(),
             _illustrationCard(isDark),
             const SizedBox(height: 48),
-            Text('Selamat Datang\nKembali!', style: GoogleFonts.poppins(
-              fontSize: 42, fontWeight: FontWeight.w800, letterSpacing: -1.5, height: 1.1,
-              color: isDark ? AppTheme.textDark : AppTheme.textLight,
-            )),
+            Text('Selamat Datang\nKembali!', style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -1.5, height: 1.1,
+              color: isDark ? AppTheme.textDark : AppTheme.textLight)),
             const SizedBox(height: 16),
             Text('Masuk untuk mengakses platform akademik\ndan pantau perkembangan belajarmu.',
-              style: GoogleFonts.poppins(fontSize: 15, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, height: 1.7)),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, height: 1.7)),
             const SizedBox(height: 32),
             Wrap(spacing: 10, runSpacing: 10, children: [
               _badge(Icons.auto_graph_rounded, 'Nilai & Progres'),
@@ -172,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             ]),
             const Spacer(),
             Text('© 2025 MyPSKD. All rights reserved.',
-              style: GoogleFonts.poppins(fontSize: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
           ]),
         ).animate().fadeIn(duration: 700.ms),
       ),
@@ -185,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             color: isDark ? AppTheme.indigoPrimary.withAlpha(30) : AppTheme.lightBorder)),
           boxShadow: [BoxShadow(
             color: isDark ? Colors.black.withAlpha(160) : AppTheme.indigoPrimary.withAlpha(20),
-            blurRadius: 40, offset: const Offset(-10, 0),
+            blurRadius: 0, offset: const Offset(-10, 0),
           )],
         ),
         child: Center(child: SingleChildScrollView(
@@ -212,22 +209,20 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         width: 42, height: 42,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+            colors: [AppTheme.indigoPrimary, AppTheme.primary],
             begin: Alignment.topLeft, end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(13),
-          boxShadow: [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(100), blurRadius: 15, offset: const Offset(0, 5))],
+          borderRadius: BorderRadius.zero,
+          boxShadow: [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(100), blurRadius: 0, offset: const Offset(0, 5))],
         ),
         child: const Icon(Icons.school_rounded, color: Colors.white, size: 22),
       ),
       const SizedBox(width: 12),
       ShaderMask(
         shaderCallback: (bounds) => const LinearGradient(
-          colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+          colors: [AppTheme.indigoPrimary, AppTheme.primary],
         ).createShader(bounds),
-        child: Text('MyPSKD', style: GoogleFonts.poppins(
-          fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: Colors.white,
-        )),
+        child: Text('MyPSKD', style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.5, color: Colors.white)),
       ),
     ]);
   }
@@ -237,11 +232,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: isDark ? AppTheme.indigoPrimary.withAlpha(40) : AppTheme.lightBorder),
         boxShadow: [BoxShadow(
           color: isDark ? AppTheme.indigoPrimary.withAlpha(30) : AppTheme.indigoPrimary.withAlpha(15),
-          blurRadius: 30, offset: const Offset(0, 12),
+          blurRadius: 0, offset: const Offset(0, 12),
         )],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -251,18 +246,18 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [
                 AppTheme.indigoPrimary.withAlpha(isDark ? 60 : 35),
-                AppTheme.purpleSecondary.withAlpha(isDark ? 40 : 20),
+                AppTheme.primary.withAlpha(isDark ? 40 : 20),
               ]),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.zero,
             ),
             child: const Icon(Icons.trending_up_rounded, color: AppTheme.indigoPrimary, size: 20),
           ),
           const SizedBox(width: 12),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Nilai Rata-Rata', style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.textMutedDk, fontWeight: FontWeight.w500)),
+            Text('Nilai Rata-Rata', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.textMutedDk, fontWeight: FontWeight.w500)),
             ShaderMask(
-              shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoLight, AppTheme.purpleLight]).createShader(b),
-              child: Text('89.2', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
+              shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoLight, AppTheme.primaryDark]).createShader(b),
+              child: Text('89.2', style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: Colors.white)),
             ),
           ]),
           const Spacer(),
@@ -270,10 +265,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: AppTheme.emerald.withAlpha(30),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.zero,
               border: Border.all(color: AppTheme.emerald.withAlpha(60)),
             ),
-            child: Text('+4.3%', style: GoogleFonts.poppins(fontSize: 11, color: AppTheme.emerald, fontWeight: FontWeight.w700)),
+            child: Text('+4.3%', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.emerald, fontWeight: FontWeight.w700)),
           ),
         ]),
         const SizedBox(height: 20),
@@ -300,12 +295,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     colors: [AppTheme.indigoLight, AppTheme.indigoPrimary])
                 : LinearGradient(colors: [
                     AppTheme.indigoPrimary.withAlpha(60), AppTheme.indigoPrimary.withAlpha(30)]),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.zero,
             boxShadow: highlight ? [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(80), blurRadius: 8)] : [],
           ),
         ),
         const SizedBox(height: 6),
-        Text(label, style: GoogleFonts.poppins(fontSize: 9, color: AppTheme.textMutedDk, fontWeight: FontWeight.w500)),
+        Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppTheme.textMutedDk, fontWeight: FontWeight.w500)),
       ]),
     ));
   }
@@ -315,13 +310,13 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: AppTheme.indigoPrimary.withAlpha(15),
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: AppTheme.indigoPrimary.withAlpha(40)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 14, color: AppTheme.indigoPrimary),
         const SizedBox(width: 6),
-        Text(label, style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.indigoPrimary, fontWeight: FontWeight.w600)),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.indigoPrimary, fontWeight: FontWeight.w600)),
       ]),
     );
   }
@@ -331,14 +326,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       key: _formKey,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
         ShaderMask(
-          shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]).createShader(b),
-          child: Text('Masuk ke Akun', style: GoogleFonts.poppins(
-            fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.8, color: Colors.white,
-          )),
+          shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.primary]).createShader(b),
+          child: Text('Masuk ke Akun', style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.8, color: Colors.white)),
         ).animate().fadeIn(delay: 300.ms).slideY(begin: -0.1),
         const SizedBox(height: 6),
         Text('Masukkan email dan kata sandi kamu',
-          style: GoogleFonts.poppins(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
         const SizedBox(height: 36),
 
         // Email
@@ -370,10 +363,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           textInputAction: TextInputAction.done,
           isDark: isDark,
           onSubmitted: (_) => _login(),
-          suffix: GestureDetector(
-            onTap: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-            child: Icon(_isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          suffix: IconButton(
+            icon: Icon(_isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
               size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+            onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
           ),
           validator: (v) {
             if (v == null || v.isEmpty) return 'Password tidak boleh kosong';
@@ -387,10 +380,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
-            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+              minimumSize: const Size(44, 44),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             child: ShaderMask(
-              shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]).createShader(b),
-              child: Text('Lupa Kata Sandi?', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+              shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.primary]).createShader(b),
+              child: Text('Lupa Kata Sandi?', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ),
         ).animate().fadeIn(delay: 480.ms),
@@ -401,37 +398,35 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           width: double.infinity, height: 52,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              gradient: _isLoading ? LinearGradient(colors: [AppTheme.indigoPrimary.withAlpha(120), AppTheme.purpleSecondary.withAlpha(120)])
-                  : const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: _isLoading ? [] : [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(100), blurRadius: 20, offset: const Offset(0, 8))],
+              gradient: _isLoading ? LinearGradient(colors: [AppTheme.indigoPrimary.withAlpha(120), AppTheme.primary.withAlpha(120)])
+                  : const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.primary]),
+              borderRadius: BorderRadius.zero,
+              boxShadow: _isLoading ? [] : [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(100), blurRadius: 0, offset: const Offset(0, 8))],
             ),
             child: ElevatedButton(
               onPressed: _isLoading ? null : _login,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
                 foregroundColor: Colors.white, elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                 disabledBackgroundColor: Colors.transparent,
               ),
               child: _isLoading
                   ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                  : Text('Masuk', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
+                  : Text('Masuk', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             ),
           ),
         ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
         const SizedBox(height: 32),
 
         Center(child: Text('EduAdmin — Platform Manajemen Sekolah',
-          style: GoogleFonts.poppins(fontSize: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
       ]),
     );
   }
 
-  Widget _label(String text) => Text(text, style: GoogleFonts.poppins(
-    fontSize: 12, fontWeight: FontWeight.w600,
-    color: AppTheme.indigoPrimary,
-  ));
+  Widget _label(String text) => Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600,
+    color: AppTheme.indigoPrimary));
 
   Widget _textField({
     required TextEditingController controller,
@@ -452,30 +447,28 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       textInputAction: textInputAction,
       onFieldSubmitted: onSubmitted,
       validator: validator,
-      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500,
         color: isDark ? AppTheme.textDark : AppTheme.textLight),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(fontSize: 13,
-          color: isDark ? AppTheme.textMutedDk.withAlpha(150) : AppTheme.textMutedLt.withAlpha(150)),
+        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk.withAlpha(150) : AppTheme.textMutedLt.withAlpha(150)),
         prefixIcon: Icon(icon, size: 18,
           color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-        suffixIcon: suffix != null ? Padding(padding: const EdgeInsets.only(right: 14), child: suffix) : null,
-        suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        suffixIcon: suffix,
         filled: true,
         fillColor: isDark ? AppTheme.darkCard : Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+        border: OutlineInputBorder(borderRadius: BorderRadius.zero,
           borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.zero,
           borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 1.8)),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.rose)),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.rose, width: 1.8)),
-        errorStyle: GoogleFonts.poppins(fontSize: 11),
+        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 1.8)),
+        errorBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.rose)),
+        focusedErrorBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.rose, width: 1.8)),
+        errorStyle: Theme.of(context).textTheme.labelLarge,
       ),
     );
   }
@@ -483,7 +476,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
 class _DotGrid extends CustomPainter {
   final bool isDark;
-  const _DotGrid(this.isDark);
+  _DotGrid(this.isDark);
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()..color = AppTheme.indigoPrimary.withAlpha(isDark ? 18 : 10)..strokeCap = StrokeCap.round;

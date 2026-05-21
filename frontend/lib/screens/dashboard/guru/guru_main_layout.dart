@@ -1,3 +1,4 @@
+import '../../../config/theme.dart';
 // import 'package:flutter/material.dart';
 // import 'guru_dashboard_view.dart';
 // import 'guru_teams_view.dart';
@@ -13,7 +14,7 @@
 // class GuruMainLayout extends StatefulWidget {
 //   final Map<String, dynamic> userData;
 //   final String token;
-//   const GuruMainLayout(
+//   GuruMainLayout(
 //       {super.key, required this.userData, required this.token});
 
 //   @override
@@ -48,7 +49,7 @@
 
 //     return AppShell(
 //       child: Padding(
-//         padding: const EdgeInsets.all(28.0),
+//         padding: EdgeInsets.all(28.0),
 //         child: Row(
 //           children: [
 //             // ── Unified Sidebar ──
@@ -60,9 +61,9 @@
 //               onLogout: () async {
 //                 final navigator = Navigator.of(context);
 //                 await AuthService.logout();
-//                 navigator.pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+//                 navigator.pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
 //               },
-//               destinations: const [
+//               destinations: [
 //                 SidebarItemData(
 //                   icon: Icons.dashboard_customize_outlined,
 //                   selectedIcon: Icons.dashboard_customize_rounded,
@@ -86,7 +87,7 @@
 //               ],
 //             ),
 
-//             const SizedBox(width: 28),
+//             SizedBox(width: 28),
 
 //             // ── Main Content Area ──
 //             Expanded(
@@ -100,21 +101,21 @@
 //                     scrolledUnderElevation: 0,
 //                     title: Text(
 //                       _titles[_selectedIndex],
-//                       style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+//                       style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
 //                     ),
 //                     actions: [
-//                       const ThemeToggle(),
-//                       const SizedBox(width: 8),
+//                       ThemeToggle(),
+//                       SizedBox(width: 8),
 //                       NotificationBell(
 //                         userData: widget.userData,
 //                         token: widget.token,
 //                         iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
 //                       ),
-//                       const SizedBox(width: 28),
+//                       SizedBox(width: 28),
 //                     ],
 //                   ),
 //                   body: AnimatedSwitcher(
-//                     duration: const Duration(milliseconds: 200),
+//                     duration: Duration(milliseconds: 200),
 //                     switchInCurve: Curves.linear,
 //                     switchOutCurve: Curves.linear,
 //                     transitionBuilder: (child, animation) {
@@ -148,10 +149,10 @@
 //             children: [
 //               // ── Custom Floating AppBar ──
 //               Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+//                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
 //                 child: GlassCard(
 //                   radius: 20,
-//                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+//                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
 //                   child: Row(
 //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //                     children: [
@@ -165,8 +166,8 @@
 //                           overflow: TextOverflow.ellipsis,
 //                         ),
 //                       ),
-//                       const ThemeToggle(),
-//                       const SizedBox(width: 4),
+//                       ThemeToggle(),
+//                       SizedBox(width: 4),
 //                       NotificationBell(
 //                         userData: widget.userData,
 //                         token: widget.token,
@@ -180,7 +181,7 @@
 //               // ── Animated Body Content ──
 //               Expanded(
 //                 child: AnimatedSwitcher(
-//                   duration: const Duration(milliseconds: 200),
+//                   duration: Duration(milliseconds: 200),
 //                   switchInCurve: Curves.linear,
 //                   switchOutCurve: Curves.linear,
 //                   transitionBuilder: (child, animation) {
@@ -192,7 +193,7 @@
 //                   child: KeyedSubtree(
 //                     key: ValueKey(_selectedIndex),
 //                     child: Padding(
-//                       padding: const EdgeInsets.only(bottom: 80), // Space for nav bar
+//                       padding: EdgeInsets.only(bottom: 80), // Space for nav bar
 //                       child: _views[_selectedIndex],
 //                     ),
 //                   ),
@@ -208,7 +209,7 @@
 //             bottom: 16,
 //             child: GlassCard(
 //               radius: 24,
-//               padding: const EdgeInsets.symmetric(vertical: 4),
+//               padding: EdgeInsets.symmetric(vertical: 4),
 //               child: NavigationBar(
 //                 backgroundColor: Colors.transparent,
 //                 indicatorColor: theme.primaryColor.withAlpha(40),
@@ -216,7 +217,7 @@
 //                 height: 64,
 //                 selectedIndex: _selectedIndex,
 //                 onDestinationSelected: (int index) => setState(() => _selectedIndex = index),
-//                 destinations: const [
+//                 destinations: [
 //                   NavigationDestination(icon: Icon(Icons.dashboard_customize_outlined), label: 'Overview'),
 //                   NavigationDestination(icon: Icon(Icons.class_outlined), label: 'Kelas'),
 //                   NavigationDestination(icon: Icon(Icons.notifications_none_rounded), label: 'Info'),
@@ -244,10 +245,9 @@
 //   }
 // }
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'guru_dashboard_view.dart';
 import 'guru_teams_view.dart';
-import '../shared/messages_screen.dart'; // IMPORT SCREEN MESSAGES
+import '../shared/messages_screen.dart';
 import 'guru_pengumuman_view.dart';
 import 'guru_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
@@ -256,7 +256,12 @@ import '../../../widgets/app_shell.dart';
 import '../../../widgets/sidebar.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
-import '../../../config/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+
+
+
+
 
 class GuruMainLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -289,8 +294,9 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     final isDark = theme.brightness == Brightness.dark;
 
     return AppShell(
+      fullWidth: true,
       child: Padding(
-        padding: const EdgeInsets.all(28.0),
+        padding: const EdgeInsets.fromLTRB(0, 24.0, 16.0, 24.0),
         child: Row(
           children: [
             Sidebar(
@@ -305,7 +311,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                 navigator.pushReplacement(
                     MaterialPageRoute(builder: (_) => const LoginScreen()));
               },
-              destinations: const [
+              destinations: [
                 SidebarItemData(
                     icon: Icons.dashboard_customize_outlined,
                     selectedIcon: Icons.dashboard_customize_rounded,
@@ -328,7 +334,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     label: 'Profil'),
               ],
             ),
-            const SizedBox(width: 28),
+            const SizedBox(width: 24),
             Expanded(
               child: GlassCard(
                 padding: EdgeInsets.zero,
@@ -387,28 +393,22 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         children: [
           Column(
             children: [
+              // ── Neo-brutalist top bar ──────────────────────────────────────
               Container(
-                //color: isDark ? AppTheme.darkCard : const Color(0xFFF4FAFF),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
                 decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   border: Border(
-                    bottom: BorderSide(
-                        color: isDark
-                            ? AppTheme.darkBorder
-                            : const Color(0xFF001E2B)),
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('MyPSKD',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color:
-                              isDark ? Colors.white : const Color(0xFF001E2B),
-                          letterSpacing: -0.5,
-                        )),
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w800,
+                          color: Theme.of(context).textTheme.bodyLarge!.color!,
+                          letterSpacing: -0.5)),
                     Row(children: [
                       const ThemeToggle(),
                       const SizedBox(width: 8),
@@ -416,7 +416,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                         userData: widget.userData,
                         token: widget.token,
                         iconColor: theme.iconTheme.color ??
-                            (isDark ? Colors.white : Colors.black87),
+                            (Theme.of(context).textTheme.bodyLarge!.color!),
                       ),
                     ]),
                   ],
@@ -457,13 +457,19 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
               ),
             ],
           ),
+          // ── Neo-brutalist bottom nav bar ─────────────────────────────────
           Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: GlassCard(
-              radius: 24,
-              padding: const EdgeInsets.symmetric(vertical: 4),
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                border: Border(
+                  top: BorderSide(color: Theme.of(context).dividerColor),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -473,7 +479,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     label: 'Overview',
                     isSelected: _selectedIndex == 0,
                     onTap: () => setState(() => _selectedIndex = 0),
-                    theme: theme,
+                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.class_outlined,
@@ -481,15 +487,15 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     label: 'Kelas',
                     isSelected: _selectedIndex == 1,
                     onTap: () => setState(() => _selectedIndex = 1),
-                    theme: theme,
+                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.forum_outlined,
                     selectedIcon: Icons.forum_rounded,
-                    label: 'Messages',
+                    label: 'Msg',
                     isSelected: _selectedIndex == 2,
                     onTap: () => setState(() => _selectedIndex = 2),
-                    theme: theme,
+                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.campaign_outlined,
@@ -497,7 +503,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     label: 'Info',
                     isSelected: _selectedIndex == 3,
                     onTap: () => setState(() => _selectedIndex = 3),
-                    theme: theme,
+                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.manage_accounts_outlined,
@@ -505,7 +511,7 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     label: 'Profil',
                     isSelected: _selectedIndex == 4,
                     onTap: () => setState(() => _selectedIndex = 4),
-                    theme: theme,
+                    isDark: isDark,
                   ),
                 ],
               ),
@@ -522,35 +528,41 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
-    required ThemeData theme,
+    required bool isDark,
   }) {
-    final color = isSelected
-        ? theme.primaryColor
-        : theme.colorScheme.onSurface.withAlpha(160);
+    const activeColor  = AppTheme.primary;
+    final inactiveColor = Theme.of(context).colorScheme.surface;
+    final bgColor      = isSelected
+        ? (Theme.of(context).colorScheme.surface)
+        : Colors.transparent;
+
     return Expanded(
-      child: InkWell(
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
           decoration: BoxDecoration(
-            color: isSelected
-                ? theme.primaryColor.withAlpha(20)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+            color: bgColor,
+            border: isSelected
+                ? Border.all(color: Theme.of(context).dividerColor)
+                : null,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(isSelected ? selectedIcon : icon, color: color, size: 22),
+              Icon(
+                isSelected ? selectedIcon : icon,
+                color: isSelected ? activeColor : inactiveColor,
+                size: 22,
+              ),
               const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                    color: color),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                  color: isSelected ? activeColor : inactiveColor,
+                  letterSpacing: isSelected ? 0.3 : 0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -6,9 +6,9 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import '../../../services/notifikasi_service.dart';
 import '../../../config/theme.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../widgets/premium_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GuruTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -65,18 +65,15 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B27) : Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB), width: 1.2),
+          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
         title: Text(
           existingNilai != null ? 'Edit Nilai' : 'Beri Nilai',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-            color: isDark ? Colors.white : AppTheme.textLight,
-          ),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
+            color: isDark ? Colors.white : AppTheme.textLight),
         ),
         content: SizedBox(
           width: MediaQuery.of(ctx).size.width * 0.9,
@@ -87,9 +84,9 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF161D2B) : const Color(0xFFF3F4F6),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: Row(
                   children: [
@@ -102,11 +99,8 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                     Expanded(
                       child: Text(
                         pengumpulan['siswa_nama'] ?? 'Siswa',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          color: isDark ? Colors.white : AppTheme.textLight,
-                        ),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : AppTheme.textLight),
                       ),
                     ),
                   ],
@@ -116,18 +110,18 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               TextField(
                 controller: ctrl,
                 keyboardType: TextInputType.number,
-                style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w700),
                 decoration: InputDecoration(
                   labelText: 'Nilai (0-100)',
-                  labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                  labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
                   prefixIcon: const Icon(LucideIcons.award, size: 18),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
@@ -135,18 +129,18 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-                  border: Border.all(color: isDark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB)),
+                  color: Theme.of(context).colorScheme.surface,
+                  border: Border.all(color: Theme.of(context).dividerColor),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: TextField(
                   controller: feedbackCtrl,
                   maxLines: 3,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? Colors.white : AppTheme.textLight),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
                   decoration: InputDecoration(
                     labelText: 'Komentar / Feedback Opsional',
-                    labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
+                    labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
                     prefixIcon: const Icon(LucideIcons.messageCircle, size: 18),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -161,7 +155,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Batal',
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
                 fontWeight: FontWeight.w700,
               ),
@@ -218,7 +212,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
             textColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             radius: 10,
-            child: Text('Simpan', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+            child: Text('Simpan', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -248,7 +242,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
           elevation: 0,
           title: Text(
             'Detail Tugas',
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : AppTheme.textLight),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
           ),
           leading: IconButton(
             icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppTheme.textLight),
@@ -266,7 +260,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
         elevation: 0,
         title: Text(
           'Detail Tugas',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : AppTheme.textLight),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
         ),
         leading: IconButton(
           icon: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : AppTheme.textLight),
@@ -284,7 +278,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
             // ==========================================
             Container(
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
                   color: accent.withAlpha(isDark ? 55 : 30),
@@ -302,10 +296,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 padding: const EdgeInsets.all(4),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(19),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                      color: Theme.of(context).dividerColor,
                       width: 1.0,
                     ),
                   ),
@@ -334,12 +328,9 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                               children: [
                                 Text(
                                   widget.tugas['judul'] ?? 'Tanpa Judul',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w900,
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
                                     color: isDark ? Colors.white : AppTheme.textLight,
-                                    letterSpacing: -0.5,
-                                  ),
+                                    letterSpacing: -0.5),
                                 ),
                                 const SizedBox(height: 4),
                                 if (widget.tugas['deadline'] != null)
@@ -353,7 +344,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                       const SizedBox(width: 6),
                                       Text(
                                         'Tenggat: ${_formatDate(widget.tugas['deadline'])}',
-                                        style: GoogleFonts.plusJakartaSans(
+                                        style: GoogleFonts.poppins(
                                           color: const Color(0xFFF59E0B),
                                           fontWeight: FontWeight.w800,
                                           fontSize: 11,
@@ -367,26 +358,20 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Divider(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), height: 1),
+                      Divider(color: Theme.of(context).dividerColor, height: 1),
                       const SizedBox(height: 16),
                       Text(
                         'Deskripsi Tugas',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 11,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800,
                           color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                          letterSpacing: 1.0,
-                        ),
+                          letterSpacing: 1.0),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         widget.tugas['deskripsi'] ?? 'Tidak ada deskripsi detail.',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          height: 1.5,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5,
                           fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white70 : AppTheme.textLight,
-                        ),
+                          color: isDark ? Colors.white70 : AppTheme.textLight),
                       ),
                     ],
                   ),
@@ -401,10 +386,8 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               const SizedBox(height: 24),
               Text(
                 'LAMPIRAN MATERI / SOAL',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                  color: AppTheme.primary,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -428,10 +411,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF76AFB8).withAlpha(isDark ? 55 : 30),
+                      color: AppTheme.info.withAlpha(isDark ? 55 : 30),
                       width: 1.2,
                     ),
                   ),
@@ -439,10 +422,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                     padding: const EdgeInsets.all(4),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                          color: Theme.of(context).dividerColor,
                           width: 1.0,
                         ),
                       ),
@@ -452,7 +435,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF76AFB8).withAlpha(20),
+                              color: AppTheme.info.withAlpha(20),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(LucideIcons.fileText, color: Color(0xFF76AFB8), size: 24),
@@ -464,20 +447,15 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                               children: [
                                 Text(
                                   'Buka File Lampiran',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 13,
-                                    color: const Color(0xFF76AFB8),
+                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800,
+                                    color: AppTheme.info,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   'Ketuk untuk mengunduh/melihat',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11,
-                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                                    fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),
@@ -496,17 +474,15 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
               children: [
                 Text(
                   'STATUS PENGUMPULAN SISWA',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                    color: AppTheme.primary,
                     letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Divider(
-                    color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                    color: Theme.of(context).dividerColor,
                     height: 1,
                     thickness: 1,
                   ),
@@ -520,9 +496,9 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: Column(
                   children: [
@@ -531,11 +507,8 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                     Text(
                       'Belum ada siswa yang mengumpulkan tugas ini.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                        fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -561,10 +534,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E2538) : Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: (isGraded ? Colors.green : accent).withAlpha(isDark ? 55 : 30),
+                        color: (isGraded ? AppTheme.success : accent).withAlpha(isDark ? 55 : 30),
                         width: 1.2,
                       ),
                       boxShadow: [
@@ -579,10 +552,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                       padding: const EdgeInsets.all(4),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(19),
                           border: Border.all(
-                            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                            color: Theme.of(context).dividerColor,
                             width: 1.0,
                           ),
                         ),
@@ -596,22 +569,19 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                 Row(
                                   children: [
                                     CircleAvatar(
-                                      backgroundColor: (isGraded ? Colors.green : accent).withAlpha(20),
+                                      backgroundColor: (isGraded ? AppTheme.success : accent).withAlpha(20),
                                       radius: 18,
                                       child: Icon(
                                         LucideIcons.user,
                                         size: 16,
-                                        color: isGraded ? Colors.green : accent,
+                                        color: isGraded ? AppTheme.success : accent,
                                       ),
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
                                       p['siswa_nama'] ?? 'Siswa',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 14.5,
-                                        color: isDark ? Colors.white : AppTheme.textLight,
-                                      ),
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900,
+                                        color: isDark ? Colors.white : AppTheme.textLight),
                                     ),
                                   ],
                                 ),
@@ -619,23 +589,20 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: isGraded
-                                        ? Colors.green.withAlpha(isDark ? 25 : 15)
+                                        ? AppTheme.success.withAlpha(isDark ? 25 : 15)
                                         : accent.withAlpha(isDark ? 25 : 15),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: isGraded
-                                          ? Colors.green.withAlpha(isDark ? 60 : 40)
+                                          ? AppTheme.success.withAlpha(isDark ? 60 : 40)
                                           : accent.withAlpha(isDark ? 60 : 40),
                                       width: 1.0,
                                     ),
                                   ),
                                   child: Text(
                                     isGraded ? 'Dinilai' : 'Diserahkan',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: isGraded ? Colors.green : accent,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 10,
-                                    ),
+                                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: isGraded ? AppTheme.success : accent,
+                                      fontWeight: FontWeight.w900),
                                   ),
                                 ),
                               ],
@@ -643,32 +610,23 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Diserahkan: ${_formatDate(p['waktu_pengumpulan'])}',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                              ),
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600,
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                             ),
                             const SizedBox(height: 12),
-                            Divider(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), height: 1),
+                            Divider(color: Theme.of(context).dividerColor, height: 1),
                             const SizedBox(height: 12),
                             Text(
                               'File Jawaban:',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 11,
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                              ),
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800,
+                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                             ),
                             const SizedBox(height: 8),
                             if (files.isEmpty)
                               Text(
                                 '- Tidak ada file',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontStyle: FontStyle.italic,
-                                  fontSize: 12,
-                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic,
+                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                               )
                             else
                               ...files.map((file) => Padding(
@@ -683,23 +641,20 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                         decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF141824) : const Color(0xFFF3F4F6),
+                                          color: Theme.of(context).colorScheme.surface,
                                           borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: isDark ? const Color(0xFF222838) : const Color(0xFFE5E7EB)),
+                                          border: Border.all(color: Theme.of(context).colorScheme.surface),
                                         ),
                                         child: Row(
                                           children: [
-                                            Icon(LucideIcons.paperclip, size: 14, color: isGraded ? Colors.green : accent),
+                                            Icon(LucideIcons.paperclip, size: 14, color: isGraded ? AppTheme.success : accent),
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
                                                 'Buka Lampiran Jawaban',
-                                                style: GoogleFonts.plusJakartaSans(
-                                                  color: isGraded ? Colors.green : accent,
+                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isGraded ? AppTheme.success : accent,
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  decoration: TextDecoration.underline,
-                                                ),
+                                                  decoration: TextDecoration.underline),
                                               ),
                                             ),
                                           ],
@@ -708,7 +663,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                     ),
                                   )),
                             const SizedBox(height: 12),
-                            Divider(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), height: 1),
+                            Divider(color: Theme.of(context).dividerColor, height: 1),
                             const SizedBox(height: 12),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -721,29 +676,23 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: Colors.green.withAlpha(isDark ? 25 : 15),
+                                            color: AppTheme.success.withAlpha(isDark ? 25 : 15),
                                             borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(color: Colors.green.withAlpha(isDark ? 60 : 40)),
+                                            border: Border.all(color: AppTheme.success.withAlpha(isDark ? 60 : 40)),
                                           ),
                                           child: Text(
                                             'Nilai: ${existingNilai['nilai']}',
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.green,
-                                            ),
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900,
+                                              color: AppTheme.success),
                                           ),
                                         ),
                                         if (existingNilai['feedback'] != null && existingNilai['feedback'].toString().isNotEmpty) ...[
                                           const SizedBox(height: 6),
                                           Text(
                                             '"${existingNilai['feedback']}"',
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontStyle: FontStyle.italic,
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic,
                                               color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                              fontWeight: FontWeight.w600),
                                           ),
                                         ],
                                       ],
@@ -761,11 +710,11 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                                     backgroundColor: isDark
                                         ? (isGraded ? const Color(0xFF1E3A24) : const Color(0xFF2E243F))
                                         : (isGraded ? const Color(0xFFE6F4EA) : const Color(0xFFF3E8FF)),
-                                    foregroundColor: isGraded ? Colors.green : Colors.purple,
+                                    foregroundColor: isGraded ? AppTheme.success : AppTheme.primary,
                                     side: BorderSide(
                                       color: isGraded
-                                          ? (isDark ? const Color(0xFF2D5C39) : const Color(0xFF82C793))
-                                          : (isDark ? const Color(0xFF4C3A66) : const Color(0xFFC084FC)),
+                                          ? (Theme.of(context).colorScheme.surface)
+                                          : (Theme.of(context).colorScheme.surface),
                                       width: 1.0,
                                     ),
                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

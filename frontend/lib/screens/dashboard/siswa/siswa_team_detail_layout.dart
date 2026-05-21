@@ -14,6 +14,7 @@ import '../../../config/theme.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
+import '../../../widgets/neo_brutalism.dart';
 import '../../../widgets/jitsi_embed.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -146,7 +147,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_liveStatus == 'active' && _currentMeetingId != null) ...[        
-            CosmicLiveBanner(onJoin: () => joinJitsiMeeting(
+            NeoLiveBanner(onJoin: () => joinJitsiMeeting(
               context: context, meetingId: _currentMeetingId!,
               serverUrl: 'https://meet.ffmuc.net',
               userName: widget.userData['nama'] ?? 'Siswa',
@@ -156,55 +157,55 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             const SizedBox(height: 16),
           ],
 
-          CosmicWelcomeBanner(
+          NeoWelcomeBanner(
             greeting: 'Selamat datang kembali 👋',
             name: nama,
             subtitle: namaKelas,
-            gradientColors: const [Color(0xFF6D28D9)],
+            
           ),
 
           const SizedBox(height: 20),
 
           // Stat cards
           Row(children: [
-            Expanded(child: CosmicStatCard(
+            Expanded(child: NeoStatCard(
               label: 'Presensi', value: '—/—', icon: LucideIcons.userCheck,
-              gradient: const [Color(0xFF818CF8), Color(0xFF6D28D9)],
+              color: AppTheme.primary,
               onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; }),
             )),
             const SizedBox(width: 10),
-            Expanded(child: CosmicStatCard(
+            Expanded(child: NeoStatCard(
               label: 'Tugas', value: 'Lihat', icon: LucideIcons.clipboardList,
-              gradient: const [Color(0xFF34D399), Color(0xFF059669)],
+              color: AppTheme.success,
               onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; }),
             )),
             const SizedBox(width: 10),
-            Expanded(child: CosmicStatCard(
+            Expanded(child: NeoStatCard(
               label: 'Nilai', value: '—', icon: LucideIcons.award,
-              gradient: const [Color(0xFFFBBF24), Color(0xFFD97706)],
+              color: AppTheme.warning,
               onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai'; }),
             )),
           ]),
 
           const SizedBox(height: 24),
-          const CosmicSectionLabel('Menu Kelas'),
+          const NeoSectionHeader(title: 'Menu Kelas'),
 
           GridView.count(
             crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10,
             shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 1.7,
             children: [
-              CosmicMenuCard(label: 'Presensi', icon: LucideIcons.userCheck,
-                gradient: const [Color(0xFF818CF8), Color(0xFF6D28D9)],
+              NeoMenuCard(label: 'Presensi', icon: LucideIcons.userCheck,
+                color: AppTheme.primary,
                 onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; })),
-              CosmicMenuCard(label: 'Tugas', icon: LucideIcons.clipboardList,
-                gradient: const [Color(0xFF34D399), Color(0xFF059669)],
+              NeoMenuCard(label: 'Tugas', icon: LucideIcons.clipboardList,
+                color: AppTheme.success,
                 onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; })),
-              CosmicMenuCard(label: 'Kuis & Ujian', icon: LucideIcons.helpCircle,
-                gradient: const [Color(0xFFF472B6), Color(0xFFDB2777)],
+              NeoMenuCard(label: 'Kuis & Ujian', icon: LucideIcons.helpCircle,
+                color: AppTheme.error,
                 onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
-              CosmicMenuCard(label: 'Materi', icon: LucideIcons.bookOpen,
-                gradient: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
+              NeoMenuCard(label: 'Materi', icon: LucideIcons.bookOpen,
+                color: AppTheme.info,
                 onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; })),
             ],
           ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
@@ -215,12 +216,17 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
 
   Widget _buildWebLayout(BuildContext context) {
     return AppShell(
+      fullWidth: true,
       child: Row(
         children: [
           // ── Cosmic Sidebar ──
           SizedBox(
             width: 260,
-            child: CosmicBackground(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF161B27) : const Color(0xFFF9FAFB),
+                border: Border(right: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252D3D) : const Color(0xFFE5E7EB))),
+              ),
               child: SafeArea(
                 right: false,
                 child: Column(
@@ -249,26 +255,26 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         children: [
-                          CosmicSidebarItem(icon: LucideIcons.layoutDashboard, label: 'Dashboard',
+                          NeoSidebarItem(icon: LucideIcons.layoutDashboard, label: 'Dashboard',
                             isSelected: _activeTabID == 'dashboard', onTap: () => setState(() { _activeTabID = 'dashboard'; _activeTitle = 'Dashboard'; })),
-                          CosmicSidebarItem(icon: LucideIcons.userCheck, label: 'Presensi Saya',
+                          NeoSidebarItem(icon: LucideIcons.userCheck, label: 'Presensi Saya',
                             isSelected: _activeTabID == 'presensi', onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; })),
-                          CosmicSidebarItem(icon: LucideIcons.clipboardList, label: 'Tugas Kelas',
+                          NeoSidebarItem(icon: LucideIcons.clipboardList, label: 'Tugas Kelas',
                             isSelected: _activeTabID == 'tugas', onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; })),
-                          CosmicSidebarItem(icon: LucideIcons.helpCircle, label: 'Kuis & Ujian',
+                          NeoSidebarItem(icon: LucideIcons.helpCircle, label: 'Kuis & Ujian',
                             isSelected: _activeTabID == 'kuis', onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
-                          CosmicSidebarItem(icon: LucideIcons.award, label: 'Nilai Saya',
+                          NeoSidebarItem(icon: LucideIcons.award, label: 'Nilai Saya',
                             isSelected: _activeTabID == 'nilai', onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai'; })),
-                          CosmicSidebarItem(icon: LucideIcons.bookOpen, label: 'Materi Pelajaran',
+                          NeoSidebarItem(icon: LucideIcons.bookOpen, label: 'Materi Pelajaran',
                             isSelected: _activeTabID == 'materi', onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; })),
                           const SizedBox(height: 20),
                           Padding(padding: const EdgeInsets.only(left: 12, bottom: 8),
                             child: Text('CHANNELS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white.withAlpha(100), letterSpacing: 1.5))),
-                          CosmicSidebarItem(icon: LucideIcons.hash, label: 'General',
+                          NeoSidebarItem(icon: LucideIcons.hash, label: 'General',
                             isSelected: _activeTabID == 'channel_general', isChannel: true,
                             onTap: () => setState(() { _activeTabID = 'channel_general'; _activeTitle = 'General'; })),
                           for (var c in _channels)
-                            CosmicSidebarItem(icon: LucideIcons.hash, label: c['nama_channel'] ?? 'Unnamed',
+                            NeoSidebarItem(icon: LucideIcons.hash, label: c['nama_channel'] ?? 'Unnamed',
                               isSelected: _activeTabID == 'channel_${c['id']}', isChannel: true,
                               onTap: () => setState(() { _activeTabID = 'channel_${c['id']}'; _activeTitle = c['nama_channel'] ?? ''; })),
                           const SizedBox(height: 24),
@@ -450,7 +456,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                   borderRadius: BorderRadius.circular(40),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF7B83EB).withAlpha(Theme.of(context).brightness == Brightness.dark ? 40 : 15), 
+                      color: AppTheme.primary.withAlpha(Theme.of(context).brightness == Brightness.dark ? 40 : 15), 
                       blurRadius: 20, 
                       spreadRadius: 2, 
                       offset: const Offset(0, 4)
@@ -460,15 +466,15 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    CosmicPillNavItem(icon: LucideIcons.layoutDashboard, label: 'Home',
+                    NeoPillNavItem(icon: LucideIcons.layoutDashboard, label: 'Home',
                       isSelected: _activeTabID == 'dashboard', onTap: () => setState(() { _activeTabID = 'dashboard'; _activeTitle = 'Dashboard'; })),
-                    CosmicPillNavItem(icon: LucideIcons.clipboardList, label: 'Tugas',
+                    NeoPillNavItem(icon: LucideIcons.clipboardList, label: 'Tugas',
                       isSelected: _activeTabID == 'tugas', onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; })),
-                    CosmicPillNavItem(icon: LucideIcons.helpCircle, label: 'Kuis',
+                    NeoPillNavItem(icon: LucideIcons.helpCircle, label: 'Kuis',
                       isSelected: _activeTabID == 'kuis', onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
-                    CosmicPillNavItem(icon: LucideIcons.bookOpen, label: 'Materi',
+                    NeoPillNavItem(icon: LucideIcons.bookOpen, label: 'Materi',
                       isSelected: _activeTabID == 'materi', onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; })),
-                    CosmicPillNavItem(icon: LucideIcons.award, label: 'Nilai',
+                    NeoPillNavItem(icon: LucideIcons.award, label: 'Nilai',
                       isSelected: _activeTabID == 'nilai', onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai'; })),
                   ],
                 ),
@@ -501,10 +507,10 @@ class GlassCard extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: overrideColor ?? (isDark ? const Color(0xFF1E2060) : Colors.white),
+        color: overrideColor ?? (Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF7B83EB).withAlpha(isDark ? 15 : 20), blurRadius: 16, offset: const Offset(0, 4)),
+          BoxShadow(color: AppTheme.primary.withAlpha(isDark ? 15 : 20), blurRadius: 16, offset: const Offset(0, 4)),
         ],
       ),
       child: child,

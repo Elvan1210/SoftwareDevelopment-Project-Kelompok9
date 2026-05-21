@@ -159,7 +159,7 @@ class SidebarItemData {
   final IconData icon, selectedIcon;
   final String label;
 
-  const SidebarItemData({
+  SidebarItemData({
     required this.icon,
     required this.selectedIcon,
     required this.label,
@@ -185,7 +185,7 @@ class _BrandHeader extends StatelessWidget {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                colors: [AppTheme.indigoPrimary, AppTheme.primary],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -255,7 +255,7 @@ class _ProfileChip extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
-              AppTheme.purpleSecondary.withAlpha(isDark ? 20 : 12),
+              AppTheme.primary.withAlpha(isDark ? 20 : 12),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
@@ -274,7 +274,7 @@ class _ProfileChip extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                  colors: [AppTheme.indigoPrimary, AppTheme.primary],
                 ),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
@@ -319,7 +319,7 @@ class _ProfileChip extends StatelessWidget {
                       if (kelas != null) ...[
                         const SizedBox(width: 4),
                         Flexible(
-                          child: _Pill(label: kelas!, color: AppTheme.purpleSecondary),
+                          child: _Pill(label: kelas!, color: AppTheme.primary),
                         ),
                       ],
                     ],
@@ -407,7 +407,7 @@ class _SidebarItemState extends State<_SidebarItem> {
                     end: Alignment.centerRight,
                     colors: [
                       AppTheme.indigoPrimary.withAlpha(isDark ? 50 : 30),
-                      AppTheme.purpleSecondary.withAlpha(isDark ? 25 : 15),
+                      AppTheme.primary.withAlpha(isDark ? 25 : 15),
                     ],
                   )
                 : _hovered
@@ -438,7 +438,7 @@ class _SidebarItemState extends State<_SidebarItem> {
                       ? const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                          colors: [AppTheme.indigoPrimary, AppTheme.primary],
                         )
                       : LinearGradient(
                           colors: [

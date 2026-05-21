@@ -1,3 +1,4 @@
+import '../../../config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../guru/guru_tugas_detail_screen.dart';
 import '../siswa/siswa_tugas_detail_screen.dart';
 import '../../../widgets/premium_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SaluranView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -138,7 +140,7 @@ class _SaluranViewState extends State<SaluranView> {
 
     return Scaffold(
       backgroundColor:
-          isDark ? const Color(0xFF161D2B) : const Color(0xFFF8F9FC),
+          Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
           Expanded(
@@ -166,10 +168,10 @@ class _SaluranViewState extends State<SaluranView> {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C2230) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF2E384E) : const Color(0xFFC7D2FE),
+          color: Theme.of(context).colorScheme.surface,
           width: 1.0,
         ),
         boxShadow: [
@@ -200,11 +202,9 @@ class _SaluranViewState extends State<SaluranView> {
                       children: [
                         Text(post['pengirim_nama'] ?? 'User',
                             style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
+                                GoogleFonts.poppins(fontWeight: FontWeight.bold)),
                         Text(post['waktu']?.toString().split('T')[0] ?? '',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context)
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
                                     .withValues(alpha: 0.65))),
@@ -276,9 +276,7 @@ class _SaluranViewState extends State<SaluranView> {
                               children: [
                                 Text(
                                   post['judul_tugas'] ?? post['pesan'] ?? '-',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 15),
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -292,9 +290,7 @@ class _SaluranViewState extends State<SaluranView> {
                                       const SizedBox(width: 4),
                                       Text(
                                         'Deadline: ${post['deadline_tugas'].toString().split('T')[0]}',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            color: theme.colorScheme.secondary,
+                                        style: Theme.of(context).textTheme.labelLarge?.copyWith(color: theme.colorScheme.secondary,
                                             fontWeight: FontWeight.w600),
                                       ),
                                     ],
@@ -311,7 +307,7 @@ class _SaluranViewState extends State<SaluranView> {
                   ),
                 ] else ...[
                   Text(post['pesan'] ?? '',
-                      style: const TextStyle(fontSize: 16)),
+                      style: Theme.of(context).textTheme.headlineMedium),
                 ],
               ],
             ),
@@ -338,18 +334,16 @@ class _SaluranViewState extends State<SaluranView> {
                                   child: Text(
                                       r['pengirim_nama']?[0].toUpperCase() ??
                                           '?',
-                                      style: const TextStyle(fontSize: 10))),
+                                      style: Theme.of(context).textTheme.labelMedium)),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(r['pengirim_nama'] ?? 'User',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13)),
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                                     Text(r['pesan'] ?? '',
-                                        style: const TextStyle(fontSize: 14)),
+                                        style: Theme.of(context).textTheme.titleMedium),
                                   ],
                                 ),
                               ),
@@ -377,10 +371,12 @@ class _SaluranViewState extends State<SaluranView> {
                   child: TextField(
                     controller: _replyCtrl,
                     autofocus: true,
-                    decoration: const InputDecoration(
+                    style: Theme.of(context).textTheme.titleMedium,
+                    decoration: InputDecoration(
                         hintText: "Reply...",
+                        hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.3)),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12)),
                   ),
                 ),
                 IconButton(
@@ -406,7 +402,7 @@ class _SaluranViewState extends State<SaluranView> {
                 _replyCtrl.clear();
               }),
               icon: const Icon(LucideIcons.messageSquare, size: 16),
-              label: const Text("Reply"),
+              label: Text("Reply", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
             ),
     );
   }
@@ -416,7 +412,7 @@ class _SaluranViewState extends State<SaluranView> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
       child: PremiumElevatedButton(
@@ -425,13 +421,13 @@ class _SaluranViewState extends State<SaluranView> {
         textColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 14),
         radius: 12,
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add, size: 20),
-            SizedBox(width: 8),
+            const Icon(Icons.add, size: 20),
+            const SizedBox(width: 8),
             Text("Start a new conversation",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -454,12 +450,12 @@ class _SaluranViewState extends State<SaluranView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("New Post",
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -467,9 +463,11 @@ class _SaluranViewState extends State<SaluranView> {
                 controller: _pesanCtrl,
                 maxLines: 5,
                 autofocus: true,
-                decoration: const InputDecoration(
+                style: Theme.of(context).textTheme.titleMedium,
+                decoration: InputDecoration(
                     hintText: "What's on your mind?",
-                    border: OutlineInputBorder()),
+                    hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.3)),
+                    border: const OutlineInputBorder()),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -481,7 +479,7 @@ class _SaluranViewState extends State<SaluranView> {
                             _postMessage(text: _pesanCtrl.text.trim());
                             Navigator.pop(context);
                           },
-                    color: const Color(0xFF76AFB8),
+                    color: AppTheme.info,
                     textColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     radius: 12,

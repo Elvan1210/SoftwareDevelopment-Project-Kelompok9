@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'otp_verify_screen.dart';
 import '../../services/forgot_password_service.dart';
 import '../../config/theme.dart';
@@ -57,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
+          content: Text(result['message'], style: Theme.of(context).textTheme.bodyLarge),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -90,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppTheme.indigoPrimary.withAlpha(20),
                                 borderRadius: BorderRadius.circular(12),
@@ -114,7 +113,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                         height: 80,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                            colors: [AppTheme.indigoPrimary, AppTheme.primary],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -141,25 +140,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       // Judul & deskripsi
                       ShaderMask(
                         shaderCallback: (b) => const LinearGradient(
-                          colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                          colors: [AppTheme.indigoPrimary, AppTheme.primary],
                         ).createShader(b),
                         child: Text(
                           'Lupa Kata Sandi?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 28, fontWeight: FontWeight.w800,
-                            letterSpacing: -0.8, color: Colors.white,
-                          ),
+                          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
+                            letterSpacing: -0.8, color: Colors.white),
                           textAlign: TextAlign.center,
                         ),
                       ).animate().fadeIn(delay: 200.ms).slideY(begin: -0.1),
                       const SizedBox(height: 10),
                       Text(
                         'Masukkan email akunmu dan kami akan mengirimkan kode verifikasi 6 digit untuk mereset kata sandimu.',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                          height: 1.6,
-                        ),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
+                          height: 1.6),
                         textAlign: TextAlign.center,
                       ).animate().fadeIn(delay: 250.ms),
                       const SizedBox(height: 40),
@@ -177,10 +171,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.done,
                               onFieldSubmitted: (_) => _sendOtp(),
-                              style: GoogleFonts.poppins(
-                                fontSize: 14, fontWeight: FontWeight.w500,
-                                color: isDark ? AppTheme.textDark : AppTheme.textLight,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500,
+                                color: isDark ? AppTheme.textDark : AppTheme.textLight),
                               validator: (v) {
                                 if (v == null || v.isEmpty) return 'Email tidak boleh kosong';
                                 if (!v.contains('@')) return 'Email tidak valid';
@@ -188,8 +180,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               },
                               decoration: InputDecoration(
                                 hintText: 'contoh@email.com',
-                                hintStyle: GoogleFonts.poppins(fontSize: 13,
-                                  color: isDark ? AppTheme.textMutedDk.withAlpha(150) : AppTheme.textMutedLt.withAlpha(150)),
+                                hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk.withAlpha(150) : AppTheme.textMutedLt.withAlpha(150)),
                                 prefixIcon: Icon(Icons.email_outlined, size: 18,
                                   color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                                 filled: true,
@@ -215,8 +206,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   gradient: _isLoading
-                                      ? LinearGradient(colors: [AppTheme.indigoPrimary.withAlpha(120), AppTheme.purpleSecondary.withAlpha(120)])
-                                      : const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]),
+                                      ? LinearGradient(colors: [AppTheme.indigoPrimary.withAlpha(120), AppTheme.primary.withAlpha(120)])
+                                      : const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.primary]),
                                   borderRadius: BorderRadius.circular(14),
                                   boxShadow: _isLoading ? [] : [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(100), blurRadius: 20, offset: const Offset(0, 8))],
                                 ),
@@ -234,7 +225,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                       : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                                           const Icon(Icons.send_rounded, size: 18),
                                           const SizedBox(width: 8),
-                                          Text('Kirim Kode Verifikasi', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700)),
+                                          Text('Kirim Kode Verifikasi', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                                         ]),
                                 ),
                               ),
@@ -259,7 +250,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                             Expanded(
                               child: Text(
                                 'Kode verifikasi berlaku selama 10 menit. Periksa folder spam jika email tidak masuk.',
-                                style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.indigoPrimary, height: 1.5),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.indigoPrimary, height: 1.5),
                               ),
                             ),
                           ],
@@ -284,7 +275,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           width: 36, height: 36,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+              colors: [AppTheme.indigoPrimary, AppTheme.primary],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(9),
@@ -294,15 +285,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         const SizedBox(width: 8),
         ShaderMask(
-          shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary]).createShader(b),
-          child: Text('MyPSKD', style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+          shaderCallback: (b) => const LinearGradient(colors: [AppTheme.indigoPrimary, AppTheme.primary]).createShader(b),
+          child: Text('MyPSKD', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
         ),
       ],
     );
   }
 
   Widget _buildLabel(String text) {
-    return Text(text, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.indigoPrimary));
+    return Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppTheme.indigoPrimary));
   }
 
   Widget _buildBackground() {
@@ -324,7 +315,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               child: Container(width: 250, height: 250,
                 decoration: BoxDecoration(shape: BoxShape.circle,
                   gradient: RadialGradient(colors: [
-                    AppTheme.purpleSecondary.withAlpha(isDark ? 40 : 20), Colors.transparent,
+                    AppTheme.primary.withAlpha(isDark ? 40 : 20), Colors.transparent,
                   ]))))),
         ),
         Positioned.fill(child: CustomPaint(painter: _DotGridPainter(isDark))),
@@ -335,7 +326,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
 class _DotGridPainter extends CustomPainter {
   final bool isDark;
-  const _DotGridPainter(this.isDark);
+  _DotGridPainter(this.isDark);
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()..color = AppTheme.indigoPrimary.withAlpha(isDark ? 18 : 10)..strokeCap = StrokeCap.round;

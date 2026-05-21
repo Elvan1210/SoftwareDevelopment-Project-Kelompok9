@@ -1,14 +1,17 @@
+import '../../../config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
-import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'siswa_tugas_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+
+
+
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -84,6 +87,7 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
   List<dynamic> get _tugasSelesai => _allTugas.where((t) => _sudahDikumpulkan(t['id'].toString())).toList();
 
   @override
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -96,36 +100,36 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-            _buildTabBar(theme, isDark),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _TugasList(
-                    tugasList: _allTugas,
-                    userData: widget.userData,
-                    token: widget.token,
-                    onRefresh: _fetchData,
-                    statusLabel: 'Semua',
-                  ),
-                  _TugasList(
-                    tugasList: _tugasBelum,
-                    userData: widget.userData,
-                    token: widget.token,
-                    onRefresh: _fetchData,
-                    statusLabel: 'Belum Selesai',
-                  ),
-                  _TugasList(
-                    tugasList: _tugasSelesai,
-                    userData: widget.userData,
-                    token: widget.token,
-                    onRefresh: _fetchData,
-                    statusLabel: 'Selesai',
-                  ),
-                ],
-              ),
+          _buildTabBar(theme, isDark),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _TugasList(
+                  tugasList: _allTugas,
+                  userData: widget.userData,
+                  token: widget.token,
+                  onRefresh: _fetchData,
+                  statusLabel: 'Semua',
+                ),
+                _TugasList(
+                  tugasList: _tugasBelum,
+                  userData: widget.userData,
+                  token: widget.token,
+                  onRefresh: _fetchData,
+                  statusLabel: 'Belum Selesai',
+                ),
+                _TugasList(
+                  tugasList: _tugasSelesai,
+                  userData: widget.userData,
+                  token: widget.token,
+                  onRefresh: _fetchData,
+                  statusLabel: 'Selesai',
+                ),
+              ],
             ),
-          ],
+          ),
+        ],
       ),
     );
   }
@@ -133,30 +137,23 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
   Widget _buildTabBar(ThemeData theme, bool isDark) {
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withAlpha(isDark ? 100 : 200),
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: theme.colorScheme.onSurface.withAlpha(20)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 20, offset: const Offset(0, 10))
-        ],
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
       ),
       child: TabBar(
         controller: _tabController,
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
         indicator: BoxDecoration(
-          borderRadius: BorderRadius.circular(100),
-          color: theme.primaryColor,
-          boxShadow: [
-            BoxShadow(color: theme.primaryColor.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))
-          ],
+          color: AppTheme.primary,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(160),
-        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.3),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        unselectedLabelColor: isDark ? Colors.white70 : Theme.of(context).colorScheme.onSurface,
+        labelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.3),
+        unselectedLabelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         tabs: const [
           Tab(text: 'Semua'),
           Tab(text: 'Belum'),
@@ -205,8 +202,7 @@ class _TugasList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     if (tugasList.isEmpty) {
       return EmptyState(
         icon: LucideIcons.clipboardCheck,
@@ -220,7 +216,6 @@ class _TugasList extends StatelessWidget {
         builder: (ctx, c) {
           final w = c.maxWidth;
           final padding = Breakpoints.screenPadding(w);
-          final crossCount = w >= Breakpoints.tablet ? 2 : 1;
 
           final sortedTasks = List<dynamic>.from(tugasList);
           sortedTasks.sort((a, b) {
@@ -266,17 +261,15 @@ class _TugasList extends StatelessWidget {
                       children: [
                         Text(
                           key.toUpperCase(),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900,
+                            color: AppTheme.primary,
                             letterSpacing: 1.5,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Divider(
-                            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
+                            color: Theme.of(context).dividerColor,
                             height: 1,
                             thickness: 1,
                           ),
@@ -284,23 +277,41 @@ class _TugasList extends StatelessWidget {
                       ],
                     ),
                   ),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossCount,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: crossCount == 1 ? 3.8 : 2.0,
-                    ),
-                    itemCount: items.length,
-                    itemBuilder: (_, j) {
-                      final t = items[j];
-                      return _TugasCard(
-                        tugas: t,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: userData, token: token))),
-                      ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart);
-                    },
+                  LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      final cw = constraints.maxWidth;
+                      final isWide = cw >= 750;
+                      if (isWide) {
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: List.generate(items.length, (j) {
+                            final t = items[j];
+                            final cardW = (cw - 16) / 2;
+                            return SizedBox(
+                              width: cardW,
+                              child: _TugasCard(
+                                tugas: t,
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: userData, token: token))),
+                              ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
+                            );
+                          }),
+                        );
+                      } else {
+                        return Column(
+                          children: List.generate(items.length, (j) {
+                            final t = items[j];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _TugasCard(
+                                tugas: t,
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: userData, token: token))),
+                              ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
+                            );
+                          }),
+                        );
+                      }
+                    }
                   ),
                   const SizedBox(height: 20),
                   if (i < groupKeys.length - 1) const Divider(color: Colors.white24, height: 1),
@@ -326,133 +337,91 @@ class _TugasCard extends StatelessWidget {
     if (parsed != null) {
       return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
     }
-    return dl; 
+    return dl;
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    const accent = Color(0xFF76AFB8);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: accent.withAlpha(isDark ? 55 : 30),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 60 : 8),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-              borderRadius: BorderRadius.circular(19),
-              border: Border.all(
-                color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-                width: 1.0,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+              ),
+              child: const Icon(LucideIcons.clipboardList, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    tugas['judul'] ?? '-',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
+                      color: Theme.of(context).textTheme.bodyLarge!.color!,
+                      letterSpacing: -0.3),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Mapel: ${tugas['mapel'] ?? '-'}',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
+                      color: Theme.of(context).textTheme.bodyMedium!.color!,
+                    ),
+                  ),
+                ],
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: accent.withAlpha(isDark ? 25 : 15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: accent.withAlpha(isDark ? 60 : 40),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: const Icon(LucideIcons.clipboardList, color: accent, size: 20),
+            const SizedBox(width: 8),
+            if (tugas['deadline'] != null && tugas['deadline'].toString().isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDE68A),
+                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        tugas['judul'] ?? '-',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14.5,
-                          color: isDark ? Colors.white : AppTheme.textLight,
-                          letterSpacing: -0.3,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'Mapel: ${tugas['mapel'] ?? '-'}',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: Text(
+                  _formatDeadline(tugas['deadline']),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    letterSpacing: 0.2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 8),
-                if (tugas['deadline'] != null && tugas['deadline'].toString().isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withAlpha(isDark ? 20 : 12),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: const Color(0xFFF59E0B).withAlpha(isDark ? 55 : 35),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Text(
-                      _formatDeadline(tugas['deadline']),
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFFF59E0B),
-                        letterSpacing: 0.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                const SizedBox(width: 12),
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E2235) : const Color(0xFFEFF1FE),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF3F4E9F).withAlpha(120) : const Color(0xFF7B83EB).withAlpha(80),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Icon(
-                    LucideIcons.chevronRight,
-                    color: isDark ? const Color(0xFF9EAAFF) : const Color(0xFF4C51BF),
-                    size: 14,
-                  ),
-                ),
-              ],
+              ),
+              const SizedBox(width: 12),
+            ],
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+              ),
+              child: Icon(
+                LucideIcons.chevronRight,
+                color: Theme.of(context).textTheme.bodyLarge!.color!,
+                size: 16,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

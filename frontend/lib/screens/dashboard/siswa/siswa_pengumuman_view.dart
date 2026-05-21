@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,15 +16,39 @@ class _KategoriConfig {
   final IconData icon;
   final Color color;
   final Color colorEnd;
-  const _KategoriConfig({required this.label, required this.icon, required this.color, required this.colorEnd});
+  _KategoriConfig(
+      {required this.label,
+      required this.icon,
+      required this.color,
+      required this.colorEnd});
 }
 
-const _kategoriMap = {
-  'Semua': _KategoriConfig(label: 'Semua', icon: LucideIcons.layoutGrid, color: AppTheme.indigoPrimary, colorEnd: AppTheme.purpleSecondary),
-  'Ujian': _KategoriConfig(label: 'Ujian', icon: LucideIcons.clipboardList, color: AppTheme.amber, colorEnd: Color(0xFFF97316)),
-  'Libur': _KategoriConfig(label: 'Libur', icon: LucideIcons.palmtree, color: AppTheme.emerald, colorEnd: Color(0xFF059669)),
-  'Seminar': _KategoriConfig(label: 'Seminar', icon: LucideIcons.presentation, color: AppTheme.sky, colorEnd: Color(0xFF0EA5E9)),
-  'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: AppTheme.purpleSecondary, colorEnd: AppTheme.purpleLight),
+final _kategoriMap = {
+  'Semua': _KategoriConfig(
+      label: 'Semua',
+      icon: LucideIcons.layoutGrid,
+      color: AppTheme.indigoPrimary,
+      colorEnd: AppTheme.primary),
+  'Ujian': _KategoriConfig(
+      label: 'Ujian',
+      icon: LucideIcons.clipboardList,
+      color: AppTheme.amber,
+      colorEnd: const Color(0xFFF97316)),
+  'Libur': _KategoriConfig(
+      label: 'Libur',
+      icon: LucideIcons.palmtree,
+      color: AppTheme.emerald,
+      colorEnd: const Color(0xFF059669)),
+  'Seminar': _KategoriConfig(
+      label: 'Seminar',
+      icon: LucideIcons.presentation,
+      color: AppTheme.sky,
+      colorEnd: const Color(0xFF0EA5E9)),
+  'Umum': _KategoriConfig(
+      label: 'Umum',
+      icon: LucideIcons.megaphone,
+      color: AppTheme.primary,
+      colorEnd: AppTheme.primaryDark),
 };
 
 _KategoriConfig _getKategori(String? kategoriField) {
@@ -37,7 +61,8 @@ _KategoriConfig _getKategori(String? kategoriField) {
 class SiswaPengumumanView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const SiswaPengumumanView({super.key, required this.userData, required this.token});
+  const SiswaPengumumanView(
+      {super.key, required this.userData, required this.token});
 
   @override
   State<SiswaPengumumanView> createState() => _SiswaPengumumanViewState();
@@ -59,7 +84,8 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
 
   Future<void> _loadAndFetch() async {
     final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
+    final list =
+        prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
     _readIds = list.toSet();
     await _fetchPengumuman();
   }
@@ -67,14 +93,17 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   Future<void> _markRead(String id) async {
     setState(() => _readIds.add(id));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('read_pengumuman_${widget.userData['id']}', _readIds.toList());
+    await prefs.setStringList(
+        'read_pengumuman_${widget.userData['id']}', _readIds.toList());
   }
 
   Future<void> _markAllRead() async {
-    final allIds = _pengumumanList.map((p) => p['id']?.toString() ?? '').toSet();
+    final allIds =
+        _pengumumanList.map((p) => p['id']?.toString() ?? '').toSet();
     setState(() => _readIds.addAll(allIds));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('read_pengumuman_${widget.userData['id']}', _readIds.toList());
+    await prefs.setStringList(
+        'read_pengumuman_${widget.userData['id']}', _readIds.toList());
   }
 
   Future<void> _fetchPengumuman() async {
@@ -88,8 +117,10 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
         final decoded = jsonDecode(response.body);
         List<dynamic> list = decoded is List ? decoded : [];
         list.sort((a, b) {
-          final aDate = AppDateUtils.parseIndonesianDate(a['tanggal']?.toString() ?? '');
-          final bDate = AppDateUtils.parseIndonesianDate(b['tanggal']?.toString() ?? '');
+          final aDate =
+              AppDateUtils.parseIndonesianDate(a['tanggal']?.toString() ?? '');
+          final bDate =
+              AppDateUtils.parseIndonesianDate(b['tanggal']?.toString() ?? '');
           return bDate.compareTo(aDate);
         });
         setState(() => _pengumumanList = list);
@@ -103,16 +134,23 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   List<dynamic> get _filtered {
     var base = _showRead
         ? _pengumumanList
-        : _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
+        : _pengumumanList
+            .where((p) => !_readIds.contains(p['id']?.toString()))
+            .toList();
     if (_selectedKategori != 'Semua') {
-      base = base.where((p) => _getKategori(p['kategori']?.toString()).label == _selectedKategori).toList();
+      base = base
+          .where((p) =>
+              _getKategori(p['kategori']?.toString()).label ==
+              _selectedKategori)
+          .toList();
     }
     if (_search.isEmpty) return base;
     final q = _search.toLowerCase();
-    return base.where((p) =>
-      (p['judul'] ?? '').toLowerCase().contains(q) ||
-      (p['isi'] ?? '').toLowerCase().contains(q)
-    ).toList();
+    return base
+        .where((p) =>
+            (p['judul'] ?? '').toLowerCase().contains(q) ||
+            (p['isi'] ?? '').toLowerCase().contains(q))
+        .toList();
   }
 
   @override
@@ -128,7 +166,9 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
       color: AppTheme.amber,
       child: LayoutBuilder(builder: (ctx, c) {
         final w = c.maxWidth;
-        final padding = Breakpoints.screenPadding(w);
+        final isWide = w >= 950;
+        final padVal = isWide ? 40.0 : 24.0;
+        final padding = EdgeInsets.symmetric(horizontal: padVal, vertical: 24);
 
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -142,19 +182,20 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                     _Header(
                       isDark: isDark,
                       count: _filtered.length,
-                      unread: _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length,
+                      unread: _pengumumanList
+                          .where((p) => !_readIds.contains(p['id']?.toString()))
+                          .length,
                       showRead: _showRead,
-                      onToggleRead: () => setState(() => _showRead = !_showRead),
+                      onToggleRead: () =>
+                          setState(() => _showRead = !_showRead),
                       onMarkAll: _markAllRead,
                     ).animate().fadeIn(duration: 400.ms),
                     const SizedBox(height: 18),
-
                     _SearchBar(
                       isDark: isDark,
                       onChanged: (v) => setState(() => _search = v),
                     ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.05),
                     const SizedBox(height: 14),
-
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: SizedBox(
@@ -168,26 +209,56 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                             return Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: GestureDetector(
-                                onTap: () => setState(() => _selectedKategori = k),
+                                onTap: () =>
+                                    setState(() => _selectedKategori = k),
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
-                                    gradient: selected ? LinearGradient(colors: [cfg.color, cfg.colorEnd]) : null,
-                                    color: selected ? null : (isDark ? const Color(0xFF1E2538) : Colors.white),
-                                    borderRadius: BorderRadius.circular(100),
-                                    border: Border.all(color: selected ? Colors.transparent : (isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)), width: 1.2),
-                                    boxShadow: selected
-                                        ? [BoxShadow(color: cfg.color.withAlpha(80), blurRadius: 10, offset: const Offset(0, 4))]
-                                        : [],
+                                    color: selected
+                                        ? AppTheme.primary
+                                        : (Theme.of(context)
+                                            .colorScheme
+                                            .surface),
+                                    border: Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                        width: 2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          offset: const Offset(2, 2),
+                                          blurRadius: 0)
+                                    ],
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(cfg.icon, size: 13, color: selected ? Colors.white : cfg.color),
+                                      Icon(cfg.icon,
+                                          size: 13,
+                                          color: selected
+                                              ? Colors.white
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface),
                                       const SizedBox(width: 6),
-                                      Text(cfg.label, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w800,
-                                          color: selected ? Colors.white : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt))),
+                                      Text(cfg.label,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                  fontWeight: FontWeight.w900,
+                                                  color: selected
+                                                      ? Colors.white
+                                                      : (isDark
+                                                          ? const Color(0xFF9090B0)
+                                                          : Theme.of(context)
+                                                              .colorScheme
+                                                              .onSurface))),
                                     ],
                                   ),
                                 ),
@@ -202,33 +273,63 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                 ),
               ),
             ),
-
             _filtered.isEmpty
                 ? SliverFillRemaining(
                     child: EmptyState(
                       icon: LucideIcons.megaphone,
-                      message: _search.isEmpty ? 'Belum ada pengumuman' : 'Tidak ditemukan',
-                      subtitle: _search.isEmpty ? 'Nantikan pengumuman dari sekolah' : 'Coba kata kunci lain',
+                      message: _search.isEmpty
+                          ? 'Belum ada pengumuman'
+                          : 'Tidak ditemukan',
+                      subtitle: _search.isEmpty
+                          ? 'Nantikan pengumuman dari sekolah'
+                          : 'Coba kata kunci lain',
                       color: AppTheme.amber,
                     ),
                   )
                 : SliverPadding(
                     padding: padding.copyWith(top: 0),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, i) {
-                          final p = _filtered[i];
-                          final isRead = _readIds.contains(p['id']?.toString());
-                          return _PengumumanDetailCard(
-                            pengumuman: p,
-                            isDark: isDark,
-                            index: i,
-                            isRead: isRead,
-                            onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
-                          );
-                        },
-                        childCount: _filtered.length,
-                      ),
+                    sliver: SliverToBoxAdapter(
+                      child: isWide
+                          ? Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                              children: List.generate(_filtered.length, (i) {
+                                final p = _filtered[i];
+                                final isRead =
+                                    _readIds.contains(p['id']?.toString());
+                                final colCount = w >= 1200 ? 3 : 2;
+                                final cardW =
+                                    (w - padVal * 2 - (16 * (colCount - 1))) /
+                                        colCount;
+
+                                return SizedBox(
+                                  width: cardW,
+                                  child: _PengumumanDetailCard(
+                                    pengumuman: p,
+                                    isDark: isDark,
+                                    index: i,
+                                    isRead: isRead,
+                                    onMarkRead: () =>
+                                        _markRead(p['id']?.toString() ?? ''),
+                                  ),
+                                );
+                              }),
+                            )
+                          : Column(
+                              children: List.generate(_filtered.length, (i) {
+                                final p = _filtered[i];
+                                final isRead =
+                                    _readIds.contains(p['id']?.toString());
+                                return _PengumumanDetailCard(
+                                  pengumuman: p,
+                                  isDark: isDark,
+                                  index: i,
+                                  isRead: isRead,
+                                  onMarkRead: () =>
+                                      _markRead(p['id']?.toString() ?? ''),
+                                );
+                              }),
+                            ),
                     ),
                   ),
           ],
@@ -238,14 +339,35 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   }
 
   Widget _skeleton() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(24),
-      itemCount: 5,
-      itemBuilder: (_, __) => const Padding(
-        padding: EdgeInsets.only(bottom: 16),
-        child: SkeletonLoader(height: 140, radius: 20),
-      ),
-    );
+    return LayoutBuilder(builder: (context, c) {
+      final w = c.maxWidth;
+      final isWide = w >= 950;
+      final padVal = isWide ? 40.0 : 24.0;
+      final padding = EdgeInsets.symmetric(horizontal: padVal, vertical: 24);
+
+      return SingleChildScrollView(
+        padding: padding,
+        child: isWide
+            ? Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: List.generate(4, (index) {
+                  final colCount = w >= 1200 ? 3 : 2;
+                  final cardW =
+                      (w - padVal * 2 - (16 * (colCount - 1))) / colCount;
+                  return SkeletonLoader(width: cardW, height: 180, radius: 24);
+                }),
+              )
+            : Column(
+                children: List.generate(
+                    4,
+                    (_) => const Padding(
+                          padding: EdgeInsets.only(bottom: 16),
+                          child: SkeletonLoader(height: 180, radius: 24),
+                        )),
+              ),
+      );
+    });
   }
 }
 
@@ -256,8 +378,13 @@ class _Header extends StatelessWidget {
   final bool showRead;
   final VoidCallback onToggleRead;
   final VoidCallback onMarkAll;
-  const _Header({required this.isDark, required this.count, required this.unread,
-      required this.showRead, required this.onToggleRead, required this.onMarkAll});
+  const _Header(
+      {required this.isDark,
+      required this.count,
+      required this.unread,
+      required this.showRead,
+      required this.onToggleRead,
+      required this.onMarkAll});
 
   @override
   Widget build(BuildContext context) {
@@ -270,12 +397,18 @@ class _Header extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppTheme.amber, Color(0xFFF97316)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [BoxShadow(color: AppTheme.amber.withAlpha(100), blurRadius: 16, offset: const Offset(0, 6))],
+                color: const Color(0xFFFDE68A),
+                border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurface, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      offset: const Offset(4, 4),
+                      blurRadius: 0)
+                ],
               ),
-              child: const Icon(LucideIcons.megaphone, color: Colors.white, size: 20),
+              child: Icon(LucideIcons.megaphone,
+                  color: Theme.of(context).colorScheme.onSurface, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -283,12 +416,20 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Pengumuman Sekolah',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5, color: isDark ? Colors.white : AppTheme.textLight)),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge!.color!)),
                   const SizedBox(height: 2),
-                  Text(unread > 0 ? '$unread belum dibaca' : 'Semua sudah dibaca',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w700,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
+                  Text(
+                      unread > 0
+                          ? '$unread belum dibaca'
+                          : 'Semua sudah dibaca',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium!.color!)),
                 ],
               ),
             ),
@@ -301,36 +442,72 @@ class _Header extends StatelessWidget {
               GestureDetector(
                 onTap: onMarkAll,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  constraints: const BoxConstraints(minHeight: 44),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppTheme.emerald.withAlpha(isDark ? 35 : 20),
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(color: AppTheme.emerald.withAlpha(isDark ? 70 : 50)),
+                    color: const Color(0xFFD1FAE5),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          offset: const Offset(2, 2),
+                          blurRadius: 0)
+                    ],
                   ),
-                  child: Row(children: [
-                    const Icon(LucideIcons.checkCheck, size: 12, color: AppTheme.emerald),
-                    const SizedBox(width: 6),
-                    Text('Tandai Semua Dibaca',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.emerald)),
-                  ]),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(LucideIcons.checkCheck,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onSurface),
+                      const SizedBox(width: 6),
+                      Text('Tandai Semua Dibaca',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface)),
+                    ],
+                  ),
                 ),
               ),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: onToggleRead,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                constraints: const BoxConstraints(minHeight: 44),
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: AppTheme.indigoPrimary.withAlpha(isDark ? 70 : 50)),
+                  color: const Color(0xFFE0E7FF),
+                  border: Border.all(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        offset: const Offset(2, 2),
+                        blurRadius: 0)
+                  ],
                 ),
-                child: Row(children: [
-                  Icon(showRead ? LucideIcons.eyeOff : LucideIcons.eye, size: 12, color: AppTheme.indigoPrimary),
-                  const SizedBox(width: 6),
-                  Text(showRead ? 'Sembunyikan Dibaca' : 'Tampilkan Semua',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.indigoPrimary)),
-                ]),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(showRead ? LucideIcons.eyeOff : LucideIcons.eye,
+                        size: 14,
+                        color: Theme.of(context).colorScheme.onSurface),
+                    const SizedBox(width: 6),
+                    Text(showRead ? 'Sembunyikan Dibaca' : 'Tampilkan Semua',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: Theme.of(context).colorScheme.onSurface)),
+                  ],
+                ),
               ),
             ),
           ],
@@ -348,20 +525,33 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 48),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2538) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(
+            color: Theme.of(context).colorScheme.onSurface, width: 2),
+        boxShadow: [
+          BoxShadow(
+              color: Theme.of(context).colorScheme.onSurface,
+              offset: const Offset(4, 4),
+              blurRadius: 0)
+        ],
       ),
       child: TextField(
         onChanged: onChanged,
-        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: isDark ? Colors.white : AppTheme.textLight, fontWeight: FontWeight.w700),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: Theme.of(context).textTheme.bodyLarge!.color!,
+            fontWeight: FontWeight.w700),
         decoration: InputDecoration(
           hintText: 'Cari pengumuman...',
-          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w700),
-          prefixIcon: Icon(LucideIcons.search, size: 16, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).textTheme.bodyMedium!.color!,
+              fontWeight: FontWeight.w600),
+          prefixIcon: Icon(LucideIcons.search,
+              size: 16, color: Theme.of(context).textTheme.bodyMedium!.color!),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
@@ -375,8 +565,11 @@ class _PengumumanDetailCard extends StatelessWidget {
   final bool isRead;
   final VoidCallback onMarkRead;
   const _PengumumanDetailCard({
-    required this.pengumuman, required this.isDark,
-    required this.index, required this.isRead, required this.onMarkRead,
+    required this.pengumuman,
+    required this.isDark,
+    required this.index,
+    required this.isRead,
+    required this.onMarkRead,
   });
 
   String _formatDate(String? raw) {
@@ -396,139 +589,232 @@ class _PengumumanDetailCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2538) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          color: Theme.of(context).colorScheme.surface,
           border: Border.all(
-            color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB),
-            width: 1.2,
-          ),
+              color: Theme.of(context).colorScheme.onSurface, width: 2),
+          boxShadow: [
+            BoxShadow(
+                color: Theme.of(context).colorScheme.onSurface,
+                offset: const Offset(4, 4),
+                blurRadius: 0)
+          ],
         ),
-        padding: const EdgeInsets.all(4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161D2B) : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    cfg.color.withAlpha(20),
-                    cfg.colorEnd.withAlpha(10),
-                  ]),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB), width: 1.2)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [cfg.color, cfg.colorEnd], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(cfg.icon, color: Colors.white, size: 14),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: cfg.color.withAlpha(30),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(cfg.label.toUpperCase(),
-                                style: GoogleFonts.plusJakartaSans(fontSize: 8.5, fontWeight: FontWeight.w900, color: cfg.color, letterSpacing: 0.8)),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(pengumuman['judul'] ?? '-',
-                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14,
-                                  color: isDark ? Colors.white : AppTheme.textLight),
-                              maxLines: 2, overflow: TextOverflow.ellipsis),
-                        ],
-                      ),
-                    ),
-                    if (tanggal.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: cfg.color.withAlpha(20),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: cfg.color.withAlpha(30)),
-                        ),
-                        child: Text(tanggal, style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: cfg.color)),
-                      ),
-                    ],
-                  ],
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: cfg.color,
+                border: Border(
+                    bottom: BorderSide(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2)),
               ),
-
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(pengumuman['isi'] ?? '-',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 12.5, height: 1.6,
-                            fontWeight: FontWeight.w600, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                    const SizedBox(height: 14),
-                    Divider(height: 1, color: isDark ? const Color(0xFF2D3A54) : const Color(0xFFE5E7EB)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        if (author != null) ...[
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: AppTheme.indigoPrimary.withAlpha(20),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(LucideIcons.user, size: 10, color: AppTheme.indigoPrimary),
-                          ),
-                          const SizedBox(width: 8),
-                          Text('Oleh: $author',
-                              style: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppTheme.indigoPrimary)),
-                        ],
-                        const Spacer(),
-                        if (!isRead)
-                          GestureDetector(
-                            onTap: onMarkRead,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppTheme.emerald.withAlpha(20),
-                                borderRadius: BorderRadius.circular(100),
-                                border: Border.all(color: AppTheme.emerald.withAlpha(40)),
-                              ),
-                              child: Row(children: [
-                                const Icon(LucideIcons.check, size: 10, color: AppTheme.emerald),
-                                const SizedBox(width: 4),
-                                Text('Tandai Dibaca',
-                                    style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.emerald)),
-                              ]),
-                            ),
-                          )
-                        else
-                          Row(children: [
-                            Icon(LucideIcons.checkCheck, size: 11, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                            const SizedBox(width: 4),
-                            Text('Dibaca', style: GoogleFonts.plusJakartaSans(fontSize: 10.5, fontWeight: FontWeight.bold,
-                                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                          ]),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            offset: const Offset(2, 2),
+                            blurRadius: 0)
                       ],
                     ),
+                    child: Icon(cfg.icon,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 14),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                width: 1),
+                          ),
+                          child: Text(cfg.label.toUpperCase(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      letterSpacing: 0.8)),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(pengumuman['judul'] ?? '-',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  ),
+                  if (tanggal.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              offset: const Offset(2, 2),
+                              blurRadius: 0)
+                        ],
+                      ),
+                      child: Text(tanggal,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface)),
+                    ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(pengumuman['isi'] ?? '-',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          height: 1.6,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium!.color!)),
+                  const SizedBox(height: 16),
+                  Divider(
+                      height: 1,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      thickness: 1.5),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (author != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0E7FF),
+                            border: Border.all(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                width: 1),
+                          ),
+                          child: Icon(LucideIcons.user,
+                              size: 10,
+                              color: Theme.of(context).colorScheme.onSurface),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Oleh: $author',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .color!)),
+                      ],
+                      const Spacer(),
+                      if (!isRead)
+                        GestureDetector(
+                          onTap: onMarkRead,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            constraints: const BoxConstraints(minHeight: 44),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD1FAE5),
+                              border: Border.all(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                  width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    offset: const Offset(2, 2),
+                                    blurRadius: 0)
+                              ],
+                            ),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(LucideIcons.check,
+                                  size: 14,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
+                              const SizedBox(width: 6),
+                              Text('Tandai Dibaca',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface)),
+                            ]),
+                          ),
+                        )
+                      else
+                        Container(
+                          constraints: const BoxConstraints(minHeight: 44),
+                          alignment: Alignment.center,
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(LucideIcons.checkCheck,
+                                size: 14,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color!),
+                            const SizedBox(width: 6),
+                            Text('Dibaca',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                        fontWeight: FontWeight.w900,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium!
+                                            .color!)),
+                          ]),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     )

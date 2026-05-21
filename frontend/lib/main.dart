@@ -129,7 +129,7 @@ class _SplashScreenState extends State<SplashScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(colors: [
-                  AppTheme.purpleSecondary.withAlpha(isDark ? 45 : 25),
+                  AppTheme.primary.withAlpha(isDark ? 45 : 25),
                   Colors.transparent,
                 ]),
               ),
@@ -151,7 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [AppTheme.indigoPrimary, AppTheme.purpleSecondary],
+                        colors: [AppTheme.indigoPrimary, AppTheme.primary],
                       ),
                       borderRadius: BorderRadius.circular(32),
                       boxShadow: [
@@ -186,7 +186,7 @@ class _SplashScreenState extends State<SplashScreen>
                     letterSpacing: -1.5,
                     foreground: Paint()
                       ..shader = const LinearGradient(
-                        colors: [AppTheme.indigoLight, AppTheme.purpleLight],
+                        colors: [AppTheme.indigoLight, AppTheme.primaryDark],
                       ).createShader(const Rect.fromLTWH(0, 0, 200, 50)),
                   ),
                 ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.2),
@@ -263,7 +263,7 @@ class _LoadingDotsState extends State<_LoadingDots>
                 end: Alignment.bottomCenter,
                 colors: [
                   AppTheme.indigoPrimary.withAlpha((150 + 105 * _ctrls[i].value).round()),
-                  AppTheme.purpleSecondary.withAlpha((100 + 80 * _ctrls[i].value).round()),
+                  AppTheme.primary.withAlpha((100 + 80 * _ctrls[i].value).round()),
                 ],
               ),
               borderRadius: BorderRadius.circular(4),
