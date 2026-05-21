@@ -298,13 +298,13 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
             color: AppTheme.primary,
-            border: Border.all(
-                color: Theme.of(context).colorScheme.onSurface, width: 2),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  offset: const Offset(4, 4),
-                  blurRadius: 0)
+                color: AppTheme.primary.withAlpha(80),
+                offset: const Offset(0, 4),
+                blurRadius: 12,
+              )
             ],
           ),
           child: Row(
