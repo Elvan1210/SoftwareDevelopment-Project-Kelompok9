@@ -24,6 +24,7 @@ class MessagesScreen extends StatefulWidget {
 class _MessagesScreenState extends State<MessagesScreen> {
   io.Socket? socket;
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> conversations = [];
   List<Map<String, dynamic>> messages = [];
 
@@ -527,86 +528,177 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isMobile = MediaQuery.of(context).size.width < 800;
 
-    final chatList = Container(
-      width: isMobile ? double.infinity : 300,
-      decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: isDark ? Colors.white12 : Colors.black12,
+    final chatList = Stack(
+      children: [
+        Container(
+          width: isMobile ? double.infinity : 350,
+          color: AppTheme.lightBg,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 24, top: 32, bottom: 24),
+                child: Text(
+                  "Pesan",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.textLight,
+                    letterSpacing: -1.5,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : conversations.isEmpty
+                        ? Center(
+                            child: Text(
+                              "Belum ada obrolan.\nKlik ikon + untuk mulai.",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                            ),
+                          )
+                        : Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.lightBg,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: AppTheme.textLight, width: 2),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: AppTheme.textLight,
+                                  offset: Offset(4, 4),
+                                )
+                              ],
+                            ),
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: conversations.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                final conv = conversations[index];
+                                final convName = _displayChatName(conv);
+                                final isActive = activeConversationId == conv['id'];
+                                
+                                return GestureDetector(
+                                  onTap: () => selectConversation(conv, convName),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: isActive ? AppTheme.primaryContainer : Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: AppTheme.textLight, width: 2),
+                                      boxShadow: [
+                                        if (!isActive)
+                                          const BoxShadow(
+                                            color: AppTheme.textLight,
+                                            offset: Offset(2, 2),
+                                          )
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      convName,
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textLight,
+                                                        height: 1.2,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (isActive) ...[
+                                                    const SizedBox(width: 8),
+                                                    Container(
+                                                      width: 8,
+                                                      height: 8,
+                                                      decoration: const BoxDecoration(
+                                                        color: AppTheme.primary,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    ),
+                                                  ]
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              '12:45', // Ganti dengan waktu asli jika ada (atau bisa panggil method formatting)
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                                color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textMutedLt,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          conv['lastMessage'] ?? '...',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                            color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textMutedLt,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+              ),
+              const SizedBox(height: 80), // Jarak untuk menaruh FAB
+            ],
           ),
         ),
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            title: Text(
-              "Messages",
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-            ),
-            trailing: IconButton(
-              icon: Icon(LucideIcons.messageSquarePlus,
-                  color: Theme.of(context).primaryColor),
-              onPressed: _showNewChatMenu,
+        Positioned(
+          bottom: 24,
+          right: 24,
+          child: GestureDetector(
+            onTap: _showNewChatMenu,
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.textLight, width: 2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppTheme.textLight,
+                    offset: Offset(4, 4),
+                  )
+                ],
+              ),
+              child: const Icon(
+                LucideIcons.messageSquarePlus,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
           ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : conversations.isEmpty
-                    ? Center(
-                        child: Text(
-                          "Belum ada obrolan.\nKlik ikon + untuk mulai.",
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: conversations.length,
-                        itemBuilder: (context, index) {
-                          final conv = conversations[index];
-                          final convName = _displayChatName(conv);
-                          final inisial = convName.isNotEmpty
-                              ? convName[0].toUpperCase()
-                              : '?';
-                          final targetId = _getTargetUserId(conv);
-
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 8),
-                            leading: conv['type'] == 'group'
-                                ? CircleAvatar(
-                                    backgroundColor: Theme.of(context)
-                                        .primaryColor
-                                        .withAlpha(40),
-                                    child: Text(
-                                      inisial,
-                                      style: GoogleFonts.poppins(
-                                          color: Theme.of(context).primaryColor,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                : _buildAvatar(targetId, inisial),
-                            title: Text(
-                              convName,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
-                            ),
-                            subtitle: Text(
-                              conv['lastMessage'] ?? '...',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            selected: activeConversationId == conv['id'],
-                            selectedTileColor:
-                                Theme.of(context).primaryColor.withAlpha(20),
-                            onTap: () => selectConversation(conv, convName),
-                          );
-                        },
-                      ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
 
     final chatWindow = activeConversationId == null
@@ -614,23 +706,27 @@ class _MessagesScreenState extends State<MessagesScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  LucideIcons.messageSquare,
-                  size: 64,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.65),
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppTheme.textLight, width: 2),
+                    boxShadow: const [
+                      BoxShadow(color: AppTheme.textLight, offset: Offset(4, 4))
+                    ],
+                  ),
+                  child: const Icon(LucideIcons.messageSquare, size: 40, color: AppTheme.textLight),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Text(
-                  "Pilih obrolan dari kiri atau mulai chat baru",
-                  style: GoogleFonts.poppins(
-                    color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.65),
-                    fontSize: 14,
+                  "Pilih obrolan dari kiri\natau mulai chat baru",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textLight,
                   ),
                 ),
               ],
@@ -638,175 +734,226 @@ class _MessagesScreenState extends State<MessagesScreen> {
           )
         : Column(
             children: [
-              AppBar(
-                leading: isMobile
-                    ? IconButton(
-                        icon: const Icon(LucideIcons.arrowLeft),
-                        onPressed: () =>
-                            setState(() => activeConversationId = null),
-                      )
-                    : null,
-                title: InkWell(
-                  onTap: activeConversationType == 'group'
-                      ? _showGroupInfo
-                      : null,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 4.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          activeChatName ?? 'Chat',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
-                        ),
-                        if (activeConversationType == 'group')
-                          Text(
-                            "Ketuk untuk info grup",
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.normal,
-                              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                elevation: 1,
-                backgroundColor: Colors.transparent,
-                scrolledUnderElevation: 0,
-              ),
-              Expanded(
-                child: messages.isEmpty
-                    ? Center(child: Text("Kirim pesan pertama!", style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)))
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(24),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = messages[index];
-                          final isMe = msg['senderId'] == myId;
-                          final isGroup = activeConversationType == 'group';
-
-                          String timeStr = "";
-                          if (msg['timestamp'] != null) {
-                            try {
-                              final dt =
-                                  DateTime.parse(msg['timestamp']).toLocal();
-                              timeStr =
-                                  "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-                            } catch (e) {
-                              debugPrint('timestamp parse error: $e');
-                            }
-                          }
-
-                          return Align(
-                            alignment: isMe
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Container(
-                              constraints:
-                                  const BoxConstraints(maxWidth: 400),
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isMe ? AppTheme.primary : (Theme.of(context).colorScheme.surface),
-                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (isGroup && !isMe) ...[
-                                    Text(
-                                      msg['senderName'] ?? 'User',
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold,
-                                        color: isDark
-                                            ? AppTheme.info
-                                            : AppTheme.info),
-                                    ),
-                                    const SizedBox(height: 4),
-                                  ],
-                                  Text(
-                                    msg['text'] ?? '',
-                                    style: GoogleFonts.poppins(
-                                      color: isMe
-                                          ? Colors.white
-                                          : (isDark
-                                              ? Colors.white
-                                              : Colors.black87),
-                                      fontSize: 14.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: Text(
-                                      timeStr,
-                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: isMe
-                                            ? Colors.white70
-                                            : (isDark
-                                                ? Colors.white54
-                                                : Colors.black54),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
+              // ── Bento Header ──
               Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      width: 2,
-                    ),
-                  ),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                color: AppTheme.lightBg,
                 child: Row(
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _messageController,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color!, fontWeight: FontWeight.w700),
-                        decoration: InputDecoration(
-                          hintText: "Ketik pesan...",
-                          hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).textTheme.bodyMedium!.color!, fontWeight: FontWeight.w600),
-                          filled: true,
-                          fillColor: Theme.of(context).colorScheme.surface,
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                            borderRadius: BorderRadius.zero,
+                    if (isMobile)
+                      GestureDetector(
+                        onTap: () => setState(() => activeConversationId = null),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppTheme.textLight, width: 2),
+                            boxShadow: const [BoxShadow(color: AppTheme.textLight, offset: Offset(2, 2))],
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                            borderRadius: BorderRadius.zero,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2.5),
-                            borderRadius: BorderRadius.zero,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 14),
+                          child: const Icon(LucideIcons.arrowLeft, color: AppTheme.textLight),
                         ),
-                        onSubmitted: (_) => _sendMessage(),
+                      ),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryContainer,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppTheme.textLight, width: 2),
+                        boxShadow: const [BoxShadow(color: AppTheme.textLight, offset: Offset(2, 2))],
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        activeChatName?.isNotEmpty == true ? activeChatName![0].toUpperCase() : '?',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.primaryFixedVariant),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            activeChatName ?? 'Chat',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textLight, height: 1.1),
+                          ),
+                          if (activeConversationType == 'group')
+                            GestureDetector(
+                              onTap: _showGroupInfo,
+                              child: Text(
+                                "Ketuk untuk info grup",
+                                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primary),
+                              ),
+                            )
+                          else 
+                            Text(
+                              "MEMBER", // Ganti dengan role asli jika tersedia
+                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primary),
+                            )
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {}, // Optional action
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.textLight, width: 2),
+                          boxShadow: const [BoxShadow(color: AppTheme.textLight, offset: Offset(2, 2))],
+                        ),
+                        child: const Icon(LucideIcons.moreVertical, color: AppTheme.textLight),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // ── Chat Area ──
+              Expanded(
+                child: Container(
+                  color: AppTheme.lightBg,
+                  child: messages.isEmpty
+                      ? Center(
+                          child: Text("Kirim pesan pertama!", 
+                                    style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textMutedLt)))
+                      : ListView.builder(
+                          controller: _scrollController,
+                          reverse: true,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final msg = messages[messages.length - 1 - index];
+                            final isMe = msg['senderId'].toString() == myId.toString();
+                            final isGroup = activeConversationType == 'group';
+
+                            String timeStr = "";
+                            if (msg['timestamp'] != null) {
+                              try {
+                                final dt = DateTime.parse(msg['timestamp']).toLocal();
+                                timeStr = "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+                              } catch (e) {
+                                debugPrint('timestamp error: $e');
+                              }
+                            }
+
+                            return Align(
+                              alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(
+                                constraints: const BoxConstraints(maxWidth: 320),
+                                margin: const EdgeInsets.only(top: 24), // Margin at top since it's reversed
+                                child: Column(
+                                  crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                                  children: [
+                                    Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: isMe ? AppTheme.primaryContainer : Colors.white,
+                                            borderRadius: BorderRadius.circular(24),
+                                            border: Border.all(color: AppTheme.textLight, width: 2),
+                                            boxShadow: const [
+                                              BoxShadow(color: AppTheme.textLight, offset: Offset(4, 4))
+                                            ],
+                                          ),
+                                          child: Text(
+                                            msg['text'] ?? '',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              color: isMe ? AppTheme.primaryFixedVariant : AppTheme.textLight,
+                                            ),
+                                          ),
+                                        ),
+                                        if (isGroup && !isMe)
+                                          Positioned(
+                                            top: -12,
+                                            left: -8,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.secondary,
+                                                border: Border.all(color: AppTheme.textLight, width: 2),
+                                              ),
+                                              child: Text(
+                                                (msg['senderName'] ?? 'User').toUpperCase(),
+                                                style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          timeStr,
+                                          style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMutedLt),
+                                        ),
+                                        if (isMe) ...[
+                                          const SizedBox(width: 4),
+                                          const Icon(LucideIcons.checkCheck, size: 16, color: AppTheme.primary),
+                                        ]
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ),
+              // ── Input Area ──
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                color: AppTheme.lightBg,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.textLight, width: 2),
+                        ),
+                        child: TextField(
+                          controller: _messageController,
+                          minLines: 1,
+                          maxLines: 4,
+                          style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textLight),
+                          decoration: InputDecoration(
+                            hintText: "Tulis pesan...",
+                            hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt),
+                            border: InputBorder.none,
+                            filled: false,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          ),
+                          onSubmitted: (_) => _sendMessage(),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: _sendMessage,
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        width: 52,
+                        height: 52,
+                        margin: const EdgeInsets.only(bottom: 2), // Align with textfield bottom
                         decoration: BoxDecoration(
                           color: AppTheme.primary,
-                          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.textLight, width: 2),
+                          boxShadow: const [BoxShadow(color: AppTheme.textLight, offset: Offset(2, 2))],
                         ),
-                        child: const Icon(LucideIcons.send, color: Colors.white, size: 20),
+                        child: const Icon(LucideIcons.send, color: Colors.white, size: 24),
                       ),
                     ),
                   ],
