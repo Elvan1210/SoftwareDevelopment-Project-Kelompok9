@@ -48,7 +48,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
           http.get(Uri.parse('$baseUrl/api/kelas/$kelasId/members'), headers: headers)
         else
           Future.value(http.Response('[]', 200)),
-        http.get(Uri.parse('$baseUrl/api/quizzes?kelasId=$kelasId'), headers: headers),
+        http.get(Uri.parse('$baseUrl/api/quiz?kelasId=$kelasId'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'), headers: headers),
       ]);
       
@@ -100,7 +100,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         final listQuiz = decQuiz['data'] is List ? decQuiz['data'] : [];
         
         if (listQuiz.isNotEmpty) {
-          final quizReqs = listQuiz.map((q) => http.get(Uri.parse('$baseUrl/api/quizzes/${q['_id']}/submissions'), headers: headers));
+          final quizReqs = listQuiz.map((q) => http.get(Uri.parse('$baseUrl/api/quiz/${q['_id']}/submissions'), headers: headers));
           final quizResps = await Future.wait(quizReqs);
           
           for (int i = 0; i < listQuiz.length; i++) {

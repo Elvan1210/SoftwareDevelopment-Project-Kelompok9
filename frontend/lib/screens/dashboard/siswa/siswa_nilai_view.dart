@@ -40,28 +40,29 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
           headers: {'Authorization': 'Bearer ${widget.token}'});
           
       final quizReq = http.get(
-          Uri.parse('$baseUrl/api/quizzes/my-submissions?kelasId=$kid'),
+          Uri.parse('$baseUrl/api/quiz/my-submissions?kelasId=$kid'),
           headers: {'Authorization': 'Bearer ${widget.token}'});
           
       final responses = await Future.wait([tugasReq, quizReq]);
       
       List<dynamic> combined = [];
       
-      // Proses Tugas
+      // Proses Tugas / Penilaian Mandiri
       if (responses[0].statusCode == 200) {
         final dec = jsonDecode(responses[0].body);
         List allTugas = dec is List ? dec : [];
         for (var n in allTugas) {
           final nKid = n['kelas_id'];
           if (nKid == null || nKid.toString() == kid) {
+            final isManual = n['tugas_id'] == null;
             combined.add({
               'id': n['id']?.toString() ?? UniqueKey().toString(),
-              'type': 'Tugas',
-              'judul': n['tugas_judul'] ?? 'Tugas Kelas',
+              'type': isManual ? 'Penilaian Mandiri' : 'Assignment',
+              'judul': isManual ? (n['mapel'] ?? 'Input Manual') : (n['tugas_judul'] ?? 'Tugas Kelas'),
               'guru_nama': n['guru_nama'],
               'nilai': n['nilai'],
-              'waktu': n['waktu_dinilai'],
-              'feedback': n['feedback']
+              'waktu': n['waktu_dinilai'] ?? n['tanggal'],
+              'feedback': n['keterangan'] ?? n['feedback']
             });
           }
         }
@@ -85,6 +86,16 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
             'waktu': q['submittedAt'],
             'feedback': q['autoSubmitted'] == true ? 'Disubmit otomatis oleh sistem' : 'Disubmit oleh siswa'
           });
+        }
+      } else if (responses[1].statusCode == 404) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('API Kuis belum aktif. Tolong RESTART server backend (Node.js).',
+                style: TextStyle(fontWeight: FontWeight.w700)),
+              backgroundColor: Colors.red,
+            )
+          );
         }
       }
       
@@ -142,14 +153,20 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
           // Filter Section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Row(
-              children: [
-                _buildFilterChip('Semua'),
-                const SizedBox(width: 8),
-                _buildFilterChip('Tugas'),
-                const SizedBox(width: 8),
-                _buildFilterChip('Kuis'),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              child: Row(
+                children: [
+                  _buildFilterChip('Semua'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Assignment'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Kuis'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Penilaian Mandiri'),
+                ],
+              ),
             ),
           ),
           
@@ -249,6 +266,15 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     final valStr = n['nilai']?.toString() ?? '-';
     final val = double.tryParse(valStr) ?? 0;
     final isKuis = n['type'] == 'Kuis';
+    final isManual = n['type'] == 'Penilaian Mandiri';
+    
+    Color badgeColor = AppTheme.orangeVivid;
+    if (isKuis) badgeColor = AppTheme.indigoPrimary;
+    if (isManual) badgeColor = const Color(0xFF6366F1);
+    
+    IconData cardIcon = LucideIcons.clipboardList;
+    if (isKuis) cardIcon = LucideIcons.laptop;
+    if (isManual) cardIcon = LucideIcons.fileText;
 
     return RepaintBoundary(
       child: Container(
@@ -278,7 +304,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                     color: color.withAlpha(25),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(isKuis ? LucideIcons.laptop : LucideIcons.award, color: color, size: 28),
+                  child: Icon(cardIcon, color: color, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -319,16 +345,16 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isKuis ? AppTheme.indigoPrimary.withAlpha(20) : AppTheme.orangeVivid.withAlpha(20),
+                    color: badgeColor.withAlpha(20),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
-                    isKuis ? 'KUIS' : 'TUGAS',
+                    (n['type'] ?? 'TUGAS').toString().toUpperCase(),
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
                       letterSpacing: 0.5,
-                      color: isKuis ? AppTheme.indigoPrimary : AppTheme.orangeVivid,
+                      color: badgeColor,
                     ),
                   ),
                 ),

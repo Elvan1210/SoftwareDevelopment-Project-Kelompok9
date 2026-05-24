@@ -568,16 +568,19 @@ Pastikan kembalian hanya JSON murni tanpa markdown \`\`\`.`;
 
       let queryRef = db.collection('quiz_submissions').where('studentId', '==', studentId);
       
-      if (req.query.kelasId) {
-        queryRef = queryRef.where('kelasId', '==', req.query.kelasId);
-      }
-
       const snapshot = await queryRef.get();
       let submissions = [];
       const quizCache = {};
-
+      
       for (let doc of snapshot.docs) {
         const subData = { _id: doc.id, ...doc.data() };
+        
+        // Filter by kelasId manually to allow fallback for legacy data that might missing it
+        if (req.query.kelasId) {
+           if (subData.kelasId && subData.kelasId !== req.query.kelasId) {
+              continue; // Skip if it belongs to a DIFFERENT class
+           }
+        }
         const qId = subData.quizId;
         
         if (!quizCache[qId]) {
