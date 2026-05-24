@@ -685,12 +685,7 @@ class _StatRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border(
-                  left: BorderSide(color: item.accent, width: 4),
-                  top: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
-                  right: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
-                  bottom: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
-                ),
+                border: Border.all(color: AppTheme.lightBorder, width: 1.2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha(12),
@@ -801,18 +796,8 @@ class _TugasCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          ),
-          border: Border(
-            left: BorderSide(color: accent, width: 4),
-            top: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
-            right: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
-            bottom: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
-          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(12),
@@ -950,12 +935,7 @@ class _PengumumanChipCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: const Border(
-          left: BorderSide(color: AppTheme.amber, width: 3),
-          top: BorderSide(color: AppTheme.lightBorder, width: 1.2),
-          right: BorderSide(color: AppTheme.lightBorder, width: 1.2),
-          bottom: BorderSide(color: AppTheme.lightBorder, width: 1.2),
-        ),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(12),
@@ -1049,12 +1029,7 @@ class _PengumumanVerticalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: const Border(
-          left: BorderSide(color: AppTheme.amber, width: 4),
-          top: BorderSide(color: AppTheme.lightBorder, width: 1.2),
-          right: BorderSide(color: AppTheme.lightBorder, width: 1.2),
-          bottom: BorderSide(color: AppTheme.lightBorder, width: 1.2),
-        ),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(12),

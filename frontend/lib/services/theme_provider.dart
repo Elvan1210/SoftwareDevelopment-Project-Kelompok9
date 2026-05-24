@@ -7,7 +7,7 @@ class ThemeProvider extends ChangeNotifier {
   factory ThemeProvider() => _instance;
 
   static const String _themeKey = 'app_theme_mode';
-  ThemeMode _themeMode = ThemeMode.dark; // Default: Dark mode
+  ThemeMode _themeMode = ThemeMode.light; // Default: Light mode
 
   ThemeMode get themeMode => _themeMode;
 
@@ -23,10 +23,10 @@ class ThemeProvider extends ChangeNotifier {
       if (savedTheme == 'light') {
         _themeMode = ThemeMode.light;
       } else if (savedTheme == 'dark') {
-        _themeMode = ThemeMode.dark;
+        _themeMode = ThemeMode.light; // Forcing light mode even if saved as dark for now
       } else {
-        // No preference saved yet → default to dark
-        _themeMode = ThemeMode.dark;
+        // No preference saved yet → default to light
+        _themeMode = ThemeMode.light;
       }
       notifyListeners();
     } catch (e) {
