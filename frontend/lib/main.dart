@@ -12,8 +12,16 @@ import 'widgets/smooth_scroll.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+import 'package:flutter/services.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
+  
+  // Kunci rotasi layar ke potret (Freeze Rotation)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   
   // Ubah bagian ini, tambahkan opsi default
   await Firebase.initializeApp(
