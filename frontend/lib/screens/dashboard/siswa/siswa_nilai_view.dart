@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../config/api_config.dart';
+import '../../../config/theme.dart';
 
 
 
@@ -73,6 +74,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
               color: Color(0xFF76AFB8))
           : RefreshIndicator(
               onRefresh: _fetchNilai,
+              color: AppTheme.primary,
               child: LayoutBuilder(
                 builder: (ctx, c) {
                   final crossCount = c.maxWidth > 900 ? 3 : (c.maxWidth > 500 ? 2 : 1);
@@ -95,9 +97,16 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                       return RepaintBoundary(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(12),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           padding: const EdgeInsets.all(16),
                           child: Column(
@@ -109,18 +118,20 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: color,
-                                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                                      color: color.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: const Icon(LucideIcons.award, color: Colors.white, size: 16),
+                                    child: Icon(LucideIcons.award, color: color, size: 16),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
                                       n['mapel'] ?? '-',
-                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
-                                        color: Theme.of(context).textTheme.bodyLarge!.color!),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        color: AppTheme.textLight,
+                                      ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -141,15 +152,20 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                                         children: [
                                           Text(
                                             val.toStringAsFixed(0),
-                                            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 28,
                                               color: color,
-                                              letterSpacing: -1),
+                                              letterSpacing: -1,
+                                            ),
                                           ),
                                           const SizedBox(width: 4),
-                                          Text(
+                                          const Text(
                                             '/ 100',
-                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700,
-                                              color: Theme.of(context).textTheme.bodyMedium!.color!,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13,
+                                              color: AppTheme.textMutedLt,
                                             ),
                                           ),
                                         ],
@@ -157,8 +173,10 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                                       if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty)
                                         Text(
                                           n['keterangan'],
-                                          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600,
-                                            color: Theme.of(context).textTheme.bodyMedium!.color!,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                            color: AppTheme.textMutedLt,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -166,15 +184,18 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                                     ],
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: color,
-                                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                                      color: color.withAlpha(20),
+                                      borderRadius: BorderRadius.circular(100),
                                     ),
                                     child: Text(
-                                      val >= 80 ? 'LULUS' : (val >= 60 ? 'CUKUP' : 'GAGAL'),
-                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
-                                        color: Colors.white),
+                                      val >= 80 ? 'Lulus' : (val >= 60 ? 'Cukup' : 'Gagal'),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 11,
+                                        color: color,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -198,7 +219,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
       childAspectRatio: 1.8,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      children: List.generate(6, (_) => const SkeletonLoader(radius: 24)),
+      children: List.generate(6, (_) => const SkeletonLoader(radius: 16)),
     );
   }
 }

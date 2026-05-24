@@ -11,18 +11,6 @@ import 'dart:convert';
 import 'siswa_tugas_detail_screen.dart';
 
 
-
-
-
-
-
-const _kAsymSiswa = BorderRadius.only(
-  topLeft: Radius.circular(24),
-  topRight: Radius.circular(4),
-  bottomLeft: Radius.circular(4),
-  bottomRight: Radius.circular(24),
-);
-
 class SiswaDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -127,7 +115,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     }
 
     final s      = _stats;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final name   = (widget.userData['nama'] ?? widget.userData['name'] ?? 'Siswa').toString().split(' ').first;
 
     return AppShell(
@@ -149,7 +136,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _GreetingBanner(name: name, isDark: isDark, kelasList: _kelasList),
+                      _GreetingBanner(name: name, kelasList: _kelasList),
                       const SizedBox(height: 24),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +153,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                                   subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
                                 ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
                                 const SizedBox(height: 16),
-                                _buildTugasSection(isDark),
+                                _buildTugasSection(),
                               ],
                             ),
                           ),
@@ -176,9 +163,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildPengumumanHeader(isDark),
+                                _buildPengumumanHeader(),
                                 const SizedBox(height: 16),
-                                _buildPengumumanSectionWide(isDark),
+                                _buildPengumumanSectionWide(),
                               ],
                             ),
                           ),
@@ -198,7 +185,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                 padding: EdgeInsets.fromLTRB(pad, 24, pad, 120),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    _GreetingBanner(name: name, isDark: isDark, kelasList: _kelasList),
+                    _GreetingBanner(name: name, kelasList: _kelasList),
                     const SizedBox(height: 24),
                     _StatRow(stats: s, isWide: isWide),
                     const SizedBox(height: 36),
@@ -207,11 +194,11 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
                       subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
                     ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
                     const SizedBox(height: 16),
-                    _buildTugasSection(isDark),
+                    _buildTugasSection(),
                     const SizedBox(height: 36),
-                    _buildPengumumanHeader(isDark),
+                    _buildPengumumanHeader(),
                     const SizedBox(height: 12),
-                    _buildPengumumanSection(isDark),
+                    _buildPengumumanSection(),
                     const SizedBox(height: 32),
                   ]),
                 ),
@@ -224,7 +211,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   }
 
   // ── Tugas Section ─────────────────────────────────────────────────────────
-  Widget _buildTugasSection(bool isDark) {
+  Widget _buildTugasSection() {
     if (_tugasList.isEmpty) {
       return const _EmptyCard(
         icon: LucideIcons.clipboardCheck,
@@ -261,7 +248,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   }
 
   // ── Pengumuman Header ─────────────────────────────────────────────────────
-  Widget _buildPengumumanHeader(bool isDark) {
+  Widget _buildPengumumanHeader() {
     final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length;
     return Row(
       children: [
@@ -275,9 +262,9 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.amber.withAlpha(isDark ? 40 : 25),
+              color: AppTheme.amber.withAlpha(25),
               borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: AppTheme.amber.withAlpha(isDark ? 80 : 50)),
+              border: Border.all(color: AppTheme.amber.withAlpha(50)),
             ),
             child: Text('$unread baru',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: AppTheme.amber)),
@@ -287,7 +274,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   }
 
   // ── Pengumuman Section (horizontal scroll) ────────────────────────────────
-  Widget _buildPengumumanSection(bool isDark) {
+  Widget _buildPengumumanSection() {
     final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
     if (_pengumumanList.isEmpty) {
       return const _EmptyCard(
@@ -301,9 +288,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkCard : Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
           const Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
@@ -315,7 +303,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       );
     }
     return SizedBox(
-      height: 135,
+      height: 140,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: unread.length,
@@ -324,7 +312,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           final p = unread[i];
           return _PengumumanChipCard(
             pengumuman: p,
-            isDark: isDark,
             onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
           ).animate(delay: (i * 60).ms).fadeIn(duration: 350.ms);
         },
@@ -333,7 +320,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   }
 
   // ── Pengumuman Section Wide (vertical list) ───────────────────────────────
-  Widget _buildPengumumanSectionWide(bool isDark) {
+  Widget _buildPengumumanSectionWide() {
     final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
     if (_pengumumanList.isEmpty) {
       return const _EmptyCard(
@@ -347,9 +334,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkCard : Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
           const Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
@@ -367,7 +355,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
           padding: const EdgeInsets.only(bottom: 12),
           child: _PengumumanVerticalCard(
             pengumuman: p,
-            isDark: isDark,
             onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
           ).animate(delay: (i * 60).ms).fadeIn(duration: 350.ms),
         );
@@ -399,13 +386,12 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Greeting Banner — Neo-Brutalist
+// Greeting Banner — Premium Light Mode
 // ═══════════════════════════════════════════════════════════════════════════
 class _GreetingBanner extends StatelessWidget {
   final String name;
-  final bool isDark;
   final List<dynamic> kelasList;
-  const _GreetingBanner({required this.name, required this.isDark, required this.kelasList});
+  const _GreetingBanner({required this.name, required this.kelasList});
 
   String get _greeting {
     final h = DateTime.now().hour;
@@ -415,21 +401,26 @@ class _GreetingBanner extends StatelessWidget {
     return 'Selamat Malam';
   }
 
+  IconData get _greetingIcon {
+    if (_greeting.contains('Pagi')) return LucideIcons.sun;
+    if (_greeting.contains('Siang') || _greeting.contains('Sore')) return LucideIcons.cloudSun;
+    return LucideIcons.moon;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bg          = Theme.of(context).scaffoldBackgroundColor;
-    final borderColor = Theme.of(context).dividerColor;
-    final textColor   = Theme.of(context).textTheme.bodyLarge!.color!;
-    final mutedColor  = Theme.of(context).textTheme.bodyMedium!.color!;
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: _kAsymSiswa,
-        border: Border.all(color: borderColor),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
         boxShadow: [
-          BoxShadow(color: borderColor.withAlpha(isDark ? 120 : 80), offset: const Offset(4, 4), blurRadius: 0),
+          BoxShadow(
+            color: AppTheme.indigoPrimary.withAlpha(15),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
@@ -442,31 +433,25 @@ class _GreetingBanner extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Time-of-day badge
+                    // Time-of-day pill badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        border: Border.all(color: Theme.of(context).colorScheme.onSurface),
+                        color: AppTheme.indigoPrimary.withAlpha(15),
+                        borderRadius: BorderRadius.circular(100),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            _greeting.contains('Pagi')
-                                ? LucideIcons.sun
-                                : (_greeting.contains('Siang') || _greeting.contains('Sore')
-                                    ? LucideIcons.cloudSun
-                                    : LucideIcons.moon),
-                            size: 12,
-                            color: AppTheme.primary,
-                          ),
+                          Icon(_greetingIcon, size: 12, color: AppTheme.indigoPrimary),
                           const SizedBox(width: 6),
                           Text(
                             _greeting.toUpperCase(),
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800,
-                              color: AppTheme.primary,
-                              letterSpacing: 0.8),
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.indigoPrimary,
+                              letterSpacing: 0.8,
+                            ),
                           ),
                         ],
                       ),
@@ -474,33 +459,35 @@ class _GreetingBanner extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       name,
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900,
-                        color: textColor,
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.textLight,
                         letterSpacing: -0.8,
-                        height: 1.1),
+                        height: 1.1,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${kelasList.length} kelas aktif hari ini',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: mutedColor),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textMutedLt),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
-              // Icon block — flat, no glow
+              // Rounded indigo icon circle
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  border: Border.all(color: Theme.of(context).colorScheme.onSurface),
+                  color: AppTheme.indigoPrimary.withAlpha(15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.school_rounded, color: AppTheme.primary, size: 32),
+                child: const Icon(Icons.school_rounded, color: AppTheme.indigoPrimary, size: 32),
               ),
             ],
           ),
           const SizedBox(height: 18),
-          Container(height: 1, color: Theme.of(context).dividerColor),
+          const Divider(color: AppTheme.lightBorder, height: 1, thickness: 1),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -508,8 +495,10 @@ class _GreetingBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Selamat belajar & tingkatkan prestasimu! ✨',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600,
-                    color: mutedColor),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textMutedLt,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -519,22 +508,30 @@ class _GreetingBanner extends StatelessWidget {
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: Colors.transparent,
-                    builder: (ctx) => _MotivationalSheet(isDark: isDark),
+                    builder: (ctx) => const _MotivationalSheet(),
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   constraints: const BoxConstraints(minHeight: 40),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary,
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface),
-                    boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                    color: AppTheme.indigoPrimary,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.indigoPrimary.withAlpha(50),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Text(
-                    'MOTIVASI',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800,
+                    'Motivasi',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
-                      letterSpacing: 0.5),
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
               ),
@@ -547,24 +544,18 @@ class _GreetingBanner extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Motivational Bottom Sheet — Neo-Brutalist
+// Motivational Bottom Sheet — Premium Light Mode
 // ─────────────────────────────────────────────────────────────────────────────
 class _MotivationalSheet extends StatelessWidget {
-  final bool isDark;
-  const _MotivationalSheet({required this.isDark});
+  const _MotivationalSheet();
 
   @override
   Widget build(BuildContext context) {
-    final bg          = Theme.of(context).scaffoldBackgroundColor;
-    final borderColor = Theme.of(context).dividerColor;
-    final textColor   = Theme.of(context).textTheme.bodyLarge!.color!;
-    final mutedColor  = Theme.of(context).textTheme.bodyMedium!.color!;
-
     return Container(
       padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: bg,
-        border: Border(top: BorderSide(color: borderColor, width: 2)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -574,7 +565,10 @@ class _MotivationalSheet extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              color: borderColor.withAlpha(60),
+              decoration: BoxDecoration(
+                color: AppTheme.lightBorder,
+                borderRadius: BorderRadius.circular(100),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -583,10 +577,10 @@ class _MotivationalSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  border: Border.all(color: Theme.of(context).colorScheme.onSurface),
+                  color: AppTheme.indigoPrimary.withAlpha(15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(LucideIcons.sparkles, color: AppTheme.primary, size: 22),
+                child: const Icon(LucideIcons.sparkles, color: AppTheme.indigoPrimary, size: 22),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -595,12 +589,14 @@ class _MotivationalSheet extends StatelessWidget {
                   children: [
                     Text(
                       'Quotes of the Day',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
-                        color: textColor),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.textLight,
+                      ),
                     ),
                     Text(
                       'Inspirasi belajar harianmu',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: mutedColor),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
                     ),
                   ],
                 ),
@@ -611,15 +607,18 @@ class _MotivationalSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF251B45) : Theme.of(context).colorScheme.primaryContainer,
-              border: Border.all(color: borderColor),
+              color: AppTheme.indigoPrimary.withAlpha(10),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(30), width: 1.2),
             ),
             child: Text(
               '"Pendidikan adalah senjata paling mematikan di dunia, karena dengan pendidikan, Anda dapat mengubah dunia."\n\n— Nelson Mandela',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
                 height: 1.6,
-                color: isDark ? Colors.white : AppTheme.primary,
-                fontStyle: FontStyle.italic),
+                color: AppTheme.indigoPrimary,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -629,16 +628,24 @@ class _MotivationalSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: AppTheme.primary,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+                color: AppTheme.indigoPrimary,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.indigoPrimary.withAlpha(50),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Center(
                 child: Text(
-                  'SIAP BELAJAR! 🚀',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800,
+                  'Siap Belajar! 🚀',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    letterSpacing: 0.5),
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
             ),
@@ -650,7 +657,7 @@ class _MotivationalSheet extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Stat Row — Neo-Brutalist flat boxes
+// Stat Row — Premium Light Mode Cards
 // ═══════════════════════════════════════════════════════════════════════════
 class _StatRow extends StatelessWidget {
   final Map<String, int> stats;
@@ -659,48 +666,66 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final items = [
-      _StatItem(LucideIcons.clipboardList, 'Belum\nDikumpul', stats['belum'] ?? 0, AppTheme.amber, const Color(0xFFFFEFD5), const Color(0xFF7A5C00)),
-      _StatItem(LucideIcons.alertTriangle, 'Lewat\nDeadline',  stats['lewat'] ?? 0, AppTheme.rose,  const Color(0xFFFFD5D5), const Color(0xFF8B0000)),
-      _StatItem(LucideIcons.checkCircle2,  'Selesai',          stats['selesai'] ?? 0, AppTheme.emerald, const Color(0xFFB7E5CD), const Color(0xFF1B4332)),
+      _StatItem(LucideIcons.clipboardList, 'Belum\nDikumpul', stats['belum'] ?? 0, AppTheme.amber, const Color(0xFFFFFBEB)),
+      _StatItem(LucideIcons.alertTriangle, 'Lewat\nDeadline',  stats['lewat'] ?? 0, AppTheme.rose,  const Color(0xFFFFF1F2)),
+      _StatItem(LucideIcons.checkCircle2,  'Selesai',          stats['selesai'] ?? 0, AppTheme.emerald, const Color(0xFFF0FDF4)),
     ];
 
     return Row(
       children: items.asMap().entries.map((e) {
         final item   = e.value;
         final isLast = e.key == items.length - 1;
-        final bgCol  = isDark ? const Color(0xFF1A1040) : item.bgLight;
-        final bdrCol = Theme.of(context).dividerColor;
-        final txtCol = isDark ? item.accent : item.labelDark;
 
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(right: isLast ? 0 : 10),
             child: Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: bgCol,
-                border: Border.all(color: bdrCol),
-                boxShadow: [BoxShadow(color: bdrCol, offset: const Offset(3, 3), blurRadius: 0)],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border(
+                  left: BorderSide(color: item.accent, width: 4),
+                  top: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+                  right: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+                  bottom: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(12),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(item.icon, color: item.accent, size: 20),
-                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: item.bgLight,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(item.icon, color: item.accent, size: 18),
+                  ),
+                  const SizedBox(height: 10),
                   Text(
                     '${item.value}',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900,
-                      color: txtCol,
-                      height: 1.0),
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.textLight,
+                      height: 1.0,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     item.label,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700,
-                      color: isDark ? item.accent.withAlpha(200) : item.labelDark,
-                      letterSpacing: 0.3,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: item.accent,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
@@ -721,13 +746,12 @@ class _StatItem {
   final int value;
   final Color accent;
   final Color bgLight;
-  final Color labelDark;
-  _StatItem(this.icon, this.label, this.value, this.accent, this.bgLight, this.labelDark);
+  _StatItem(this.icon, this.label, this.value, this.accent, this.bgLight);
 }
 
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Tugas Card — Neo-Brutalist
+// Tugas Card — Premium Light Mode
 // ═══════════════════════════════════════════════════════════════════════════
 class _TugasCard extends StatelessWidget {
   final dynamic tugas;
@@ -750,9 +774,9 @@ class _TugasCard extends StatelessWidget {
   }
 
   String get _statusLabel {
-    if (submitted) return 'SELESAI';
-    if (isLate)   return 'TERLAMBAT';
-    return 'BELUM';
+    if (submitted) return 'Selesai';
+    if (isLate)   return 'Terlambat';
+    return 'Belum';
   }
 
   String _fmtDl() {
@@ -768,10 +792,7 @@ class _TugasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark     = Theme.of(context).brightness == Brightness.dark;
-    final accent     = _statusColor;
-    final bg         = Theme.of(context).colorScheme.surface;
-    final borderColor = Theme.of(context).dividerColor;
+    final accent = _statusColor;
 
     return GestureDetector(
       onTap: onTap,
@@ -779,24 +800,36 @@ class _TugasCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: bg,
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
           border: Border(
             left: BorderSide(color: accent, width: 4),
-            top: BorderSide(color: borderColor, width: 1),
-            right: BorderSide(color: borderColor, width: 1),
-            bottom: BorderSide(color: borderColor, width: 1),
+            top: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+            right: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+            bottom: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
           ),
-          boxShadow: [BoxShadow(color: borderColor.withAlpha(isDark ? 100 : 60), offset: const Offset(3, 3), blurRadius: 0)],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(12),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            // Icon box
+            // Rounded icon container
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: accent.withAlpha(isDark ? 50 : 30),
-                border: Border.all(color: accent.withAlpha(isDark ? 120 : 80)),
+                color: accent.withAlpha(20),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(LucideIcons.fileText, color: accent, size: 20),
             ),
@@ -809,39 +842,44 @@ class _TugasCard extends StatelessWidget {
                 children: [
                   Text(
                     tugas['judul'] ?? '-',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
-                      color: Theme.of(context).textTheme.bodyLarge!.color!),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textLight,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(children: [
-                    Icon(LucideIcons.bookOpen, size: 12, color: Theme.of(context).textTheme.bodyMedium!.color!),
+                    const Icon(LucideIcons.bookOpen, size: 12, color: AppTheme.textMutedLt),
                     const SizedBox(width: 4),
                     Text(
                       tugas['mapel'] ?? '-',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).textTheme.bodyMedium!.color!,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
                     ),
                   ]),
                 ],
               ),
             ),
 
-            // Right: status + deadline
+            // Right: status pill + deadline
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: accent.withAlpha(isDark ? 40 : 25),
-                    border: Border.all(color: accent),
+                    color: accent.withAlpha(20),
+                    borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
                     _statusLabel,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800, color: accent, letterSpacing: 0.5),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: accent,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -850,8 +888,10 @@ class _TugasCard extends StatelessWidget {
                   const SizedBox(width: 3),
                   Text(
                     _fmtDl(),
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
-                      color: accent),
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: accent,
+                    ),
                   ),
                 ]),
               ],
@@ -865,14 +905,22 @@ class _TugasCard extends StatelessWidget {
                 constraints: const BoxConstraints(minHeight: 36),
                 decoration: BoxDecoration(
                   color: accent,
-                  border: Border.all(color: borderColor),
-                  boxShadow: [BoxShadow(color: borderColor, offset: const Offset(2, 2))],
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.withAlpha(50),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Text(
-                  submitted ? 'BUKA' : 'KERJAKAN',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800,
+                  submitted ? 'Buka' : 'Kerjakan',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    letterSpacing: 0.3),
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ),
@@ -884,35 +932,37 @@ class _TugasCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Pengumuman Chip Card — Neo-Brutalist (horizontal scroll, compact)
+// Pengumuman Chip Card — Premium (horizontal scroll, compact)
 // ═══════════════════════════════════════════════════════════════════════════
 class _PengumumanChipCard extends StatelessWidget {
   final dynamic pengumuman;
-  final bool isDark;
   final VoidCallback onMarkRead;
   const _PengumumanChipCard({
     required this.pengumuman,
-    required this.isDark,
     required this.onMarkRead,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg          = Theme.of(context).colorScheme.surface;
-    final borderColor = Theme.of(context).dividerColor;
-
     return Container(
       width: 240,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bg,
-        border: Border(
-          left: const BorderSide(color: AppTheme.amber, width: 3),
-          top: BorderSide(color: borderColor),
-          right: BorderSide(color: borderColor),
-          bottom: BorderSide(color: borderColor),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: const Border(
+          left: BorderSide(color: AppTheme.amber, width: 3),
+          top: BorderSide(color: AppTheme.lightBorder, width: 1.2),
+          right: BorderSide(color: AppTheme.lightBorder, width: 1.2),
+          bottom: BorderSide(color: AppTheme.lightBorder, width: 1.2),
         ),
-        boxShadow: [BoxShadow(color: borderColor.withAlpha(isDark ? 100 : 60), offset: const Offset(3, 3), blurRadius: 0)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(12),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -922,8 +972,8 @@ class _PengumumanChipCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppTheme.amber.withAlpha(isDark ? 50 : 30),
-                  border: Border.all(color: AppTheme.amber),
+                  color: AppTheme.amber.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(LucideIcons.megaphone, color: AppTheme.amber, size: 12),
               ),
@@ -931,8 +981,10 @@ class _PengumumanChipCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   pengumuman['judul'] ?? '-',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800,
-                    color: Theme.of(context).textTheme.bodyLarge!.color!),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textLight,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -943,10 +995,10 @@ class _PengumumanChipCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF3D3270) : Theme.of(context).colorScheme.primaryContainer,
-                    border: Border.all(color: borderColor),
+                    color: AppTheme.lightBorder.withAlpha(80),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Icon(LucideIcons.x, size: 11, color: Theme.of(context).textTheme.bodyMedium!.color!),
+                  child: const Icon(LucideIcons.x, size: 11, color: AppTheme.textMutedLt),
                 ),
               ),
             ],
@@ -955,8 +1007,9 @@ class _PengumumanChipCard extends StatelessWidget {
           Expanded(
             child: Text(
               pengumuman['isi'] ?? '-',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5,
-                color: Theme.of(context).textTheme.bodyMedium!.color!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                height: 1.5,
+                color: AppTheme.textMutedLt,
               ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -966,8 +1019,9 @@ class _PengumumanChipCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               pengumuman['tanggal'].toString(),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700,
-                color: AppTheme.amber.withAlpha(isDark ? 200 : 180),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.amber.withAlpha(200),
               ),
             ),
           ],
@@ -978,34 +1032,36 @@ class _PengumumanChipCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Pengumuman Vertical Card — Neo-Brutalist
+// Pengumuman Vertical Card — Premium
 // ═══════════════════════════════════════════════════════════════════════════
 class _PengumumanVerticalCard extends StatelessWidget {
   final dynamic pengumuman;
-  final bool isDark;
   final VoidCallback onMarkRead;
   const _PengumumanVerticalCard({
     required this.pengumuman,
-    required this.isDark,
     required this.onMarkRead,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg          = Theme.of(context).colorScheme.surface;
-    final borderColor = Theme.of(context).dividerColor;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: bg,
-        border: Border(
-          left: const BorderSide(color: AppTheme.amber, width: 4),
-          top: BorderSide(color: borderColor),
-          right: BorderSide(color: borderColor),
-          bottom: BorderSide(color: borderColor),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: const Border(
+          left: BorderSide(color: AppTheme.amber, width: 4),
+          top: BorderSide(color: AppTheme.lightBorder, width: 1.2),
+          right: BorderSide(color: AppTheme.lightBorder, width: 1.2),
+          bottom: BorderSide(color: AppTheme.lightBorder, width: 1.2),
         ),
-        boxShadow: [BoxShadow(color: borderColor.withAlpha(isDark ? 100 : 60), offset: const Offset(3, 3), blurRadius: 0)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(12),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1015,8 +1071,8 @@ class _PengumumanVerticalCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.amber.withAlpha(isDark ? 50 : 30),
-                  border: Border.all(color: AppTheme.amber),
+                  color: AppTheme.amber.withAlpha(25),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(LucideIcons.megaphone, color: AppTheme.amber, size: 14),
               ),
@@ -1024,8 +1080,10 @@ class _PengumumanVerticalCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   pengumuman['judul'] ?? '-',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800,
-                    color: Theme.of(context).textTheme.bodyLarge!.color!),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textLight,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1037,10 +1095,10 @@ class _PengumumanVerticalCard extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF3D3270) : Theme.of(context).colorScheme.primaryContainer,
-                    border: Border.all(color: borderColor),
+                    color: AppTheme.lightBorder.withAlpha(80),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(LucideIcons.x, size: 13, color: Theme.of(context).textTheme.bodyMedium!.color!),
+                  child: const Icon(LucideIcons.x, size: 13, color: AppTheme.textMutedLt),
                 ),
               ),
             ],
@@ -1048,16 +1106,18 @@ class _PengumumanVerticalCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             pengumuman['isi'] ?? '-',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.5,
-              color: Theme.of(context).textTheme.bodyMedium!.color!,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              height: 1.5,
+              color: AppTheme.textMutedLt,
             ),
           ),
           if (pengumuman['tanggal'] != null) ...[
             const SizedBox(height: 10),
             Text(
               pengumuman['tanggal'].toString(),
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
-                color: AppTheme.amber.withAlpha(isDark ? 200 : 180),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.amber.withAlpha(200),
               ),
             ),
           ],
@@ -1068,7 +1128,7 @@ class _PengumumanVerticalCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Empty Card — Neo-Brutalist
+// Empty Card — Premium Light Mode
 // ═══════════════════════════════════════════════════════════════════════════
 class _EmptyCard extends StatelessWidget {
   final IconData icon;
@@ -1079,16 +1139,19 @@ class _EmptyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg          = Theme.of(context).scaffoldBackgroundColor;
-    final borderColor = Theme.of(context).dividerColor;
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
       decoration: BoxDecoration(
-        color: bg,
-        border: Border.all(color: borderColor),
-        boxShadow: [BoxShadow(color: borderColor.withAlpha(isDark ? 80 : 50), offset: const Offset(3, 3), blurRadius: 0)],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: SizedBox(
         width: double.infinity,
@@ -1097,15 +1160,24 @@ class _EmptyCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withAlpha(isDark ? 40 : 25),
-                border: Border.all(color: color.withAlpha(isDark ? 100 : 60)),
+                color: color.withAlpha(20),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: 14),
-            Text(message, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: isDark ? Colors.white.withAlpha(200) : Theme.of(context).colorScheme.onSurface)),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textLight,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).textTheme.bodyMedium!.color!)),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
+            ),
           ],
         ),
       ),

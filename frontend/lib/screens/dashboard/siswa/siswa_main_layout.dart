@@ -245,7 +245,6 @@ import '../shared/messages_screen.dart';
 import 'siswa_pengumuman_view.dart';
 import 'siswa_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
-import '../../../widgets/theme_toggle.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/sidebar.dart';
 import '../../auth/login_screen.dart';
@@ -287,8 +286,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
   }
 
   Widget _buildWebLayout(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return AppShell(
       fullWidth: true,
@@ -353,12 +350,10 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                       style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
                     ),
                     actions: [
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
                       NotificationBell(
                         userData: widget.userData, 
                         token: widget.token,
-                        iconColor: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87),
+                        iconColor: AppTheme.textLight,
                       ),
                       const SizedBox(width: 28),
                     ],
@@ -385,41 +380,40 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return AppShell(
       child: Stack(
         children: [
           Column(
             children: [
-              // ── Neo-brutalist top bar ──────────────────────────────────────
+              // ── Premium light-mode top bar ────────────────────────────────
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1A1040) : Theme.of(context).scaffoldBackgroundColor,
-                  border: Border(
-                    bottom: BorderSide(
-                        color: isDark ? const Color(0xFF3D3270) : Theme.of(context).colorScheme.onSurface),
-                  ),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(12),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('MyPSKD',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                          letterSpacing: -0.5)),
-                    Row(children: [
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
-                      NotificationBell(
-                        userData: widget.userData,
-                        token: widget.token,
-                        iconColor: theme.iconTheme.color ??
-                            (isDark ? Colors.white : Theme.of(context).colorScheme.onSurface),
+                    Text(
+                      'MyPSKD',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textLight,
+                        letterSpacing: -0.5,
                       ),
-                    ]),
+                    ),
+                    NotificationBell(
+                      userData: widget.userData,
+                      token: widget.token,
+                      iconColor: AppTheme.textLight,
+                    ),
                   ],
                 ),
               ),
@@ -444,18 +438,21 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             ],
           ),
 
-          // ── Neo-brutalist bottom nav bar ─────────────────────────────────
+          // ── Premium light-mode bottom nav bar ─────────────────────────
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1A1040) : Theme.of(context).scaffoldBackgroundColor,
-                border: Border(
-                  top: BorderSide(
-                      color: isDark ? const Color(0xFF3D3270) : Theme.of(context).colorScheme.onSurface),
-                ),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(12),
+                    blurRadius: 12,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
               ),
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
               child: Row(
@@ -467,7 +464,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                     label: 'Home',
                     isSelected: _selectedIndex == 0,
                     onTap: () => setState(() => _selectedIndex = 0),
-                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.groups_3_outlined,
@@ -475,7 +471,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                     label: 'Teams',
                     isSelected: _selectedIndex == 1,
                     onTap: () => setState(() => _selectedIndex = 1),
-                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.forum_outlined,
@@ -483,7 +478,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                     label: 'Msg',
                     isSelected: _selectedIndex == 2,
                     onTap: () => setState(() => _selectedIndex = 2),
-                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.notifications_none_rounded,
@@ -491,7 +485,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                     label: 'Info',
                     isSelected: _selectedIndex == 3,
                     onTap: () => setState(() => _selectedIndex = 3),
-                    isDark: isDark,
                   ),
                   _buildMobileNavItem(
                     icon: Icons.person_3_outlined,
@@ -499,7 +492,6 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                     label: 'Profil',
                     isSelected: _selectedIndex == 4,
                     onTap: () => setState(() => _selectedIndex = 4),
-                    isDark: isDark,
                   ),
                 ],
               ),
@@ -516,12 +508,11 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
-    required bool isDark,
   }) {
-    final activeColor   = isDark ? Theme.of(context).colorScheme.primaryContainer : AppTheme.indigoPrimary;
-    final inactiveColor = isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt;
+    const activeColor   = AppTheme.indigoPrimary;
+    const inactiveColor = AppTheme.textMutedLt;
     final bgColor       = isSelected
-        ? (isDark ? const Color(0xFF2A3D35) : AppTheme.indigoPrimary.withAlpha(15))
+        ? AppTheme.indigoPrimary.withAlpha(15)
         : Colors.transparent;
 
     return Expanded(

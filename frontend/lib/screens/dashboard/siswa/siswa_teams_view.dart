@@ -7,7 +7,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'siswa_team_detail_layout.dart' hide GlassCard;
 import '../../../widgets/app_shell.dart';
-import '../../../widgets/neo_brutalism.dart';
 
 
 
@@ -59,18 +58,25 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
           return Dialog(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 0,
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Theme.of(context).dividerColor, width: 2),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
-                  BoxShadow(color: Theme.of(context).dividerColor, offset: const Offset(6, 6), blurRadius: 0),
+                  BoxShadow(
+                    color: Colors.black.withAlpha(20),
+                    blurRadius: 30,
+                    offset: const Offset(0, 8),
+                  ),
                 ],
               ),
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,69 +86,89 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF3D3270) : Theme.of(context).colorScheme.primaryContainer,
-                          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                          color: AppTheme.primary.withAlpha(15),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           LucideIcons.userPlus,
-                          color: isDark ? AppTheme.indigoLight : AppTheme.primary,
+                          color: AppTheme.primary,
                           size: 20,
                         ),
                       ),
                       const SizedBox(width: 14),
-                      Text('Gabung ke Kelas',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                      Text(
+                        'Gabung ke Kelas',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textLight,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text('Minta kode akses kepada guru Anda, lalu masukkan di sini.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyMedium!.color!)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Minta kode akses kepada guru Anda, lalu masukkan di sini.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.textMutedLt,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   // Code input
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                      color: AppTheme.lightBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.lightBorder, width: 1.2),
                     ),
                     child: TextField(
                       controller: codeCtrl,
                       maxLength: 8,
                       textCapitalization: TextCapitalization.characters,
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
                         letterSpacing: 8,
-                        color: Theme.of(context).textTheme.bodyLarge!.color!),
+                        color: AppTheme.textLight,
+                      ),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'XXXXXXXX',
-                        hintStyle: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
+                        hintStyle: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
                           letterSpacing: 8,
-                          color: isDark ? const Color(0xFF9090B0).withAlpha(100) : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt).withAlpha(100),
+                          color: AppTheme.textMutedLt.withAlpha(80),
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      // Cancel button
                       GestureDetector(
                         onTap: () => Navigator.pop(ctx),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                            color: AppTheme.lightBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppTheme.lightBorder, width: 1.2),
                           ),
-                          child: Text('Batal', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                          child: Text(
+                            'Batal',
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textMutedLt,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
+                      // Submit button
                       GestureDetector(
                         onTap: isSubmitting ? null : () async {
                           if (codeCtrl.text.trim().isEmpty) return;
@@ -191,16 +217,30 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                           decoration: BoxDecoration(
                             color: AppTheme.primary,
-                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primary.withAlpha(50),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: isSubmitting
-                              ? const SizedBox(width: 18, height: 18,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : Text('Gabung Kelas', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900, color: Colors.white)),
+                              ? const SizedBox(
+                                  width: 18, height: 18,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  'Gabung Kelas',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -323,7 +363,6 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                                 tim: tim,
                                 color: color,
                                 initials: initials,
-                                isDark: isDark,
                                 onTap: () => Navigator.push(ctx, MaterialPageRoute(
                                   builder: (_) => SiswaTeamDetailLayout(
                                     userData: widget.userData,
@@ -369,7 +408,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                     : (isWide && w >= 1200
                         ? (1100 - (20 * 2)) / 3
                         : (w - pad * 2 - 20) / 2);
-                return SkeletonLoader(width: cardW, height: 180, radius: 0);
+                return SkeletonLoader(width: cardW, height: 180, radius: 16);
               }),
             ),
           ),
@@ -383,111 +422,159 @@ class _TeamCard extends StatelessWidget {
   final dynamic tim;
   final Color color;
   final String initials;
-  final bool isDark;
   final VoidCallback onTap;
 
   const _TeamCard({
     required this.tim, required this.color, required this.initials,
-    required this.isDark, required this.onTap,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return NeoCard(
-      padding: const EdgeInsets.all(16),
-      color: isDark ? const Color(0xFF1A1040) : color.withAlpha(25),
-      borderColor: Theme.of(context).dividerColor,
+    return GestureDetector(
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(12),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        // Colored accent strip at top
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NeoIconBox(
-                icon: LucideIcons.book, // Temporary icon since initials was text
-                iconColor: Colors.white,
-                backgroundColor: color,
-                borderColor: Theme.of(context).colorScheme.onSurface,
-                size: 24,
+              // Top color accent strip
+              Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(200),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (tim['kode_kelas'] != null)
-                      NeoBadge(
-                        label: 'KODE: ${tim['kode_kelas']}',
-                        color: color,
-                      ),
-                    if (tim['kode_kelas'] != null) const SizedBox(height: 6),
-                    Text(
-                      tim['nama_kelas'] ?? '-',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: Theme.of(context).textTheme.bodyLarge!.color!,
-                        height: 1.2,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Modern rounded icon box
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: color.withAlpha(20),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(LucideIcons.book, color: color, size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (tim['kode_kelas'] != null)
+                                // Pill-shaped code badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: color.withAlpha(20),
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Text(
+                                    'KODE: ${tim['kode_kelas']}',
+                                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: color,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              if (tim['kode_kelas'] != null) const SizedBox(height: 6),
+                              Text(
+                                tim['nama_kelas'] ?? '-',
+                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: AppTheme.textLight,
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(color: AppTheme.lightBorder, height: 1, thickness: 1),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.user, size: 15, color: AppTheme.textMutedLt),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            tim['guru_nama'] ?? 'Guru belum ditugaskan',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textMutedLt,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Modern rounded MASUK button
+                        GestureDetector(
+                          onTap: onTap,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withAlpha(60),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'MASUK',
+                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(LucideIcons.arrowRight, size: 13, color: Colors.white),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Container(
-            height: 2,
-            width: double.infinity,
-            color: Theme.of(context).dividerColor,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(LucideIcons.user, size: 16, color: Theme.of(context).textTheme.bodyMedium!.color!),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  tim['guru_nama'] ?? 'Guru belum ditugaskan',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyMedium!.color!,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: onTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: color,
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                    boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'MASUK',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5),
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(LucideIcons.arrowRight, size: 14, color: Colors.white),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

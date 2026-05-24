@@ -11,7 +11,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 
 
-
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -71,8 +70,6 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     if (_isLoading) {
       return _buildSkeleton();
     }
@@ -81,31 +78,43 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          // Neo-brutalist Search Bar
+          // Search Bar — premium light style
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(10),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
-                  color: Theme.of(context).textTheme.bodyLarge!.color!),
-                decoration: InputDecoration(
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: AppTheme.textLight,
+                ),
+                decoration: const InputDecoration(
                   hintText: 'Cari materi pelajaran...',
-                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyMedium!.color!,
+                  hintStyle: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: AppTheme.textMutedLt,
                   ),
                   prefixIcon: Icon(
                     LucideIcons.search,
                     size: 18,
-                    color: Theme.of(context).textTheme.bodyMedium!.color!,
+                    color: AppTheme.textMutedLt,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
@@ -136,7 +145,6 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
                               padding: const EdgeInsets.only(bottom: 16),
                               child: _MateriCard(
                                 materi: m,
-                                isDark: isDark,
                               ).animate(delay: (i * 40).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
                             );
                           },
@@ -155,7 +163,7 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: SkeletonLoader(height: 54, radius: 16),
+          child: SkeletonLoader(height: 54, radius: 14),
         ),
         Expanded(
           child: GridView.count(
@@ -164,7 +172,7 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
             childAspectRatio: 1.3,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            children: List.generate(6, (_) => const SkeletonLoader(radius: 20)),
+            children: List.generate(6, (_) => const SkeletonLoader(radius: 16)),
           ),
         ),
       ],
@@ -174,42 +182,57 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
 
 class _MateriCard extends StatelessWidget {
   final dynamic materi;
-  final bool isDark;
 
-  const _MateriCard({required this.materi, required this.isDark});
+  const _MateriCard({required this.materi});
 
   void _showDetail(BuildContext context) {
     showDialog(
       context: context,
-      barrierColor: Colors.black54,
+      barrierColor: Colors.black.withAlpha(60),
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(20),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 480),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(6, 6))],
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(18),
+                blurRadius: 32,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
+              // Header — indigo gradient strip
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  border: Border(
-                    bottom: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primary, Color(0xFF6366F1)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
                   ),
                 ),
                 child: Text(
                   materi['judul'] ?? '-',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
+                  ),
                   maxLines: 2, overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -222,19 +245,46 @@ class _MateriCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (materi['mapel'] != null) ...[
-                        Text('MATA PELAJARAN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyMedium!.color!, letterSpacing: 1.0)),
+                        const Text(
+                          'Mata Pelajaran',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            color: AppTheme.textMutedLt,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(materi['mapel'], style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        Text(
+                          materi['mapel'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
                         const SizedBox(height: 16),
                       ],
                       if (materi['deskripsi'] != null && materi['deskripsi'].toString().isNotEmpty) ...[
-                        Text('DESKRIPSI', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyMedium!.color!, letterSpacing: 1.0)),
+                        const Text(
+                          'Deskripsi',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            color: AppTheme.textMutedLt,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(materi['deskripsi'], style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          height: 1.5, fontWeight: FontWeight.w500, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        Text(
+                          materi['deskripsi'],
+                          style: const TextStyle(
+                            height: 1.5,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
                         const SizedBox(height: 20),
                       ],
                       if (materi['file_url'] != null && materi['file_url'].toString().isNotEmpty)
@@ -242,17 +292,29 @@ class _MateriCard extends StatelessWidget {
                           onTap: () => _launchURL(materi['file_url']),
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             decoration: BoxDecoration(
                               color: AppTheme.primary,
-                              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primary.withAlpha(50),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              const Icon(LucideIcons.downloadCloud, color: Colors.white, size: 16),
-                              const SizedBox(width: 8),
-                              Text('BUKA FILE MATERI', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                            child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              Icon(LucideIcons.downloadCloud, color: Colors.white, size: 16),
+                              SizedBox(width: 8),
+                              Text(
+                                'Buka File Materi',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ]),
                           ),
                         ),
@@ -264,22 +326,23 @@ class _MateriCard extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2)),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: AppTheme.lightBorder, width: 1.0)),
                 ),
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(ctx),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppTheme.lightBg,
+                      foregroundColor: AppTheme.textMutedLt,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(color: AppTheme.lightBorder, width: 1.0),
                       ),
-                      child: Text('TUTUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
                     ),
+                    child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                   ),
                 ),
               ),
@@ -296,9 +359,16 @@ class _MateriCard extends StatelessWidget {
       onTap: () => _showDetail(context),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(10),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -307,21 +377,21 @@ class _MateriCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary,
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                    boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                    color: AppTheme.primary.withAlpha(20),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(LucideIcons.fileText, color: Colors.white, size: 20),
+                  child: const Icon(LucideIcons.fileText, color: AppTheme.primary, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     materi['mapel'] ?? '-',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
-                      color: Theme.of(context).textTheme.bodyMedium!.color!,
-                      letterSpacing: 0.5,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: AppTheme.textMutedLt,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -332,18 +402,23 @@ class _MateriCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               materi['judul'] ?? '-',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900,
-                color: Theme.of(context).textTheme.bodyLarge!.color!,
-                letterSpacing: -0.3),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                color: AppTheme.textLight,
+                letterSpacing: -0.3,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 6),
             Text(
               materi['deskripsi'] ?? '-',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4,
-                color: Theme.of(context).textTheme.bodyMedium!.color!,
-                fontWeight: FontWeight.w500,
+              style: const TextStyle(
+                height: 1.4,
+                color: AppTheme.textMutedLt,
+                fontWeight: FontWeight.w400,
+                fontSize: 13,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -351,19 +426,20 @@ class _MateriCard extends StatelessWidget {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: () => _showDetail(context),
                 icon: const Icon(LucideIcons.eye, size: 14),
                 label: const Text(
                   'Lihat Detail',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                 ),
-                style: OutlinedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,
                   foregroundColor: Colors.white,
-                  side: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shadowColor: AppTheme.primary.withAlpha(50),
                 ),
               ),
             ),
