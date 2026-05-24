@@ -399,87 +399,77 @@ class _MateriCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          border: Border.all(color: const Color(0xFFE5E7EB), width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
+              color: Colors.black.withAlpha(5),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(9),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withAlpha(20),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppTheme.lightBg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE5E7EB), width: 1.0),
                   ),
-                  child: const Icon(LucideIcons.fileText, color: AppTheme.primary, size: 20),
+                  child: const Icon(LucideIcons.fileText, color: AppTheme.textLight, size: 16),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    materi['guru_nama'] != null ? 'Oleh: ${materi['guru_nama']}' : 'Materi Pembelajaran',
+                    materi['guru_nama'] != null ? '${materi['guru_nama']}' : 'Guru',
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      color: AppTheme.textMutedLt,
+                      fontSize: 13,
+                      color: AppTheme.textMutedDk,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                if (materi['created_at'] != null)
+                  Text(
+                    _formatDate(materi['created_at']).split(' ')[0],
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      color: AppTheme.textMutedLt,
+                    ),
+                  ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               materi['judul'] ?? '-',
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
-                fontSize: 15,
+                fontSize: 16,
                 color: AppTheme.textLight,
-                letterSpacing: -0.3,
+                letterSpacing: -0.2,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
-              materi['deskripsi'] ?? '-',
+              materi['deskripsi'] ?? 'Materi Pembelajaran',
               style: const TextStyle(
-                height: 1.4,
+                height: 1.5,
                 color: AppTheme.textMutedLt,
                 fontWeight: FontWeight.w400,
-                fontSize: 13,
+                fontSize: 14,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _showDetail(context),
-                icon: const Icon(LucideIcons.eye, size: 14),
-                label: const Text(
-                  'Lihat Detail',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  shadowColor: AppTheme.primary.withAlpha(50),
-                ),
-              ),
             ),
           ],
         ),

@@ -558,6 +558,53 @@ Pastikan kembalian hanya JSON murni tanpa markdown \`\`\`.`;
       res.status(500).json({ message: 'Error AI grading', error: error.message });
     }
   },
+
+  getMySubmissions: async (req, res) => {
+    try {
+      const studentId = req.user?.id || req.user?.uid;
+      if (!studentId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      let queryRef = db.collection('quiz_submissions').where('studentId', '==', studentId);
+      
+      if (req.query.kelasId) {
+        queryRef = queryRef.where('kelasId', '==', req.query.kelasId);
+      }
+
+      const snapshot = await queryRef.get();
+      let submissions = [];
+      const quizCache = {};
+
+      for (let doc of snapshot.docs) {
+        const subData = { _id: doc.id, ...doc.data() };
+        const qId = subData.quizId;
+        
+        if (!quizCache[qId]) {
+          const qDoc = await db.collection('quizzes').doc(qId).get();
+          if (qDoc.exists) {
+            quizCache[qId] = qDoc.data();
+          }
+        }
+        
+        const quizData = quizCache[qId] || {};
+        subData.quizTitle = quizData.title || 'Kuis Tanpa Judul';
+        subData.quizCreator = quizData.createdByName || 'Guru';
+        
+        submissions.push(subData);
+      }
+
+      submissions.sort((a, b) => {
+        const dateA = a.submittedAt ? new Date(a.submittedAt) : new Date(0);
+        const dateB = b.submittedAt ? new Date(b.submittedAt) : new Date(0);
+        return dateB - dateA;
+      });
+
+      res.status(200).json({ data: submissions });
+    } catch (error) {
+      res.status(500).json({ message: 'Error mengambil riwayat kuis siswa', error: error.message });
+    }
+  },
 };
 
 module.exports = quizController;

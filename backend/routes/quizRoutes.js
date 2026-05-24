@@ -4,6 +4,7 @@ const verifyToken = require('../middleware/auth');
 const quizController = require('../controllers/quizController');
 
 router.get('/', verifyToken, quizController.getAll);
+router.get('/my-submissions', verifyToken, quizController.getMySubmissions);
 router.get('/join/:shareCode', verifyToken, quizController.joinByCode);
 router.get('/:id', verifyToken, quizController.getById);
 router.post('/', verifyToken, quizController.create);
