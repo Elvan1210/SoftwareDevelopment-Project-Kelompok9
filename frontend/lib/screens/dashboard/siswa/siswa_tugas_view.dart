@@ -12,7 +12,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 
 
-
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
@@ -137,10 +136,17 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
   Widget _buildTabBar(ThemeData theme, bool isDark) {
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+        color: AppTheme.lightBorder.withAlpha(80),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TabBar(
         controller: _tabController,
@@ -148,12 +154,19 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
         dividerColor: Colors.transparent,
         indicator: BoxDecoration(
           color: AppTheme.primary,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withAlpha(60),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: isDark ? Colors.white70 : Theme.of(context).colorScheme.onSurface,
-        labelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.3),
-        unselectedLabelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        unselectedLabelColor: AppTheme.textMutedLt,
+        labelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.3),
+        unselectedLabelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         tabs: const [
           Tab(text: 'Semua'),
           Tab(text: 'Belum'),
@@ -261,15 +274,16 @@ class _TugasList extends StatelessWidget {
                       children: [
                         Text(
                           key.toUpperCase(),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
                             color: AppTheme.primary,
                             letterSpacing: 1.5,
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(
+                        const Expanded(
                           child: Divider(
-                            color: Theme.of(context).dividerColor,
+                            color: AppTheme.lightBorder,
                             height: 1,
                             thickness: 1,
                           ),
@@ -314,7 +328,8 @@ class _TugasList extends StatelessWidget {
                     }
                   ),
                   const SizedBox(height: 20),
-                  if (i < groupKeys.length - 1) const Divider(color: Colors.white24, height: 1),
+                  if (i < groupKeys.length - 1)
+                    const Divider(color: AppTheme.lightBorder, height: 1),
                 ],
               );
             },
@@ -347,19 +362,33 @@ class _TugasCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(15),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
+            // Icon box — rounded indigo, no black border/shadow
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppTheme.primary,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                color: AppTheme.indigoPrimary,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withAlpha(50),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: const Icon(LucideIcons.clipboardList, color: Colors.white, size: 20),
             ),
@@ -371,55 +400,53 @@ class _TugasCard extends StatelessWidget {
                 children: [
                   Text(
                     tugas['judul'] ?? '-',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
-                      color: Theme.of(context).textTheme.bodyLarge!.color!,
-                      letterSpacing: -0.3),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textLight,
+                      letterSpacing: -0.3,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Mapel: ${tugas['mapel'] ?? '-'}',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
-                      color: Theme.of(context).textTheme.bodyMedium!.color!,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textMutedLt,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
+            // Deadline chip — amber pill, no black border
             if (tugas['deadline'] != null && tugas['deadline'].toString().isNotEmpty) ...[
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFDE68A),
-                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                  color: AppTheme.amber.withAlpha(20),
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(color: AppTheme.amber.withAlpha(80), width: 1),
                 ),
                 child: Text(
                   _formatDeadline(tugas['deadline']),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    letterSpacing: 0.2),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.amber,
+                    letterSpacing: 0.2,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 12),
             ],
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
-              ),
-              child: Icon(
-                LucideIcons.chevronRight,
-                color: Theme.of(context).textTheme.bodyLarge!.color!,
-                size: 16,
-              ),
+            // Simple chevron — no box container
+            const Icon(
+              LucideIcons.chevronRight,
+              color: AppTheme.textMutedLt,
+              size: 18,
             ),
           ],
         ),

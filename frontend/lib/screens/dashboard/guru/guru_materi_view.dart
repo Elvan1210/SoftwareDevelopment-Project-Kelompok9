@@ -246,6 +246,8 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                     'kelas': widget.teamData['nama_kelas'],
                     'mapel': widget.teamData['mapel'] ?? '-',
                     'guru_id': widget.userData['id'],
+                    'guru_nama': widget.userData['nama'] ?? 'Guru',
+                    if (!isEditing) 'created_at': DateTime.now().toIso8601String(),
                   };
 
                   final url = isEditing

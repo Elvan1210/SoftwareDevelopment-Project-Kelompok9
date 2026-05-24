@@ -45,9 +45,6 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    const Color primaryColor = Color(0xFF76AFB8);
     final String userId = _userData['id'] ?? _userData['uid'] ?? _userData['_id'] ?? '';
     final String nama = _userData['nama'] ?? '-';
     final String email = _userData['email'] ?? '-';
@@ -70,7 +67,6 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
               children: [
                 _ProfileHeroHeader(
                   initials: initials, nama: nama, role: role,
-                  primaryColor: primaryColor, isDark: isDark,
                 ),
                 const SizedBox(height: 32),
                 Padding(
@@ -81,23 +77,23 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
                           children: [
                             Expanded(child: _InfoSection(
                               email: email, kelas: kelas, role: role,
-                              isDark: isDark, userId: userId,
+                              userId: userId,
                               initialStatus: currentStatus,
                               onStatusChanged: _loadUserData,
                             )),
                             const SizedBox(width: 16),
-                            Expanded(child: _ActionSection(isDark: isDark)),
+                            const Expanded(child: _ActionSection()),
                           ],
                         )
                       : Column(children: [
                           _InfoSection(
                             email: email, kelas: kelas, role: role,
-                            isDark: isDark, userId: userId,
+                            userId: userId,
                             initialStatus: currentStatus,
                             onStatusChanged: _loadUserData,
                           ),
                           const SizedBox(height: 16),
-                          _ActionSection(isDark: isDark),
+                          const _ActionSection(),
                         ]),
                 ),
                 const SizedBox(height: 32),
@@ -112,57 +108,79 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
 
 class _ProfileHeroHeader extends StatelessWidget {
   final String initials, nama, role;
-  final Color primaryColor;
-  final bool isDark;
 
   const _ProfileHeroHeader({
     required this.initials, required this.nama, required this.role,
-    required this.primaryColor, required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 56, bottom: 40, left: 32, right: 32),
-      decoration: BoxDecoration(
-        color: primaryColor,
-        border: Border(
-          bottom: BorderSide(color: Colors.black.withAlpha(160), width: 2),
+      padding: const EdgeInsets.only(top: 56, bottom: 44, left: 32, right: 32),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppTheme.indigoPrimary, Color(0xFF7C3AED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        boxShadow: const [BoxShadow(color: Color(0x44000000), offset: Offset(0, 4))],
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
       ),
       child: Column(children: [
+        // Avatar circle with white ring
         Container(
-          width: 96, height: 96,
+          width: 104,
+          height: 104,
           decoration: BoxDecoration(
+            shape: BoxShape.circle,
             color: Colors.white,
-            border: Border.all(color: Colors.black.withAlpha(160), width: 2),
-            boxShadow: const [BoxShadow(color: Color(0x66000000), offset: Offset(4, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(30),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+            border: Border.all(color: Colors.white.withAlpha(180), width: 4),
           ),
           child: Center(
             child: Text(
               initials,
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: primaryColor),
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: AppTheme.indigoPrimary,
+              ),
             ),
           ),
         ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
         const SizedBox(height: 20),
         Text(
           nama,
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.5,
+          ),
           textAlign: TextAlign.center,
         ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withAlpha(60),
-            border: Border.all(color: Colors.white.withAlpha(120), width: 1.5),
+            color: Colors.white.withAlpha(25),
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: Colors.white.withAlpha(80), width: 1.2),
           ),
           child: Text(
             role.toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
           ),
         ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
       ]),
@@ -172,12 +190,11 @@ class _ProfileHeroHeader extends StatelessWidget {
 
 class _InfoSection extends StatelessWidget {
   final String email, kelas, role, userId, initialStatus;
-  final bool isDark;
   final VoidCallback onStatusChanged;
 
   const _InfoSection({
     required this.email, required this.kelas, required this.role,
-    required this.isDark, required this.userId, required this.initialStatus,
+    required this.userId, required this.initialStatus,
     required this.onStatusChanged,
   });
 
@@ -185,37 +202,56 @@ class _InfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(12),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            color: AppTheme.primary,
-            child: Text('INFORMASI AKUN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0,
-            )),
+          Text(
+            'Informasi Akun',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: AppTheme.indigoPrimary,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Detail profil kamu',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
           ),
           const SizedBox(height: 20),
-          _InfoRow(icon: LucideIcons.mail, label: 'Email', value: email, isDark: isDark),
+          _InfoRow(icon: LucideIcons.mail, label: 'Email', value: email),
           const SizedBox(height: 16),
-          _InfoRow(icon: LucideIcons.graduationCap, label: 'Kelas', value: kelas, isDark: isDark),
+          _InfoRow(icon: LucideIcons.graduationCap, label: 'Kelas', value: kelas),
           const SizedBox(height: 16),
-          _InfoRow(icon: LucideIcons.user, label: 'Role', value: role, isDark: isDark),
+          _InfoRow(icon: LucideIcons.user, label: 'Role', value: role),
           const SizedBox(height: 20),
-          Container(height: 2, color: Theme.of(context).colorScheme.onSurface.withAlpha(30)),
+          const Divider(color: AppTheme.lightBorder, height: 1, thickness: 1),
           const SizedBox(height: 16),
           Text(
             'Pengaturan Status Chat',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
-              color: Theme.of(context).textTheme.bodyLarge!.color!),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textLight,
+            ),
           ),
           const SizedBox(height: 12),
-          _StatusDropdown(userId: userId, currentStatus: initialStatus, onStatusChanged: onStatusChanged, isDark: isDark),
+          _StatusDropdown(
+            userId: userId,
+            currentStatus: initialStatus,
+            onStatusChanged: onStatusChanged,
+          ),
         ],
       ),
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
@@ -225,9 +261,8 @@ class _InfoSection extends StatelessWidget {
 class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label, value;
-  final bool isDark;
 
-  const _InfoRow({required this.icon, required this.label, required this.value, required this.isDark});
+  const _InfoRow({required this.icon, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -235,25 +270,28 @@ class _InfoRow extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppTheme.primary,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+          color: AppTheme.indigoPrimary.withAlpha(15),
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
+        child: Icon(icon, color: AppTheme.indigoPrimary, size: 18),
       ),
       const SizedBox(width: 16),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800,
-            color: Theme.of(context).textTheme.bodyMedium!.color!,
-            letterSpacing: 0.5),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textMutedLt,
+            letterSpacing: 0.3,
+          ),
         ),
         const SizedBox(height: 3),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800,
-            color: Theme.of(context).textTheme.bodyLarge!.color!),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textLight,
+          ),
         ),
       ])),
     ]);
@@ -264,13 +302,11 @@ class _StatusDropdown extends StatefulWidget {
   final String userId;
   final String currentStatus;
   final VoidCallback onStatusChanged;
-  final bool isDark;
 
   const _StatusDropdown({
     required this.userId,
     required this.currentStatus,
     required this.onStatusChanged,
-    required this.isDark,
   });
 
   @override
@@ -326,20 +362,22 @@ class _StatusDropdownState extends State<_StatusDropdown> {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       initialValue: selectedStatus,
-      dropdownColor: Theme.of(context).colorScheme.surface,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
-        color: widget.isDark ? Colors.white : AppTheme.textLight),
+      dropdownColor: Colors.white,
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        color: AppTheme.textLight,
+      ),
       decoration: InputDecoration(
         filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
+          borderSide: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
+          borderSide: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -350,7 +388,14 @@ class _StatusDropdownState extends State<_StatusDropdown> {
         return DropdownMenuItem<String>(
           value: status,
           child: Row(children: [
-            Container(width: 10, height: 10, decoration: BoxDecoration(color: AppTheme.getStatusColor(status), shape: BoxShape.circle)),
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: AppTheme.getStatusColor(status),
+                shape: BoxShape.circle,
+              ),
+            ),
             const SizedBox(width: 12),
             Text(status, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
           ]),
@@ -362,81 +407,133 @@ class _StatusDropdownState extends State<_StatusDropdown> {
 }
 
 class _ActionSection extends StatelessWidget {
-  final bool isDark;
-  const _ActionSection({required this.isDark});
+  const _ActionSection();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(12),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            color: AppTheme.rose,
-            child: Text('PENGATURAN KEAMANAN', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0,
-            )),
+          Text(
+            'Pengaturan Keamanan',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: AppTheme.rose,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Kelola sesi dan keamanan akun',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
           ),
           const SizedBox(height: 20),
           GestureDetector(
             onTap: () async {
               final confirm = await showDialog<bool>(
                 context: context,
-                barrierColor: Colors.black54,
+                barrierColor: Colors.black45,
                 builder: (ctx) => Dialog(
                   backgroundColor: Colors.transparent,
                   insetPadding: const EdgeInsets.all(24),
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 360),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(6, 6))],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(20),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(28),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('KELUAR?', style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.rose.withAlpha(15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(LucideIcons.logOut, color: AppTheme.rose, size: 22),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Keluar dari Akun?',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        Text('Kamu yakin ingin logout dari akun ini?',
+                        Text(
+                          'Kamu yakin ingin logout dari akun ini?',
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).textTheme.bodyMedium!.color!)),
+                            color: AppTheme.textMutedLt,
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                           GestureDetector(
                             onTap: () => Navigator.pop(ctx, false),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                                color: AppTheme.lightBg,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppTheme.lightBorder, width: 1.2),
                               ),
-                              child: Text('BATAL', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                              child: Text(
+                                'Batal',
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.textLight,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
                             onTap: () => Navigator.pop(ctx, true),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               decoration: BoxDecoration(
                                 color: AppTheme.rose,
-                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.rose.withAlpha(50),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: Text('KELUAR', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w900, color: Colors.white)),
+                              child: Text(
+                                'Keluar',
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ]),
@@ -459,14 +556,26 @@ class _ActionSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
                 color: AppTheme.rose,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.rose.withAlpha(50),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 const Icon(LucideIcons.logOut, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
-                Text('KELUAR DARI AKUN', style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                Text(
+                  'Keluar dari Akun',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 0.3,
+                  ),
+                ),
               ]),
             ),
           ),

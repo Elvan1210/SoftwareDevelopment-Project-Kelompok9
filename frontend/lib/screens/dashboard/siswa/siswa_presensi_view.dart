@@ -89,9 +89,6 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -104,26 +101,39 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Riwayat Kehadiran',
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 22,
                         letterSpacing: -0.5,
-                        color: isDark ? Colors.white : AppTheme.textLight),
+                        color: AppTheme.textLight,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${widget.teamData['nama_kelas'] ?? 'Kelas'} · ${_riwayat.length} catatan',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
-                        color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        color: AppTheme.textMutedLt,
+                      ),
                     ),
                   ],
                 ),
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
+                  border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(10),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: IconButton(
                   onPressed: _fetchRiwayat,
@@ -136,15 +146,18 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
           const SizedBox(height: 24),
 
           if (_isLoading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
+            const Expanded(child: Center(child: CircularProgressIndicator(color: AppTheme.primary)))
           else ...[
-            _buildVisualDashboard(theme, isDark).animate().fadeIn(delay: 100.ms).scale(),
+            _buildVisualDashboard().animate().fadeIn(delay: 100.ms).scale(),
 
             const SizedBox(height: 28),
-            Text(
+            const Text(
               'Detail Riwayat',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800, 
-                color: isDark ? Colors.white : AppTheme.textLight),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: AppTheme.textLight,
+              ),
             ).animate().fadeIn(delay: 200.ms),
             const SizedBox(height: 12),
 
@@ -159,7 +172,7 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
                       padding: const EdgeInsets.only(bottom: 24),
                       itemCount: _riwayat.length,
                       itemBuilder: (context, index) {
-                        return _buildRiwayatCard(_riwayat[index], theme, isDark)
+                        return _buildRiwayatCard(_riwayat[index])
                             .animate(delay: (index * 40).ms)
                             .fadeIn()
                             .slideX(begin: 0.05, curve: Curves.easeOutQuart);
@@ -172,19 +185,26 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
     );
   }
 
-  Widget _buildVisualDashboard(ThemeData theme, bool isDark) {
+  Widget _buildVisualDashboard() {
     final total = _riwayat.length;
     final pct = total > 0 ? (_hadir / total) : 0.0;
-    
+
     Color pctColor = const Color(0xFF22C55E);
     if (pct < 0.75) pctColor = const Color(0xFFF59E0B);
     if (pct < 0.50) pctColor = const Color(0xFFEF4444);
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(12),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -193,38 +213,49 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Persentase Kehadiran',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).textTheme.bodyLarge!.color!, 
-                  fontWeight: FontWeight.w900),
+                style: TextStyle(
+                  color: AppTheme.textLight,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: pctColor,
-                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
+                  color: pctColor.withAlpha(20),
+                  borderRadius: BorderRadius.circular(100),
                 ),
                 child: Text(
                   '${(pct * 100).toStringAsFixed(0)}%',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: pctColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Container(
-            height: 8,
-            width: double.infinity,
-            color: Theme.of(context).dividerColor,
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: pct.clamp(0.0, 1.0),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeOutQuart,
-                color: pctColor,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: Container(
+              height: 8,
+              width: double.infinity,
+              color: AppTheme.lightBorder,
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: pct.clamp(0.0, 1.0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutQuart,
+                  decoration: BoxDecoration(
+                    color: pctColor,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
               ),
             ),
           ),
@@ -247,20 +278,28 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
       child: Column(
         children: [
           Text(
-            count.toString(), 
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900, color: color),
+            count.toString(),
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              color: color,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
-            label, 
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: color.withAlpha(200)),
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: color.withAlpha(200),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRiwayatCard(Map<String, dynamic> record, ThemeData theme, bool isDark) {
+  Widget _buildRiwayatCard(Map<String, dynamic> record) {
     final status = record['status'] ?? 'Alpa';
     final tanggal = DateTime.tryParse(record['tanggal'] ?? '');
     final tanggalStr = tanggal != null
@@ -274,9 +313,16 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(10),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -284,11 +330,10 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: statusConfig.color,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                color: statusConfig.color.withAlpha(22),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(statusConfig.icon, color: Colors.white, size: 20),
+              child: Icon(statusConfig.icon, color: statusConfig.color, size: 20),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -297,19 +342,24 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
                 children: [
                   Text(
                     tanggalStr,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800, 
-                      color: Theme.of(context).textTheme.bodyLarge!.color!),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: AppTheme.textLight,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(LucideIcons.clock, size: 13, color: Theme.of(context).textTheme.bodyMedium!.color!),
+                      const Icon(LucideIcons.clock, size: 13, color: AppTheme.textMutedLt),
                       const SizedBox(width: 4),
                       Text(
                         'Pukul $waktu',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: Theme.of(context).textTheme.bodyMedium!.color!, 
-                          fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: AppTheme.textMutedLt,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -319,14 +369,16 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: statusConfig.color,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                color: statusConfig.color.withAlpha(22),
+                borderRadius: BorderRadius.circular(100),
               ),
               child: Text(
                 status.toUpperCase(),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
-                  color: Colors.white),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  color: statusConfig.color,
+                ),
               ),
             ),
           ],
