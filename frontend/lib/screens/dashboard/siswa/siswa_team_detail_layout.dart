@@ -146,69 +146,155 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_liveStatus == 'active' && _currentMeetingId != null) ...[        
-            NeoLiveBanner(onJoin: () => joinJitsiMeeting(
-              context: context, meetingId: _currentMeetingId!,
-              serverUrl: 'https://meet.ffmuc.net',
-              userName: widget.userData['nama'] ?? 'Siswa',
-              userEmail: widget.userData['email'] ?? '',
-              subject: 'Kelas Live: $namaKelas',
-            )),
+            GestureDetector(
+              onTap: () => joinJitsiMeeting(
+                context: context, meetingId: _currentMeetingId!,
+                serverUrl: 'https://meet.ffmuc.net',
+                userName: widget.userData['nama'] ?? 'Siswa',
+                userEmail: widget.userData['email'] ?? '',
+                subject: 'Kelas Live: $namaKelas',
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [AppTheme.rose, Color(0xFFE11D48)]),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: AppTheme.rose.withAlpha(60), blurRadius: 16, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Row(children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(color: Colors.white.withAlpha(50), shape: BoxShape.circle),
+                    child: const Icon(LucideIcons.video, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Kelas Sedang Live!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+                      Text('Ketuk untuk bergabung sekarang', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    ]
+                  )),
+                  const Icon(LucideIcons.chevronRight, color: Colors.white),
+                ]),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
 
-          NeoWelcomeBanner(
-            greeting: 'Selamat datang kembali 👋',
-            name: nama,
-            subtitle: namaKelas,
-            
+          // Welcome Banner Premium
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.indigoPrimary, Color(0xFF7C3AED)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(40), blurRadius: 16, offset: const Offset(0, 8))],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(100)),
+                  child: const Text('SELAMAT DATANG KEMBALI 👋', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
+                ),
+                const SizedBox(height: 16),
+                Text(nama, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                const SizedBox(height: 4),
+                Text(namaKelas, style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 14, fontWeight: FontWeight.w500)),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),
 
           // Stat cards
           Row(children: [
-            Expanded(child: NeoStatCard(
-              label: 'Presensi', value: '—/—', icon: LucideIcons.userCheck,
-              color: AppTheme.primary,
-              onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; }),
-            )),
+            Expanded(child: _buildStatCard('Presensi', '—/—', LucideIcons.userCheck, AppTheme.primary, 'presensi')),
             const SizedBox(width: 10),
-            Expanded(child: NeoStatCard(
-              label: 'Tugas', value: 'Lihat', icon: LucideIcons.clipboardList,
-              color: AppTheme.success,
-              onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; }),
-            )),
+            Expanded(child: _buildStatCard('Tugas', 'Lihat', LucideIcons.clipboardList, AppTheme.success, 'tugas')),
             const SizedBox(width: 10),
-            Expanded(child: NeoStatCard(
-              label: 'Nilai', value: '—', icon: LucideIcons.award,
-              color: AppTheme.warning,
-              onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai'; }),
-            )),
+            Expanded(child: _buildStatCard('Nilai', '—', LucideIcons.award, AppTheme.warning, 'nilai')),
           ]),
 
-          const SizedBox(height: 24),
-          const NeoSectionHeader(title: 'Menu Kelas'),
+          const SizedBox(height: 28),
+          const Text('Menu Kelas', style: TextStyle(color: AppTheme.textLight, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+          const SizedBox(height: 16),
 
           GridView.count(
-            crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10,
+            crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
             shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.7,
+            childAspectRatio: 1.5,
             children: [
-              NeoMenuCard(label: 'Presensi', icon: LucideIcons.userCheck,
-                color: AppTheme.primary,
-                onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; })),
-              NeoMenuCard(label: 'Tugas', icon: LucideIcons.clipboardList,
-                color: AppTheme.success,
-                onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; })),
-              NeoMenuCard(label: 'Kuis & Ujian', icon: LucideIcons.helpCircle,
-                color: AppTheme.error,
-                onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
-              NeoMenuCard(label: 'Materi', icon: LucideIcons.bookOpen,
-                color: AppTheme.info,
-                onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; })),
+              _buildMenuCard('Presensi', LucideIcons.userCheck, AppTheme.primary, 'presensi'),
+              _buildMenuCard('Tugas', LucideIcons.clipboardList, AppTheme.success, 'tugas'),
+              _buildMenuCard('Kuis & Ujian', LucideIcons.helpCircle, AppTheme.error, 'kuis'),
+              _buildMenuCard('Materi', LucideIcons.bookOpen, AppTheme.info, 'materi'),
             ],
           ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon, Color color, String tabId) {
+    return GestureDetector(
+      onTap: () => setState(() { _activeTabID = tabId; _activeTitle = label; }),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withAlpha(25), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 12),
+            Text(value, style: const TextStyle(color: AppTheme.textLight, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(color: AppTheme.textMutedLt, fontSize: 12, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuCard(String label, IconData icon, Color color, String tabId) {
+    return GestureDetector(
+      onTap: () => setState(() { _activeTabID = tabId; _activeTitle = label; }),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(label, style: const TextStyle(color: AppTheme.textLight, fontSize: 14, fontWeight: FontWeight.w800)),
+          ],
+        ),
       ),
     );
   }
@@ -366,6 +452,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     return AppShell(
       child: ContentSurface(
         child: Scaffold(
+          extendBody: true,
           backgroundColor: Colors.transparent,
           body: Column(
             children: [
