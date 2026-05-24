@@ -174,6 +174,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen> {
                 'mapel': widget.tugas['mapel'] ?? widget.tugas['kelas'] ?? 'Umum',
                 'tugas_id': widget.tugas['id'],
                 'tugas_judul': widget.tugas['judul'],
+                'kelas_id': widget.tugas['kelas_id'],
                 'nilai': nilaiVal,
                 'feedback': feedbackCtrl.text.trim(),
                 'waktu_dinilai': DateTime.now().toIso8601String(),

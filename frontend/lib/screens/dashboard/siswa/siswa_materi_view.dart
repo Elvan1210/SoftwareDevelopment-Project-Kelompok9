@@ -137,7 +137,12 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
 
                         return ListView.builder(
                           physics: const BouncingScrollPhysics(),
-                          padding: padding,
+                          padding: EdgeInsets.only(
+                            left: padding.left, 
+                            right: padding.right, 
+                            top: padding.top, 
+                            bottom: 100, // Extend behind nav bar
+                          ),
                           itemCount: _filtered.length,
                           itemBuilder: (_, i) {
                             final m = _filtered[i];
@@ -244,9 +249,9 @@ class _MateriCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (materi['mapel'] != null) ...[
+                      if (materi['guru_nama'] != null) ...[
                         const Text(
-                          'Mata Pelajaran',
+                          'Dibuat oleh',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 11,
@@ -255,13 +260,46 @@ class _MateriCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          materi['mapel'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                            color: AppTheme.textLight,
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.userCheck, size: 14, color: AppTheme.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              materi['guru_nama'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: AppTheme.textLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (materi['created_at'] != null) ...[
+                        const Text(
+                          'Tanggal Dibuat',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            color: AppTheme.textMutedLt,
+                            letterSpacing: 0.5,
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.calendar, size: 14, color: AppTheme.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              _formatDate(materi['created_at']),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: AppTheme.textLight,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -387,7 +425,7 @@ class _MateriCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    materi['mapel'] ?? '-',
+                    materi['guru_nama'] != null ? 'Oleh: ${materi['guru_nama']}' : 'Materi Pembelajaran',
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
@@ -454,6 +492,16 @@ class _MateriCard extends StatelessWidget {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  String _formatDate(String? isoDate) {
+    if (isoDate == null) return '-';
+    try {
+      final date = DateTime.parse(isoDate);
+      return '${date.day}-${date.month}-${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return isoDate;
     }
   }
 }
