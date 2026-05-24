@@ -22,6 +22,8 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
   List<dynamic> _allNilai = [];
   bool _isLoading = true;
   String _selectedFilter = 'Semua';
+  int _currentPage = 1;
+  static const int _itemsPerPage = 6;
 
   @override
   void initState() {
@@ -146,6 +148,16 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
       return n['type'] == _selectedFilter;
     }).toList();
 
+    final totalItems = filteredList.length;
+    final totalPages = (totalItems / _itemsPerPage).ceil();
+    if (_currentPage > totalPages && totalPages > 0) {
+      _currentPage = totalPages;
+    }
+    
+    final startIndex = (_currentPage - 1) * _itemsPerPage;
+    final endIndex = (startIndex + _itemsPerPage > totalItems) ? totalItems : (startIndex + _itemsPerPage);
+    final pagedList = filteredList.isNotEmpty ? filteredList.sublist(startIndex, endIndex) : [];
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -179,16 +191,72 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                 : RefreshIndicator(
                     onRefresh: _fetchNilai,
                     color: AppTheme.primary,
-                    child: LayoutBuilder(
-                      builder: (ctx, c) {
-                        final isWeb = c.maxWidth > 700;
-                        
-                        return isWeb 
-                          ? _buildGridView(filteredList) 
-                          : _buildPageView(filteredList);
-                      },
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (ctx, c) {
+                              final isWeb = c.maxWidth > 700;
+                              return isWeb 
+                                ? _buildGridView(pagedList) 
+                                : _buildListView(pagedList);
+                            },
+                          ),
+                        ),
+                        if (totalPages > 1) _buildPagination(totalPages),
+                      ],
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPagination(int totalPages) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(LucideIcons.chevronLeft),
+            color: _currentPage > 1 ? AppTheme.indigoPrimary : AppTheme.textMutedLt.withAlpha(100),
+            onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+          ),
+          const SizedBox(width: 8),
+          ...List.generate(totalPages, (index) {
+            final page = index + 1;
+            final isSelected = page == _currentPage;
+            return GestureDetector(
+              onTap: () => setState(() => _currentPage = page),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.indigoPrimary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected ? AppTheme.indigoPrimary : AppTheme.lightBorder,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  page.toString(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : AppTheme.textLight,
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(LucideIcons.chevronRight),
+            color: _currentPage < totalPages ? AppTheme.indigoPrimary : AppTheme.textMutedLt.withAlpha(100),
+            onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
           ),
         ],
       ),
@@ -198,7 +266,14 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
   Widget _buildFilterChip(String label) {
     final isSelected = _selectedFilter == label;
     return GestureDetector(
-      onTap: () => setState(() => _selectedFilter = label),
+      onTap: () {
+        if (_selectedFilter != label) {
+          setState(() {
+            _selectedFilter = label;
+            _currentPage = 1; // Reset ke halaman 1 saat ganti filter
+          });
+        }
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -220,7 +295,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
 
   Widget _buildGridView(List<dynamic> list) {
     return GridView.builder(
-      padding: const EdgeInsets.only(left: 24, right: 24, top: 10, bottom: 100),
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 10, bottom: 20),
       physics: const BouncingScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 400,
@@ -233,31 +308,16 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     );
   }
 
-  Widget _buildPageView(List<dynamic> list) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            'Geser untuk melihat riwayat',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textMutedLt.withAlpha(180),
-            ),
-          ).animate().fadeIn(duration: 400.ms),
-        ),
-        const SizedBox(height: 16),
-        Expanded(
-          child: PageView.builder(
-            controller: PageController(viewportFraction: 0.88),
-            physics: const BouncingScrollPhysics(),
-            itemCount: list.length,
-            itemBuilder: (_, i) => _buildCard(list[i], i, isPage: true),
-          ),
-        ),
-        const SizedBox(height: 100), // Nav bar spacing
-      ],
+  Widget _buildListView(List<dynamic> list) {
+    return ListView.builder(
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 10, bottom: 20),
+      physics: const BouncingScrollPhysics(),
+      itemCount: list.length,
+      itemBuilder: (_, i) => Container(
+        height: 380, // Fix layout error from unbounded height for Spacer
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _buildCard(list[i], i),
+      ),
     );
   }
 
@@ -312,7 +372,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        n['judul'],
+                        (n['judul'] ?? 'Tidak Ada Judul').toString(),
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
