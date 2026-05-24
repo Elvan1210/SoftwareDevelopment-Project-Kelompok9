@@ -380,6 +380,8 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    
     return AppShell(
       child: Stack(
         children: [
@@ -429,7 +431,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                   child: KeyedSubtree(
                     key: ValueKey(_selectedIndex),
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 80),
+                      padding: EdgeInsets.only(bottom: isKeyboardOpen ? 0 : 80),
                       child: _views[_selectedIndex],
                     ),
                   ),
@@ -439,9 +441,10 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
           ),
 
           // ── Premium light-mode bottom nav bar ─────────────────────────
-          Positioned(
-            left: 0,
-            right: 0,
+          if (!isKeyboardOpen)
+            Positioned(
+              left: 0,
+              right: 0,
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
