@@ -126,3 +126,5 @@ app.use((err, req, res, next) => {
 server.listen(settings.port, () => {
   logger.info(`Server Backend berjalan di http://localhost:${settings.port}`);
 });
+
+module.exports = app;
