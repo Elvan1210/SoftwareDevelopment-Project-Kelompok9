@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../config/theme.dart';
-import '../../../widgets/premium_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 
@@ -113,19 +112,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
       }
     }
     return 'Private Chat';
-  }
-
-  // ✅ FIX: Bandingkan sebagai String supaya tidak mismatch tipe
-  String? _getTargetUserId(Map<String, dynamic> conv) {
-    if (conv['type'] == 'group') return null;
-    if (conv['participantNames'] != null) {
-      Map<String, dynamic> pNames =
-          Map<String, dynamic>.from(conv['participantNames']);
-      for (var key in pNames.keys) {
-        if (key.toString() != myId.toString()) return key.toString();
-      }
-    }
-    return null;
   }
 
   void selectConversation(Map<String, dynamic> conv, String name) {
@@ -412,7 +398,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 ],
               ),
             ),
-            Icon(LucideIcons.arrowRight, color: AppTheme.textMutedLt, size: 20),
+            const Icon(LucideIcons.arrowRight, color: AppTheme.textMutedLt, size: 20),
           ],
         ),
       ),
@@ -500,8 +486,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             onTap: () => Navigator.pop(context),
                             child: Container(
                               padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFCEEDFF),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFCEEDFF),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(LucideIcons.x, color: AppTheme.textLight, size: 20),
@@ -568,7 +554,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                 borderRadius: BorderRadius.circular(16), // So splash matches bounds roughly
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     color: Colors.white,
                                     border: Border(
                                       top: BorderSide(color: AppTheme.textLight, width: 1),
@@ -1071,11 +1057,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           .doc(userId)
           .snapshots(),
       builder: (context, snapshot) {
-        String currentStatus = 'Appear Offline';
-        if (snapshot.hasData && snapshot.data!.exists) {
-          final data = snapshot.data!.data() as Map<String, dynamic>?;
-          currentStatus = data?['status'] ?? 'Appear Offline';
-        }
+
 
         return Stack(
           clipBehavior: Clip.none,

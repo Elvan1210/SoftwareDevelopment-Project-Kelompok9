@@ -10,7 +10,6 @@ import 'dart:convert';
 import 'guru_tugas_detail_screen.dart';
 import '../../../services/upload_service.dart';
 import 'package:intl/intl.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GuruTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -135,15 +134,17 @@ class _GuruTugasViewState extends State<GuruTugasView> {
               setDialogState(() => isUploading = false);
               if (url != null) {
                 linkCtrl.text = url;
-                if (ctx.mounted)
+                if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
                       content: Text('File terunggah!'),
                       backgroundColor: AppTheme.success));
+                }
               } else {
-                if (ctx.mounted)
+                if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
                       content: Text('Gagal upload!'),
                       backgroundColor: AppTheme.error));
+                }
               }
             }
           }
@@ -178,7 +179,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                               horizontal: 20, vertical: 16),
                           decoration: BoxDecoration(
                             color: const Color(0xFFB7E5CD).withAlpha(80),
-                            border: Border(
+                            border: const Border(
                               bottom: BorderSide(color: _outline, width: 1),
                             ),
                           ),
@@ -231,7 +232,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _FormLabel('JUDUL TUGAS'),
+                                      const _FormLabel('JUDUL TUGAS'),
                                       const SizedBox(height: 8),
                                       _NeoInput(
                                         controller: judulCtrl,
@@ -239,7 +240,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                         icon: Icons.title_rounded,
                                       ),
                                       const SizedBox(height: 16),
-                                      _FormLabel('DESKRIPSI DETAIL'),
+                                      const _FormLabel('DESKRIPSI DETAIL'),
                                       const SizedBox(height: 8),
                                       Container(
                                         decoration: BoxDecoration(
@@ -282,7 +283,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _FormLabel('CHANNEL'),
+                                        const _FormLabel('CHANNEL'),
                                         const SizedBox(height: 8),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
@@ -318,9 +319,10 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                                               .ellipsis)),
                                               ],
                                               onChanged: (val) {
-                                                if (val != null)
+                                                if (val != null) {
                                                   setDialogState(() =>
                                                       selectedChannelId = val);
+                                                }
                                               },
                                             ),
                                           ),
@@ -337,7 +339,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _FormLabel('DEADLINE'),
+                                        const _FormLabel('DEADLINE'),
                                         const SizedBox(height: 8),
                                         GestureDetector(
                                           onTap: () async {
@@ -413,7 +415,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _FormLabel('LAMPIRAN & TAUTAN'),
+                                      const _FormLabel('LAMPIRAN & TAUTAN'),
                                       const SizedBox(height: 12),
                                       // Dashed upload area
                                       GestureDetector(
@@ -506,7 +508,7 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,
-                            border: Border(
+                            border: const Border(
                                 top: BorderSide(color: _outline, width: 1)),
                           ),
                           child: Row(
