@@ -213,76 +213,49 @@ class _MessagesScreenState extends State<MessagesScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             insetPadding: const EdgeInsets.all(16),
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 400), // max-w-sm
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white, // surface
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(40),
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-                border: Border.all(color: AppTheme.textLight, width: 2),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black, offset: Offset(8, 8))
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // HEADER
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Mulai Pesan Baru",
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 24, // headline-lg-mobile roughly
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.textLight,
-                              height: 1.1,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Pilih cara kamu ingin berkomunikasi hari ini.",
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: AppTheme.textMutedLt,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Positioned(
-                        top: -24,
-                        right: -12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8D4D33), // tertiary from HTML
-                            border: Border.all(color: AppTheme.textLight, width: 1.5),
-                          ),
-                          child: Text(
-                            "NEW",
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxWidth: 400), // max-w-sm
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white, // surface
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(40),
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                    border: Border.all(color: AppTheme.textLight, width: 2),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black, offset: Offset(8, 8))
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // HEADER
+                      Text(
+                        "Mulai Pesan Baru",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 24, // headline-lg-mobile roughly
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textLight,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Pilih cara kamu ingin berkomunikasi hari ini.",
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppTheme.textMutedLt,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
                   
                   // OPTION 1: PESAN PRIBADI
                   _buildChatOptionCard(
@@ -290,7 +263,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     subtitle: "Chat langsung dengan teman atau guru",
                     icon: LucideIcons.user,
                     iconColor: Colors.white,
-                    iconBgColor: AppTheme.primary,
+                    iconBgColor: AppTheme.secondary,
                     onTap: () {
                       Navigator.pop(context);
                       _showUserList(isGroup: false);
@@ -358,7 +331,29 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 ],
               ),
             ),
-          ),
+            Positioned(
+              top: -12,
+              right: -8, // Perfectly sticking out slightly
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8D4D33), // tertiary from HTML
+                  border: Border.all(color: AppTheme.textLight, width: 1.5),
+                ),
+                child: Text(
+                  "NEW",
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
         );
       },
     );
