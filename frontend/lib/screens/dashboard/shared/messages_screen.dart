@@ -452,16 +452,23 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget _buildAvatar(String? userId, String initial) {
     if (userId == null || userId.isEmpty || userId == 'null') {
       return Container(
-        width: 40,
-        height: 40,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
-          color: AppTheme.primary,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+          color: AppTheme.primaryContainer,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppTheme.textLight, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: AppTheme.textLight,
+              offset: Offset(3, 3),
+            )
+          ],
         ),
         alignment: Alignment.center,
         child: Text(
           initial,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: AppTheme.primaryFixedVariant, fontWeight: FontWeight.w800, fontSize: 16),
         ),
       );
     }
@@ -482,16 +489,23 @@ class _MessagesScreenState extends State<MessagesScreen> {
           clipBehavior: Clip.none,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                color: AppTheme.primary,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                color: AppTheme.primaryContainer,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.textLight, width: 2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppTheme.textLight,
+                    offset: Offset(3, 3),
+                  )
+                ],
               ),
               alignment: Alignment.center,
               child: Text(
                 initial,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: AppTheme.primaryFixedVariant, fontWeight: FontWeight.w800, fontSize: 16),
               ),
             ),
             Positioned(
@@ -536,138 +550,135 @@ class _MessagesScreenState extends State<MessagesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 24, top: 32, bottom: 24),
-                child: Text(
-                  "Pesan",
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    color: AppTheme.textLight,
-                    letterSpacing: -1.5,
+              // Search Bar
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.lightBorder),
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Cari pesan...',
+                      hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt, fontSize: 14),
+                      prefixIcon: const Icon(LucideIcons.search, size: 18, color: AppTheme.textMutedLt),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
               ),
+              
+              const SizedBox(height: 8),
+              
+              // Chat List
               Expanded(
                 child: isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : conversations.isEmpty
                         ? Center(
                             child: Text(
-                              "Belum ada obrolan.\nKlik ikon + untuk mulai.",
+                              "Belum ada obrolan.",
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                             ),
                           )
-                        : Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppTheme.lightBg,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: AppTheme.textLight, width: 2),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: AppTheme.textLight,
-                                  offset: Offset(4, 4),
-                                )
-                              ],
-                            ),
-                            child: ListView.separated(
-                              shrinkWrap: true,
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: conversations.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                final conv = conversations[index];
-                                final convName = _displayChatName(conv);
-                                final isActive = activeConversationId == conv['id'];
-                                
-                                return GestureDetector(
-                                  onTap: () => selectConversation(conv, convName),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      color: isActive ? AppTheme.primaryContainer : Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: AppTheme.textLight, width: 2),
-                                      boxShadow: [
-                                        if (!isActive)
-                                          const BoxShadow(
-                                            color: AppTheme.textLight,
-                                            offset: Offset(2, 2),
-                                          )
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      convName,
-                                                      style: GoogleFonts.plusJakartaSans(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textLight,
-                                                        height: 1.2,
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: conversations.length,
+                            itemBuilder: (context, index) {
+                              final conv = conversations[index];
+                              final convName = _displayChatName(conv);
+                              final isActive = activeConversationId == conv['id'];
+                              final initial = convName.isNotEmpty ? convName[0].toUpperCase() : '?';
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: isActive ? AppTheme.primaryContainer.withAlpha(80) : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: isActive ? AppTheme.primary.withAlpha(50) : Colors.transparent),
+                                  boxShadow: isActive ? [] : [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(4),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () => selectConversation(conv, convName),
+                                    splashColor: AppTheme.primaryContainer.withAlpha(100),
+                                    highlightColor: AppTheme.primaryContainer.withAlpha(50),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        children: [
+                                          // Avatar
+                                          _buildAvatar(null, initial),
+                                          const SizedBox(width: 16),
+                                          // Text Area
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        convName,
+                                                        style: GoogleFonts.plusJakartaSans(
+                                                          fontSize: 15,
+                                                          fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                                                          color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textLight,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
                                                     ),
-                                                  ),
-                                                  if (isActive) ...[
                                                     const SizedBox(width: 8),
-                                                    Container(
-                                                      width: 8,
-                                                      height: 8,
-                                                      decoration: const BoxDecoration(
-                                                        color: AppTheme.primary,
-                                                        shape: BoxShape.circle,
+                                                    Text(
+                                                      '12:45',
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 11,
+                                                        fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                                        color: isActive ? AppTheme.primary : AppTheme.textMutedLt,
                                                       ),
                                                     ),
-                                                  ]
-                                                ],
-                                              ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  conv['lastMessage'] ?? 'Mulai obrolan...',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: AppTheme.textMutedLt,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
                                             ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              '12:45', // Ganti dengan waktu asli jika ada (atau bisa panggil method formatting)
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textMutedLt,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          conv['lastMessage'] ?? '...',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w400,
-                                            color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textMutedLt,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              );
+                            },
                           ),
               ),
-              const SizedBox(height: 80), // Jarak untuk menaruh FAB
             ],
           ),
         ),
@@ -677,12 +688,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
           child: GestureDetector(
             onTap: _showNewChatMenu,
             child: Container(
-              width: 64,
-              height: 64,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AppTheme.primary,
+                color: AppTheme.secondary,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.textLight, width: 2),
+                border: Border.all(color: AppTheme.textLight, width: 2.5),
                 boxShadow: const [
                   BoxShadow(
                     color: AppTheme.textLight,
@@ -693,7 +704,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               child: const Icon(
                 LucideIcons.messageSquarePlus,
                 color: Colors.white,
-                size: 28,
+                size: 26,
               ),
             ),
           ),
