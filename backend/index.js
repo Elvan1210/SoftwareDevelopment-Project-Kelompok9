@@ -123,8 +123,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Terjadi kesalahan sistem', error: err.message });
 });
 
-server.listen(settings.port, () => {
-  logger.info(`Server Backend berjalan di http://localhost:${settings.port}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  server.listen(settings.port, () => {
+    logger.info(`Server Backend berjalan di http://localhost:${settings.port}`);
+  });
+}
 
 module.exports = app;
