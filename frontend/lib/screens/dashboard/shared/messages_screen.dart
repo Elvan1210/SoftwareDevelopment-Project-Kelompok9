@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:convert';
+import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -201,47 +202,222 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _showNewChatMenu() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      barrierColor: AppTheme.textLight.withAlpha(100), // bg-on-surface/40
+      barrierDismissible: true,
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2), // backdrop-blur-[2px]
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.all(16),
+            child: Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxWidth: 400), // max-w-sm
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white, // surface
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(40),
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
+                border: Border.all(color: AppTheme.textLight, width: 2),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black, offset: Offset(8, 8))
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // HEADER
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Mulai Pesan Baru",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 24, // headline-lg-mobile roughly
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textLight,
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Pilih cara kamu ingin berkomunikasi hari ini.",
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.textMutedLt,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        top: -24,
+                        right: -12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8D4D33), // tertiary from HTML
+                            border: Border.all(color: AppTheme.textLight, width: 1.5),
+                          ),
+                          child: Text(
+                            "NEW",
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // OPTION 1: PESAN PRIBADI
+                  _buildChatOptionCard(
+                    title: "Pesan Pribadi",
+                    subtitle: "Chat langsung dengan teman atau guru",
+                    icon: LucideIcons.user,
+                    iconColor: Colors.white,
+                    iconBgColor: AppTheme.primary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showUserList(isGroup: false);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // OPTION 2: BUAT GRUP
+                  _buildChatOptionCard(
+                    title: "Buat Grup",
+                    subtitle: "Mulai diskusi komunitas atau kelompok",
+                    icon: LucideIcons.users,
+                    iconColor: Colors.white,
+                    iconBgColor: AppTheme.secondary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showUserList(isGroup: true);
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // FOOTER ACTION: BATAL
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        border: Border.all(color: AppTheme.textLight, width: 1.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Batal",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textMutedLt,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  // DECORATIVE ELEMENTS
+                  Row(
+                    children: [
+                      Expanded(child: Container(height: 1, color: AppTheme.textLight.withAlpha(40))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          "MYPSKD ACADEMIC",
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.5,
+                            color: AppTheme.textLight.withAlpha(80),
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Container(height: 1, color: AppTheme.textLight.withAlpha(40))),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChatOptionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF4FAFF), // surface-container-low from HTML
+          border: Border.all(color: AppTheme.textLight, width: 1.5),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
           children: [
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor:
-                    Theme.of(context).primaryColor.withAlpha(40),
-                child: Icon(LucideIcons.user,
-                    color: Theme.of(context).primaryColor),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                border: Border.all(color: AppTheme.textLight, width: 1.5),
               ),
-              title: Text("Chat Pribadi",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              subtitle: Text("Mulai obrolan dengan satu orang", style: Theme.of(context).textTheme.bodyLarge),
-              onTap: () {
-                Navigator.pop(context);
-                _showUserList(isGroup: false);
-              },
+              alignment: Alignment.center,
+              child: Icon(icon, color: iconColor, size: 28),
             ),
-            const Divider(),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor:
-                    Theme.of(context).primaryColor.withAlpha(40),
-                child:
-                    Icon(LucideIcons.users, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppTheme.textMutedLt,
+                    ),
+                  ),
+                ],
               ),
-              title: Text("Buat Grup Baru",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              subtitle: Text("Mulai obrolan dengan banyak orang", style: Theme.of(context).textTheme.bodyLarge),
-              onTap: () {
-                Navigator.pop(context);
-                _showUserList(isGroup: true);
-              },
             ),
+            Icon(LucideIcons.arrowRight, color: AppTheme.textMutedLt, size: 20),
           ],
         ),
       ),
