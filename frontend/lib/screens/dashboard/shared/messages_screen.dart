@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:convert';
+import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -201,47 +202,217 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _showNewChatMenu() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      barrierColor: AppTheme.textLight.withAlpha(100), // bg-on-surface/40
+      barrierDismissible: true,
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2), // backdrop-blur-[2px]
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.all(16),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxWidth: 400), // max-w-sm
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white, // surface
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(40),
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                    border: Border.all(color: AppTheme.textLight, width: 2),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black, offset: Offset(8, 8))
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // HEADER
+                      Text(
+                        "Mulai Pesan Baru",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 24, // headline-lg-mobile roughly
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textLight,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Pilih cara kamu ingin berkomunikasi hari ini.",
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppTheme.textMutedLt,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                  
+                  // OPTION 1: PESAN PRIBADI
+                  _buildChatOptionCard(
+                    title: "Pesan Pribadi",
+                    subtitle: "Chat langsung dengan teman atau guru",
+                    icon: LucideIcons.user,
+                    iconColor: Colors.white,
+                    iconBgColor: AppTheme.secondary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showUserList(isGroup: false);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // OPTION 2: BUAT GRUP
+                  _buildChatOptionCard(
+                    title: "Buat Grup",
+                    subtitle: "Mulai diskusi komunitas atau kelompok",
+                    icon: LucideIcons.users,
+                    iconColor: Colors.white,
+                    iconBgColor: AppTheme.secondary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showUserList(isGroup: true);
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // FOOTER ACTION: BATAL
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        border: Border.all(color: AppTheme.textLight, width: 1.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Batal",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textMutedLt,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  // DECORATIVE ELEMENTS
+                  Row(
+                    children: [
+                      Expanded(child: Container(height: 1, color: AppTheme.textLight.withAlpha(40))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          "MYPSKD ACADEMIC",
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.5,
+                            color: AppTheme.textLight.withAlpha(80),
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Container(height: 1, color: AppTheme.textLight.withAlpha(40))),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            Positioned(
+              top: -12,
+              right: -8, // Perfectly sticking out slightly
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8D4D33), // tertiary from HTML
+                  border: Border.all(color: AppTheme.textLight, width: 1.5),
+                ),
+                child: Text(
+                  "NEW",
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        );
+      },
+    );
+  }
+
+  Widget _buildChatOptionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF4FAFF), // surface-container-low from HTML
+          border: Border.all(color: AppTheme.textLight, width: 1.5),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
           children: [
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor:
-                    Theme.of(context).primaryColor.withAlpha(40),
-                child: Icon(LucideIcons.user,
-                    color: Theme.of(context).primaryColor),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                border: Border.all(color: AppTheme.textLight, width: 1.5),
               ),
-              title: Text("Chat Pribadi",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              subtitle: Text("Mulai obrolan dengan satu orang", style: Theme.of(context).textTheme.bodyLarge),
-              onTap: () {
-                Navigator.pop(context);
-                _showUserList(isGroup: false);
-              },
+              alignment: Alignment.center,
+              child: Icon(icon, color: iconColor, size: 28),
             ),
-            const Divider(),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor:
-                    Theme.of(context).primaryColor.withAlpha(40),
-                child:
-                    Icon(LucideIcons.users, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppTheme.textMutedLt,
+                    ),
+                  ),
+                ],
               ),
-              title: Text("Buat Grup Baru",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              subtitle: Text("Mulai obrolan dengan banyak orang", style: Theme.of(context).textTheme.bodyLarge),
-              onTap: () {
-                Navigator.pop(context);
-                _showUserList(isGroup: true);
-              },
             ),
+            Icon(LucideIcons.arrowRight, color: AppTheme.textMutedLt, size: 20),
           ],
         ),
       ),
@@ -278,42 +449,220 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _openPrivateChatPicker(List<dynamic> users) {
+    String searchQuery = "";
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Pilih Kontak", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 400,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: users.length,
-            itemBuilder: (context, i) {
-              final user = users[i];
-              final namaUser = user['nama'] ?? 'User';
-              final userId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
-              return ListTile(
-                leading: _buildAvatar(userId, namaUser[0].toUpperCase()),
-                title: Text(namaUser, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                subtitle: Text(user['role'] ?? 'Member', style: Theme.of(context).textTheme.bodyMedium),
-                onTap: () {
-                  Navigator.pop(context);
-                  _startConv(
-                    [myId, userId],
-                    {myId: myName, userId: namaUser},
-                    'private',
-                  );
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Batal", style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w700)),
-          ),
-        ],
+      barrierColor: AppTheme.textLight.withAlpha(100),
+      barrierDismissible: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final filteredUsers = users.where((u) {
+            final name = (u['nama'] ?? 'User').toString().toLowerCase();
+            return name.contains(searchQuery.toLowerCase());
+          }).toList();
+
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 450, maxHeight: 795),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4FAFF),
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(color: AppTheme.textLight, width: 4),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // HEADER
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Pilih Kontak",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textLight,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFCEEDFF),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(LucideIcons.x, color: AppTheme.textLight, size: 20),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // SEARCH
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: AppTheme.textLight, width: 2),
+                        ),
+                        child: TextField(
+                          onChanged: (v) {
+                            setDialogState(() {
+                              searchQuery = v;
+                            });
+                          },
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                          decoration: InputDecoration(
+                            hintText: "Cari nama atau kelas...",
+                            hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt),
+                            border: InputBorder.none,
+                            prefixIcon: const Icon(LucideIcons.search, color: AppTheme.textMutedLt),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // CONTACT LIST
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, i) {
+                          final user = filteredUsers[i];
+                          final uId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
+                          final namaUser = user['nama'] ?? 'User';
+                          final role = (user['role'] ?? 'MEMBER').toString().toUpperCase();
+                          final isGuru = role == 'GURU';
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _startConv(
+                                    [myId, uId],
+                                    {myId: myName, uId: namaUser},
+                                    'private',
+                                  );
+                                },
+                                splashColor: AppTheme.primaryContainer.withAlpha(100),
+                                highlightColor: AppTheme.primaryContainer.withAlpha(50),
+                                borderRadius: BorderRadius.circular(16), // So splash matches bounds roughly
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border(
+                                      top: BorderSide(color: AppTheme.textLight, width: 1),
+                                      left: BorderSide(color: AppTheme.textLight, width: 1),
+                                      right: BorderSide(color: AppTheme.textLight, width: 1),
+                                      bottom: BorderSide(color: AppTheme.textLight, width: 4),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      _buildAvatar(uId, namaUser[0].toUpperCase()),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              namaUser,
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppTheme.textLight,
+                                                height: 1.1,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              isGuru ? "Guru • Staf" : "Siswa",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                color: isGuru ? AppTheme.secondary : AppTheme.textMutedLt,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: isGuru ? const Color(0xFFBFEDD5) : const Color(0xFFFFDBCE),
+                                          border: Border.all(color: AppTheme.textLight, width: 1),
+                                        ),
+                                        child: Text(
+                                          role,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: isGuru ? const Color(0xFF244F3D) : const Color(0xFF70371E),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    
+                    // FOOTER
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFDAD6),
+                            border: Border.all(color: AppTheme.textLight, width: 2),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            "Batal",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.error,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -322,93 +671,323 @@ class _MessagesScreenState extends State<MessagesScreen> {
     String groupName = "";
     List<String> selectedIds = [];
     List<dynamic> selectedUsers = [];
+    String searchQuery = "";
 
     showDialog(
       context: context,
+      barrierColor: AppTheme.textLight.withAlpha(100),
+      barrierDismissible: true,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          return AlertDialog(
-            title: Text("Buat Grup Baru", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 400,
-              child: Column(
-                children: [
-                  TextField(
-                    onChanged: (v) => groupName = v,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      hintText: "Masukkan Nama Grup",
-                      hintStyle: Theme.of(context).textTheme.titleMedium,
-                      border: const OutlineInputBorder(),
+          final filteredUsers = users.where((u) {
+            final name = (u['nama'] ?? 'User').toString().toLowerCase();
+            return name.contains(searchQuery.toLowerCase());
+          }).toList();
+
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 450, maxHeight: 650),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(8),
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(8),
+                  ),
+                  border: Border.all(color: AppTheme.textLight, width: 2),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black, offset: Offset(4, 4))
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // HEADER
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Buat Grup Baru",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textLight,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Mulai kolaborasi dengan tim belajar Anda.",
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.textMutedLt,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text("Pilih Anggota:",
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 6),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: users.length,
-                      itemBuilder: (context, i) {
-                        final user = users[i];
-                        final uId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
-                        final isSelected = selectedIds.contains(uId);
-                        return CheckboxListTile(
-                          title: Text(user['nama'] ?? 'User', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
-                          value: isSelected,
-                          onChanged: (bool? val) {
-                            setDialogState(() {
-                              if (val == true) {
-                                selectedIds.add(uId);
-                                selectedUsers.add(user);
-                              } else {
-                                selectedIds.remove(uId);
-                                selectedUsers.removeWhere((u) =>
-                                    (u['id'] ?? u['uid'] ?? u['_id'])
-                                        .toString() ==
-                                    uId);
-                              }
-                            });
-                          },
-                        );
-                      },
+                    Divider(height: 1, thickness: 2, color: AppTheme.textLight.withAlpha(20)),
+                    
+                    // CONTENT
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // NAMA GRUP
+                            Text(
+                              "NAMA GRUP",
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textLight, letterSpacing: 1.2),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.textLight, width: 2),
+                                boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                              ),
+                              child: TextField(
+                                onChanged: (v) => groupName = v,
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                                decoration: InputDecoration(
+                                  hintText: "Contoh: Projek Biologi 12-A",
+                                  hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt.withAlpha(150)),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            
+                            // CARI ANGGOTA
+                            Text(
+                              "CARI ANGGOTA",
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textLight, letterSpacing: 1.2),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.textLight, width: 2),
+                                boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                              ),
+                              child: TextField(
+                                onChanged: (v) {
+                                  setDialogState(() {
+                                    searchQuery = v;
+                                  });
+                                },
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                                decoration: InputDecoration(
+                                  hintText: "Cari berdasarkan nama...",
+                                  hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt.withAlpha(150)),
+                                  border: InputBorder.none,
+                                  prefixIcon: const Icon(LucideIcons.search, color: AppTheme.textLight),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            
+                            // KONTAK TERSEDIA
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "KONTAK TERSEDIA",
+                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.textLight, letterSpacing: 1.2),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setDialogState(() {
+                                      if (selectedIds.length == filteredUsers.length) {
+                                        selectedIds.clear();
+                                        selectedUsers.clear();
+                                      } else {
+                                        selectedIds = filteredUsers.map((u) => (u['id'] ?? u['uid'] ?? u['_id']).toString()).toList();
+                                        selectedUsers = List.from(filteredUsers);
+                                      }
+                                    });
+                                  },
+                                  child: Text(
+                                    selectedIds.length == filteredUsers.length ? "Batal Semua" : "Pilih Semua",
+                                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.secondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            
+                            // LIST ANGGOTA
+                            ...filteredUsers.map((user) {
+                              final uId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
+                              final namaUser = user['nama'] ?? 'User';
+                              final isSelected = selectedIds.contains(uId);
+                              
+                              return GestureDetector(
+                                onTap: () {
+                                  setDialogState(() {
+                                    if (isSelected) {
+                                      selectedIds.remove(uId);
+                                      selectedUsers.removeWhere((u) => (u['id'] ?? u['uid'] ?? u['_id']).toString() == uId);
+                                    } else {
+                                      selectedIds.add(uId);
+                                      selectedUsers.add(user);
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFFE8F6FF) : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppTheme.textLight, width: 2),
+                                    boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      _buildAvatar(uId, namaUser[0].toUpperCase()),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              namaUser,
+                                              style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppTheme.textLight),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: (user['role']?.toString().toLowerCase() == 'guru') ? AppTheme.secondary.withAlpha(25) : AppTheme.textLight.withAlpha(15),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                (user['role'] ?? 'MEMBER').toString().toUpperCase(),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: (user['role']?.toString().toLowerCase() == 'guru') ? AppTheme.secondary : AppTheme.textMutedLt,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppTheme.secondary : Colors.white,
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: AppTheme.textLight, width: 2),
+                                          boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: isSelected 
+                                          ? const Icon(LucideIcons.check, color: Colors.white, size: 16)
+                                          : null,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    
+                    // FOOTER
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F6FF).withAlpha(80),
+                        border: Border(top: BorderSide(color: AppTheme.textLight.withAlpha(30), width: 2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.textLight, width: 2),
+                                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "Batal",
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.textLight, fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 3,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (groupName.isEmpty || selectedIds.isEmpty) return;
+                                Navigator.pop(context);
+                                Map<String, String> pNames = {myId: myName};
+                                for (var u in selectedUsers) {
+                                  final uid = (u['id'] ?? u['uid'] ?? u['_id']).toString();
+                                  pNames[uid] = u['nama'] ?? 'User';
+                                }
+                                _startConv(
+                                  [myId, ...selectedIds],
+                                  pNames,
+                                  'group',
+                                  groupName: groupName,
+                                );
+                              },
+                              child: Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.textLight, width: 2),
+                                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "Buat Grup",
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.textLight, fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Batal", style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w700)),
-              ),
-              PremiumElevatedButton(
-                color: Theme.of(context).primaryColor,
-                textColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                radius: 12,
-                onPressed: () {
-                  if (groupName.isEmpty || selectedIds.isEmpty) return;
-                  Navigator.pop(context);
-                  Map<String, String> pNames = {myId: myName};
-                  for (var u in selectedUsers) {
-                    final uid = (u['id'] ?? u['uid'] ?? u['_id']).toString();
-                    pNames[uid] = u['nama'] ?? 'User';
-                  }
-                  _startConv(
-                    [myId, ...selectedIds],
-                    pNames,
-                    'group',
-                    groupName: groupName,
-                  );
-                },
-                child: Text("Buat Grup", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-              ),
-            ],
           );
         },
       ),
@@ -449,19 +1028,39 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
-  Widget _buildAvatar(String? userId, String initial) {
+  Widget _buildAvatar(String? userId, String initial, {bool isGroup = false}) {
+    if (isGroup) {
+      return Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE0E7FF), // Sangat bersih, Light Indigo
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(8),
+            bottomLeft: Radius.circular(24),
+            bottomRight: Radius.circular(8),
+          ),
+          border: Border.all(color: AppTheme.textLight, width: 2),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(LucideIcons.users, color: Color(0xFF3730A3), size: 28),
+      );
+    }
+
     if (userId == null || userId.isEmpty || userId == 'null') {
       return Container(
-        width: 40,
-        height: 40,
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
-          color: AppTheme.primary,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+          color: AppTheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.textLight, width: 2),
         ),
         alignment: Alignment.center,
         child: Text(
           initial,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Color(0xFF244F3D), fontWeight: FontWeight.w800, fontSize: 24),
         ),
       );
     }
@@ -482,31 +1081,35 @@ class _MessagesScreenState extends State<MessagesScreen> {
           clipBehavior: Clip.none,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AppTheme.primary,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                color: AppTheme.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.textLight, width: 2),
               ),
               alignment: Alignment.center,
               child: Text(
                 initial,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: Color(0xFF244F3D), fontWeight: FontWeight.w800, fontSize: 24),
               ),
             ),
             Positioned(
-              right: -4,
-              bottom: -4,
+              right: -6,
+              top: -6,
               child: Container(
-                width: 14,
-                height: 14,
+                width: 20,
+                height: 20,
                 decoration: BoxDecoration(
-                  color: AppTheme.getStatusColor(currentStatus),
+                  color: AppTheme.secondary,
+                  shape: BoxShape.circle,
                   border: Border.all(
                     color: Theme.of(context).colorScheme.onSurface,
-                    width: 1.5,
+                    width: 2,
                   ),
                 ),
+                alignment: Alignment.center,
+                child: const Icon(LucideIcons.check, color: Colors.white, size: 12),
               ),
             ),
           ],
@@ -536,138 +1139,136 @@ class _MessagesScreenState extends State<MessagesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 24, top: 32, bottom: 24),
-                child: Text(
-                  "Pesan",
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    color: AppTheme.textLight,
-                    letterSpacing: -1.5,
+              // Search Bar
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.lightBorder),
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Cari pesan...',
+                      hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt, fontSize: 14),
+                      prefixIcon: const Icon(LucideIcons.search, size: 18, color: AppTheme.textMutedLt),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
               ),
+              
+              const SizedBox(height: 8),
+              
+              // Chat List
               Expanded(
                 child: isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : conversations.isEmpty
                         ? Center(
                             child: Text(
-                              "Belum ada obrolan.\nKlik ikon + untuk mulai.",
+                              "Belum ada obrolan.",
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
                             ),
                           )
-                        : Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppTheme.lightBg,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: AppTheme.textLight, width: 2),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: AppTheme.textLight,
-                                  offset: Offset(4, 4),
-                                )
-                              ],
-                            ),
-                            child: ListView.separated(
-                              shrinkWrap: true,
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: conversations.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                final conv = conversations[index];
-                                final convName = _displayChatName(conv);
-                                final isActive = activeConversationId == conv['id'];
-                                
-                                return GestureDetector(
-                                  onTap: () => selectConversation(conv, convName),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      color: isActive ? AppTheme.primaryContainer : Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: AppTheme.textLight, width: 2),
-                                      boxShadow: [
-                                        if (!isActive)
-                                          const BoxShadow(
-                                            color: AppTheme.textLight,
-                                            offset: Offset(2, 2),
-                                          )
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      convName,
-                                                      style: GoogleFonts.plusJakartaSans(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textLight,
-                                                        height: 1.2,
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: conversations.length,
+                            itemBuilder: (context, index) {
+                              final conv = conversations[index];
+                              final convName = _displayChatName(conv);
+                              final isActive = activeConversationId == conv['id'];
+                              final initial = convName.isNotEmpty ? convName[0].toUpperCase() : '?';
+                              final isGroup = conv['type'] == 'group';
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: isActive ? AppTheme.primaryContainer.withAlpha(80) : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: isActive ? AppTheme.primary.withAlpha(50) : Colors.transparent),
+                                  boxShadow: isActive ? [] : [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(4),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () => selectConversation(conv, convName),
+                                    splashColor: AppTheme.primaryContainer.withAlpha(100),
+                                    highlightColor: AppTheme.primaryContainer.withAlpha(50),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        children: [
+                                          // Avatar
+                                          _buildAvatar(null, initial, isGroup: isGroup),
+                                          const SizedBox(width: 16),
+                                          // Text Area
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        convName,
+                                                        style: GoogleFonts.plusJakartaSans(
+                                                          fontSize: 15,
+                                                          fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                                                          color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textLight,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
                                                     ),
-                                                  ),
-                                                  if (isActive) ...[
                                                     const SizedBox(width: 8),
-                                                    Container(
-                                                      width: 8,
-                                                      height: 8,
-                                                      decoration: const BoxDecoration(
-                                                        color: AppTheme.primary,
-                                                        shape: BoxShape.circle,
+                                                    Text(
+                                                      '12:45',
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 11,
+                                                        fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                                        color: isActive ? AppTheme.primary : AppTheme.textMutedLt,
                                                       ),
                                                     ),
-                                                  ]
-                                                ],
-                                              ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  conv['lastMessage'] ?? 'Mulai obrolan...',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: AppTheme.textMutedLt,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
                                             ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              '12:45', // Ganti dengan waktu asli jika ada (atau bisa panggil method formatting)
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textMutedLt,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          conv['lastMessage'] ?? '...',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w400,
-                                            color: isActive ? AppTheme.primaryFixedVariant : AppTheme.textMutedLt,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              );
+                            },
                           ),
               ),
-              const SizedBox(height: 80), // Jarak untuk menaruh FAB
             ],
           ),
         ),
@@ -677,12 +1278,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
           child: GestureDetector(
             onTap: _showNewChatMenu,
             child: Container(
-              width: 64,
-              height: 64,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AppTheme.primary,
+                color: AppTheme.secondary,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.textLight, width: 2),
+                border: Border.all(color: AppTheme.textLight, width: 2.5),
                 boxShadow: const [
                   BoxShadow(
                     color: AppTheme.textLight,
@@ -693,7 +1294,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               child: const Icon(
                 LucideIcons.messageSquarePlus,
                 color: Colors.white,
-                size: 28,
+                size: 26,
               ),
             ),
           ),
@@ -756,20 +1357,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           child: const Icon(LucideIcons.arrowLeft, color: AppTheme.textLight),
                         ),
                       ),
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryContainer,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.textLight, width: 2),
-                        boxShadow: const [BoxShadow(color: AppTheme.textLight, offset: Offset(2, 2))],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        activeChatName?.isNotEmpty == true ? activeChatName![0].toUpperCase() : '?',
-                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.primaryFixedVariant),
-                      ),
+                    _buildAvatar(
+                      null, 
+                      activeChatName?.isNotEmpty == true ? activeChatName![0].toUpperCase() : '?',
+                      isGroup: activeConversationType == 'group',
                     ),
                     const SizedBox(width: 12),
                     Expanded(
