@@ -493,93 +493,323 @@ class _MessagesScreenState extends State<MessagesScreen> {
     String groupName = "";
     List<String> selectedIds = [];
     List<dynamic> selectedUsers = [];
+    String searchQuery = "";
 
     showDialog(
       context: context,
+      barrierColor: AppTheme.textLight.withAlpha(100),
+      barrierDismissible: true,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          return AlertDialog(
-            title: Text("Buat Grup Baru", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 400,
-              child: Column(
-                children: [
-                  TextField(
-                    onChanged: (v) => groupName = v,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      hintText: "Masukkan Nama Grup",
-                      hintStyle: Theme.of(context).textTheme.titleMedium,
-                      border: const OutlineInputBorder(),
+          final filteredUsers = users.where((u) {
+            final name = (u['nama'] ?? 'User').toString().toLowerCase();
+            return name.contains(searchQuery.toLowerCase());
+          }).toList();
+
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 450, maxHeight: 650),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(8),
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(8),
+                  ),
+                  border: Border.all(color: AppTheme.textLight, width: 2),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black, offset: Offset(4, 4))
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // HEADER
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Buat Grup Baru",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textLight,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Mulai kolaborasi dengan tim belajar Anda.",
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.textMutedLt,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text("Pilih Anggota:",
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 6),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: users.length,
-                      itemBuilder: (context, i) {
-                        final user = users[i];
-                        final uId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
-                        final isSelected = selectedIds.contains(uId);
-                        return CheckboxListTile(
-                          title: Text(user['nama'] ?? 'User', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
-                          value: isSelected,
-                          onChanged: (bool? val) {
-                            setDialogState(() {
-                              if (val == true) {
-                                selectedIds.add(uId);
-                                selectedUsers.add(user);
-                              } else {
-                                selectedIds.remove(uId);
-                                selectedUsers.removeWhere((u) =>
-                                    (u['id'] ?? u['uid'] ?? u['_id'])
-                                        .toString() ==
-                                    uId);
-                              }
-                            });
-                          },
-                        );
-                      },
+                    Divider(height: 1, thickness: 2, color: AppTheme.textLight.withAlpha(20)),
+                    
+                    // CONTENT
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // NAMA GRUP
+                            Text(
+                              "NAMA GRUP",
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textLight, letterSpacing: 1.2),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.textLight, width: 2),
+                                boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                              ),
+                              child: TextField(
+                                onChanged: (v) => groupName = v,
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                                decoration: InputDecoration(
+                                  hintText: "Contoh: Projek Biologi 12-A",
+                                  hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt.withAlpha(150)),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            
+                            // CARI ANGGOTA
+                            Text(
+                              "CARI ANGGOTA",
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textLight, letterSpacing: 1.2),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.textLight, width: 2),
+                                boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                              ),
+                              child: TextField(
+                                onChanged: (v) {
+                                  setDialogState(() {
+                                    searchQuery = v;
+                                  });
+                                },
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textLight),
+                                decoration: InputDecoration(
+                                  hintText: "Cari berdasarkan nama...",
+                                  hintStyle: GoogleFonts.inter(color: AppTheme.textMutedLt.withAlpha(150)),
+                                  border: InputBorder.none,
+                                  prefixIcon: const Icon(LucideIcons.search, color: AppTheme.textLight),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            
+                            // KONTAK TERSEDIA
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "KONTAK TERSEDIA",
+                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.textLight, letterSpacing: 1.2),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setDialogState(() {
+                                      if (selectedIds.length == filteredUsers.length) {
+                                        selectedIds.clear();
+                                        selectedUsers.clear();
+                                      } else {
+                                        selectedIds = filteredUsers.map((u) => (u['id'] ?? u['uid'] ?? u['_id']).toString()).toList();
+                                        selectedUsers = List.from(filteredUsers);
+                                      }
+                                    });
+                                  },
+                                  child: Text(
+                                    selectedIds.length == filteredUsers.length ? "Batal Semua" : "Pilih Semua",
+                                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.secondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            
+                            // LIST ANGGOTA
+                            ...filteredUsers.map((user) {
+                              final uId = (user['id'] ?? user['uid'] ?? user['_id']).toString();
+                              final namaUser = user['nama'] ?? 'User';
+                              final isSelected = selectedIds.contains(uId);
+                              
+                              return GestureDetector(
+                                onTap: () {
+                                  setDialogState(() {
+                                    if (isSelected) {
+                                      selectedIds.remove(uId);
+                                      selectedUsers.removeWhere((u) => (u['id'] ?? u['uid'] ?? u['_id']).toString() == uId);
+                                    } else {
+                                      selectedIds.add(uId);
+                                      selectedUsers.add(user);
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFFE8F6FF) : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppTheme.textLight, width: 2),
+                                    boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      _buildAvatar(uId, namaUser[0].toUpperCase()),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              namaUser,
+                                              style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppTheme.textLight),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: (user['role']?.toString().toLowerCase() == 'guru') ? AppTheme.secondary.withAlpha(25) : AppTheme.textLight.withAlpha(15),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                (user['role'] ?? 'MEMBER').toString().toUpperCase(),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: (user['role']?.toString().toLowerCase() == 'guru') ? AppTheme.secondary : AppTheme.textMutedLt,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppTheme.secondary : Colors.white,
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: AppTheme.textLight, width: 2),
+                                          boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: isSelected 
+                                          ? const Icon(LucideIcons.check, color: Colors.white, size: 16)
+                                          : null,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    
+                    // FOOTER
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F6FF).withAlpha(80),
+                        border: Border(top: BorderSide(color: AppTheme.textLight.withAlpha(30), width: 2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.textLight, width: 2),
+                                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "Batal",
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.textLight, fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 3,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (groupName.isEmpty || selectedIds.isEmpty) return;
+                                Navigator.pop(context);
+                                Map<String, String> pNames = {myId: myName};
+                                for (var u in selectedUsers) {
+                                  final uid = (u['id'] ?? u['uid'] ?? u['_id']).toString();
+                                  pNames[uid] = u['nama'] ?? 'User';
+                                }
+                                _startConv(
+                                  [myId, ...selectedIds],
+                                  pNames,
+                                  'group',
+                                  groupName: groupName,
+                                );
+                              },
+                              child: Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.textLight, width: 2),
+                                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "Buat Grup",
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.textLight, fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Batal", style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withAlpha(160), fontWeight: FontWeight.w700)),
-              ),
-              PremiumElevatedButton(
-                color: Theme.of(context).primaryColor,
-                textColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                radius: 12,
-                onPressed: () {
-                  if (groupName.isEmpty || selectedIds.isEmpty) return;
-                  Navigator.pop(context);
-                  Map<String, String> pNames = {myId: myName};
-                  for (var u in selectedUsers) {
-                    final uid = (u['id'] ?? u['uid'] ?? u['_id']).toString();
-                    pNames[uid] = u['nama'] ?? 'User';
-                  }
-                  _startConv(
-                    [myId, ...selectedIds],
-                    pNames,
-                    'group',
-                    groupName: groupName,
-                  );
-                },
-                child: Text("Buat Grup", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-              ),
-            ],
           );
         },
       ),
