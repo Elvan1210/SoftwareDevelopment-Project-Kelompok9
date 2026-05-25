@@ -15,9 +15,7 @@ import '../../../config/theme.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
-import '../../../widgets/neo_brutalism.dart';
 import '../../../widgets/jitsi_embed.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -388,7 +386,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       color: _tertiary,
-                      child: Text('KELAS AKTIF',
+                      child: const Text('KELAS AKTIF',
                         style: TextStyle(
                           fontSize: 11, fontWeight: FontWeight.w800,
                           color: _white, letterSpacing: 0.8,
@@ -404,7 +402,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                         fontFamily: 'Plus Jakarta Sans',
                       )),
                     Text(tahunAjar,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 15, color: _muted,
                         fontWeight: FontWeight.w400,
                         fontFamily: 'Inter',
@@ -479,7 +477,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
  
           // ── MANAJEMEN KELAS ────────────────────────────────────────
           Row(children: [
-            Icon(Icons.grid_view_rounded, size: 18, color: _primary),
+            const Icon(Icons.grid_view_rounded, size: 18, color: _primary),
             const SizedBox(width: 8),
             Text('Manajemen Kelas',
               style: TextStyle(
@@ -572,7 +570,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                       fontFamily: 'Plus Jakarta Sans',
                     )),
                   const SizedBox(height: 4),
-                  Text('Jadwalkan sesi tutorial interaktif untuk materi yang sulit.',
+                  const Text('Jadwalkan sesi tutorial interaktif untuk materi yang sulit.',
                     style: TextStyle(
                       fontSize: 13, color: _muted,
                       fontFamily: 'Inter', height: 1.4,
@@ -594,8 +592,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                       BoxShadow(color: _ink, offset: Offset(2, 2)),
                     ],
                   ),
-                  child: Text('MULAI SESI',
-                    style: const TextStyle(
+                  child: const Text('MULAI SESI',
+                    style: TextStyle(
                       fontSize: 11, fontWeight: FontWeight.w800,
                       color: _white, letterSpacing: 0.5,
                       fontFamily: 'Inter',
@@ -657,7 +655,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('KODE KELAS',
               style: TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w800,
@@ -739,7 +737,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 color: isDark ? Colors.white : _ink,
                 fontFamily: 'Plus Jakarta Sans',
               )),
-            Icon(Icons.analytics_outlined, size: 18, color: _muted),
+            const Icon(Icons.analytics_outlined, size: 18, color: _muted),
           ]),
           const SizedBox(height: 12),
           Row(children: [
@@ -757,8 +755,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('TERDAFTAR',
-                      style: const TextStyle(
+                    const Text('TERDAFTAR',
+                      style: TextStyle(
                         fontSize: 10, fontWeight: FontWeight.w700,
                         color: _muted, letterSpacing: 0.5,
                         fontFamily: 'Inter',
@@ -792,8 +790,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('PERMINTAAN',
-                      style: const TextStyle(
+                    const Text('PERMINTAAN',
+                      style: TextStyle(
                         fontSize: 10, fontWeight: FontWeight.w700,
                         color: Color.fromARGB(255, 79, 33, 16), letterSpacing: 0.5,
                         fontFamily: 'Inter',
