@@ -24,7 +24,7 @@ final _kategoriMap = {
   'Ujian': _KategoriConfig(label: 'Ujian', icon: LucideIcons.clipboardList, color: AppTheme.amber, colorEnd: const Color(0xFFF97316)),
   'Libur': _KategoriConfig(label: 'Libur', icon: LucideIcons.palmtree, color: AppTheme.emerald, colorEnd: const Color(0xFF059669)),
   'Seminar': _KategoriConfig(label: 'Seminar', icon: LucideIcons.presentation, color: AppTheme.sky, colorEnd: const Color(0xFF0EA5E9)),
-  'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: AppTheme.primary, colorEnd: AppTheme.primaryDark),
+  'Umum': _KategoriConfig(label: 'Umum', icon: LucideIcons.megaphone, color: const Color(0xFF8B5CF6), colorEnd: const Color(0xFF7C3AED)),
 };
 
 _KategoriConfig _getKategori(String? kategoriField) {

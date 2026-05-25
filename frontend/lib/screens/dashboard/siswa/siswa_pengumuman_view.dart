@@ -47,8 +47,8 @@ final _kategoriMap = {
   'Umum': _KategoriConfig(
       label: 'Umum',
       icon: LucideIcons.megaphone,
-      color: AppTheme.primary,
-      colorEnd: AppTheme.primaryDark),
+      color: const Color(0xFF8B5CF6),
+      colorEnd: const Color(0xFF7C3AED)),
 };
 
 _KategoriConfig _getKategori(String? kategoriField) {

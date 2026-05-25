@@ -53,8 +53,8 @@ const _kategoriMap = {
   'Umum': _KategoriConfig(
     label: 'Umum',
     icon: LucideIcons.megaphone,
-    color: AppTheme.primary,
-    colorEnd: AppTheme.indigoLight,
+    color: const Color(0xFF8B5CF6),
+    colorEnd: const Color(0xFF7C3AED),
   ),
 };
 
