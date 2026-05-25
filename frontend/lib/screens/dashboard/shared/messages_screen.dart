@@ -449,7 +449,27 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
-  Widget _buildAvatar(String? userId, String initial) {
+  Widget _buildAvatar(String? userId, String initial, {bool isGroup = false}) {
+    if (isGroup) {
+      return Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE0E7FF), // Sangat bersih, Light Indigo
+          shape: BoxShape.circle,
+          border: Border.all(color: AppTheme.textLight, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: AppTheme.textLight,
+              offset: Offset(3, 3),
+            )
+          ],
+        ),
+        alignment: Alignment.center,
+        child: const Icon(LucideIcons.users, color: Color(0xFF3730A3), size: 20),
+      );
+    }
+
     if (userId == null || userId.isEmpty || userId == 'null') {
       return Container(
         width: 42,
@@ -596,6 +616,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               final convName = _displayChatName(conv);
                               final isActive = activeConversationId == conv['id'];
                               final initial = convName.isNotEmpty ? convName[0].toUpperCase() : '?';
+                              final isGroup = conv['type'] == 'group';
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 8),
@@ -623,7 +644,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                       child: Row(
                                         children: [
                                           // Avatar
-                                          _buildAvatar(null, initial),
+                                          _buildAvatar(null, initial, isGroup: isGroup),
                                           const SizedBox(width: 16),
                                           // Text Area
                                           Expanded(
@@ -767,20 +788,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           child: const Icon(LucideIcons.arrowLeft, color: AppTheme.textLight),
                         ),
                       ),
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryContainer,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.textLight, width: 2),
-                        boxShadow: const [BoxShadow(color: AppTheme.textLight, offset: Offset(2, 2))],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        activeChatName?.isNotEmpty == true ? activeChatName![0].toUpperCase() : '?',
-                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: AppTheme.primaryFixedVariant),
-                      ),
+                    _buildAvatar(
+                      null, 
+                      activeChatName?.isNotEmpty == true ? activeChatName![0].toUpperCase() : '?',
+                      isGroup: activeConversationType == 'group',
                     ),
                     const SizedBox(width: 12),
                     Expanded(
