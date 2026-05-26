@@ -36127,7 +36127,7 @@ q=s[1]
 s=s[2]
 p=b[2]
 return A.a([o*m+l*k+j*n,o*r+l*q+j*s,o*p[0]+l*p[1]+j*p[2]],t.n)},
-aM(){return"http://localhost:3000"},
+aM(){return"https://mypskd-backend.vercel.app"},
 ba6(a){var s=null,r=a===B.L,q=r?B.bd:B.q,p=r?B.I:B.r,o=A.co().$4$color$fontSize$fontWeight$letterSpacing(q,28,B.E,-1),n=A.co().$4$color$fontSize$fontWeight$letterSpacing(q,24,B.D,-0.8),m=A.co().$4$color$fontSize$fontWeight$letterSpacing(q,16,B.D,-0.5),l=A.co().$4$color$fontSize$fontWeight$letterSpacing(q,16,B.v,-0.5),k=A.co().$4$color$fontSize$fontWeight$letterSpacing(q,16,B.v,-0.3),j=A.co().$3$color$fontSize$fontWeight(q,15,B.S),i=A.co().$3$color$fontSize$fontWeight(p,14,B.S)
 return A.azv(A.co().$4$color$fontSize$fontWeight$height(q,14,B.af,1.6),A.co().$4$color$fontSize$fontWeight$height(p,13,B.W,1.5),s,o,s,s,n,m,l,A.co().$4$color$fontSize$fontWeight$letterSpacing(p,12,B.S,0.3),A.co().$4$color$fontSize$fontWeight$letterSpacing(p,11,B.S,0.5),s,k,j,i)},
 b5q(a){switch(a){case"Available":return B.C
@@ -117588,7 +117588,7 @@ return s==null?"User":s},
 a1(){this.ad()
 this.aHb()
 this.qR()},
-aHb(){var s,r,q,p,o,n,m,l,k,j,i,h=this,g="http://localhost:3000",f=null,e="query",d=t.N,c=t.z,b=A.E(d,c)
+aHb(){var s,r,q,p,o,n,m,l,k,j,i,h=this,g="https://mypskd-backend.vercel.app",f=null,e="query",d=t.N,c=t.z,b=A.E(d,c)
 b.n(0,"transports",A.a(["websocket"],t.s))
 s=A.aw(g,0,f)
 r=s.geQ()+"://"+s.glh()+":"+s.gph()
@@ -117596,7 +117596,7 @@ q=s.gdR()
 p=$.b3z.ar(r)&&$.b3z.h(0,r).d.ar(q)
 o=J.d(b.h(0,"forceNew"),!0)||J.d(b.h(0,"force new connection"),!0)||!1===b.h(0,"multiplex")||p
 n=A.cz()
-if(o){$.bkl().b6(B.Z,"ignoring socket cache for http://localhost:3000",f,f)
+if(o){$.bkl().b6(B.Z,"ignoring socket cache for https://mypskd-backend.vercel.app",f,f)
 n.b=A.bcy(b,g)}else{m=$.b3z.h(0,r)
 if(m==null){m=A.bcy(b,g)
 $.b3z.n(0,r,m)}n.b=m}if(s.gnD().length!==0&&b.h(0,e)==null)b.n(0,e,s.gnD())
@@ -117624,7 +117624,7 @@ qR(){var s=0,r=A.A(t.H),q=1,p=[],o=this,n,m,l,k
 var $async$qR=A.w(function(a,b){if(a===1){p.push(b)
 s=q}while(true)switch(s){case 0:q=3
 s=6
-return A.q(A.ca(A.aw("http://localhost:3000/api/chat/conversations/"+o.gkG(),0,null),null),$async$qR)
+return A.q(A.ca(A.aw("https://mypskd-backend.vercel.app/api/chat/conversations/"+o.gkG(),0,null),null),$async$qR)
 case 6:n=b
 if(n.b===200&&o.c!=null)o.t(new A.aQD(o,n))
 q=1
@@ -117675,7 +117675,7 @@ i.toString
 A.dq(null,null,!1,null,new A.aQt(),i,null,!0,!0,t.z)
 q=3
 s=6
-return A.q(A.ca(A.aw("http://localhost:3000/api/chat/users",0,null),null),$async$y6)
+return A.q(A.ca(A.aw("https://mypskd-backend.vercel.app/api/chat/users",0,null),null),$async$y6)
 case 6:n=c
 i=o.c
 if(i!=null)A.aB(i,!1).aN(null)
@@ -117719,7 +117719,7 @@ ayo(a,b,c){return this.y8(a,b,c,null)},
 ayp(a,b,c,d){var s=0,r=A.A(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e
 var $async$y8=A.w(function(a0,a1){if(a0===1){p.push(a1)
 s=q}while(true)switch(s){case 0:q=3
-j=A.aw("http://localhost:3000/api/chat/conversations",0,null)
+j=A.aw("https://mypskd-backend.vercel.app/api/chat/conversations",0,null)
 i=t.N
 h=A.M(["Content-Type","application/json"],i,i)
 s=6
