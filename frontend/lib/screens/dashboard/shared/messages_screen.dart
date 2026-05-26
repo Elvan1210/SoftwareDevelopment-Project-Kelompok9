@@ -51,7 +51,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   void initSocket() {
     socket = io.io(
-      'http://localhost:3000',
+      'https://mypskd-backend.vercel.app',
       io.OptionBuilder().setTransports(['websocket']).build(),
     );
 
@@ -87,7 +87,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Future<void> fetchConversations() async {
     try {
       final res = await http.get(
-        Uri.parse('http://localhost:3000/api/chat/conversations/$myId'),
+        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations/$myId'),
       );
       if (res.statusCode == 200 && mounted) {
         setState(() {
@@ -413,7 +413,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     );
     try {
       final res =
-          await http.get(Uri.parse('http://localhost:3000/api/chat/users'));
+          await http.get(Uri.parse('https://mypskd-backend.vercel.app/api/chat/users'));
       if (mounted) Navigator.pop(context);
       if (res.statusCode == 200) {
         List<dynamic> users = json.decode(res.body);
@@ -988,7 +988,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }) async {
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/chat/conversations'),
+        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'participants': parts,
