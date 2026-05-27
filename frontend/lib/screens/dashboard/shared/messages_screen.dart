@@ -189,15 +189,29 @@ class _MessagesScreenState extends State<MessagesScreen> {
     _messageController.clear();
 
     try {
-      await http.post(
-        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations/$activeConversationId/messages'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'senderId': myId,
-          'senderName': myName,
-          'text': text,
-        }),
-      );
+      final now = DateTime.now().toIso8601String();
+      final newMessage = {
+        'senderId': myId,
+        'senderName': myName,
+        'text': text,
+        'timestamp': now,
+      };
+
+      // Tulis langsung ke Firestore — tidak perlu backend
+      await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(activeConversationId)
+          .collection('messages')
+          .add(newMessage);
+
+      // Update lastMessage di dokumen conversation
+      await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(activeConversationId)
+          .update({
+        'lastMessage': text,
+        'lastUpdate': now,
+      });
     } catch (e) {
       debugPrint('_sendMessage error: $e');
     } finally {
