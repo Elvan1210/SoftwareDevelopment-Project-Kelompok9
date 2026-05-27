@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
@@ -22,7 +22,10 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _MessagesScreenState extends State<MessagesScreen> {
-  io.Socket? socket;
+  // Firestore real-time subscriptions (replacing Socket.IO)
+  StreamSubscription<QuerySnapshot>? _messagesSubscription;
+  StreamSubscription<QuerySnapshot>? _conversationsSubscription;
+
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> conversations = [];
@@ -34,6 +37,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Map<String, dynamic> activeParticipantNames = {};
 
   bool isLoading = true;
+  bool _isSending = false;
 
   String get myId =>
       widget.userData['id']?.toString() ??
@@ -45,61 +49,94 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   void initState() {
     super.initState();
-    initSocket();
-    fetchConversations();
+    _subscribeConversations();
   }
 
-  void initSocket() {
-    socket = io.io(
-      'https://mypskd-backend.vercel.app',
-      io.OptionBuilder().setTransports(['websocket']).build(),
-    );
-
-    if (socket != null) {
-      socket!.connect();
-
-      socket!.onConnect((_) {
-        socket!.emit('user_connected', myId);
-        if (activeConversationId != null) {
-          socket!.emit('join_chat', activeConversationId);
-        }
+  /// Subscribe ke Firestore untuk daftar conversation real-time
+  void _subscribeConversations() {
+    _conversationsSubscription = FirebaseFirestore.instance
+        .collection('conversations')
+        .where('participants', arrayContains: myId)
+        .orderBy('lastUpdate', descending: true)
+        .snapshots()
+        .listen((snapshot) {
+      if (!mounted) return;
+      final list = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final clearedAt = (data['clearedFor'] as Map<String, dynamic>?)?[myId];
+        return {
+          'id': doc.id,
+          ...data,
+          'lastMessage': clearedAt != null &&
+                  data['lastUpdate'] != null &&
+                  DateTime.tryParse(data['lastUpdate'].toString()) != null &&
+                  DateTime.parse(data['lastUpdate'].toString())
+                      .isBefore(DateTime.parse(clearedAt))
+              ? ''
+              : data['lastMessage'] ?? '',
+        };
+      }).toList();
+      setState(() {
+        conversations = list;
+        isLoading = false;
       });
-
-      socket!.on('update_conversation_list', (_) {
-        if (mounted) fetchConversations();
-      });
-
-      socket!.on('load_messages', (data) {
-        if (mounted) {
-          setState(() => messages = List<Map<String, dynamic>>.from(data));
-        }
-      });
-
-      socket!.on('receive_message', (data) {
-        if (mounted && data['conversationId'] == activeConversationId) {
-          setState(() => messages.add(Map<String, dynamic>.from(data)));
-          fetchConversations();
-        }
-      });
-    }
-  }
-
-  Future<void> fetchConversations() async {
-    try {
-      final res = await http.get(
-        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations/$myId'),
-      );
-      if (res.statusCode == 200 && mounted) {
-        setState(() {
-          conversations =
-              List<Map<String, dynamic>>.from(json.decode(res.body));
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('fetchConversations error: $e');
+    }, onError: (e) {
+      debugPrint('conversations subscription error: $e');
       if (mounted) setState(() => isLoading = false);
+    });
+  }
+
+  /// Subscribe ke Firestore messages untuk conversation yang aktif
+  void _subscribeMessages(String convId) {
+    _messagesSubscription?.cancel();
+    final clearedAt = (conversations
+            .firstWhere((c) => c['id'] == convId,
+                orElse: () => {})
+            .cast<String, dynamic>()['clearedFor'] as
+            Map<String, dynamic>?)?[myId];
+
+    _messagesSubscription = FirebaseFirestore.instance
+        .collection('conversations')
+        .doc(convId)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots()
+        .listen((snapshot) {
+      if (!mounted) return;
+      var msgs = snapshot.docs.map((doc) {
+        return {'id': doc.id, ...doc.data()};
+      }).toList();
+
+      // Filter pesan yang sudah di-clear
+      if (clearedAt != null) {
+        msgs = msgs.where((m) {
+          final ts = DateTime.tryParse(m['timestamp']?.toString() ?? '');
+          final ca = DateTime.tryParse(clearedAt);
+          return ts != null && ca != null && ts.isAfter(ca);
+        }).toList();
+      }
+
+      setState(() => messages = msgs);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    }, onError: (e) {
+      debugPrint('messages subscription error: $e');
+    });
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
+  }
+
+  // Keep for compatibility (called from _startConv)
+  Future<void> fetchConversations() async {
+    // Conversations now handled by real-time Firestore subscription
+    // This is a no-op kept for compatibility
   }
 
   String _displayChatName(Map<String, dynamic> conv) {
@@ -123,20 +160,30 @@ class _MessagesScreenState extends State<MessagesScreen> {
           Map<String, dynamic>.from(conv['participantNames'] ?? {});
       messages = [];
     });
-    if (socket != null) socket!.emit('join_chat', conv['id']);
+    _subscribeMessages(conv['id']);
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty &&
-        activeConversationId != null &&
-        socket != null) {
-      socket!.emit('send_message', {
-        'conversationId': activeConversationId,
-        'senderId': myId,
-        'senderName': myName,
-        'text': _messageController.text.trim(),
-      });
-      _messageController.clear();
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty || activeConversationId == null || _isSending) return;
+
+    setState(() => _isSending = true);
+    _messageController.clear();
+
+    try {
+      await http.post(
+        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations/$activeConversationId/messages'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'senderId': myId,
+          'senderName': myName,
+          'text': text,
+        }),
+      );
+    } catch (e) {
+      debugPrint('_sendMessage error: $e');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
@@ -1102,13 +1149,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   @override
   void dispose() {
-    if (socket != null && socket!.connected) {
-      socket!.disconnect();
-      socket!.dispose();
-    }
+    _messagesSubscription?.cancel();
+    _conversationsSubscription?.cancel();
     _messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
-  }  @override
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isMobile = MediaQuery.of(context).size.width < 800;

@@ -77,6 +77,33 @@ router.post('/conversations', async (req, res) => {
   }
 });
 
+// 3b. Kirim pesan ke conversation (menggantikan socket.emit('send_message'))
+router.post('/conversations/:convId/messages', async (req, res) => {
+  try {
+    const { convId } = req.params;
+    const { senderId, senderName, text } = req.body;
+
+    if (!text || !senderId) return res.status(400).json({ error: 'senderId dan text wajib diisi' });
+
+    const newMessage = {
+      senderId,
+      senderName: senderName || 'User',
+      text,
+      timestamp: new Date().toISOString(),
+    };
+
+    const docRef = await db.collection('conversations').doc(convId).collection('messages').add(newMessage);
+    await db.collection('conversations').doc(convId).update({
+      lastMessage: text,
+      lastUpdate: newMessage.timestamp,
+    });
+
+    res.status(201).json({ id: docRef.id, ...newMessage });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 4. LOGIC SALURAN / CHANNELS (MURNI TEKS JSON) - TIDAK ERROR 500 LAGI
 router.post('/saluran', async (req, res) => {
   try {
