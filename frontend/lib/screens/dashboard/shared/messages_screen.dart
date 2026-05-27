@@ -57,25 +57,38 @@ class _MessagesScreenState extends State<MessagesScreen> {
     _conversationsSubscription = FirebaseFirestore.instance
         .collection('conversations')
         .where('participants', arrayContains: myId)
-        .orderBy('lastUpdate', descending: true)
+        // NOTE: No orderBy here — Firestore composite index not needed this way.
+        // We sort in Dart instead.
         .snapshots()
         .listen((snapshot) {
       if (!mounted) return;
       final list = snapshot.docs.map((doc) {
         final data = doc.data();
-        final clearedAt = (data['clearedFor'] as Map<String, dynamic>?)?[myId];
+        String? clearedAt;
+        try {
+          final cf = data['clearedFor'];
+          if (cf is Map) clearedAt = cf[myId]?.toString();
+        } catch (_) {}
         return {
           'id': doc.id,
           ...data,
-          'lastMessage': clearedAt != null &&
-                  data['lastUpdate'] != null &&
-                  DateTime.tryParse(data['lastUpdate'].toString()) != null &&
-                  DateTime.parse(data['lastUpdate'].toString())
-                      .isBefore(DateTime.parse(clearedAt))
-              ? ''
-              : data['lastMessage'] ?? '',
+          'lastMessage': () {
+            if (clearedAt == null) return data['lastMessage'] ?? '';
+            final lu = DateTime.tryParse(data['lastUpdate']?.toString() ?? '');
+            final ca = DateTime.tryParse(clearedAt);
+            if (lu != null && ca != null && lu.isBefore(ca)) return '';
+            return data['lastMessage'] ?? '';
+          }(),
         };
       }).toList();
+
+      // Sort by lastUpdate descending in Dart
+      list.sort((a, b) {
+        final ta = DateTime.tryParse(a['lastUpdate']?.toString() ?? '') ?? DateTime(0);
+        final tb = DateTime.tryParse(b['lastUpdate']?.toString() ?? '') ?? DateTime(0);
+        return tb.compareTo(ta);
+      });
+
       setState(() {
         conversations = list;
         isLoading = false;
@@ -89,11 +102,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
   /// Subscribe ke Firestore messages untuk conversation yang aktif
   void _subscribeMessages(String convId) {
     _messagesSubscription?.cancel();
-    final clearedAt = (conversations
-            .firstWhere((c) => c['id'] == convId,
-                orElse: () => {})
-            .cast<String, dynamic>()['clearedFor'] as
-            Map<String, dynamic>?)?[myId];
+
+    // Safely get clearedAt for this user
+    String? clearedAt;
+    try {
+      final conv = conversations.firstWhere((c) => c['id'] == convId, orElse: () => {});
+      final cf = conv['clearedFor'];
+      if (cf is Map) clearedAt = cf[myId]?.toString();
+    } catch (_) {}
 
     _messagesSubscription = FirebaseFirestore.instance
         .collection('conversations')
@@ -104,16 +120,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
         .listen((snapshot) {
       if (!mounted) return;
       var msgs = snapshot.docs.map((doc) {
-        return {'id': doc.id, ...doc.data()};
+        return <String, dynamic>{'id': doc.id, ...doc.data()};
       }).toList();
 
       // Filter pesan yang sudah di-clear
       if (clearedAt != null) {
-        msgs = msgs.where((m) {
-          final ts = DateTime.tryParse(m['timestamp']?.toString() ?? '');
-          final ca = DateTime.tryParse(clearedAt);
-          return ts != null && ca != null && ts.isAfter(ca);
-        }).toList();
+        final ca = DateTime.tryParse(clearedAt);
+        if (ca != null) {
+          msgs = msgs.where((m) {
+            final ts = DateTime.tryParse(m['timestamp']?.toString() ?? '');
+            return ts != null && ts.isAfter(ca);
+          }).toList();
+        }
       }
 
       setState(() => messages = msgs);
