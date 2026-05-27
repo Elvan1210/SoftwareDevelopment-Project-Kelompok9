@@ -30,7 +30,18 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+# Keep build/web for Vercel static deployment, exclude everything else
+/build/android/
+/build/ios/
+/build/linux/
+/build/macos/
+/build/windows/
+/build/flutter_assets/
+/build/native_hooks/
+/build/*.dill
+/build/*.dill.track.dill
+/build/**/*.cache*
+/build/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*/
 /coverage/
 
 # Symbolication related
