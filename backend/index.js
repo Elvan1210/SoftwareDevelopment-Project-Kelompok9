@@ -3,16 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const http = require('http');
-const { Server } = require('socket.io');
 const logger = require('./config/logger');
 const settings = require('./config/settings');
-const db = require('./config/db');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] }
-});
 
 app.use(helmet());
 app.use(cors());
@@ -52,71 +47,6 @@ app.use('/api/channels', channelRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/chat', chatRoutes);
 
-io.on('connection', (socket) => {
-  socket.on('user_connected', (userId) => {
-    socket.join(userId);
-  });
-
-  socket.on('join_chat', async (data) => {
-    const conversationId = typeof data === 'string' ? data : data.conversationId;
-    const userId = typeof data === 'object' ? data.userId : null;
-
-    socket.join(conversationId);
-    try {
-      const convDoc = await db.collection('conversations').doc(conversationId).get();
-      const clearedAt = convDoc.exists && userId
-        ? convDoc.data()?.clearedFor?.[userId]
-        : null;
-
-      const snapshot = await db.collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .get();
-
-      let history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      if (clearedAt) {
-        history = history.filter(m => new Date(m.timestamp) > new Date(clearedAt));
-      }
-
-      history.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      if (history.length > 50) history = history.slice(history.length - 50);
-
-      socket.emit('load_messages', history);
-    } catch (err) { logger.error(err.message); }
-  });
-
-  socket.on('send_message', async (data) => {
-    const { conversationId, senderId, senderName, text } = data;
-
-    if (!conversationId || !text) return;
-
-    const newMessage = { senderId, senderName, text, timestamp: new Date().toISOString() };
-
-    try {
-      const docRef = await db.collection('conversations').doc(conversationId).collection('messages').add(newMessage);
-      await db.collection('conversations').doc(conversationId).update({
-        lastMessage: text,
-        lastUpdate: newMessage.timestamp
-      });
-
-      io.to(conversationId).emit('receive_message', {
-        id: docRef.id,
-        ...newMessage,
-        conversationId
-      });
-
-      const conv = await db.collection('conversations').doc(conversationId).get();
-      if (conv.exists) {
-        conv.data().participants.forEach(pId => io.to(pId).emit('update_conversation_list'));
-      }
-    } catch (err) {
-      logger.error("Gagal kirim pesan private: " + err.message);
-    }
-  });
-
-  socket.on('disconnect', () => { });
-});
 
 app.use((err, req, res, next) => {
   logger.error(`Error processing request: ${req.method} ${req.url}`);
@@ -124,6 +54,7 @@ app.use((err, req, res, next) => {
 });
 
 if (process.env.NODE_ENV !== 'production') {
+  const settings = require('./config/settings');
   server.listen(settings.port, () => {
     logger.info(`Server Backend berjalan di http://localhost:${settings.port}`);
   });
