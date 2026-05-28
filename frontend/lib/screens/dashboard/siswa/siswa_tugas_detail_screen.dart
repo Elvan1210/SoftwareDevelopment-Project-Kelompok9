@@ -9,8 +9,31 @@ import 'package:file_picker/file_picker.dart' as fp;
 import '../../../services/notifikasi_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../widgets/app_shell.dart';
-import '../../../widgets/neo_brutalism.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+const _kNavy   = Color(0xFF1A1F3C);
+const _kTeal   = Color(0xFF2A7C76);
+const _kCoral  = Color(0xFFFF6B6B);
+const _kAmber  = Color(0xFFFFA41B);
+const _kIndigo = Color(0xFF4F46E5);
+const _kGreen  = Color(0xFF10B981);
+const _kBorder = Color(0xFF1A1F3C);
+
+BoxDecoration _comicCard({
+  Color bg = Colors.white,
+  Color? borderColor,
+  Color shadowColor = const Color(0x55000000),
+  double radius = 16,
+}) =>
+    BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: borderColor ?? _kBorder, width: 2.2),
+      boxShadow: [
+        BoxShadow(color: shadowColor, offset: const Offset(4, 4), blurRadius: 0),
+      ],
+    );
 
 class SiswaTugasDetailScreen extends StatefulWidget {
   final Map<String, dynamic> tugas;
@@ -90,7 +113,6 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           if (submission.isNotEmpty) {
             _isTurnedIn = true;
             _pengumpulanId = submission[0]['id'];
-            // ✅ FIX: Pastikan files dibaca sebagai List<String> dengan aman
             final rawFiles = submission[0]['files'];
             if (rawFiles is List) {
               _attachments = rawFiles.map((e) => e.toString()).toList();
@@ -110,13 +132,12 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  // ✅ FIX UTAMA: Upload file dengan penanganan Flutter Web yang benar
   Future<void> _pickAndUploadFile() async {
     fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
       type: fp.FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
       allowMultiple: true,
-      withData: true, // Wajib true untuk Flutter Web
+      withData: true, 
     );
 
     if (result == null || result.files.isEmpty) return;
@@ -124,7 +145,6 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     setState(() => _isUploading = true);
 
     for (final file in result.files) {
-      // ✅ FIX: Di Flutter Web, gunakan file.bytes langsung
       final bytes = file.bytes;
       if (bytes == null || bytes.isEmpty) {
         debugPrint('File bytes kosong untuk: ${file.name}');
@@ -171,15 +191,23 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Tambah Link',
-            style: TextStyle(fontWeight: FontWeight.w900)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: _kBorder, width: 2.2),
+        ),
+        title: Text('Tambah Link', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kNavy)),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'https://...',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(LucideIcons.link),
+            labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.grey.shade500),
+            border: const OutlineInputBorder(
+              borderSide: BorderSide(color: _kBorder, width: 1.5),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: _kIndigo, width: 2.2),
+            ),
+            prefixIcon: const Icon(LucideIcons.link, color: _kIndigo),
           ),
           keyboardType: TextInputType.url,
           autofocus: true,
@@ -187,34 +215,30 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Batal',
-                style: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withAlpha(160))),
+            child: Text('Batal', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.grey.shade600)),
           ),
-          PremiumElevatedButton(
-            color: AppTheme.warning,
-            textColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            radius: 10,
-            onPressed: () {
+          GestureDetector(
+            onTap: () {
               final link = ctrl.text.trim();
-              if (link.isNotEmpty &&
-                  (link.startsWith('http://') || link.startsWith('https://'))) {
+              if (link.isNotEmpty && (link.startsWith('http://') || link.startsWith('https://'))) {
                 setState(() => _attachments.add(link));
                 Navigator.pop(ctx);
               } else {
                 ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(
-                    content: Text('Masukkan link yang valid (https://...)'),
-                    backgroundColor: AppTheme.warning,
-                  ),
+                  const SnackBar(content: Text('Masukkan link yang valid (https://...)'), backgroundColor: _kAmber),
                 );
               }
             },
-            child: const Text('Tambah'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _kAmber,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _kBorder, width: 1.8),
+                boxShadow: [BoxShadow(color: _kAmber.withAlpha(120), offset: const Offset(2, 2))],
+              ),
+              child: Text('Tambah', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: Colors.white)),
+            ),
           ),
         ],
       ),
@@ -225,40 +249,24 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   IconData _getFileIcon(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('.pdf') || lower.contains('/raw/')) {
-      return LucideIcons.fileText;
-    }
-    if (lower.contains('.jpg') ||
-        lower.contains('.jpeg') ||
-        lower.contains('.png')) {
-      return LucideIcons.image;
-    }
+    if (lower.contains('.pdf') || lower.contains('/raw/')) return LucideIcons.fileText;
+    if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) return LucideIcons.image;
     if (lower.contains('.doc')) return LucideIcons.fileText;
     return LucideIcons.link;
   }
 
   Color _getFileColor(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('.pdf') || lower.contains('/raw/')) {
-      return AppTheme.error;
-    }
-    if (lower.contains('.jpg') ||
-        lower.contains('.jpeg') ||
-        lower.contains('.png')) {
-      return AppTheme.success;
-    }
-    if (lower.contains('.doc')) return AppTheme.info;
-    return AppTheme.primary;
+    if (lower.contains('.pdf') || lower.contains('/raw/')) return _kCoral;
+    if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) return _kGreen;
+    if (lower.contains('.doc')) return _kTeal;
+    return _kIndigo;
   }
 
   String _getFileLabel(String url) {
     final lower = url.toLowerCase();
     if (lower.contains('.pdf') || lower.contains('/raw/')) return 'File PDF';
-    if (lower.contains('.jpg') ||
-        lower.contains('.jpeg') ||
-        lower.contains('.png')) {
-      return 'Foto/Gambar';
-    }
+    if (lower.contains('.jpg') || lower.contains('.jpeg') || lower.contains('.png')) return 'Foto/Gambar';
     if (lower.contains('.doc')) return 'File Word';
     try {
       return Uri.parse(url).host;
@@ -267,24 +275,18 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     }
   }
 
-  // ✅ FIX: Buka file dengan benar di Flutter Web (tidak pakai externalApplication)
   Future<void> _openFile(String url) async {
     String finalUrl = url;
-    // Wrap PDF dengan Google Docs Viewer
     if (url.toLowerCase().contains('.pdf') || url.contains('/raw/')) {
-      finalUrl =
-          'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}';
+      finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}';
     }
     final uri = Uri.parse(finalUrl);
     if (await canLaunchUrl(uri)) {
-      // Di Flutter Web, gunakan platformDefault agar buka tab baru
       await launchUrl(uri, mode: LaunchMode.platformDefault);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Tidak bisa membuka file'),
-              backgroundColor: AppTheme.error),
+          const SnackBar(content: Text('Tidak bisa membuka file'), backgroundColor: AppTheme.error),
         );
       }
     }
@@ -295,7 +297,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Tambahkan file atau link terlebih dahulu!'),
-          backgroundColor: AppTheme.warning,
+          backgroundColor: _kAmber,
         ),
       );
       return;
@@ -307,7 +309,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         'tugas_id': widget.tugas['id'],
         'siswa_id': widget.userData['id'],
         'siswa_nama': widget.userData['nama'],
-        'files': _attachments, // List URL Cloudinary yang valid
+        'files': _attachments, 
         'waktu_pengumpulan': DateTime.now().toIso8601String(),
         'status': 'Diserahkan',
       };
@@ -333,33 +335,26 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         });
         NotifikasiService.kirimNotifikasi(
           judul: 'Tugas Dikumpulkan!',
-          pesan:
-              '${widget.userData['nama']} telah mengumpulkan tugas "${widget.tugas['judul']}"',
+          pesan: '${widget.userData['nama']} telah mengumpulkan tugas "${widget.tugas['judul']}"',
           token: widget.token,
           targetUserId: widget.tugas['guru_id'],
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Tugas berhasil dikumpulkan!'),
-              backgroundColor: AppTheme.success,
-            ),
+            const SnackBar(content: Text('Tugas berhasil dikumpulkan!'), backgroundColor: _kGreen),
           );
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal mengirim: ${response.statusCode}'),
-              backgroundColor: AppTheme.error,
-            ),
+            SnackBar(content: Text('Gagal mengirim: ${response.statusCode}'), backgroundColor: _kCoral),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
+          SnackBar(content: Text('Error: $e'), backgroundColor: _kCoral),
         );
       }
     }
@@ -382,19 +377,14 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Pengumpulan dibatalkan'),
-              backgroundColor: AppTheme.warning,
-            ),
+            const SnackBar(content: Text('Pengumpulan dibatalkan'), backgroundColor: _kAmber),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Error jaringan: $e'),
-              backgroundColor: AppTheme.error),
+          SnackBar(content: Text('Error jaringan: $e'), backgroundColor: _kCoral),
         );
       }
     }
@@ -403,70 +393,69 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.secondary;
-
     return AppShell(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: const Text('Detail Penugasan',
-              style: TextStyle(fontWeight: FontWeight.w900)),
+          title: Text('Detail Penugasan', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kNavy)),
           backgroundColor: Colors.transparent,
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _kNavy),
+            onPressed: () => Navigator.pop(context),
+          ),
           actions: [
             if (!_isLoading)
               Padding(
-                padding: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
                 child: _isTurnedIn
                     ? GestureDetector(
                         onTap: _undoTurnIn,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            border: Border.all(color: AppTheme.error, width: 2),
-                            boxShadow: const [BoxShadow(color: AppTheme.error, offset: Offset(3, 3))],
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _kCoral, width: 2),
+                            boxShadow: [BoxShadow(color: _kCoral.withAlpha(80), offset: const Offset(2, 2))],
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(LucideIcons.undo, size: 18, color: AppTheme.error),
-                              SizedBox(width: 6),
-                              Text('Batalkan', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.error)),
+                              const Icon(LucideIcons.undo, size: 16, color: _kCoral),
+                              const SizedBox(width: 6),
+                              Text('Batalkan', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kCoral)),
                             ],
                           ),
                         ),
                       )
                     : _isPastDeadline
                         ? Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                             decoration: BoxDecoration(
-                              color: AppTheme.error,
-                              border: Border.all(
-                                  color: Theme.of(context).colorScheme.onSurface, width: 2),
-                              boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                              color: _kCoral,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _kBorder, width: 2),
+                              boxShadow: const [BoxShadow(color: Color(0x55000000), offset: Offset(2, 2))],
                             ),
-                            child: const Text('TERLEWAT',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            child: Text('TERLEWAT', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                           )
                         : GestureDetector(
                             onTap: _isUploading ? null : _turnIn,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                               decoration: BoxDecoration(
-                                color: AppTheme.warning,
-                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                                color: _kAmber,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: _kBorder, width: 2),
+                                boxShadow: const [BoxShadow(color: Color(0x55000000), offset: Offset(2, 2))],
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.send_rounded, size: 18, color: Colors.white),
-                                  SizedBox(width: 6),
-                                  Text('TURN IN', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                                  const Icon(Icons.send_rounded, size: 16, color: Colors.white),
+                                  const SizedBox(width: 6),
+                                  Text('TURN IN', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
                                 ],
                               ),
                             ),
@@ -475,49 +464,55 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           ],
         ),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: _kIndigo))
             : SingleChildScrollView(
-                padding: Breakpoints.screenPadding(
-                    MediaQuery.of(context).size.width),
+                padding: Breakpoints.screenPadding(MediaQuery.of(context).size.width),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ─── Info Tugas ───────────────────────────────────────
-                    NeoCard(
-                      color: primaryColor.withAlpha(20),
-                      borderColor: primaryColor,
+                    // Info Tugas
+                    Container(
                       padding: const EdgeInsets.all(24),
+                      decoration: _comicCard(bg: _kIndigo.withAlpha(15), borderColor: _kIndigo, shadowColor: _kIndigo.withAlpha(60)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              NeoIconBox(
-                                  icon: LucideIcons.clipboardList,
-                                  iconColor: primaryColor,
-                                  backgroundColor: primaryColor.withAlpha(50),
-                                  borderColor: primaryColor,
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _kIndigo,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: _kBorder, width: 1.8),
+                                  boxShadow: [BoxShadow(color: _kIndigo.withAlpha(100), offset: const Offset(3, 3))],
                                 ),
-                              const SizedBox(width: 20),
+                                child: const Icon(LucideIcons.clipboardList, color: Colors.white, size: 24),
+                              ),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       widget.tugas['judul'] ?? 'Task',
-                                      style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w900,
-                                          height: 1.1),
+                                      style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w900, color: _kNavy, height: 1.1),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Jatuh tempo: $_formattedDeadline',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: _isPastDeadline
-                                            ? AppTheme.error
-                                            : primaryColor,
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _isPastDeadline ? _kCoral.withAlpha(30) : _kTeal.withAlpha(30),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: _isPastDeadline ? _kCoral : _kTeal, width: 1.2),
+                                      ),
+                                      child: Text(
+                                        'Jatuh tempo: $_formattedDeadline',
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                          color: _isPastDeadline ? _kCoral : _kTeal,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -525,71 +520,60 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                               ),
                             ],
                           ),
-                          const Divider(height: 40),
-                          _buildInfoRow(LucideIcons.userCircle, 'Pengajar',
-                              widget.tugas['guru_nama'] ?? 'Guru'),
+                          const Divider(height: 32, color: Colors.black12, thickness: 1.5),
+                          _buildInfoRow(LucideIcons.userCircle, 'Pengajar', widget.tugas['guru_nama'] ?? 'Guru'),
                           const SizedBox(height: 12),
-                          _buildInfoRow(LucideIcons.bookOpen, 'Mata Pelajaran',
-                              widget.tugas['mapel'] ?? '-'),
+                          _buildInfoRow(LucideIcons.bookOpen, 'Mata Pelajaran', widget.tugas['mapel'] ?? '-'),
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 24),
 
-                    // ─── Deskripsi ────────────────────────────────────────
                     if ((widget.tugas['deskripsi'] ?? '').isNotEmpty) ...[
-                      const NeoSectionHeader(title: 'Instruksi'),
+                      _comicSectionHeader('INSTRUKSI', LucideIcons.fileText, _kNavy),
                       const SizedBox(height: 12),
-                      NeoCard(
+                      Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.all(24),
+                        decoration: _comicCard(bg: Colors.white, borderColor: _kNavy, shadowColor: const Color(0x33000000)),
                         child: Text(widget.tugas['deskripsi'],
-                            style: const TextStyle(fontSize: 16, height: 1.6, fontWeight: FontWeight.w500)),
+                            style: GoogleFonts.inter(fontSize: 15, height: 1.6, fontWeight: FontWeight.w500, color: _kNavy)),
                       ),
                       const SizedBox(height: 24),
                     ],
 
-                    // ─── Lampiran Guru ────────────────────────────────────
-                    if (widget.tugas['link'] != null &&
-                        widget.tugas['link'].toString().isNotEmpty) ...[
-                      const NeoSectionHeader(title: 'Lampiran Soal'),
+                    if (widget.tugas['link'] != null && widget.tugas['link'].toString().isNotEmpty) ...[
+                      _comicSectionHeader('LAMPIRAN SOAL', LucideIcons.paperclip, _kTeal),
                       const SizedBox(height: 12),
-                      InkWell(
+                      GestureDetector(
                         onTap: () => _openFile(widget.tugas['link'].toString()),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: primaryColor.withAlpha(20),
-                            border:
-                                Border.all(color: primaryColor, width: 2),
-                            boxShadow: [BoxShadow(color: primaryColor, offset: const Offset(4, 4))],
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: _comicCard(bg: _kTeal.withAlpha(20), borderColor: _kTeal, shadowColor: _kTeal.withAlpha(80)),
                           child: Row(
                             children: [
-                              Icon(LucideIcons.file,
-                                  color: primaryColor, size: 32),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: _kTeal, width: 2),
+                                ),
+                                child: const Icon(LucideIcons.fileText, color: _kTeal, size: 24),
+                              ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('Buka Lampiran Soal',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: primaryColor)),
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kTeal, fontSize: 14)),
                                     Text('Ketuk untuk membuka',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.65))),
+                                        style: GoogleFonts.inter(fontSize: 12, color: _kTeal.withAlpha(180), fontWeight: FontWeight.w600)),
                                   ],
                                 ),
                               ),
-                              Icon(LucideIcons.externalLink,
-                                  color: primaryColor, size: 18),
+                              const Icon(LucideIcons.externalLink, color: _kTeal, size: 20),
                             ],
                           ),
                         ),
@@ -597,99 +581,91 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                       const SizedBox(height: 24),
                     ],
 
-                    // ─── Pekerjaan Saya ───────────────────────────────────
                     Row(
                       children: [
-                        const Expanded(child: NeoSectionHeader(title: 'Pekerjaan Saya')),
+                        Expanded(child: _comicSectionHeader('PEKERJAAN SAYA', LucideIcons.folder, _kIndigo)),
                         if (_nilaiSiswa != null)
-                          NeoBadge(
-                            label: 'NILAI: $_nilaiSiswa',
-                            color: AppTheme.success,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _kGreen,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _kBorder, width: 1.8),
+                              boxShadow: const [BoxShadow(color: Color(0x55000000), offset: Offset(2, 2))],
+                            ),
+                            child: Text('NILAI: $_nilaiSiswa',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 12)),
                           ),
                       ],
                     ),
                     const SizedBox(height: 12),
 
-                    NeoCard(
-                      color: (_isTurnedIn ? AppTheme.success : AppTheme.warning).withAlpha(20),
-                      borderColor: _isTurnedIn ? AppTheme.success : AppTheme.warning,
+                    Container(
                       padding: const EdgeInsets.all(20),
+                      decoration: _comicCard(
+                        bg: (_isTurnedIn ? _kGreen : _kAmber).withAlpha(15),
+                        borderColor: _isTurnedIn ? _kGreen : _kAmber,
+                        shadowColor: (_isTurnedIn ? _kGreen : _kAmber).withAlpha(60),
+                      ),
                       child: Column(
                         children: [
-                          // Status badge
                           if (_isTurnedIn)
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: AppTheme.success.withAlpha(30),
-                                border: Border.all(color: AppTheme.success, width: 2),
+                                color: _kGreen,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: _kBorder, width: 2),
+                                boxShadow: [BoxShadow(color: _kGreen.withAlpha(80), offset: const Offset(2, 2))],
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(LucideIcons.checkCircle,
-                                      color: AppTheme.success, size: 18),
-                                  SizedBox(width: 8),
+                                  const Icon(LucideIcons.checkCircle, color: Colors.white, size: 18),
+                                  const SizedBox(width: 8),
                                   Text('Sudah Dikumpulkan',
-                                      style: TextStyle(
-                                          color: AppTheme.success,
-                                          fontWeight: FontWeight.w800)),
+                                      style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
                                 ],
                               ),
                             ),
-
-                          // Daftar file/link
+                          
                           if (_attachments.isEmpty && !_isUploading)
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 24),
                               child: Center(
-                                child: Text(
-                                    'Belum ada file atau link ditambahkan',
-                                    style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.65))),
+                                child: Text('Belum ada file atau link ditambahkan',
+                                    style: GoogleFonts.inter(color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
                               ),
                             ),
-
+                            
                           ..._attachments.asMap().entries.map((entry) {
                             final i = entry.key;
                             final url = entry.value;
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3))],
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: _kNavy, width: 1.8),
+                                boxShadow: const [BoxShadow(color: Color(0x33000000), offset: Offset(3, 3))],
                               ),
                               child: ListTile(
-                                leading: Icon(_getFileIcon(url),
-                                    color: _getFileColor(url)),
-                                title: Text(_getFileLabel(url),
-                                    style:
-                                        const TextStyle(fontWeight: FontWeight.w700)),
-                                subtitle: Text(url,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 11)),
+                                leading: Icon(_getFileIcon(url), color: _getFileColor(url)),
+                                title: Text(_getFileLabel(url), style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: _kNavy, fontSize: 13)),
+                                subtitle: Text(url, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey.shade500)),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      icon: const Icon(LucideIcons.externalLink,
-                                          size: 18),
+                                      icon: const Icon(LucideIcons.externalLink, size: 18, color: _kNavy),
                                       onPressed: () => _openFile(url),
-                                      tooltip: 'Buka',
                                     ),
                                     if (!_isTurnedIn)
                                       IconButton(
-                                        icon: const Icon(LucideIcons.x,
-                                            color: AppTheme.error, size: 18),
+                                        icon: const Icon(LucideIcons.x, color: _kCoral, size: 18),
                                         onPressed: () => _removeFile(i),
-                                        tooltip: 'Hapus',
                                       ),
                                   ],
                                 ),
@@ -697,123 +673,86 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             );
                           }),
 
-                          // Loading indicator saat upload
                           if (_isUploading)
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2)),
+                                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: _kIndigo)),
                                   const SizedBox(width: 12),
-                                  Text('Mengunggah file...',
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.65))),
+                                  Text('Mengunggah file...', style: GoogleFonts.inter(color: _kNavy, fontWeight: FontWeight.w700)),
                                 ],
                               ),
                             ),
-
-                          // Tombol tambah (hanya kalau belum Turn In)
+                          
                           if (!_isTurnedIn) ...[
                             const SizedBox(height: 16),
-                            GestureDetector(
-                              onTap: _isUploading ? null : _pickAndUploadFile,
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 24, horizontal: 16),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary.withAlpha(30),
-                                  border: Border.all(color: AppTheme.primary, width: 2),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: (Theme.of(context).brightness ==
-                                                    Brightness.dark
-                                                ? AppTheme.primary
-                                                : AppTheme.primary)
-                                            .withAlpha(20),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        LucideIcons.uploadCloud,
-                                        color: Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? const Color(0xFF9EAAFF)
-                                            : AppTheme.primary,
-                                        size: 28,
-                                      ),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: _kIndigo, width: 2),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: _kIndigo.withAlpha(20),
+                                      shape: BoxShape.circle,
                                     ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'Unggah Tugas Anda',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            color:
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white
-                                                    : AppTheme.textLight,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Mendukung PDF, Word, JPG, atau Link website',
+                                    child: const Icon(LucideIcons.uploadCloud, color: _kIndigo, size: 28),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text('Unggah Tugas Anda', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kNavy, fontSize: 15)),
+                                  const SizedBox(height: 4),
+                                  Text('Mendukung PDF, Word, JPG, atau Link website',
                                       textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w500,
-                                            color:
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? AppTheme.textMutedDk
-                                                    : AppTheme.textMutedLt,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 18),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        NeoButton(
-                                          onTap: _isUploading ? () {} : _pickAndUploadFile,
-                                          text: 'PILIH FILE',
-                                        ),
-                                        const SizedBox(width: 12),
-                                        GestureDetector(
-                                          onTap: _showAddLinkDialog,
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: Colors.grey.shade500, fontSize: 11)),
+                                  const SizedBox(height: 18),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: _isUploading ? null : _pickAndUploadFile,
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                            constraints: const BoxConstraints(minHeight: 40),
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
                                             decoration: BoxDecoration(
-                                              color: Theme.of(context).scaffoldBackgroundColor,
-                                              border: Border.all(color: AppTheme.primary, width: 2),
-                                              boxShadow: const [BoxShadow(color: AppTheme.primary, offset: Offset(3, 3))],
+                                              color: _kIndigo,
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: _kBorder, width: 1.8),
+                                              boxShadow: const [BoxShadow(color: Color(0x55000000), offset: Offset(2, 2))],
                                             ),
                                             child: Center(
-                                              child: Text('TAMBAH LINK', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                                fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: 0.5)),
+                                              child: Text('PILIH FILE', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 12)),
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: _showAddLinkDialog,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: _kIndigo, width: 2),
+                                              boxShadow: [BoxShadow(color: _kIndigo.withAlpha(60), offset: const Offset(2, 2))],
+                                            ),
+                                            child: Center(
+                                              child: Text('TAMBAH LINK', style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kIndigo, fontSize: 12)),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -821,29 +760,26 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                       ),
                     ),
 
-                    // ─── Feedback ─────────────────────────────────────────
                     if (_feedbackSiswa != null && _feedbackSiswa!.isNotEmpty) ...[
                       const SizedBox(height: 24),
-                      const NeoSectionHeader(title: 'Feedback Pengajar'),
+                      _comicSectionHeader('FEEDBACK PENGAJAR', LucideIcons.messageSquare, _kTeal),
                       const SizedBox(height: 12),
-                      NeoCard(
-                        color: AppTheme.info.withAlpha(20),
-                        borderColor: AppTheme.info,
+                      Container(
                         padding: const EdgeInsets.all(20),
+                        decoration: _comicCard(bg: const Color(0xFFE6F9F3), borderColor: _kTeal, shadowColor: _kTeal.withAlpha(80)),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(LucideIcons.messageSquare, color: Color(0xFF76AFB8)),
+                            const Icon(LucideIcons.messageSquare, color: _kTeal, size: 20),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(_feedbackSiswa!,
-                                style: const TextStyle(fontSize: 15, fontStyle: FontStyle.italic)),
+                                style: GoogleFonts.inter(fontSize: 14, fontStyle: FontStyle.italic, fontWeight: FontWeight.w600, color: _kNavy, height: 1.5)),
                             ),
                           ],
                         ),
                       ),
                     ],
-
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -855,22 +791,33 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)),
-        const SizedBox(width: 12),
-        Text(
-          '$label: ',
-          style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(160),
-              fontWeight: FontWeight.w500),
-        ),
+        Icon(icon, size: 16, color: Colors.grey.shade500),
+        const SizedBox(width: 10),
+        Text('$label:', style: GoogleFonts.inter(color: Colors.grey.shade600, fontWeight: FontWeight.w600, fontSize: 13)),
+        const SizedBox(width: 6),
         Flexible(
-          child: Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: _kNavy, fontSize: 13),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
+      ],
+    );
+  }
+
+  Widget _comicSectionHeader(String title, IconData icon, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: _kBorder, width: 1.5),
+            boxShadow: [BoxShadow(color: color.withAlpha(100), offset: const Offset(2, 2))],
+          ),
+          child: Icon(icon, size: 14, color: Colors.white),
+        ),
+        const SizedBox(width: 10),
+        Text(title, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w900, color: color, letterSpacing: 1.2)),
       ],
     );
   }
