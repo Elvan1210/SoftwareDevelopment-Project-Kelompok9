@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:google_fonts/google_fonts.dart';
 import 'siswa_tugas_view.dart';
 import 'siswa_materi_view.dart';
 import 'siswa_nilai_view.dart';
@@ -16,6 +17,27 @@ import '../../../widgets/app_shell.dart';
 import '../../../widgets/neo_brutalism.dart';
 import '../../../widgets/jitsi_embed.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+// ─── Comic tokens ─────────────────────────────────────────────────────────
+const _kNavy   = Color(0xFF1A1F3C);
+const _kIndigo = Color(0xFF4F46E5);
+const _kBorder = Color(0xFF1A1F3C);
+
+BoxDecoration _comicCardDash({
+  Color bg = Colors.white,
+  Color? borderColor,
+  Color shadowColor = const Color(0x55000000),
+  double radius = 14,
+}) =>
+    BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: borderColor ?? _kBorder, width: 2.2),
+      boxShadow: [
+        BoxShadow(color: shadowColor, offset: const Offset(4, 4), blurRadius: 0),
+      ],
+    );
+
 
 class SiswaTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -184,33 +206,52 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             const SizedBox(height: 16),
           ],
 
-          // Welcome Banner Premium
+          // ─── Hero Welcome Banner ───────────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppTheme.indigoPrimary, Color(0xFF7C3AED)],
+                colors: [_kNavy, Color(0xFF2D1B69), _kIndigo],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: AppTheme.indigoPrimary.withAlpha(40), blurRadius: 16, offset: const Offset(0, 8))],
+              border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 2.2)),
+              boxShadow: const [BoxShadow(color: Color(0x88000000), offset: Offset(4, 4), blurRadius: 0)],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(100)),
-                  child: const Text('SELAMAT DATANG KEMBALI 👋', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Opacity(opacity: 0.07, child: CustomPaint(painter: _DotPatternPainterDash())),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(nama, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                const SizedBox(height: 4),
-                Text(namaKelas, style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 14, fontWeight: FontWeight.w500)),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(25),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withAlpha(60), width: 1.2),
+                        ),
+                        child: Text('SELAMAT DATANG KEMBALI 👋',
+                          style: GoogleFonts.inter(color: const Color(0xFFFFD166), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(nama, style: GoogleFonts.inter(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                      const SizedBox(height: 4),
+                      Text(namaKelas, style: GoogleFonts.inter(color: Colors.white.withAlpha(200), fontSize: 14, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
+
 
           const SizedBox(height: 20),
 
@@ -223,9 +264,33 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             Expanded(child: _buildStatCard('Nilai', '—', LucideIcons.award, AppTheme.warning, 'nilai')),
           ]),
 
-          const SizedBox(height: 28),
-          const Text('Menu Kelas', style: TextStyle(color: AppTheme.textLight, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+
+          // ─── Menu Kelas Label ──────────────────────────────────────────
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: _kIndigo,
+                borderRadius: BorderRadius.circular(9),
+                border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.8)),
+                boxShadow: [BoxShadow(color: _kIndigo.withAlpha(100), offset: const Offset(2, 2), blurRadius: 0)],
+              ),
+              child: const Icon(LucideIcons.layoutGrid, size: 13, color: Colors.white),
+            ),
+            const SizedBox(width: 10),
+            Text('MENU KELAS',
+              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w900, color: _kIndigo, letterSpacing: 1.5)),
+            const SizedBox(width: 10),
+            Expanded(child: Container(
+              height: 2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [_kIndigo.withAlpha(160), Colors.transparent]),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            )),
+          ]),
+          const SizedBox(height: 14),
 
           GridView.count(
             crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
@@ -238,6 +303,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
               _buildMenuCard('Materi', LucideIcons.bookOpen, AppTheme.info, 'materi'),
             ],
           ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
+
         ],
       ),
     );
@@ -247,57 +313,60 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     return GestureDetector(
       onTap: () => setState(() { _activeTabID = tabId; _activeTitle = label; }),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, 4))],
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        decoration: _comicCardDash(
+          bg: color.withAlpha(18),
+          borderColor: color,
+          shadowColor: color.withAlpha(80),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withAlpha(25), borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 18),
-            ),
-            const SizedBox(height: 12),
-            Text(value, style: const TextStyle(color: AppTheme.textLight, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 8),
+            Text(value,
+              style: GoogleFonts.inter(color: color, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(color: AppTheme.textMutedLt, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(label,
+              style: GoogleFonts.inter(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
           ],
         ),
       ),
     );
   }
 
+
   Widget _buildMenuCard(String label, IconData icon, Color color, String tabId) {
     return GestureDetector(
       onTap: () => setState(() { _activeTabID = tabId; _activeTitle = label; }),
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4))],
+        decoration: _comicCardDash(
+          bg: Colors.white,
+          borderColor: color,
+          shadowColor: color.withAlpha(80),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: color.withAlpha(20), shape: BoxShape.circle),
-              child: Icon(icon, color: color, size: 24),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(12),
+                border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.5)),
+                boxShadow: [BoxShadow(color: color.withAlpha(100), offset: const Offset(2, 2), blurRadius: 0)],
+              ),
+              child: Icon(icon, color: Colors.white, size: 22),
             ),
-            const SizedBox(height: 12),
-            Text(label, style: const TextStyle(color: AppTheme.textLight, fontSize: 14, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            Text(label,
+              style: GoogleFonts.inter(color: _kNavy, fontSize: 13, fontWeight: FontWeight.w900)),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildWebLayout(BuildContext context) {
     return AppShell(
@@ -600,6 +669,22 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
       return _buildMobileLayout(context);
     });
   }
+}
+
+class _DotPatternPainterDash extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white.withAlpha(40);
+    const spacing = 14.0;
+    const radius = 1.5;
+    for (double y = 0; y < size.height; y += spacing) {
+      for (double x = 0; x < size.width; x += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class GlassCard extends StatelessWidget {
