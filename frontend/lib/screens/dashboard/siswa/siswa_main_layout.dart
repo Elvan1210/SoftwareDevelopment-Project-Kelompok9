@@ -266,10 +266,10 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
   late List<Widget> _views;
 
   final List<String> _titles = [
-    'Dashboard Overview',
-    'Teams / Kelas Saya',
-    'Messages', // TITLE UNTUK MESSAGES
-    'Pengumuman Sekolah',
+    'Dashboard',
+    'Classes',
+    'Messages',
+    'Pengumuman',
     'Profil Siswa',
   ];
 
@@ -311,14 +311,13 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                   label: 'Home',
                 ),
                 SidebarItemData(
-                  icon: Icons.groups_3_outlined,
-                  selectedIcon: Icons.groups_3_rounded,
-                  label: 'Teams',
+                  icon: Icons.menu_book_outlined,
+                  selectedIcon: Icons.menu_book_rounded,
+                  label: 'Classes',
                 ),
-                // MENU MESSAGES DITAMBAHKAN DI SINI
                 SidebarItemData(
-                  icon: Icons.forum_outlined,
-                  selectedIcon: Icons.forum_rounded,
+                  icon: Icons.chat_bubble_outline_rounded,
+                  selectedIcon: Icons.chat_bubble_rounded,
                   label: 'Messages',
                 ),
                 SidebarItemData(
@@ -387,34 +386,49 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
         children: [
           Column(
             children: [
-              // ── Premium light-mode top bar ────────────────────────────────
+              // ── Neo-Brutalist Top Bar ────────────────────────────────
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(12),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                height: 72,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF4FAFF), // surface
+                  border: Border(bottom: BorderSide(color: Color(0xFF073446), width: 1)), // border-inverse-surface
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'MyPSKD',
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.textLight,
-                        letterSpacing: -0.5,
-                      ),
+                    Row(
+                      children: [
+                        // Optional back button can go here if needed, but for root layout we just show title
+                        Text(
+                          _titles[_selectedIndex],
+                          style: const TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 24,
+                            color: Color(0xFF3D6754), // primary
+                          ),
+                        ),
+                      ],
                     ),
-                    NotificationBell(
-                      userData: widget.userData,
-                      token: widget.token,
-                      iconColor: AppTheme.textLight,
+                    Row(
+                      children: [
+                        const Text(
+                          'MyPSKD',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20,
+                            color: Color(0xFF3D6754), // primary
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        NotificationBell(
+                          userData: widget.userData,
+                          token: widget.token,
+                          iconColor: const Color(0xFF3D6754),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -431,7 +445,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                   child: KeyedSubtree(
                     key: ValueKey(_selectedIndex),
                     child: Padding(
-                      padding: EdgeInsets.only(bottom: isKeyboardOpen ? 0 : 80),
+                      padding: EdgeInsets.only(bottom: isKeyboardOpen ? 0 : 64),
                       child: _views[_selectedIndex],
                     ),
                   ),
@@ -440,66 +454,55 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             ],
           ),
 
-          // ── Premium light-mode bottom nav bar ─────────────────────────
+          // ── Neo-Brutalist Bottom Nav Bar ─────────────────────────
           if (!isKeyboardOpen)
             Positioned(
               left: 0,
               right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(12),
-                    blurRadius: 12,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildMobileNavItem(
-                    icon: Icons.grid_view_outlined,
-                    selectedIcon: Icons.grid_view_rounded,
-                    label: 'Home',
-                    isSelected: _selectedIndex == 0,
-                    onTap: () => setState(() => _selectedIndex = 0),
-                  ),
-                  _buildMobileNavItem(
-                    icon: Icons.groups_3_outlined,
-                    selectedIcon: Icons.groups_3_rounded,
-                    label: 'Teams',
-                    isSelected: _selectedIndex == 1,
-                    onTap: () => setState(() => _selectedIndex = 1),
-                  ),
-                  _buildMobileNavItem(
-                    icon: Icons.forum_outlined,
-                    selectedIcon: Icons.forum_rounded,
-                    label: 'Msg',
-                    isSelected: _selectedIndex == 2,
-                    onTap: () => setState(() => _selectedIndex = 2),
-                  ),
-                  _buildMobileNavItem(
-                    icon: Icons.notifications_none_rounded,
-                    selectedIcon: Icons.notifications_active_rounded,
-                    label: 'Info',
-                    isSelected: _selectedIndex == 3,
-                    onTap: () => setState(() => _selectedIndex = 3),
-                  ),
-                  _buildMobileNavItem(
-                    icon: Icons.person_3_outlined,
-                    selectedIcon: Icons.person_3_rounded,
-                    label: 'Profil',
-                    isSelected: _selectedIndex == 4,
-                    onTap: () => setState(() => _selectedIndex = 4),
-                  ),
-                ],
+              bottom: 0,
+              child: Container(
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF4FAFF), // surface
+                  border: Border(top: BorderSide(color: Color(0xFF073446), width: 1)), // border-inverse-surface
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildMobileNavItem(
+                      icon: Icons.grid_view_outlined,
+                      label: 'Dashboard',
+                      isSelected: _selectedIndex == 0,
+                      onTap: () => setState(() => _selectedIndex = 0),
+                    ),
+                    _buildMobileNavItem(
+                      icon: Icons.menu_book,
+                      label: 'Classes',
+                      isSelected: _selectedIndex == 1,
+                      onTap: () => setState(() => _selectedIndex = 1),
+                    ),
+                    _buildMobileNavItem(
+                      icon: Icons.chat_bubble_outline,
+                      label: 'Messages',
+                      isSelected: _selectedIndex == 2,
+                      onTap: () => setState(() => _selectedIndex = 2),
+                    ),
+                    _buildMobileNavItem(
+                      icon: Icons.notifications_none_outlined,
+                      label: 'Info',
+                      isSelected: _selectedIndex == 3,
+                      onTap: () => setState(() => _selectedIndex = 3),
+                    ),
+                    _buildMobileNavItem(
+                      icon: Icons.account_circle_outlined,
+                      label: 'Profile',
+                      isSelected: _selectedIndex == 4,
+                      onTap: () => setState(() => _selectedIndex = 4),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -507,47 +510,43 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
 
   Widget _buildMobileNavItem({
     required IconData icon,
-    required IconData selectedIcon,
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    const activeColor   = AppTheme.indigoPrimary;
-    const inactiveColor = AppTheme.textMutedLt;
-    final bgColor       = isSelected
-        ? AppTheme.indigoPrimary.withAlpha(15)
-        : Colors.transparent;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? selectedIcon : icon,
-                color: isSelected ? activeColor : inactiveColor,
-                size: 22,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: const Color(0xFF3D6754), // primary
+                borderRadius: BorderRadius.circular(8),
+              )
+            : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFFFFFFFF) : const Color(0xFF414944), // on-primary vs on-surface-variant
+              size: 24,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                color: isSelected ? const Color(0xFFFFFFFF) : const Color(0xFF414944),
+                letterSpacing: 0.6,
               ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  color: isSelected ? activeColor : inactiveColor,
-                  letterSpacing: isSelected ? 0.3 : 0),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

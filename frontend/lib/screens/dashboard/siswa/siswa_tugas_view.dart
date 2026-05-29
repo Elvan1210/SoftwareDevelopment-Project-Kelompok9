@@ -1,76 +1,77 @@
-import '../../../config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'siswa_tugas_detail_screen.dart';
-import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import 'siswa_tugas_detail_screen.dart';
 
-
+// --- Tailwind Neo-Brutalist Tokens -----------------------------------------
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _onSecondaryContainer = Color(0xFF3A6D69);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _onTertiaryContainer = Color(0xFF8E4F34);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _onBackground = Color(0xFF001E2B);
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  final dynamic teamData; // TAMBAHAN: Menerima konteks kelas saat ini
+  final dynamic teamData; 
+  final bool isGlobal; 
 
   const SiswaTugasView({
-    super.key, 
-    required this.userData, 
+    super.key,
+    required this.userData,
     required this.token,
-    required this.teamData, // Wajib diisi
+    this.teamData,
+    this.isGlobal = false,
   });
 
   @override
   State<SiswaTugasView> createState() => _SiswaTugasViewState();
 }
 
-class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<dynamic> _allTugas = [];
-  List<dynamic> _pengumpulan = [];
+class _SiswaTugasViewState extends State<SiswaTugasView> {
+  List<dynamic> _tugasList = [];
   bool _isLoading = true;
+  String _selectedFilter = 'Semua';
+
+  final List<String> _filters = ['Semua', 'Belum', 'Selesai'];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _fetchData();
+    _fetchTugas();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchData() async {
+  Future<void> _fetchTugas() async {
     setState(() => _isLoading = true);
     try {
-      final headers = {'Authorization': 'Bearer ${widget.token}'};
-      final sid = Uri.encodeComponent(widget.userData['id'].toString());
-      
-      // UBAHAN: Ambil kelas_id spesifik
-      final kelasId = widget.teamData['id'];
-
-      // UBAHAN: Fetch hanya tugas milik kelas/tim ini saja!
-      final resTugas = await http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'), headers: headers);
-      final resPengumpulan = await http.get(Uri.parse('$baseUrl/api/pengumpulan?siswa_id=$sid'), headers: headers);
-
-      if (resTugas.statusCode == 200) {
-        final dec = jsonDecode(resTugas.body);
-        setState(() {
-          _allTugas = dec is List ? dec : [];
-        });
+      String url = '$baseUrl/api/tugas';
+      if (!widget.isGlobal && widget.teamData != null) {
+        url += '?kelas_id=${widget.teamData['id']}';
       }
-      if (resPengumpulan.statusCode == 200) {
-        final dec = jsonDecode(resPengumpulan.body);
-        setState(() {
-          _pengumpulan = dec is List ? dec : [];
-        });
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode == 200) {
+        final dec = jsonDecode(response.body);
+        List all = dec is List ? dec : [];
+        setState(() => _tugasList = all);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -78,376 +79,386 @@ class _SiswaTugasViewState extends State<SiswaTugasView> with SingleTickerProvid
     if (mounted) setState(() => _isLoading = false);
   }
 
-  bool _sudahDikumpulkan(String tugasId) {
-    return _pengumpulan.any((p) => p['tugas_id'].toString() == tugasId.toString());
+  List<dynamic> get _filtered {
+    return _tugasList.where((t) {
+      final isDone = t['sudah_kumpul'] == true || t['status'] == 'selesai';
+      if (_selectedFilter == 'Semua') return true;
+      if (_selectedFilter == 'Belum') return !isDone;
+      if (_selectedFilter == 'Selesai') return isDone;
+      return true;
+    }).toList();
   }
 
-  List<dynamic> get _tugasBelum => _allTugas.where((t) => !_sudahDikumpulkan(t['id'].toString())).toList();
-  List<dynamic> get _tugasSelesai => _allTugas.where((t) => _sudahDikumpulkan(t['id'].toString())).toList();
-
-  @override
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    if (_isLoading) {
-      return _buildSkeleton();
-    }
+    if (_isLoading) return _buildSkeleton();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          _buildTabBar(theme, isDark),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+      body: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final isDesktop = constraints.maxWidth >= 768;
+
+          return RefreshIndicator(
+            onRefresh: _fetchTugas,
+            color: _primary,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.only(
+                left: isDesktop ? 40 : 16,
+                right: isDesktop ? 40 : 16,
+                top: 32,
+                bottom: 100,
+              ),
               children: [
-                _TugasList(
-                  tugasList: _allTugas,
-                  userData: widget.userData,
-                  token: widget.token,
-                  onRefresh: _fetchData,
-                  statusLabel: 'Semua',
-                ),
-                _TugasList(
-                  tugasList: _tugasBelum,
-                  userData: widget.userData,
-                  token: widget.token,
-                  onRefresh: _fetchData,
-                  statusLabel: 'Belum Selesai',
-                ),
-                _TugasList(
-                  tugasList: _tugasSelesai,
-                  userData: widget.userData,
-                  token: widget.token,
-                  onRefresh: _fetchData,
-                  statusLabel: 'Selesai',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabBar(ThemeData theme, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppTheme.lightBorder.withAlpha(80),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Colors.transparent,
-        indicator: BoxDecoration(
-          color: AppTheme.primary,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withAlpha(60),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        labelColor: Colors.white,
-        unselectedLabelColor: AppTheme.textMutedLt,
-        labelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.3),
-        unselectedLabelStyle: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        tabs: const [
-          Tab(text: 'Semua'),
-          Tab(text: 'Belum'),
-          Tab(text: 'Selesai'),
-        ],
-      ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, curve: Curves.easeOutCubic);
-  }
-
-  Widget _buildSkeleton() {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(24),
-          child: SkeletonLoader(height: 50, radius: 100),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            itemCount: 5,
-            itemBuilder: (_, __) => const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: SkeletonLoader(height: 80, radius: 24),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TugasList extends StatelessWidget {
-  final List<dynamic> tugasList;
-  final Map<String, dynamic> userData;
-  final String token;
-  final Future<void> Function() onRefresh;
-  final String statusLabel;
-
-  const _TugasList({
-    required this.tugasList,
-    required this.userData,
-    required this.token,
-    required this.onRefresh,
-    required this.statusLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    if (tugasList.isEmpty) {
-      return EmptyState(
-        icon: LucideIcons.clipboardCheck,
-        message: 'Tidak ada tugas\n$statusLabel.',
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: LayoutBuilder(
-        builder: (ctx, c) {
-          final w = c.maxWidth;
-          final padding = Breakpoints.screenPadding(w);
-
-          final sortedTasks = List<dynamic>.from(tugasList);
-          sortedTasks.sort((a, b) {
-            final dA = a['deadline'];
-            final dB = b['deadline'];
-            if (dA == null && dB == null) return 0;
-            if (dA == null) return 1;
-            if (dB == null) return -1;
-            final dtA = DateTime.tryParse(dA);
-            final dtB = DateTime.tryParse(dB);
-            if (dtA != null && dtB != null) return dtA.compareTo(dtB);
-            return dA.toString().compareTo(dB.toString());
-          });
-
-          final Map<String, List<dynamic>> groups = {};
-          for (final t in sortedTasks) {
-            String dateLabel = 'Tanpa Tenggat Waktu';
-            if (t['deadline'] != null && t['deadline'].toString().isNotEmpty) {
-              final dt = DateTime.tryParse(t['deadline']);
-              if (dt != null) {
-                dateLabel = DateFormat('MMM d, EEEE').format(dt);
-              } else {
-                dateLabel = t['deadline'];
-              }
-            }
-            groups.putIfAbsent(dateLabel, () => []).add(t);
-          }
-          final groupKeys = groups.keys.toList();
-
-          return ListView.builder(
-            padding: padding,
-            itemCount: groupKeys.length,
-            itemBuilder: (_, i) {
-              final key = groupKeys[i];
-              final items = groups[key]!;
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 24, 4, 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          key.toUpperCase(),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.primary,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Divider(
-                            color: AppTheme.lightBorder,
-                            height: 1,
-                            thickness: 1,
-                          ),
-                        ),
-                      ],
+                // -- Headline -------------------------------------------
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: Text(
+                    'Daftar Tugas',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isDesktop ? 48 : 36,
+                      fontWeight: FontWeight.w800,
+                      color: _onBackground,
+                      letterSpacing: -1.92,
+                      height: 1.1,
                     ),
                   ),
-                  LayoutBuilder(
-                    builder: (ctx, constraints) {
-                      final cw = constraints.maxWidth;
-                      final isWide = cw >= 750;
-                      if (isWide) {
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: List.generate(items.length, (j) {
-                            final t = items[j];
-                            final cardW = (cw - 16) / 2;
-                            return SizedBox(
-                              width: cardW,
-                              child: _TugasCard(
-                                tugas: t,
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: userData, token: token))),
-                              ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
-                            );
-                          }),
-                        );
-                      } else {
-                        return Column(
-                          children: List.generate(items.length, (j) {
-                            final t = items[j];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _TugasCard(
-                                tugas: t,
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: userData, token: token))),
-                              ).animate(delay: (j * 50).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuart),
-                            );
-                          }),
-                        );
-                      }
-                    }
-                  ),
-                  const SizedBox(height: 20),
-                  if (i < groupKeys.length - 1)
-                    const Divider(color: AppTheme.lightBorder, height: 1),
-                ],
-              );
-            },
+                ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1),
+
+                // -- Filter Tabs ----------------------------------------------
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 40),
+                  child: _buildFilterTabs(),
+                ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05),
+
+                // -- Assignment Grid -------------------------------------------
+                if (_filtered.isEmpty)
+                  _buildEmpty()
+                else
+                  _buildGrid(isDesktop),
+              ],
+            ),
           );
         },
       ),
     );
   }
+
+  Widget _buildFilterTabs() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: _filters.map((f) {
+          final isSelected = _selectedFilter == f;
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedFilter = f),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                transform: Matrix4.translationValues(
+                  isSelected ? 2 : 0,
+                  isSelected ? 2 : 0,
+                  0,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? _primary : _surface,
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(color: _onSurface, width: 2),
+                  boxShadow: isSelected ? [] : const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+                ),
+                child: Text(
+                  f.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    letterSpacing: 0.6,
+                    color: isSelected ? Colors.white : _onSurface,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildGrid(bool isDesktop) {
+    if (!isDesktop) {
+      return Column(
+        children: List.generate(_filtered.length, (i) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: _TaskCardNeo(
+              tugas: _filtered[i],
+              index: i,
+              onTap: () => _openDetail(_filtered[i]),
+            ),
+          );
+        }),
+      );
+    } else {
+      List<Widget> rows = [];
+      for (int i = 0; i < _filtered.length; i += 2) {
+        Widget left = Expanded(
+          child: _TaskCardNeo(
+            tugas: _filtered[i],
+            index: i,
+            onTap: () => _openDetail(_filtered[i]),
+          ),
+        );
+        Widget right = (i + 1 < _filtered.length)
+            ? Expanded(
+                child: _TaskCardNeo(
+                  tugas: _filtered[i + 1],
+                  index: i + 1,
+                  onTap: () => _openDetail(_filtered[i + 1]),
+                ),
+              )
+            : const Expanded(child: SizedBox());
+        
+        rows.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [left, const SizedBox(width: 24), right],
+            ),
+          ),
+        );
+      }
+      return Column(children: rows);
+    }
+  }
+
+  void _openDetail(dynamic tugas) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SiswaTugasDetailScreen(
+          tugas: tugas,
+          token: widget.token,
+          userData: widget.userData,
+        ),
+      ),
+    ).then((_) => _fetchTugas());
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _surfaceContainerHighest,
+              shape: BoxShape.circle,
+              border: Border.all(color: _onSurface, width: 2),
+            ),
+            child: const Icon(LucideIcons.fileQuestion, color: _onSurface, size: 32),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada tugas.',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 24, color: _onSurface),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Hore! Kamu tidak punya tugas yang\nharus dikerjakan saat ini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 16, color: _onSurfaceVariant, fontWeight: FontWeight.w400),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonLoader(height: 60, width: 200),
+          const SizedBox(height: 40),
+          Row(
+            children: const [
+              SkeletonLoader(height: 40, width: 100, radius: 20),
+              SizedBox(width: 12),
+              SkeletonLoader(height: 40, width: 100, radius: 20),
+            ],
+          ),
+          const SizedBox(height: 40),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              mainAxisSpacing: 24,
+              crossAxisSpacing: 24,
+              childAspectRatio: 2,
+              children: List.generate(4, (_) => const SkeletonLoader(height: 160, radius: 12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _TugasCard extends StatelessWidget {
+// -- Task Card Neo -----------------------------------------------------------
+class _TaskCardNeo extends StatefulWidget {
   final dynamic tugas;
+  final int index;
   final VoidCallback onTap;
 
-  const _TugasCard({required this.tugas, required this.onTap});
+  const _TaskCardNeo({required this.tugas, required this.index, required this.onTap});
 
-  String _formatDeadline(String? dl) {
-    if (dl == null || dl.isEmpty) return '-';
-    final parsed = DateTime.tryParse(dl);
-    if (parsed != null) {
-      return DateFormat('dd MMM yyyy, HH:mm').format(parsed);
+  @override
+  State<_TaskCardNeo> createState() => _TaskCardNeoState();
+}
+
+class _TaskCardNeoState extends State<_TaskCardNeo> {
+  bool _isPressed = false;
+
+  String _formatDate(String? iso) {
+    if (iso == null || iso.isEmpty) return 'Tanpa Tenggat';
+    try {
+      return DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(iso));
+    } catch (_) {
+      return iso;
     }
-    return dl;
   }
 
   @override
   Widget build(BuildContext context) {
+    final bgColors = [
+      _primaryContainer,
+      _secondaryContainer,
+      _tertiaryContainer,
+      _surfaceContainerHighest
+    ];
+    final fgColors = [
+      _onPrimaryContainer,
+      _onSecondaryContainer,
+      _onTertiaryContainer,
+      _onSurfaceVariant
+    ];
+
+    final colorIdx = widget.index % bgColors.length;
+    final bgColor = bgColors[colorIdx];
+    final fgColor = fgColors[colorIdx];
+
+    final isDone = widget.tugas['sudah_kumpul'] == true || widget.tugas['status'] == 'selesai';
+    final hasDeadline = widget.tugas['tenggat_waktu'] != null && widget.tugas['tenggat_waktu'].toString().isNotEmpty;
 
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(15),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
+        constraints: const BoxConstraints(minHeight: 160),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: _isPressed 
+              ? const [BoxShadow(color: _onSurface, offset: Offset(2, 2))]
+              : const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Icon box — rounded indigo, no black border/shadow
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.indigoPrimary,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withAlpha(50),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Icon(LucideIcons.clipboardList, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    tugas['judul'] ?? '-',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textLight,
-                      letterSpacing: -0.3,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Mapel: ${tugas['mapel'] ?? '-'}',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textMutedLt,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Deadline chip — amber pill, no black border
-            if (tugas['deadline'] != null && tugas['deadline'].toString().isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.amber.withAlpha(20),
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: AppTheme.amber.withAlpha(80), width: 1),
-                ),
-                child: Text(
-                  _formatDeadline(tugas['deadline']),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  (widget.tugas['mapel'] ?? widget.tugas['kategori'] ?? 'UMUM').toString().toUpperCase(),
+                  style: GoogleFonts.inter(
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.amber,
-                    letterSpacing: 0.2,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    color: fgColor.withAlpha(178),
                   ),
-                  maxLines: 1,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.tugas['judul'] ?? 'Tugas',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                    height: 1.2,
+                    color: _onBackground,
+                  ),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(width: 12),
-            ],
-            // Simple chevron — no box container
-            const Icon(
-              LucideIcons.chevronRight,
-              color: AppTheme.textMutedLt,
-              size: 18,
+              ],
             ),
+            const SizedBox(height: 16),
+            if (isDone)
+              Row(
+                children: [
+                  const Icon(Icons.check_circle, color: _primary, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Sudah Dikumpulkan',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _onBackground),
+                  ),
+                ],
+              )
+            else if (!hasDeadline)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _surface.withAlpha(128),
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(color: _onBackground.withAlpha(51), width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.info_outline, size: 14, color: _onBackground),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Tanpa Tenggat',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: _onBackground),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today, size: 18, color: _onBackground),
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatDate(widget.tugas['tenggat_waktu']),
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _onBackground),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

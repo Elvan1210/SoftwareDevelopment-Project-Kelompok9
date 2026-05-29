@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../config/theme.dart';
+// ─── Tailwind Neo-Brutalist Tokens ─────────────────────────────────────────
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _secondary = Color(0xFF336763);
+const Color _onSecondary = Color(0xFFFFFFFF);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _surfaceBright = Color(0xFFF4FAFF);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _errorContainer = Color(0xFFFFDAD6);
+const Color _onErrorContainer = Color(0xFF93000A);
 
 class SiswaProfilView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -43,7 +56,9 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: _onSurface));
+    }
 
     final String userId = _userData['id'] ?? _userData['uid'] ?? _userData['_id'] ?? '';
     final String nama = _userData['nama'] ?? '-';
@@ -62,43 +77,57 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
           final w = constraints.maxWidth;
           final padding = Breakpoints.screenPadding(w);
           final isWide = w >= Breakpoints.tablet;
+
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                _ProfileHeroHeader(
-                  initials: initials, nama: nama, role: role,
-                ),
-                const SizedBox(height: 32),
-                Padding(
-                  padding: padding,
-                  child: isWide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.only(
+              left: padding.left,
+              right: padding.right,
+              top: 32,
+              bottom: 100,
+            ),
+            child: isWide
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 8,
+                        child: Column(
                           children: [
-                            Expanded(child: _InfoSection(
-                              email: email, kelas: kelas, role: role,
+                            _ProfileCard(initials: initials, nama: nama, role: role),
+                            const SizedBox(height: 20),
+                            _StatusCard(
                               userId: userId,
                               initialStatus: currentStatus,
                               onStatusChanged: _loadUserData,
-                            )),
-                            const SizedBox(width: 16),
-                            const Expanded(child: _ActionSection()),
+                            ),
+                            const SizedBox(height: 20),
+                            const _ActionCard(),
                           ],
-                        )
-                      : Column(children: [
-                          _InfoSection(
-                            email: email, kelas: kelas, role: role,
-                            userId: userId,
-                            initialStatus: currentStatus,
-                            onStatusChanged: _loadUserData,
-                          ),
-                          const SizedBox(height: 16),
-                          const _ActionSection(),
-                        ]),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        flex: 4,
+                        child: _InfoCard(email: email, kelas: kelas),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      _ProfileCard(initials: initials, nama: nama, role: role),
+                      const SizedBox(height: 20),
+                      _InfoCard(email: email, kelas: kelas),
+                      const SizedBox(height: 20),
+                      _StatusCard(
+                        userId: userId,
+                        initialStatus: currentStatus,
+                        onStatusChanged: _loadUserData,
+                      ),
+                      const SizedBox(height: 20),
+                      const _ActionCard(),
+                    ],
+                  ),
           );
         },
       ),
@@ -106,235 +135,242 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
   }
 }
 
-class _ProfileHeroHeader extends StatelessWidget {
-  final String initials, nama, role;
+class _ProfileCard extends StatefulWidget {
+  final String initials;
+  final String nama;
+  final String role;
 
-  const _ProfileHeroHeader({
-    required this.initials, required this.nama, required this.role,
+  const _ProfileCard({
+    required this.initials,
+    required this.nama,
+    required this.role,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 56, bottom: 44, left: 32, right: 32),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.indigoPrimary, Color(0xFF7C3AED)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-      ),
-      child: Column(children: [
-        // Avatar circle with white ring
-        Container(
-          width: 104,
-          height: 104,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(30),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-            border: Border.all(color: Colors.white.withAlpha(180), width: 4),
-          ),
-          child: Center(
-            child: Text(
-              initials,
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: AppTheme.indigoPrimary,
-              ),
-            ),
-          ),
-        ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-        const SizedBox(height: 20),
-        Text(
-          nama,
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-          textAlign: TextAlign.center,
-        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white.withAlpha(25),
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(color: Colors.white.withAlpha(80), width: 1.2),
-          ),
-          child: Text(
-            role.toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
-      ]),
-    );
-  }
+  State<_ProfileCard> createState() => _ProfileCardState();
 }
 
-class _InfoSection extends StatelessWidget {
-  final String email, kelas, role, userId, initialStatus;
-  final VoidCallback onStatusChanged;
-
-  const _InfoSection({
-    required this.email, required this.kelas, required this.role,
-    required this.userId, required this.initialStatus,
-    required this.onStatusChanged,
-  });
+class _ProfileCardState extends State<_ProfileCard> {
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Informasi Akun',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-              color: AppTheme.indigoPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Detail profil kamu',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
-          ),
-          const SizedBox(height: 20),
-          _InfoRow(icon: LucideIcons.mail, label: 'Email', value: email),
-          const SizedBox(height: 16),
-          _InfoRow(icon: LucideIcons.graduationCap, label: 'Kelas', value: kelas),
-          const SizedBox(height: 16),
-          _InfoRow(icon: LucideIcons.user, label: 'Role', value: role),
-          const SizedBox(height: 20),
-          const Divider(color: AppTheme.lightBorder, height: 1, thickness: 1),
-          const SizedBox(height: 16),
-          Text(
-            'Pengaturan Status Chat',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textLight,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _StatusDropdown(
-            userId: userId,
-            currentStatus: initialStatus,
-            onStatusChanged: onStatusChanged,
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label, value;
-
-  const _InfoRow({required this.icon, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: [
-      Container(
-        padding: const EdgeInsets.all(10),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: double.infinity,
+        padding: const EdgeInsets.all(32),
+        transform: Matrix4.translationValues(
+          _isHovered ? -2 : 0,
+          _isHovered ? -2 : 0,
+          0,
+        ),
         decoration: BoxDecoration(
-          color: AppTheme.indigoPrimary.withAlpha(15),
-          borderRadius: BorderRadius.circular(10),
+          color: _primaryContainer,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: _onSurface,
+              offset: _isHovered ? const Offset(6, 6) : const Offset(4, 4),
+            )
+          ],
         ),
-        child: Icon(icon, color: AppTheme.indigoPrimary, size: 18),
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          alignment: WrapAlignment.center,
+          spacing: 32,
+          runSpacing: 24,
+          children: [
+            Container(
+              width: 128,
+              height: 128,
+              decoration: BoxDecoration(
+                color: _surface,
+                shape: BoxShape.circle,
+                border: Border.all(color: _onSurface, width: 4),
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Center(
+                    child: Text(
+                      widget.initials,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 48,
+                        color: _primary,
+                        letterSpacing: -1.92,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _secondary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _onSurface, width: 2),
+                      ),
+                      child: const Icon(Icons.edit, color: _onSecondary, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  widget.nama,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 28, // md:text-32
+                    color: _onPrimaryContainer,
+                    letterSpacing: -0.56,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.school, color: _onSurfaceVariant, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.role,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 18,
+                        color: _onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-      const SizedBox(width: 16),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textMutedLt,
-            letterSpacing: 0.3,
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textLight,
-          ),
-        ),
-      ])),
-    ]);
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1);
   }
 }
 
-class _StatusDropdown extends StatefulWidget {
+class _InfoCard extends StatefulWidget {
+  final String email;
+  final String kelas;
+
+  const _InfoCard({required this.email, required this.kelas});
+
+  @override
+  State<_InfoCard> createState() => _InfoCardState();
+}
+
+class _InfoCardState extends State<_InfoCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        transform: Matrix4.translationValues(
+          _isHovered ? -2 : 0,
+          _isHovered ? -2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: _surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: _onSurface,
+              offset: _isHovered ? const Offset(6, 6) : const Offset(4, 4),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'INFORMASI AKUN',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                color: _onSurfaceVariant,
+                letterSpacing: 0.6, // 0.05em
+              ),
+            ),
+            const SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Email', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _primary, letterSpacing: 0.6)),
+                Text(widget.email, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onSurface)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Kelas', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _primary, letterSpacing: 0.6)),
+                Text(widget.kelas, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onSurface)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.1);
+  }
+}
+
+class _StatusCard extends StatefulWidget {
   final String userId;
-  final String currentStatus;
+  final String initialStatus;
   final VoidCallback onStatusChanged;
 
-  const _StatusDropdown({
+  const _StatusCard({
     required this.userId,
-    required this.currentStatus,
+    required this.initialStatus,
     required this.onStatusChanged,
   });
 
   @override
-  State<_StatusDropdown> createState() => _StatusDropdownState();
+  State<_StatusCard> createState() => _StatusCardState();
 }
 
-class _StatusDropdownState extends State<_StatusDropdown> {
-  late String selectedStatus;
+class _StatusCardState extends State<_StatusCard> {
+  bool _isHovered = false;
+  late String _selectedStatus;
+
   final List<String> statusOptions = [
-    'Available', 'Busy', 'Do Not Disturb', 'Be Right Back', 'Appear Away', 'Appear Offline'
+    'Available',
+    'Busy',
+    'Do Not Disturb',
+    'Be Right Back',
+    'Appear Away',
+    'Appear Offline'
   ];
 
   @override
   void initState() {
     super.initState();
-    selectedStatus = statusOptions.contains(widget.currentStatus) ? widget.currentStatus : 'Available';
-  }
-
-  @override
-  void didUpdateWidget(_StatusDropdown oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentStatus != widget.currentStatus) {
-      selectedStatus = statusOptions.contains(widget.currentStatus) ? widget.currentStatus : 'Available';
-    }
+    _selectedStatus = statusOptions.contains(widget.initialStatus)
+        ? widget.initialStatus
+        : 'Available';
   }
 
   Future<void> updateStatus(String newStatus) async {
-    setState(() => selectedStatus = newStatus);
+    setState(() => _selectedStatus = newStatus);
     try {
       await FirebaseFirestore.instance
           .collection('users')
@@ -351,7 +387,11 @@ class _StatusDropdownState extends State<_StatusDropdown> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Status chat berhasil diperbarui!')));
+          SnackBar(
+            content: Text('Status chat diperbarui ke $newStatus', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+            backgroundColor: _onSurface,
+          ),
+        );
       }
     } catch (e) {
       debugPrint("Error updating status: $e");
@@ -360,227 +400,280 @@ class _StatusDropdownState extends State<_StatusDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: selectedStatus,
-      dropdownColor: Colors.white,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-        fontWeight: FontWeight.w700,
-        color: AppTheme.textLight,
-      ),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: double.infinity,
+        padding: const EdgeInsets.all(32),
+        transform: Matrix4.translationValues(
+          _isHovered ? -2 : 0,
+          _isHovered ? -2 : 0,
+          0,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.lightBorder, width: 1.2),
+        decoration: BoxDecoration(
+          color: _surfaceBright,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: _onSurface,
+              offset: _isHovered ? const Offset(6, 6) : const Offset(4, 4),
+            )
+          ],
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
-        ),
-      ),
-      items: statusOptions.map((String status) {
-        return DropdownMenuItem<String>(
-          value: status,
-          child: Row(children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Status Chat',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                    color: _onSurface,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _primary,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: _onSurface, width: 2),
+                  ),
+                  child: Text(
+                    'LIVE',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                      color: Colors.white,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
             Container(
-              width: 10,
-              height: 10,
+              constraints: const BoxConstraints(maxWidth: 448), // max-w-md
               decoration: BoxDecoration(
-                color: AppTheme.getStatusColor(status),
-                shape: BoxShape.circle,
+                border: Border.all(color: _onSurface, width: 2),
+                color: Colors.white,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedStatus,
+                  isExpanded: true,
+                  icon: const Padding(
+                    padding: EdgeInsets.only(right: 16),
+                    child: Icon(Icons.expand_more, color: _onSurface),
+                  ),
+                  dropdownColor: Colors.white,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: _onSurface,
+                  ),
+                  items: statusOptions.map((String status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text(status),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) updateStatus(val);
+                  },
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-            Text(status, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-          ]),
-        );
-      }).toList(),
-      onChanged: (val) { if (val != null) updateStatus(val); },
-    );
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: 400.ms, delay: 200.ms).slideY(begin: 0.1);
   }
 }
 
-class _ActionSection extends StatelessWidget {
-  const _ActionSection();
+class _ActionCard extends StatefulWidget {
+  const _ActionCard();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+  State<_ActionCard> createState() => _ActionCardState();
+}
+
+class _ActionCardState extends State<_ActionCard> {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  void _showLogoutModal(BuildContext context) {
+    showDialog<bool>(
+      context: context,
+      barrierColor: const Color(0x99001E2B), // on-background/60
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(24),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 360),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _onSurface, width: 3),
+            boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(8, 8))],
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Pengaturan Keamanan',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-              color: AppTheme.rose,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Kelola sesi dan keamanan akun',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
-          ),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                barrierColor: Colors.black45,
-                builder: (ctx) => Dialog(
-                  backgroundColor: Colors.transparent,
-                  insetPadding: const EdgeInsets.all(24),
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 360),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(20),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(28),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.rose.withAlpha(15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(LucideIcons.logOut, color: AppTheme.rose, size: 22),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Keluar dari Akun?',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.textLight,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: _errorContainer,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _onSurface, width: 2),
+                ),
+                child: const Center(
+                  child: Icon(Icons.logout, color: _onErrorContainer, size: 32),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Keluar dari Akun?',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                  color: _onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Kamu yakin ingin logout dari akun ini?',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: _onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx, true),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: _errorContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: _onSurface, width: 2),
+                        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Keluar',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: _onErrorContainer,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Kamu yakin ingin logout dari akun ini?',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.textMutedLt,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                          GestureDetector(
-                            onTap: () => Navigator.pop(ctx, false),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: AppTheme.lightBg,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-                              ),
-                              child: Text(
-                                'Batal',
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.textLight,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () => Navigator.pop(ctx, true),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: AppTheme.rose,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.rose.withAlpha(50),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                'Keluar',
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ]),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              );
-              if (confirm == true) {
-                await AuthService.logout();
-                if (context.mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false,
-                  );
-                }
-              }
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: AppTheme.rose,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.rose.withAlpha(50),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx, false),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: _onSurface, width: 2),
+                        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Batal',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: _onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const Icon(LucideIcons.logOut, color: Colors.white, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'Keluar dari Akun',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ]),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
-    ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1);
+    ).then((confirm) async {
+      if (confirm == true) {
+        await AuthService.logout();
+        if (context.mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (_) => false,
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showLogoutModal(context),
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          transform: Matrix4.translationValues(
+            _isPressed || _isHovered ? 2 : 0,
+            _isPressed || _isHovered ? 2 : 0,
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: _errorContainer,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _onSurface, width: 2),
+            boxShadow: _isPressed || _isHovered
+                ? const [BoxShadow(color: _onSurface, offset: Offset(2, 2))]
+                : const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.logout, color: _onErrorContainer, size: 24),
+              const SizedBox(width: 16),
+              Text(
+                'Keluar dari Akun',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  color: _onErrorContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 400.ms, delay: 300.ms).slideY(begin: 0.1);
   }
 }

@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../config/api_config.dart';
-import '../../../config/theme.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'siswa_team_detail_layout.dart' hide GlassCard;
-import '../../../widgets/app_shell.dart';
 
-
-
-
-
-
+// Tailwind Colors Mapping for Neo-brutalism
+const Color _bgBackground = Color(0xFFF4FAFF);
+const Color _onBackground = Color(0xFF001E2B);
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _onSecondaryContainer = Color(0xFF3A6D69);
+const Color _primary = Color(0xFF3D6754);
+const Color _onPrimary = Color(0xFFFFFFFF);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _outlineVariant = Color(0xFFC1C8C2);
+const Color _secondary = Color(0xFF336763);
+const Color _tertiary = Color(0xFF8D4D33);
+const Color _surfaceContainer = Color(0xFFDBF1FF);
+const Color _error = Color(0xFFBA1A1A);
+const Color _emerald = Color(0xFF10B981); // for success snackbar
 
 class SiswaTeamsView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -59,21 +67,15 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+            backgroundColor: Colors.transparent,
             elevation: 0,
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(20),
-                    blurRadius: 30,
-                    offset: const Offset(0, 8),
-                  ),
+                border: Border.all(color: _onBackground, width: 2),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(color: _onBackground, offset: Offset(4, 4), blurRadius: 0),
                 ],
               ),
               padding: const EdgeInsets.all(24),
@@ -86,58 +88,57 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withAlpha(15),
+                          color: _surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _onBackground, width: 2),
                         ),
-                        child: const Icon(
-                          LucideIcons.userPlus,
-                          color: AppTheme.primary,
-                          size: 20,
-                        ),
+                        child: const Icon(Icons.person_add_outlined, color: _primary, size: 20),
                       ),
                       const SizedBox(width: 14),
                       Text(
-                        'Gabung ke Kelas',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        'Gabung Kelas',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: AppTheme.textLight,
+                          color: _onBackground,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Minta kode akses kepada guru Anda, lalu masukkan di sini.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.textMutedLt,
+                    'Masukkan kode akses dari guru Anda.',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: _onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Code input
                   Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.lightBg,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.lightBorder, width: 1.2),
+                      border: Border.all(color: _onBackground, width: 2),
                     ),
                     child: TextField(
                       controller: codeCtrl,
                       maxLength: 8,
                       textCapitalization: TextCapitalization.characters,
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 8,
-                        color: AppTheme.textLight,
+                        color: _onBackground,
                       ),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'XXXXXXXX',
-                        hintStyle: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        hintStyle: GoogleFonts.plusJakartaSans(
+                          fontSize: 24,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 8,
-                          color: AppTheme.textMutedLt.withAlpha(80),
+                          color: _outlineVariant,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -148,28 +149,16 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Cancel button
-                      GestureDetector(
+                      _NeoButton(
+                        label: 'Batal',
                         onTap: () => Navigator.pop(ctx),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightBg,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-                          ),
-                          child: Text(
-                            'Batal',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.textMutedLt,
-                            ),
-                          ),
-                        ),
+                        backgroundColor: Colors.white,
+                        textColor: _onSurfaceVariant,
                       ),
-                      const SizedBox(width: 10),
-                      // Submit button
-                      GestureDetector(
+                      const SizedBox(width: 12),
+                      _NeoButton(
+                        label: 'Gabung',
+                        isLoading: isSubmitting,
                         onTap: isSubmitting ? null : () async {
                           if (codeCtrl.text.trim().isEmpty) return;
                           setDialogState(() => isSubmitting = true);
@@ -191,8 +180,8 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                                   content: Text(status == 'accepted'
                                       ? 'Berhasil bergabung ke kelas!'
                                       : resBody['message'] ?? 'Menunggu persetujuan guru.',
-                                      style: const TextStyle(fontWeight: FontWeight.w800)),
-                                  backgroundColor: status == 'accepted' ? AppTheme.emerald : AppTheme.amber,
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                                  backgroundColor: status == 'accepted' ? _emerald : _primary,
                                   behavior: SnackBarBehavior.floating,
                                 ));
                                 if (status == 'accepted') _fetchMyTeams();
@@ -200,48 +189,24 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                             } else {
                               if (ctx.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(resBody['message'] ?? 'Gagal bergabung'),
-                                  backgroundColor: AppTheme.rose,
+                                  content: Text(resBody['message'] ?? 'Gagal bergabung', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                                  backgroundColor: _error,
                                 ));
                               }
                               setDialogState(() => isSubmitting = false);
                             }
                           } catch (e) {
                             if (ctx.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                content: Text('Terjadi kesalahan jaringan'),
-                                backgroundColor: AppTheme.rose,
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Terjadi kesalahan jaringan', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                                backgroundColor: _error,
                               ));
                             }
                             setDialogState(() => isSubmitting = false);
                           }
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primary.withAlpha(50),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: isSubmitting
-                              ? const SizedBox(
-                                  width: 18, height: 18,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : Text(
-                                  'Gabung Kelas',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
+                        backgroundColor: _primary,
+                        textColor: _onPrimary,
                       ),
                     ],
                   ),
@@ -256,323 +221,173 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     if (_isLoading) {
-      return _skeleton();
+      return const Center(child: CircularProgressIndicator(color: _primary));
     }
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: GestureDetector(
-        onTap: _showJoinDialog,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppTheme.primary,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primary.withAlpha(80),
-                offset: const Offset(0, 4),
-                blurRadius: 12,
-              )
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(LucideIcons.userPlus, size: 18, color: Colors.white),
-              const SizedBox(width: 8),
-              Text('Gabung Kelas', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900, color: Colors.white)),
-            ],
-          ),
-        ),
-      ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3),
-      body: _myTeams.isEmpty
-          ? Center(
+      backgroundColor: _bgBackground,
+      body: RefreshIndicator(
+        onRefresh: _fetchMyTeams,
+        color: _primary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppTheme.indigoPrimary.withAlpha(isDark ? 30 : 15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(LucideIcons.backpack, size: 48,
-                        color: AppTheme.indigoPrimary.withAlpha(180)),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('Belum bergabung kelas',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : AppTheme.textLight)),
-                  const SizedBox(height: 8),
-                  Text('Gunakan kode dari guru untuk masuk ke kelas.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _fetchMyTeams,
-              color: AppTheme.indigoPrimary,
-              child: LayoutBuilder(
-                builder: (ctx, c) {
-                  final w = c.maxWidth;
-                  final pad = w >= 950 ? 24.0 : 16.0;
-                  final isWide = w >= 950;
-                  final crossAxisCount = w >= 1200 ? 3 : (w >= 750 ? 2 : 1);
-                  final maxW = isWide ? 1100.0 : double.infinity;
-
-                  return SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    padding: EdgeInsets.fromLTRB(16, 24, pad, 120),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: maxW),
-                        child: Wrap(
-                          spacing: 20,
-                          runSpacing: 20,
-                          children: List.generate(_myTeams.length, (index) {
-                            final tim   = _myTeams[index];
-                            Color color;
-                            try {
-                              String wc = tim['warna_card']?.toString() ?? '4284705521';
-                              if (wc.startsWith('#')) wc = '0xFF${wc.substring(1)}';
-                              color = Color(int.parse(wc));
-                            } catch (e) {
-                              color = const Color(0xFF6366F1);
-                            }
-                            final nama  = (tim['nama_kelas'] as String? ?? '').trim();
-                            String initials = nama.isEmpty ? '??' : (() {
-                              final parts = nama.split(' ');
-                              return parts.length >= 2
-                                  ? (parts[0][0] + parts[1][0]).toUpperCase()
-                                  : nama.substring(0, nama.length >= 2 ? 2 : 1).toUpperCase();
-                            })();
-
-                            final cardW = crossAxisCount == 1
-                                ? double.infinity
-                                : (isWide && w >= 1200
-                                    ? (1100 - (20 * 2)) / 3
-                                    : (w - pad * 2 - 20) / 2);
-
-                            return SizedBox(
-                              width: cardW,
-                              child: _TeamCard(
-                                tim: tim,
-                                color: color,
-                                initials: initials,
-                                onTap: () => Navigator.push(ctx, MaterialPageRoute(
-                                  builder: (_) => SiswaTeamDetailLayout(
-                                    userData: widget.userData,
-                                    token: widget.token,
-                                    teamData: tim,
-                                  ),
-                                )),
-                              )
-                              .animate(delay: (index * 60).ms)
-                              .fadeIn(duration: 400.ms)
-                              .scale(begin: const Offset(0.92, 0.92), curve: Curves.easeOutBack, duration: 600.ms),
-                            );
-                          }),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-    );
-  }
-
-  Widget _skeleton() {
-    return LayoutBuilder(builder: (context, c) {
-      final w = c.maxWidth;
-      final pad = w >= 950 ? 24.0 : 16.0;
-      final isWide = w >= 950;
-      final crossAxisCount = w >= 1200 ? 3 : (w >= 750 ? 2 : 1);
-      final maxW = isWide ? 1100.0 : double.infinity;
-
-      return SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(16, 24, pad, 120),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxW),
-            child: Wrap(
-              spacing: 20,
-              runSpacing: 20,
-              children: List.generate(4, (index) {
-                final cardW = crossAxisCount == 1
-                    ? double.infinity
-                    : (isWide && w >= 1200
-                        ? (1100 - (20 * 2)) / 3
-                        : (w - pad * 2 - 20) / 2);
-                return SkeletonLoader(width: cardW, height: 180, radius: 16);
-              }),
-            ),
-          ),
-        ),
-      );
-    });
-  }
-}
-
-class _TeamCard extends StatelessWidget {
-  final dynamic tim;
-  final Color color;
-  final String initials;
-  final VoidCallback onTap;
-
-  const _TeamCard({
-    required this.tim, required this.color, required this.initials,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(12),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        // Colored accent strip at top
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top color accent strip
-              Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: color.withAlpha(200),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Modern rounded icon box
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: color.withAlpha(20),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(LucideIcons.book, color: color, size: 22),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (tim['kode_kelas'] != null)
-                                // Pill-shaped code badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: color.withAlpha(20),
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: Text(
-                                    'KODE: ${tim['kode_kelas']}',
-                                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  // Header Section
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 600;
+                      if (isWide) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Kelas Saya',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 48,
                                       fontWeight: FontWeight.w800,
-                                      color: color,
-                                      letterSpacing: 0.5,
+                                      letterSpacing: -1.5,
+                                      color: _onSurface,
+                                      height: 1.1,
                                     ),
                                   ),
-                                ),
-                              if (tim['kode_kelas'] != null) const SizedBox(height: 6),
-                              Text(
-                                tim['nama_kelas'] ?? '-',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  color: AppTheme.textLight,
-                                  height: 1.2,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(color: AppTheme.lightBorder, height: 1, thickness: 1),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(LucideIcons.user, size: 15, color: AppTheme.textMutedLt),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            tim['guru_nama'] ?? 'Guru belum ditugaskan',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.textMutedLt,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // Modern rounded MASUK button
-                        GestureDetector(
-                          onTap: onTap,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: color.withAlpha(60),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'MASUK',
-                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.5,
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Kelola perjalanan belajarmu dan akses materi pembelajaran dalam satu tempat.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      color: _onSurfaceVariant,
+                                      height: 1.6,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(LucideIcons.arrowRight, size: 13, color: Colors.white),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            _NeoButton(
+                              label: 'Gabung Kelas Baru',
+                              icon: Icons.add_circle,
+                              onTap: _showJoinDialog,
+                              backgroundColor: _secondaryContainer,
+                              textColor: _onSecondaryContainer,
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                              fontSize: 20,
+                            ),
+                          ],
+                        );
+                      } else {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kelas Saya',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -1.0,
+                                color: _onSurface,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Kelola perjalanan belajarmu dan akses materi pembelajaran dalam satu tempat.',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                color: _onSurfaceVariant,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            _NeoButton(
+                              label: 'Gabung Kelas Baru',
+                              icon: Icons.add_circle,
+                              onTap: _showJoinDialog,
+                              backgroundColor: _secondaryContainer,
+                              textColor: _onSecondaryContainer,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                              fontSize: 16,
+                            ),
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Classes List
+                  if (_myTeams.isEmpty)
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 40),
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: _onBackground, width: 2),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: const [
+                                BoxShadow(color: _onBackground, offset: Offset(4, 4), blurRadius: 0),
                               ],
                             ),
+                            child: const Icon(Icons.backpack_outlined, size: 48, color: _primary),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 24),
+                          Text(
+                            'Belum bergabung kelas',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: _onBackground,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Gunakan tombol di atas untuk masuk ke kelas.',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: _onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Column(
+                      children: List.generate(_myTeams.length, (index) {
+                        final tim = _myTeams[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 20.0),
+                          child: _TeamCardNeo(
+                            tim: tim,
+                            index: index,
+                            onTap: () => Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => SiswaTeamDetailLayout(
+                                userData: widget.userData,
+                                token: widget.token,
+                                teamData: tim,
+                              ),
+                            )),
+                          ),
+                        );
+                      }),
                     ),
-                  ],
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -580,3 +395,248 @@ class _TeamCard extends StatelessWidget {
   }
 }
 
+class _NeoButton extends StatefulWidget {
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onTap;
+  final Color backgroundColor;
+  final Color textColor;
+  final EdgeInsetsGeometry padding;
+  final double fontSize;
+  final bool isLoading;
+
+  const _NeoButton({
+    required this.label,
+    this.icon,
+    this.onTap,
+    required this.backgroundColor,
+    required this.textColor,
+    this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    this.fontSize = 16,
+    this.isLoading = false,
+  });
+
+  @override
+  State<_NeoButton> createState() => _NeoButtonState();
+}
+
+class _NeoButtonState extends State<_NeoButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: widget.onTap != null && !widget.isLoading ? (_) => setState(() => _isPressed = true) : null,
+      onTapUp: widget.onTap != null && !widget.isLoading ? (_) => setState(() => _isPressed = false) : null,
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.isLoading ? null : widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        padding: widget.padding,
+        decoration: BoxDecoration(
+          color: widget.backgroundColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _onBackground, width: 2),
+          boxShadow: [
+            if (!_isPressed)
+              const BoxShadow(
+                color: _onBackground,
+                offset: Offset(4, 4),
+                blurRadius: 0,
+              ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.isLoading)
+              SizedBox(
+                width: widget.fontSize,
+                height: widget.fontSize,
+                child: CircularProgressIndicator(color: widget.textColor, strokeWidth: 2),
+              )
+            else if (widget.icon != null)
+              Icon(widget.icon, color: widget.textColor, size: widget.fontSize * 1.2),
+            if (widget.icon != null || widget.isLoading) const SizedBox(width: 8),
+            Text(
+              widget.label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: widget.fontSize,
+                fontWeight: FontWeight.w700,
+                color: widget.textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TeamCardNeo extends StatefulWidget {
+  final dynamic tim;
+  final VoidCallback onTap;
+  final int index;
+
+  const _TeamCardNeo({
+    required this.tim,
+    required this.onTap,
+    required this.index,
+  });
+
+  @override
+  State<_TeamCardNeo> createState() => _TeamCardNeoState();
+}
+
+class _TeamCardNeoState extends State<_TeamCardNeo> {
+  bool _isHovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Cycle through accent colors
+    final colors = [_primary, _secondary, _tertiary, const Color(0xFF8E4F34)];
+    final icons = [Icons.calculate_outlined, Icons.science_outlined, Icons.menu_book_outlined, Icons.palette_outlined];
+    
+    final color = colors[widget.index % colors.length];
+    final icon = icons[widget.index % icons.length];
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        transform: Matrix4.translationValues(0, _isHovering ? -2 : 0, 0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _isHovering ? color : _onBackground,
+            width: 2,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: _onBackground,
+              offset: Offset(4, 4),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth > 500;
+              
+              final content = Row(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: _surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _onBackground, width: 2),
+                    ),
+                    child: Icon(icon, color: color, size: 36),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.tim['nama_kelas'] ?? 'Kelas Tanpa Nama',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: _onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.person_outline, size: 16, color: _onSurfaceVariant),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Guru: ${widget.tim['guru_nama'] ?? 'Belum Ditugaskan'}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: _onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (widget.tim['kode_kelas'] != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _surfaceContainer,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: _outlineVariant),
+                                ),
+                                child: Text(
+                                  'Kode: ${widget.tim['kode_kelas']}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: _onSecondaryContainer,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+
+              if (isWide) {
+                return Row(
+                  children: [
+                    Expanded(child: content),
+                    const SizedBox(width: 24),
+                    _NeoButton(
+                      label: 'Akses Kelas',
+                      icon: Icons.arrow_forward,
+                      onTap: widget.onTap,
+                      backgroundColor: _primary,
+                      textColor: _onPrimary,
+                    ),
+                  ],
+                );
+              } else {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    content,
+                    const SizedBox(height: 24),
+                    _NeoButton(
+                      label: 'Akses Kelas',
+                      icon: Icons.arrow_forward,
+                      onTap: widget.onTap,
+                      backgroundColor: _primary,
+                      textColor: _onPrimary,
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}

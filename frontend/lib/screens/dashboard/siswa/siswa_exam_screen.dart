@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../config/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../../models/quiz_model.dart';
 import '../../../services/exam/violation_service.dart';
 import '../../../services/exam/timer_service.dart';
@@ -14,7 +15,26 @@ import '../../../services/exam/secure_mode_service.dart';
 import '../../../services/exam/focus_detection_service.dart';
 import '../../../services/exam/keyboard_protection_service.dart';
 import '../../../services/quiz_service.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+// ─── Tailwind Neo-Brutalist Tokens ─────────────────────────────────────────
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _tertiary = Color(0xFF8D4D33);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _onTertiary = Color(0xFFFFFFFF);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _onTertiaryContainer = Color(0xFF8E4F34);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _surfaceContainerHigh = Color(0xFFCEEDFF);
+const Color _surfaceContainerLow = Color(0xFFE8F6FF);
+const Color _surfaceContainer = Color(0xFFDBF1FF);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _background = Color(0xFFF4FAFF);
+const Color _onBackground = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _error = Color(0xFFBA1A1A);
+const Color _errorContainer = Color(0xFFFFDAD6);
 
 class SiswaExamScreen extends StatefulWidget {
   final Quiz quiz;
@@ -60,11 +80,10 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   @override
   void initState() {
     super.initState();
-
     _initShuffle();
 
     _violationService = ViolationService(
-      maxViolations: 9999, 
+      maxViolations: 9999,
       onMaxViolationsReached: () {},
     );
     _violationService.addListener(_onViolationChanged);
@@ -252,7 +271,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           if (mounted) {
             setState(() => _isSubmitting = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(result['message'] ?? 'Gagal menyimpan jawaban ke server.', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+              SnackBar(content: Text(result['message'] ?? 'Gagal menyimpan jawaban ke server.', style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
             );
           }
         }
@@ -266,24 +285,23 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   }
 
   void _showOfflineWarningDialog() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: _onBackground, width: 2),
         ),
         title: Row(
           children: [
-            const Icon(LucideIcons.wifiOff, color: AppTheme.error, size: 24),
+            const Icon(LucideIcons.wifiOff, color: _error, size: 24),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 'Koneksi Terputus',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: _onBackground, fontSize: 20),
               ),
             ),
           ],
@@ -292,19 +310,14 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           'Gagal mengirim jawaban karena tidak ada koneksi internet atau server sedang sibuk.\n\n'
           'Jangan panik! Seluruh jawaban Anda sudah tersimpan dengan aman di memori perangkat ini.\n\n'
           'Silakan cari koneksi Wi-Fi atau nyalakan data seluler, lalu tekan tombol Submit kembali.',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5, color: isDark ? Colors.white70 : AppTheme.textLight),
+          style: GoogleFonts.inter(height: 1.5, color: _onSurfaceVariant, fontSize: 14),
         ),
         actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.indigoPrimary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
-            child: Text('Saya Mengerti', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          _NeoButton(
+            text: 'Saya Mengerti',
+            color: _primaryContainer,
+            textColor: _onBackground,
+            onTap: () => Navigator.pop(ctx),
           ),
         ],
       ),
@@ -312,91 +325,161 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   }
 
   void _showResultDialog(Map<String, dynamic> result, bool autoSubmitted) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final data = result['data'];
     final score = data?['data']?['score'] ?? data?['score'] ?? 0;
     final total = data?['data']?['totalPoints'] ?? data?['totalPoints'] ?? 0;
     final hasEssay = data?['data']?['hasEssay'] ?? data?['hasEssay'] ?? false;
+    final success = result['success'] == true;
 
     showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: const Color(0x99001E2B), // on-background/60
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-          ),
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.all(28),
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 384), // max-w-sm
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24), // rounded-3xl
+              border: Border.all(color: _onBackground, width: 3), // border-[3px]
+              boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(10, 10))], // modal-shadow
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: (result['success'] == true ? AppTheme.success : AppTheme.error).withAlpha(20),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: (result['success'] == true ? AppTheme.success : AppTheme.error).withAlpha(80), width: 1.5),
-                  ),
-                  child: Icon(
-                    result['success'] == true
-                        ? LucideIcons.checkCircle
-                        : LucideIcons.xCircle,
-                    size: 44,
-                    color: result['success'] == true ? AppTheme.success : AppTheme.error,
+                // Celebration Icon Top
+                Transform.translate(
+                  offset: const Offset(0, -64), // -mt-16
+                  child: Transform.rotate(
+                    angle: 0.05, // rotate-3
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: success ? _primaryContainer : _errorContainer,
+                        borderRadius: BorderRadius.circular(16), // rounded-2xl
+                        border: Border.all(color: _onBackground, width: 3), // border-[3px]
+                        boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(6, 6))],
+                      ),
+                      child: Center(
+                        child: Transform.rotate(
+                          angle: -0.05, // -rotate-3
+                          child: Icon(
+                            success ? Icons.celebration : Icons.error_outline,
+                            color: _onBackground,
+                            size: 40,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  autoSubmitted
-                      ? 'Ujian Dihentikan Otomatis'
-                      : 'Ujian Selesai!',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-                ),
-                const SizedBox(height: 8),
-                if (result['success'] == true) ...[
-                  if (hasEssay)
-                    Text(
-                      'Jawaban berhasil disimpan.\nNilai akhir menunggu penilaian guru untuk soal essay.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.warning, fontWeight: FontWeight.w600),
-                    )
-                  else
-                    Text(
-                      'Skor: $score / $total',
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900,
-                        color: AppTheme.indigoPrimary),
-                    ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pelanggaran: ${_violationService.violationCount}',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.error,
-                      fontWeight: FontWeight.w700),
-                  ),
-                ] else
-                  Text(
-                    result['message'] ?? 'Gagal menyimpan jawaban',
-                    style: GoogleFonts.poppins(color: AppTheme.error, fontWeight: FontWeight.w600),
-                  ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.indigoPrimary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: Text('Kembali', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                Transform.translate(
+                  offset: const Offset(0, -40), // Pull up text to compensate for icon
+                  child: Column(
+                    children: [
+                      Text(
+                        autoSubmitted ? 'Ujian Dihentikan' : (success ? 'Ujian Selesai!' : 'Terjadi Kesalahan'),
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 32, color: _onBackground), // headline-lg
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        success ? 'Jawaban berhasil disimpan.' : (result['message'] ?? 'Gagal menyimpan jawaban.'),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onSurfaceVariant), // body-md
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      if (success) ...[
+                        if (hasEssay)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: _surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(16), // rounded-2xl
+                              border: Border.all(color: _onBackground, width: 2), // border-2
+                              boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.info, color: _primary, size: 24),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Nilai akhir menunggu penilaian guru untuk soal essay',
+                                    style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurfaceVariant, height: 1.2), // body-sm leading-tight
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: _surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(16), // rounded-2xl
+                              border: Border.all(color: _onBackground, width: 2), // border-2
+                              boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Skor: ', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: _onSurfaceVariant)),
+                                Text('$score / $total', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 24, color: _primary)),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: _surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(16), // rounded-2xl
+                            border: Border.all(color: _onBackground, width: 2), // border-2
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.gpp_maybe, color: _error, size: 24),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Pelanggaran: ${_violationService.violationCount}',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: _onSurfaceVariant), // font-body-md font-bold
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 32),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: _primaryContainer,
+                            borderRadius: BorderRadius.circular(16), // rounded-2xl
+                            border: Border.all(color: _onBackground, width: 2), // custom-button border-2
+                            boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+                          ),
+                          child: Center(
+                            child: Text(
+                              'OK / Kembali',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 18, color: _onPrimaryContainer), // font-bold text-lg
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -408,45 +491,76 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   }
 
   void _confirmSubmit() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     int answered = _answers.length + _essayAnswers.length;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-        ),
-        title: Text(
-          'Submit Jawaban?',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-        ),
-        content: Text(
-          'Dijawab: $answered/${widget.quiz.questions.length} soal.\nPelanggaran: ${_violationService.violationCount}',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: GoogleFonts.poppins(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
-            ),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 400),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _onBackground, width: 2),
+            boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _submitExam();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.success,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
-            child: Text('Submit', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Kumpulkan Jawaban?',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 24, color: _onBackground),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              _buildStatRow('Jumlah Terjawab', '$answered / ${widget.quiz.questions.length} Soal'),
+              const SizedBox(height: 12),
+              _buildStatRow('Total Pelanggaran', '${_violationService.violationCount}'),
+              const SizedBox(height: 24),
+              Text('Pastikan semua jawaban sudah benar sebelum mengumpulkan. Tindakan ini tidak dapat dibatalkan.',
+                style: GoogleFonts.inter(fontSize: 14, color: _onSurfaceVariant, height: 1.5),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              _NeoButton(
+                text: 'Kumpulkan Sekarang',
+                color: _primaryContainer,
+                textColor: _onBackground,
+                width: double.infinity,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _submitExam();
+                },
+              ),
+              const SizedBox(height: 12),
+              _NeoButton(
+                text: 'Periksa Kembali',
+                color: Colors.white,
+                textColor: _onBackground,
+                width: double.infinity,
+                onTap: () => Navigator.pop(ctx),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatRow(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _onBackground, width: 1),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: GoogleFonts.inter(fontSize: 16, color: _onBackground)),
+          Text(value, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _onBackground)),
         ],
       ),
     );
@@ -477,9 +591,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return PopScope(
       canPop: _isSubmitted,
       onPopInvokedWithResult: (didPop, _) {
@@ -503,14 +614,26 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                 }
               : null,
           child: Scaffold(
-            backgroundColor: isDark ? AppTheme.darkBg : Colors.grey.shade50,
+            backgroundColor: _background,
             body: SafeArea(
               child: Column(
                 children: [
-                  _buildTopBar(theme, isDark),
-                  if (_showViolationWarning) _buildWarningBanner(isDark),
-                  Expanded(child: _buildQuestionArea(theme, isDark)),
-                  _buildBottomNav(theme, isDark),
+                  _buildHeader(),
+                  if (_showViolationWarning) _buildWarningBanner(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(top: 24, left: 16, right: 16, bottom: 40),
+                      child: Column(
+                        children: [
+                          _buildViolationBadge(),
+                          const SizedBox(height: 24),
+                          _buildQuestionCard(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildBottomNav(),
                 ],
               ),
             ),
@@ -520,85 +643,73 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     );
   }
 
-  Widget _buildTopBar(ThemeData theme, bool isDark) {
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-            bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1.2)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 40 : 6), blurRadius: 8)
-        ],
+      height: 80,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: _surface,
+        border: Border(bottom: BorderSide(color: _onBackground, width: 1)),
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.indigoPrimary.withAlpha(20),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50)),
-            ),
-            child: const Icon(LucideIcons.shieldCheck, color: AppTheme.indigoPrimary, size: 20),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   widget.quiz.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900,
-                    color: isDark ? Colors.white : AppTheme.textLight,
-                    letterSpacing: -0.3),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    color: _onBackground,
+                  ),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
                 Text(
-                  'Soal ${_currentIndex + 1} dari ${widget.quiz.questions.length}',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                  widget.quiz.subject.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    letterSpacing: 1.2,
+                    color: _primary,
+                  ),
                 ),
               ],
             ),
           ),
-          _buildTimerChip(isDark),
-          const SizedBox(width: 8),
-          _buildViolationChip(isDark),
+          const SizedBox(width: 16),
+          _buildTimerCard(),
         ],
       ),
     );
   }
 
-  Widget _buildTimerChip(bool isDark) {
-    Color bg = AppTheme.success.withAlpha(20);
-    Color fg = AppTheme.success;
-    if (_timerService.isCritical) {
-      bg = AppTheme.error.withAlpha(20);
-      fg = AppTheme.error;
-    } else if (_timerService.isWarning) {
-      bg = AppTheme.orangeVivid.withAlpha(20);
-      fg = AppTheme.orangeVivid;
-    }
-
+  Widget _buildTimerCard() {
+    bool isCritical = _timerService.isCritical;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: fg.withAlpha(80), width: 1.0)),
+        color: isCritical ? _errorContainer : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _onBackground, width: 1),
+        boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+      ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(LucideIcons.clock, size: 13, color: fg),
-          const SizedBox(width: 6),
+          Icon(Icons.timer, color: isCritical ? _error : _primary, size: 20),
+          const SizedBox(width: 8),
           Text(
             _timerService.formattedTime,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
-              color: fg,
-              fontFeatures: [const FontFeature.tabularFigures()],
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w700,
+              fontSize: 20,
+              color: isCritical ? _error : _onBackground,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ],
@@ -606,103 +717,54 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     );
   }
 
-  Widget _buildViolationChip(bool isDark) {
-    final count = _violationService.violationCount;
-    final danger = count >= 3; 
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: (danger ? AppTheme.error : AppTheme.orangeVivid).withAlpha(20),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: (danger ? AppTheme.error : AppTheme.orangeVivid).withAlpha(80), width: 1.0),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(LucideIcons.alertTriangle,
-              size: 13, color: danger ? AppTheme.error : AppTheme.orangeVivid),
-          const SizedBox(width: 5),
-          Text(
-            '$count',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
-              color: danger ? AppTheme.error : AppTheme.orangeVivid),
-          ),
-        ],
+  Widget _buildViolationBadge() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: _error,
+          border: Border.all(color: _onBackground, width: 1),
+          boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(2, 2))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.gpp_maybe, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Pelanggaran: ${_violationService.violationCount}',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 12, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildWarningBanner(bool isDark) {
+  Widget _buildWarningBanner() {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.error,
-        border: Border.all(color: Colors.black, width: 3),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black,
-            offset: Offset(4, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
+      color: _error,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black, width: 2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(LucideIcons.siren, color: AppTheme.error, size: 24),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PERINGATAN KECURANGAN!',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _lastViolationMsg,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+          const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            _lastViolationMsg.toUpperCase(),
+            style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14, color: Colors.white),
           ),
         ],
       ),
     ).animate()
       .fadeIn(duration: 300.ms)
-      .shake(hz: 8, curve: Curves.easeInOutCubic, duration: 500.ms)
-      .shimmer(duration: 1.seconds, color: Colors.white.withAlpha(50));
+      .shake(hz: 8, curve: Curves.easeInOutCubic, duration: 500.ms);
   }
 
-  Widget _buildQuestionArea(ThemeData theme, bool isDark) {
-    if (widget.quiz.questions.isEmpty) {
-      return Center(
-        child: Text(
-          'Tidak ada soal',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-        ),
-      );
-    }
+  Widget _buildQuestionCard() {
+    if (widget.quiz.questions.isEmpty) return const SizedBox();
 
     final qIndex = _questionOrder[_currentIndex];
     final q = widget.quiz.questions[qIndex];
@@ -710,337 +772,728 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
     final selectedEssay = _essayAnswers[q.id] ?? '';
     final oOrder = _optionOrder[q.id] ?? [];
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _onBackground, width: 1),
+        boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.success.withAlpha(20),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.success.withAlpha(60)),
-            ),
-            child: Text(
-              'Soal ${_currentIndex + 1}  •  ${q.points} Poin',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900,
-                color: AppTheme.success),
-            ),
-          ),
-          const SizedBox(height: 20),
-          if (q.imageUrl != null) ...[
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 250),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  q.imageUrl!,
-                  width: double.infinity,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    height: 100,
-                    color: Theme.of(context).colorScheme.surface,
-                    child: Center(
-                        child: Icon(LucideIcons.imageOff, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Soal ${_currentIndex + 1}',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 20, color: _onBackground),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _tertiaryContainer,
+                  border: Border.all(color: _onBackground, width: 1),
+                ),
+                child: Text(
+                  '${q.points} Poin',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onTertiaryContainer),
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          if (q.imageUrl != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                q.imageUrl!,
+                width: double.infinity,
+                fit: BoxFit.contain,
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
-          SelectionContainer.disabled(
-            child: Text(
-              q.question,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : AppTheme.textLight,
-                height: 1.5),
-            ),
+          Text(
+            q.question,
+            style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, height: 1.6, color: _onBackground),
           ),
           const SizedBox(height: 24),
           if (q.questionType == 'essay') ...[
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Theme.of(context).dividerColor),
-              ),
-              padding: const EdgeInsets.all(4),
-              child: TextFormField(
-                key: ValueKey(q.id),
-                initialValue: selectedEssay,
-                maxLines: 8,
-                onChanged: (val) => _selectAnswer(q.id, val, 'essay'),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
-                decoration: InputDecoration(
-                  hintText: 'Tulis jawaban uraian Anda di sini...',
-                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  border: InputBorder.none,
+            TextFormField(
+              key: ValueKey(q.id),
+              initialValue: selectedEssay,
+              maxLines: 8,
+              onChanged: (val) => _selectAnswer(q.id, val, 'essay'),
+              style: GoogleFonts.inter(fontSize: 16, color: _onBackground),
+              decoration: InputDecoration(
+                hintText: 'Tulis jawaban Anda di sini...',
+                hintStyle: GoogleFonts.inter(color: _onSurfaceVariant),
+                filled: true,
+                fillColor: _surfaceContainerLow,
+                border: const OutlineInputBorder(
+                  borderSide: BorderSide(color: _onBackground, width: 1),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: _onBackground, width: 2),
                 ),
               ),
             ),
           ] else ...[
             ...List.generate(oOrder.length, (i) {
               final oi = oOrder[i];
-
               bool isSelected = false;
-              if (q.questionType == 'multipleChoice' ||
-                  q.questionType == 'multipleAnswer') {
+              if (q.questionType == 'multipleChoice' || q.questionType == 'multipleAnswer') {
                 isSelected = selectedAnswer == oi;
               } else {
-                isSelected =
-                    (selectedAnswer is List) && selectedAnswer.contains(oi);
+                isSelected = (selectedAnswer is List) && selectedAnswer.contains(oi);
               }
 
+              final letters = ['A', 'B', 'C', 'D', 'E'];
+              final letter = i < letters.length ? letters[i] : (i+1).toString();
+
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      if (q.questionType == 'multipleChoice' ||
-                          q.questionType == 'multipleAnswer') {
-                        _selectAnswer(q.id, oi, q.questionType);
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _OptionButton(
+                  letter: letter,
+                  text: q.options[oi],
+                  isSelected: isSelected,
+                  onTap: () {
+                    if (q.questionType == 'multipleChoice') {
+                      _selectAnswer(q.id, oi, 'multipleChoice');
+                    } else {
+                      List current = [];
+                      if (selectedAnswer is List) current = List.from(selectedAnswer);
+                      if (current.contains(oi)) {
+                        current.remove(oi);
                       } else {
-                        List<int> current = selectedAnswer is List
-                            ? List<int>.from(selectedAnswer)
-                            : [];
-                        if (current.contains(oi)) {
-                          current.remove(oi);
-                        } else {
-                          current.add(oi);
-                        }
-                        _selectAnswer(q.id, current, q.questionType);
+                        current.add(oi);
                       }
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppTheme.indigoPrimary.withAlpha(isDark ? 55 : 30)
-                              : Theme.of(context).dividerColor,
-                          width: 1.2,
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.indigoPrimary.withAlpha(15)
-                              : Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isSelected ? AppTheme.indigoPrimary.withAlpha(60) : Colors.transparent,
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppTheme.indigoPrimary
-                                    : Theme.of(context).dividerColor,
-                                borderRadius: q.questionType == 'multipleChoice' ||
-                                              q.questionType == 'multipleAnswer'
-                                        ? BorderRadius.circular(16)
-                                        : BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  String.fromCharCode(65 + i),
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : isDark ? Colors.white70 : AppTheme.textLight),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: SelectionContainer.disabled(
-                                child: Text(
-                                  q.options[oi],
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: isSelected
-                                          ? FontWeight.w800
-                                          : FontWeight.w600,
-                                      color: isDark ? Colors.white : AppTheme.textLight),
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              const Icon(LucideIcons.checkCircle, color: AppTheme.indigoPrimary, size: 20),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                      _selectAnswer(q.id, current, 'multipleAnswer');
+                    }
+                  },
                 ),
               );
             }),
-          ],
-          const SizedBox(height: 24),
-          _buildQuestionDots(isDark),
+          ]
         ],
       ),
     );
   }
 
-  Widget _buildQuestionDots(bool isDark) {
-    return Center(
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: List.generate(widget.quiz.questions.length, (i) {
-          final qIndex = _questionOrder[i];
-          final q = widget.quiz.questions[qIndex];
-          bool isAnswered = false;
-          if (q.questionType == 'essay') {
-            isAnswered = _essayAnswers.containsKey(q.id) &&
-                _essayAnswers[q.id]!.trim().isNotEmpty;
-          } else if (q.questionType == 'multipleChoice' ||
-              q.questionType == 'multipleAnswer') {
-            isAnswered = _answers.containsKey(q.id);
-          } else {
-            final ans = _answers[q.id];
-            isAnswered = ans != null && (ans is List) && ans.isNotEmpty;
-          }
-
-          final isCurrent = i == _currentIndex;
-          return GestureDetector(
-            onTap: () => setState(() => _currentIndex = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isCurrent ? 32 : 28,
-              height: isCurrent ? 32 : 28,
-              decoration: BoxDecoration(
-                color: isCurrent
-                    ? AppTheme.indigoPrimary
-                    : isAnswered
-                        ? AppTheme.success.withAlpha(isDark ? 30 : 15)
-                        : Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isCurrent
-                      ? AppTheme.indigoPrimary
-                      : isAnswered
-                          ? AppTheme.success.withAlpha(80)
-                          : Theme.of(context).dividerColor,
-                  width: isCurrent ? 2 : 1,
-                ),
-              ),
-              child: Center(
-                  child: Text(
-                    '${i + 1}',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
-                      color: isCurrent
-                          ? Colors.white
-                          : isAnswered
-                              ? AppTheme.success
-                              : isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildBottomNav(ThemeData theme, bool isDark) {
-    final total = widget.quiz.questions.length;
-
-    int answeredCount = 0;
-    for (var q in widget.quiz.questions) {
-      if (q.questionType == 'essay') {
-        if (_essayAnswers.containsKey(q.id) &&
-            _essayAnswers[q.id]!.trim().isNotEmpty) {
-          answeredCount++;
-        }
-      } else if (q.questionType == 'multipleChoice' ||
-          q.questionType == 'multipleAnswer') {
-        if (_answers.containsKey(q.id)) {
-          answeredCount++;
-        }
-      } else {
-        final ans = _answers[q.id];
-        if (ans != null && (ans is List) && ans.isNotEmpty) {
-          answeredCount++;
-        }
-      }
-    }
+  Widget _buildBottomNav() {
+    int answeredCount = _answers.length + _essayAnswers.length;
+    double progress = widget.quiz.questions.isEmpty ? 0 : answeredCount / widget.quiz.questions.length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-            top: BorderSide(color: Theme.of(context).dividerColor, width: 1.2)),
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: _surface,
+        border: Border(top: BorderSide(color: _onBackground, width: 1)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          OutlinedButton.icon(
-            onPressed: _currentIndex > 0
-                ? () => setState(() => _currentIndex--)
-                : null,
-            icon: const Icon(LucideIcons.chevronLeft, size: 16),
-            label: Text('Prev', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-            style: OutlinedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              foregroundColor: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-              side: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1.0),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const Spacer(),
-          Text(
-            '$answeredCount/$total dijawab',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800,
-              color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-          ),
-          const Spacer(),
-          if (_currentIndex < total - 1)
-            ElevatedButton.icon(
-              onPressed: () => setState(() => _currentIndex++),
-              icon: const Icon(LucideIcons.chevronRight, size: 16),
-              label: Text('Next', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.indigoPrimary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+          Row(
+            children: [
+              _NeoButtonIcon(
+                icon: Icons.chevron_left,
+                color: _surfaceContainerHighest,
+                onTap: _currentIndex > 0
+                    ? () => setState(() => _currentIndex--)
+                    : null,
               ),
-            )
-          else
-            ElevatedButton.icon(
-              onPressed: _isSubmitting ? null : _confirmSubmit,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : const Icon(LucideIcons.send, size: 16),
-              label: Text(_isSubmitting ? 'Mengirim...' : 'Submit', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.success,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      '$answeredCount / ${widget.quiz.questions.length} Soal Terjawab',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      height: 8,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: _onBackground,
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: progress,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: _primaryContainer,
+                            border: Border(right: BorderSide(color: _onBackground, width: 1)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(width: 16),
+              if (_currentIndex < widget.quiz.questions.length - 1)
+                _NeoButtonTextIcon(
+                  text: 'Next',
+                  icon: Icons.chevron_right,
+                  color: _primaryContainer,
+                  textColor: _onPrimaryContainer,
+                  onTap: () => setState(() => _currentIndex++),
+                )
+              else
+                _NeoButtonTextIcon(
+                  text: 'Submit',
+                  icon: Icons.send,
+                  color: _primary,
+                  textColor: Colors.white,
+                  onTap: _confirmSubmit,
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _NeoButton(
+            text: 'Daftar Soal',
+            icon: Icons.grid_view,
+            color: _secondaryContainer,
+            textColor: _onBackground,
+            width: double.infinity,
+            onTap: _showQuestionGrid,
+          ),
         ],
+      ),
+    );
+  }
+
+  void _showQuestionGrid() {
+    showDialog(
+      context: context,
+      barrierColor: const Color(0xB2073446), // rgba(7, 52, 70, 0.7)
+      builder: (ctx) {
+        return _QuestionGridModal(
+          quiz: widget.quiz,
+          currentIndex: _currentIndex,
+          answers: _answers,
+          essayAnswers: _essayAnswers,
+          questionOrder: _questionOrder,
+          onSelectQuestion: (index) {
+            setState(() => _currentIndex = index);
+            Navigator.pop(ctx);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _QuestionGridModal extends StatelessWidget {
+  final Quiz quiz;
+  final int currentIndex;
+  final Map<String, dynamic> answers;
+  final Map<String, String> essayAnswers;
+  final List<int> questionOrder;
+  final Function(int) onSelectQuestion;
+
+  const _QuestionGridModal({
+    required this.quiz,
+    required this.currentIndex,
+    required this.answers,
+    required this.essayAnswers,
+    required this.questionOrder,
+    required this.onSelectQuestion,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    int answeredCount = answers.length + essayAnswers.length;
+    double progress = quiz.questions.isEmpty ? 0 : answeredCount / quiz.questions.length;
+    int progressPercent = (progress * 100).round();
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(16),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 448, maxHeight: 795),
+        decoration: BoxDecoration(
+          color: Colors.white, // surface-container-lowest
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onBackground, width: 2),
+          boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 16),
+                  decoration: const BoxDecoration(
+                    color: _surface,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                    border: Border(bottom: BorderSide(color: _onBackground, width: 2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Daftar Soal',
+                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 28, color: _onBackground),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: _surfaceContainerHigh,
+                                border: Border.all(color: _onBackground, width: 2),
+                              ),
+                              child: const Center(child: Icon(Icons.close, color: _onBackground)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${quiz.subject} - ${quiz.title}',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: -10,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _tertiary,
+                      border: Border.all(color: _onBackground, width: 2),
+                    ),
+                    child: Text(
+                      'UJIAN AKTIF',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onTertiary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Grid Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: quiz.questions.length,
+                      itemBuilder: (ctx, i) {
+                        final qId = quiz.questions[questionOrder[i]].id;
+                        final isAnswered = answers.containsKey(qId) || (essayAnswers.containsKey(qId) && essayAnswers[qId]!.isNotEmpty);
+                        final isCurrent = i == currentIndex;
+
+                        return GestureDetector(
+                          onTap: () => onSelectQuestion(i),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isCurrent 
+                                  ? _tertiaryContainer 
+                                  : (isAnswered ? _primaryContainer : _surfaceContainerLow),
+                              border: Border.all(color: _onBackground, width: isCurrent ? 4 : 2),
+                              boxShadow: isAnswered && !isCurrent
+                                  ? const [BoxShadow(color: _onBackground, offset: Offset(2, 2))]
+                                  : null,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${i + 1}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20,
+                                  color: isCurrent 
+                                      ? _onTertiaryContainer 
+                                      : (isAnswered ? _onPrimaryContainer : _onSurfaceVariant),
+                                ),
+                              ),
+                            ).animate(target: isCurrent ? 1 : 0).shimmer(duration: 1000.ms),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    // Progress Section
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: _onBackground, width: 2),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('PROGRESS PENGERJAAN', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onSurfaceVariant)),
+                              Text('$progressPercent%', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onBackground)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            height: 12,
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(
+                              color: _onBackground,
+                              border: Border.all(color: _onBackground, width: 2),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: progress,
+                              child: Container(color: _primaryContainer),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Legend & Footer
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: _surface,
+                border: Border(top: BorderSide(color: _onBackground, width: 2)),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildLegend(color: _primaryContainer, label: 'Terjawab', hasShadow: true),
+                      _buildLegend(color: _surfaceContainerLow, label: 'Belum', hasShadow: false),
+                      _buildLegend(color: _tertiaryContainer, label: 'Aktif', hasBorder: true),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: _primary,
+                        border: Border.all(color: _onBackground, width: 2),
+                        boxShadow: const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Kembali ke Soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 20, color: Colors.white)),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_right_alt, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegend({required Color color, required String label, bool hasShadow = false, bool hasBorder = false}) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: color,
+            border: Border.all(color: _onBackground, width: hasBorder ? 3 : 2),
+            boxShadow: hasShadow ? const [BoxShadow(color: _onBackground, offset: Offset(2, 2))] : null,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(label.toUpperCase(), style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onSurfaceVariant)),
+      ],
+    );
+  }
+}
+
+// ─── Shared Components ──────────────────────────────────────────────────
+
+class _OptionButton extends StatefulWidget {
+  final String letter;
+  final String text;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _OptionButton({
+    required this.letter,
+    required this.text,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  State<_OptionButton> createState() => _OptionButtonState();
+}
+
+class _OptionButtonState extends State<_OptionButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        transform: Matrix4.translationValues(
+          widget.isSelected || _isPressed ? 2 : 0,
+          widget.isSelected || _isPressed ? 2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: widget.isSelected ? _primaryContainer : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onBackground, width: 1),
+          boxShadow: widget.isSelected || _isPressed
+              ? const [BoxShadow(color: _onBackground, offset: Offset(2, 2))]
+              : const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: widget.isSelected ? _primaryContainer : _surfaceContainerLow,
+                border: Border.all(color: _onBackground, width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  widget.letter,
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: _onBackground),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                widget.text,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onBackground),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NeoButton extends StatefulWidget {
+  final String text;
+  final IconData? icon;
+  final Color color;
+  final Color textColor;
+  final double? width;
+  final VoidCallback onTap;
+
+  const _NeoButton({
+    required this.text,
+    this.icon,
+    required this.color,
+    required this.textColor,
+    this.width,
+    required this.onTap,
+  });
+
+  @override
+  State<_NeoButton> createState() => _NeoButtonState();
+}
+
+class _NeoButtonState extends State<_NeoButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: widget.width,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: widget.color,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onBackground, width: 1),
+          boxShadow: _isPressed
+              ? const []
+              : const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.icon != null) ...[
+              Icon(widget.icon, size: 20, color: widget.textColor),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              widget.text,
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: widget.textColor),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NeoButtonIcon extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
+
+  const _NeoButtonIcon({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  State<_NeoButtonIcon> createState() => _NeoButtonIconState();
+}
+
+class _NeoButtonIconState extends State<_NeoButtonIcon> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDisabled = widget.onTap == null;
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => {if (!isDisabled) setState(() => _isPressed = true)},
+      onTapUp: (_) => {if (!isDisabled) setState(() => _isPressed = false)},
+      onTapCancel: () => {if (!isDisabled) setState(() => _isPressed = false)},
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: 48,
+        height: 48,
+        transform: Matrix4.translationValues(
+          _isPressed || isDisabled ? 2 : 0,
+          _isPressed || isDisabled ? 2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: isDisabled ? Colors.grey.shade300 : widget.color,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onBackground, width: 1),
+          boxShadow: _isPressed || isDisabled
+              ? const []
+              : const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+        ),
+        child: Center(
+          child: Icon(widget.icon, color: isDisabled ? Colors.grey.shade500 : _onBackground, size: 24),
+        ),
+      ),
+    );
+  }
+}
+
+class _NeoButtonTextIcon extends StatefulWidget {
+  final String text;
+  final IconData icon;
+  final Color color;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  const _NeoButtonTextIcon({
+    required this.text,
+    required this.icon,
+    required this.color,
+    required this.textColor,
+    required this.onTap,
+  });
+
+  @override
+  State<_NeoButtonTextIcon> createState() => _NeoButtonTextIconState();
+}
+
+class _NeoButtonTextIconState extends State<_NeoButtonTextIcon> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: widget.color,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onBackground, width: 1),
+          boxShadow: _isPressed
+              ? const []
+              : const [BoxShadow(color: _onBackground, offset: Offset(4, 4))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.text,
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: widget.textColor),
+            ),
+            const SizedBox(width: 8),
+            Icon(widget.icon, color: widget.textColor, size: 24),
+          ],
+        ),
       ),
     );
   }
