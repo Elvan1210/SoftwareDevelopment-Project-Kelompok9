@@ -18,26 +18,38 @@ import '../../../widgets/neo_brutalism.dart';
 import '../../../widgets/jitsi_embed.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-// ─── Comic tokens ─────────────────────────────────────────────────────────
-const _kNavy   = Color(0xFF1A1F3C);
-const _kIndigo = Color(0xFF4F46E5);
-const _kBorder = Color(0xFF1A1F3C);
+// --- Tailwind Tokens ---------------------------------------------------------
+const Color _tertiary = Color(0xFF8D4D33);
+const Color _onSecondaryContainer = Color(0xFF3A6D69);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _outline = Color(0xFF717974);
+const Color _onBackground = Color(0xFF001E2B);
+const Color _background = Color(0xFFF4FAFF);
+const Color _surfaceContainerLowest = Color(0xFFFFFFFF);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primaryFixedDim = Color(0xFFA3D1B9);
+const Color _onSurface = Color(0xFF001E2B);
+const Color _primary = Color(0xFF3D6754);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _secondary = Color(0xFF336763);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _onTertiaryContainer = Color(0xFF8E4F34);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _rose = Color(0xFFE11D48);
 
-BoxDecoration _comicCardDash({
-  Color bg = Colors.white,
-  Color? borderColor,
-  Color shadowColor = const Color(0x55000000),
-  double radius = 14,
-}) =>
-    BoxDecoration(
-      color: bg,
-      borderRadius: BorderRadius.circular(radius),
-      border: Border.all(color: borderColor ?? _kBorder, width: 2.2),
-      boxShadow: [
-        BoxShadow(color: shadowColor, offset: const Offset(4, 4), blurRadius: 0),
-      ],
-    );
-
+BoxDecoration _neoCardDecoration({Color color = _surfaceContainerLowest}) => BoxDecoration(
+  color: color,
+  borderRadius: BorderRadius.circular(16),
+  border: Border.all(color: _onBackground, width: 2),
+  boxShadow: const [
+    BoxShadow(
+      color: _onBackground,
+      offset: Offset(4, 4),
+      blurRadius: 0,
+    ),
+  ],
+);
 
 class SiswaTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -160,220 +172,191 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   }
 
   Widget _buildDashboardView() {
-    final nama = widget.userData['nama'] ?? 'Siswa';
+    final nama = widget.userData['nama']?.split(' ')[0] ?? 'Siswa';
     final namaKelas = widget.teamData['nama_kelas'] ?? 'Kelas';
+    
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_liveStatus == 'active' && _currentMeetingId != null) ...[        
-            GestureDetector(
-              onTap: () => joinJitsiMeeting(
-                context: context, meetingId: _currentMeetingId!,
-                serverUrl: 'https://meet.ffmuc.net',
-                userName: widget.userData['nama'] ?? 'Siswa',
-                userEmail: widget.userData['email'] ?? '',
-                subject: 'Kelas Live: $namaKelas',
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [AppTheme.rose, Color(0xFFE11D48)]),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(color: AppTheme.rose.withAlpha(60), blurRadius: 16, offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: Row(children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: Colors.white.withAlpha(50), shape: BoxShape.circle),
-                    child: const Icon(LucideIcons.video, color: Colors.white, size: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_liveStatus == 'active' && _currentMeetingId != null) ...[        
+                _NeoButtonCard(
+                  onTap: () => joinJitsiMeeting(
+                    context: context, meetingId: _currentMeetingId!,
+                    serverUrl: 'https://meet.ffmuc.net',
+                    userName: widget.userData['nama'] ?? 'Siswa',
+                    userEmail: widget.userData['email'] ?? '',
+                    subject: 'Kelas Live: $namaKelas',
                   ),
-                  const SizedBox(width: 14),
-                  const Expanded(child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Kelas Sedang Live!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
-                      Text('Ketuk untuk bergabung sekarang', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                    ]
-                  )),
-                  const Icon(LucideIcons.chevronRight, color: Colors.white),
-                ]),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // ─── Hero Welcome Banner ───────────────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [_kNavy, Color(0xFF2D1B69), _kIndigo],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 2.2)),
-              boxShadow: const [BoxShadow(color: Color(0x88000000), offset: Offset(4, 4), blurRadius: 0)],
-            ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: Opacity(opacity: 0.07, child: CustomPaint(painter: _DotPatternPainterDash())),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  color: _rose,
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(25),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withAlpha(60), width: 1.2),
-                        ),
-                        child: Text('SELAMAT DATANG KEMBALI 👋',
-                          style: GoogleFonts.inter(color: const Color(0xFFFFD166), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: _onBackground, width: 2)),
+                        child: const Icon(LucideIcons.video, color: _rose, size: 24),
                       ),
-                      const SizedBox(height: 14),
-                      Text(nama, style: GoogleFonts.inter(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                      const SizedBox(height: 4),
-                      Text(namaKelas, style: GoogleFonts.inter(color: Colors.white.withAlpha(200), fontSize: 14, fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Kelas Sedang Live!', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
+                            const SizedBox(height: 4),
+                            Text('Ketuk untuk bergabung sekarang', style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                      const Icon(LucideIcons.arrowRight, color: Colors.white, size: 28),
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
               ],
-            ),
-          ),
 
-
-          const SizedBox(height: 20),
-
-          // Stat cards
-          Row(children: [
-            Expanded(child: _buildStatCard('Presensi', '—/—', LucideIcons.userCheck, AppTheme.primary, 'presensi')),
-            const SizedBox(width: 10),
-            Expanded(child: _buildStatCard('Tugas', 'Lihat', LucideIcons.clipboardList, AppTheme.success, 'tugas')),
-            const SizedBox(width: 10),
-            Expanded(child: _buildStatCard('Nilai', '—', LucideIcons.award, AppTheme.warning, 'nilai')),
-          ]),
-
-          const SizedBox(height: 20),
-
-          // ─── Menu Kelas Label ──────────────────────────────────────────
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: _kIndigo,
-                borderRadius: BorderRadius.circular(9),
-                border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.8)),
-                boxShadow: [BoxShadow(color: _kIndigo.withAlpha(100), offset: const Offset(2, 2), blurRadius: 0)],
+              // --- Header Greeting & Class Name ---------------------------------------
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Halo, $nama!', style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w600, color: _onSurfaceVariant)),
+                  const SizedBox(height: 4),
+                  Stack(
+                    children: [
+                      Positioned(
+                        bottom: -4,
+                        left: 0,
+                        right: 0,
+                        child: Container(height: 12, color: _primaryFixedDim.withAlpha(127)),
+                      ),
+                      Text(
+                        namaKelas.toUpperCase(),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: _onSurface,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              child: const Icon(LucideIcons.layoutGrid, size: 13, color: Colors.white),
-            ),
-            const SizedBox(width: 10),
-            Text('MENU KELAS',
-              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w900, color: _kIndigo, letterSpacing: 1.5)),
-            const SizedBox(width: 10),
-            Expanded(child: Container(
-              height: 2,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [_kIndigo.withAlpha(160), Colors.transparent]),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            )),
-          ]),
-          const SizedBox(height: 14),
+              const SizedBox(height: 24),
 
-          GridView.count(
-            crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
-            shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.5,
-            children: [
-              _buildMenuCard('Presensi', LucideIcons.userCheck, AppTheme.primary, 'presensi'),
-              _buildMenuCard('Tugas', LucideIcons.clipboardList, AppTheme.success, 'tugas'),
-              _buildMenuCard('Kuis & Ujian', LucideIcons.helpCircle, AppTheme.error, 'kuis'),
-              _buildMenuCard('Materi', LucideIcons.bookOpen, AppTheme.info, 'materi'),
+              // --- Attendance Bento Card ---------------------------------------
+              Container(
+                decoration: _neoCardDecoration(color: _surfaceContainerLowest),
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'TOTAL KEHADIRAN',
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: _outline),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text('24', style: GoogleFonts.plusJakartaSans(fontSize: 48, fontWeight: FontWeight.w900, color: _primary, height: 1.0)),
+                            const SizedBox(width: 8),
+                            Text('Hari Hadir', style: GoogleFonts.inter(fontSize: 14, color: _onSurfaceVariant)),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Transform.rotate(
+                      angle: 0.785398, // 45 degrees in radians
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: _primaryContainer,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _primary, width: 4),
+                        ),
+                        child: Transform.rotate(
+                          angle: -0.785398,
+                          child: const Icon(Icons.check_circle, color: _primary, size: 36),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // --- Action Menu Grid ---------------------------------------
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 500;
+                  return GridView.count(
+                    crossAxisCount: isWide ? 4 : 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    childAspectRatio: isWide ? 1.0 : 1.1,
+                    children: [
+                      _MenuCardNeo(
+                        label: 'Lihat Tugas',
+                        icon: Icons.assignment_outlined,
+                        color: _primaryContainer,
+                        textColor: _onPrimaryContainer,
+                        iconColor: _primary,
+                        onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; }),
+                      ),
+                      _MenuCardNeo(
+                        label: 'Riwayat Presensi',
+                        icon: Icons.history_outlined,
+                        color: _secondaryContainer,
+                        textColor: _onSecondaryContainer,
+                        iconColor: _secondary,
+                        onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; }),
+                      ),
+                      _MenuCardNeo(
+                        label: 'Daftar Kuis & Ujian',
+                        icon: Icons.quiz_outlined,
+                        color: _tertiaryContainer,
+                        textColor: _onTertiaryContainer,
+                        iconColor: _tertiary,
+                        onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; }),
+                      ),
+                      _MenuCardNeo(
+                        label: 'Materi Ajar',
+                        icon: Icons.menu_book_outlined,
+                        color: _surfaceContainerHighest,
+                        textColor: _onSurface,
+                        iconColor: _onSurface,
+                        onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; }),
+                      ),
+                    ],
+                  ).animate().fadeIn(duration: 400.ms, delay: 150.ms);
+                },
+              ),
+              const SizedBox(height: 40),
             ],
-          ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
-
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon, Color color, String tabId) {
-    return GestureDetector(
-      onTap: () => setState(() { _activeTabID = tabId; _activeTitle = label; }),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-        decoration: _comicCardDash(
-          bg: color.withAlpha(18),
-          borderColor: color,
-          shadowColor: color.withAlpha(80),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 8),
-            Text(value,
-              style: GoogleFonts.inter(color: color, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-            const SizedBox(height: 2),
-            Text(label,
-              style: GoogleFonts.inter(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
-          ],
+          ),
         ),
       ),
     );
   }
-
-
-  Widget _buildMenuCard(String label, IconData icon, Color color, String tabId) {
-    return GestureDetector(
-      onTap: () => setState(() { _activeTabID = tabId; _activeTitle = label; }),
-      child: Container(
-        decoration: _comicCardDash(
-          bg: Colors.white,
-          borderColor: color,
-          shadowColor: color.withAlpha(80),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(12),
-                border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.5)),
-                boxShadow: [BoxShadow(color: color.withAlpha(100), offset: const Offset(2, 2), blurRadius: 0)],
-              ),
-              child: Icon(icon, color: Colors.white, size: 22),
-            ),
-            const SizedBox(height: 10),
-            Text(label,
-              style: GoogleFonts.inter(color: _kNavy, fontSize: 13, fontWeight: FontWeight.w900)),
-          ],
-        ),
-      ),
-    );
-  }
-
 
   Widget _buildWebLayout(BuildContext context) {
     return AppShell(
       fullWidth: true,
       child: Row(
         children: [
-          // ── Premium Light Sidebar ──
+          // -- Premium Light Sidebar --
           SizedBox(
             width: 260,
             child: Container(
@@ -471,7 +454,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             child: ContentSurface(
               child: Column(
                 children: [
-                  // Topbar — light surface
+                  // Topbar � light surface
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     decoration: const BoxDecoration(
@@ -515,115 +498,67 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    final nama = widget.userData['nama'] ?? 'Siswa';
-    final namaKelas = widget.teamData['nama_kelas'] ?? 'Kelas';
-
-    return AppShell(
-      child: ContentSurface(
-        child: Scaffold(
-          extendBody: true,
-          backgroundColor: Colors.transparent,
-          body: Column(
-            children: [
-              // Mobile header — premium light
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(bottom: BorderSide(color: AppTheme.lightBorder)),
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Row(children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, 
-                            color: AppTheme.textMutedLt, 
-                            size: 20),
-                          padding: EdgeInsets.zero, visualDensity: VisualDensity.compact,
-                        ),
-                        const Spacer(),
-                        NotificationBell(
-                          userData: widget.userData, 
-                          token: widget.token, 
-                          iconColor: AppTheme.textMutedLt
-                        ),
-                        const SizedBox(width: 8),
-                      ]),
-                      const SizedBox(height: 10),
-                      Row(children: [
-                        Container(
-                          width: 44, height: 44,
-                          decoration: BoxDecoration(
-                            color: AppTheme.indigoPrimary.withAlpha(20),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppTheme.indigoPrimary.withAlpha(60)),
-                          ),
-                          child: Center(child: Text(nama[0].toUpperCase(),
-                            style: const TextStyle(color: AppTheme.indigoPrimary, fontWeight: FontWeight.w900, fontSize: 18))),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('Halo, $nama',
-                            style: const TextStyle(
-                              color: AppTheme.textLight, 
-                              fontWeight: FontWeight.w800, 
-                              fontSize: 16)),
-                          Text(namaKelas,
-                            style: const TextStyle(
-                              color: AppTheme.textMutedLt, 
-                              fontSize: 12, 
-                              fontWeight: FontWeight.w500)),
-                        ])),
-                      ]),
-                    ]),
-                  ),
-                ),
-              ),
-
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  child: KeyedSubtree(
-                    key: ValueKey(_activeTabID),
-                    child: _getActiveView(),
-                  ),
-                ),
-              ),
+    return Scaffold(
+      backgroundColor: _background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: _primary),
+          onPressed: () => Navigator.pop(context), // Using back button functionally for menu placeholder if needed
+        ),
+        title: Text(
+          'MyPSKD',
+          style: GoogleFonts.plusJakartaSans(
+            color: _onSurface,
+            fontWeight: FontWeight.w800,
+            fontSize: 24,
+            letterSpacing: -0.5,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: _primary),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: _onBackground.withAlpha(50), height: 1.0), // outline-variant
+        ),
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 280),
+        child: KeyedSubtree(
+          key: ValueKey(_activeTabID),
+          child: _getActiveView(),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: const Border(top: BorderSide(color: _onBackground, width: 1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(10),
+                offset: const Offset(0, -4),
+                blurRadius: 10,
+              )
             ],
           ),
-
-          bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: AppTheme.lightBorder, width: 1.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withAlpha(15), 
-                      blurRadius: 20, 
-                      spreadRadius: 2, 
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(LucideIcons.layoutDashboard, 'Home', 'dashboard'),
-                    _buildNavItem(LucideIcons.clipboardList, 'Tugas', 'tugas'),
-                    _buildNavItem(LucideIcons.helpCircle, 'Kuis', 'kuis'),
-                    _buildNavItem(LucideIcons.bookOpen, 'Materi', 'materi'),
-                    _buildNavItem(LucideIcons.award, 'Nilai', 'nilai'),
-                  ],
-                ),
-              ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItemNeo(Icons.home_outlined, 'Home', 'dashboard'),
+                _buildNavItemNeo(Icons.school_outlined, 'Classes', 'materi'), // Mocking assignment/classes
+                _buildNavItemNeo(Icons.chat_bubble_outline, 'Messages', 'pesan'), // Placeholder
+                _buildNavItemNeo(Icons.person_outline, 'Profile', 'profil'), // Placeholder
+              ],
             ),
           ),
         ),
@@ -631,31 +566,41 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, String tabId) {
-    final isSelected = _activeTabID == tabId;
+  Widget _buildNavItemNeo(IconData icon, String label, String tabId) {
+    // In actual implementation, we might map tabs differently, but for styling demo we highlight appropriately.
+    // Assuming 'materi' tab means classes is highlighted, unless dashboard.
+    final bool active = (tabId == 'dashboard' && _activeTabID == 'dashboard') || 
+                        (tabId == 'materi' && _activeTabID != 'dashboard');
+
     return GestureDetector(
-      onTap: () => setState(() {
-        _activeTabID = tabId;
-        _activeTitle = label;
-      }),
+      onTap: () {
+        if (tabId == 'dashboard') {
+          setState(() { _activeTabID = 'dashboard'; _activeTitle = 'Dashboard'; });
+        } else if (tabId == 'materi') {
+          // If clicking classes when on dashboard, default to materi
+          setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; });
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: isSelected ? 14 : 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(28),
+          color: active ? _primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isSelected ? Colors.white : AppTheme.textMutedLt, size: 18),
-            if (isSelected) ...[
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
+            Icon(icon, color: active ? _onPrimaryContainer : _onSurfaceVariant, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: active ? _onPrimaryContainer : _onSurfaceVariant,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 12,
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -671,20 +616,101 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   }
 }
 
-class _DotPatternPainterDash extends CustomPainter {
+class _NeoButtonCard extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final Color color;
+  final EdgeInsets padding;
+
+  const _NeoButtonCard({
+    required this.child,
+    required this.onTap,
+    required this.color,
+    required this.padding,
+  });
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withAlpha(40);
-    const spacing = 14.0;
-    const radius = 1.5;
-    for (double y = 0; y < size.height; y += spacing) {
-      for (double x = 0; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
+  State<_NeoButtonCard> createState() => _NeoButtonCardState();
+}
+
+class _NeoButtonCardState extends State<_NeoButtonCard> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        decoration: _neoCardDecoration(color: widget.color).copyWith(
+          boxShadow: _isPressed ? [] : const [BoxShadow(color: _onBackground, offset: Offset(4, 4), blurRadius: 0)],
+        ),
+        padding: widget.padding,
+        child: widget.child,
+      ),
+    );
   }
+}
+
+class _MenuCardNeo extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color textColor;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  const _MenuCardNeo({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.textColor,
+    required this.iconColor,
+    required this.onTap,
+  });
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  Widget build(BuildContext context) {
+    return _NeoButtonCard(
+      onTap: onTap,
+      color: color,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: _onBackground, width: 1.5),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const Spacer(),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class GlassCard extends StatelessWidget {

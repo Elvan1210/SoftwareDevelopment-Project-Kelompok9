@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
@@ -9,27 +9,29 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-// ─── Comic tokens ─────────────────────────────────────────────────────────
-const _kNavy   = Color(0xFF1A1F3C);
-const _kTeal   = Color(0xFF2A7C76);
-const _kIndigo = Color(0xFF4F46E5);
-const _kBorder = Color(0xFF1A1F3C);
+// --- Tailwind Neo-Brutalist Tokens -----------------------------------------
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _onSecondaryContainer = Color(0xFF3A6D69);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _onTertiaryContainer = Color(0xFF8E4F34);
+const Color _surfaceContainerLowest = Color(0xFFFFFFFF);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _outlineVariant = Color(0xFFC1C8C2);
+const Color _primaryFixed = Color(0xFFBFEDD5);
+const Color _onPrimaryFixed = Color(0xFF002115);
+const Color _background = Color(0xFFF4FAFF);
 
-BoxDecoration _comicCard({
-  Color bg = Colors.white,
-  Color? borderColor,
-  Color shadowColor = const Color(0x55000000),
-  double radius = 16,
-}) =>
-    BoxDecoration(
-      color: bg,
-      borderRadius: BorderRadius.circular(radius),
-      border: Border.all(color: borderColor ?? _kBorder, width: 2.2),
-      boxShadow: [
-        BoxShadow(color: shadowColor, offset: const Offset(4, 4), blurRadius: 0),
-      ],
+BorderRadius get _asymmetricRadius => const BorderRadius.only(
+      topLeft: Radius.circular(4),
+      topRight: Radius.circular(16),
+      bottomRight: Radius.circular(4),
+      bottomLeft: Radius.circular(16),
     );
-
 
 class SiswaMateriView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -95,38 +97,38 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          // ── Comic Search Bar ───────────────────────────────────────────
+          // -- Neo Search Bar -------------------------------------------
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _kIndigo, width: 2.2),
-                boxShadow: [
-                  BoxShadow(color: _kIndigo.withAlpha(80), offset: const Offset(4, 4), blurRadius: 0),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: _onSurface, width: 2),
+                boxShadow: const [
+                  BoxShadow(color: _onSurface, offset: Offset(4, 4), blurRadius: 0),
                 ],
               ),
               child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _kNavy),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 16, color: _onSurface),
                 decoration: InputDecoration(
-                  hintText: 'Cari materi pelajaran...',
-                  hintStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.grey.shade400),
-                  prefixIcon: const Icon(LucideIcons.search, size: 18, color: _kIndigo),
+                  hintText: 'Cari materi...',
+                  hintStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 16, color: _onSurfaceVariant),
+                  prefixIcon: const Icon(LucideIcons.search, size: 20, color: _onSurface),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
               ),
             ),
-          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, curve: Curves.easeOutCubic),
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1, curve: Curves.easeOutCubic),
 
           Expanded(
             child: _filtered.isEmpty
                 ? _buildEmpty()
                 : RefreshIndicator(
                     onRefresh: _fetchMateri,
-                    color: _kIndigo,
+                    color: _primary,
                     child: LayoutBuilder(
                       builder: (ctx, c) {
                         final w = c.maxWidth;
@@ -134,18 +136,59 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
                         return ListView.builder(
                           physics: const BouncingScrollPhysics(),
                           padding: EdgeInsets.only(
-                            left: padding.left,
-                            right: padding.right,
-                            top: 12,
+                            left: padding.left > 16 ? padding.left : 16,
+                            right: padding.right > 16 ? padding.right : 16,
+                            top: 16,
                             bottom: 100,
                           ),
-                          itemCount: _filtered.length,
+                          itemCount: _filtered.length + 1, // +1 for the header
                           itemBuilder: (_, i) {
-                            final m = _filtered[i];
+                            if (i == 0) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: _tertiaryContainer,
+                                        borderRadius: _asymmetricRadius,
+                                        border: Border.all(color: _onSurface, width: 2),
+                                        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+                                      ),
+                                      child: Text(
+                                        'DAFTAR MATERI',
+                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _onTertiaryContainer, letterSpacing: 1.2),
+                                      ),
+                                    ),
+                                    Text(
+                                      'Materi Pembelajaran',
+                                      style: GoogleFonts.plusJakartaSans(fontSize: 28, fontWeight: FontWeight.w800, color: _onSurface, height: 1.2),
+                                    ),
+                                  ],
+                                ),
+                              ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1);
+                            }
+
+                            final m = _filtered[i - 1];
+                            final colorsList = [
+                              {'bg': _secondaryContainer, 'text': _onSecondaryContainer},
+                              {'bg': _tertiaryContainer, 'text': _onTertiaryContainer},
+                              {'bg': _primaryFixed, 'text': _onPrimaryFixed},
+                              {'bg': _surfaceContainerHighest, 'text': _onSurface},
+                            ];
+                            final colorPair = colorsList[(i - 1) % colorsList.length];
+
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _MateriCard(materi: m)
-                                  .animate(delay: (i * 50).ms)
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _MateriCardNeo(
+                                materi: m,
+                                profileBgColor: colorPair['bg']!,
+                                profileTextColor: colorPair['text']!,
+                              )
+                                  .animate(delay: ((i - 1) * 50).ms)
                                   .fadeIn(duration: 400.ms)
                                   .slideY(begin: 0.1, curve: Curves.easeOutQuart),
                             );
@@ -166,31 +209,32 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 24),
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-        decoration: _comicCard(
-          bg: Colors.white,
-          borderColor: Colors.grey.shade300,
-          shadowColor: Colors.grey.withAlpha(60),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: _asymmetricRadius,
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4), blurRadius: 0)],
         ),
-        child: Column(children: [
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _kIndigo.withAlpha(20),
+              color: _surfaceContainerHighest,
               shape: BoxShape.circle,
-              border: Border.all(color: _kIndigo.withAlpha(80), width: 2),
+              border: Border.all(color: _onSurface, width: 2),
             ),
-            child: const Icon(LucideIcons.bookOpen, color: _kIndigo, size: 28),
+            child: const Icon(LucideIcons.bookOpen, color: _onSurface, size: 28),
           ),
           const SizedBox(height: 14),
           Text(
             isEmpty ? 'Belum ada materi\ndi kelas ini.' : 'Materi tidak ditemukan.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 15, color: _kNavy),
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 18, color: _onSurface),
           ),
           const SizedBox(height: 6),
           Text(
             isEmpty ? 'Tunggu guru menambahkan materi.' : 'Coba kata kunci lain.',
-            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+            style: GoogleFonts.inter(fontSize: 14, color: _onSurfaceVariant, fontWeight: FontWeight.w500),
           ),
         ]),
       ),
@@ -202,15 +246,15 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: SkeletonLoader(height: 52, radius: 14),
+          child: SkeletonLoader(height: 52, radius: 4),
         ),
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: 5,
             itemBuilder: (_, __) => const Padding(
-              padding: EdgeInsets.only(bottom: 16),
-              child: SkeletonLoader(height: 110, radius: 16),
+              padding: EdgeInsets.only(bottom: 24),
+              child: SkeletonLoader(height: 180, radius: 16),
             ),
           ),
         ),
@@ -219,18 +263,23 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
   }
 }
 
-class _MateriCard extends StatelessWidget {
+class _MateriCardNeo extends StatefulWidget {
   final dynamic materi;
-  const _MateriCard({required this.materi});
+  final Color profileBgColor;
+  final Color profileTextColor;
 
-  String _formatDate(String? iso) {
-    if (iso == null) return '-';
-    try {
-      return DateFormat('dd MMM yyyy').format(DateTime.parse(iso));
-    } catch (_) {
-      return iso;
-    }
-  }
+  const _MateriCardNeo({
+    required this.materi,
+    required this.profileBgColor,
+    required this.profileTextColor,
+  });
+
+  @override
+  State<_MateriCardNeo> createState() => _MateriCardNeoState();
+}
+
+class _MateriCardNeoState extends State<_MateriCardNeo> {
+  bool _isHovering = false;
 
   Future<void> _launchURL(String? url) async {
     if (url == null || url.isEmpty) return;
@@ -243,135 +292,116 @@ class _MateriCard extends StatelessWidget {
   void _showDetail(BuildContext context) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withAlpha(60),
+      barrierColor: _onSurface.withAlpha(51), // 20% opacity backdrop
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(20),
+        insetPadding: const EdgeInsets.all(16),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 480),
+          constraints: const BoxConstraints(maxWidth: 512), // max-w-lg
+          padding: const EdgeInsets.all(32), // p-8
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _kBorder, width: 2.2),
-            boxShadow: const [BoxShadow(color: Color(0x55000000), offset: Offset(6, 6), blurRadius: 0)],
+            color: _surfaceContainerLowest,
+            borderRadius: _asymmetricRadius,
+            border: Border.all(color: _onSurface, width: 2),
+            boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4), blurRadius: 0)],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              // Header strip
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [_kNavy, Color(0xFF2D1B69), _kIndigo],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(17),
-                    topRight: Radius.circular(17),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(25),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withAlpha(60), width: 1.2),
-                      ),
-                      child: Text('MATERI PELAJARAN',
-                        style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w900, color: const Color(0xFFFFD166), letterSpacing: 1.2)),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(materi['judul'] ?? '-',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 17, color: Colors.white),
-                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-              ),
-              // Content
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Section
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (materi['guru_nama'] != null) ...[
-                        _detailRow(LucideIcons.userCheck, 'Guru', materi['guru_nama'], _kTeal),
-                        const SizedBox(height: 14),
-                      ],
-                      if (materi['created_at'] != null) ...[
-                        _detailRow(LucideIcons.calendar, 'Dibuat', _formatDate(materi['created_at']), _kIndigo),
-                        const SizedBox(height: 14),
-                      ],
-                      if (materi['deskripsi'] != null && materi['deskripsi'].toString().isNotEmpty) ...[
-                        Text('DESKRIPSI',
-                          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade400, letterSpacing: 1.2)),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0F2FF),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _kIndigo.withAlpha(60), width: 1.5),
-                          ),
-                          child: Text(materi['deskripsi'],
-                            style: GoogleFonts.inter(height: 1.6, fontWeight: FontWeight.w500, fontSize: 13, color: _kNavy)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _secondaryContainer,
+                          borderRadius: _asymmetricRadius,
+                          border: Border.all(color: _onSurface, width: 2),
+                          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
                         ),
-                        const SizedBox(height: 18),
-                      ],
-                      if (materi['file_url'] != null && materi['file_url'].toString().isNotEmpty)
-                        GestureDetector(
-                          onTap: () => _launchURL(materi['file_url']),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: _kTeal,
-                              borderRadius: BorderRadius.circular(12),
-                              border: const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.8)),
-                              boxShadow: [BoxShadow(color: _kTeal.withAlpha(120), offset: const Offset(3, 3), blurRadius: 0)],
-                            ),
-                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              const Icon(LucideIcons.downloadCloud, color: Colors.white, size: 16),
-                              const SizedBox(width: 8),
-                              Text('Buka File Materi',
-                                style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.white)),
-                            ]),
-                          ),
+                        child: Text(
+                          'DETAIL MATERI',
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _onSecondaryContainer, letterSpacing: 1.2),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.materi['judul'] ?? '-',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 32, color: _onSurface, height: 1.2, letterSpacing: -0.5),
+                      ),
                     ],
                   ),
-                ),
-              ),
-              // Footer
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1.0)),
-                ),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(ctx),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                  const SizedBox(height: 24),
+                  
+                  // Content Section
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (widget.materi['deskripsi'] != null && widget.materi['deskripsi'].toString().isNotEmpty) ...[
+                            Text(
+                              'DESKRIPSI LENGKAP',
+                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _primary, letterSpacing: 0.5),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              widget.materi['deskripsi'],
+                              style: GoogleFonts.inter(height: 1.6, fontWeight: FontWeight.w400, fontSize: 16, color: _onSurfaceVariant),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          
+                          if (widget.materi['file_url'] != null && widget.materi['file_url'].toString().isNotEmpty) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.only(top: 16),
+                              decoration: const BoxDecoration(
+                                border: Border(top: BorderSide(color: _outlineVariant)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'LINK MATERI',
+                                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _primary, letterSpacing: 0.5),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => _launchURL(widget.materi['file_url']),
+                                        child: _NeoModalButton(
+                                          label: 'Buka',
+                                          icon: Icons.open_in_new,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      child: Text('Tutup',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.grey.shade600)),
                     ),
                   ),
+                ],
+              ),
+              
+              // Close Icon
+              Positioned(
+                top: -16,
+                right: -16,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: _onSurface, size: 28),
+                  onPressed: () => Navigator.pop(ctx),
+                  splashRadius: 24,
                 ),
               ),
             ],
@@ -381,93 +411,182 @@ class _MateriCard extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value, Color color) {
-    return Row(children: [
-      Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: color.withAlpha(20),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withAlpha(80), width: 1.2),
-        ),
-        child: Icon(icon, size: 14, color: color),
-      ),
-      const SizedBox(width: 10),
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 10, color: Colors.grey.shade400, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-        Text(value, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: _kNavy)),
-      ]),
-    ]);
+  String _getInitials(String name) {
+    List<String> names = name.trim().split(' ');
+    if (names.isEmpty) return '??';
+    if (names.length == 1) return names[0].substring(0, names[0].length >= 2 ? 2 : 1).toUpperCase();
+    return '${names[0][0]}${names[names.length - 1][0]}'.toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showDetail(context),
-      child: Container(
-        decoration: _comicCard(bg: Colors.white, borderColor: _kTeal, shadowColor: _kTeal.withAlpha(80)),
-        child: Column(
-          children: [
-            // Header strip
-            Container(
-              decoration: const BoxDecoration(
-                color: _kTeal,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(13), topRight: Radius.circular(13)),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(25),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white.withAlpha(60), width: 1),
+    final guruNama = widget.materi['guru_nama'] ?? 'Guru Tidak Diketahui';
+    final initials = _getInitials(guruNama);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: GestureDetector(
+        onTap: () => _showDetail(context),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          transform: Matrix4.translationValues(
+            _isHovering ? -2 : 0,
+            _isHovering ? -2 : 0,
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: _asymmetricRadius,
+            border: Border.all(color: _onSurface, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: _onSurface,
+                offset: _isHovering ? const Offset(6, 6) : const Offset(4, 4),
+              )
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.materi['judul'] ?? '-',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    color: _onSurface,
+                    height: 1.2,
                   ),
-                  child: const Icon(LucideIcons.fileText, color: Colors.white, size: 14),
                 ),
-                const SizedBox(width: 10),
-                Expanded(child: Text(
-                  materi['guru_nama'] != null ? '${materi['guru_nama']}' : 'Guru',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white70),
-                  maxLines: 1, overflow: TextOverflow.ellipsis)),
-                if (materi['created_at'] != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(30),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(_formatDate(materi['created_at']),
-                      style: GoogleFonts.inter(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700)),
-                  ),
-              ]),
-            ),
-            // Body
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(materi['judul'] ?? '-',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 16, color: _kNavy, letterSpacing: -0.2),
-                  maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 6),
-                Container(height: 2, width: 32,
-                  decoration: BoxDecoration(color: _kTeal, borderRadius: BorderRadius.circular(2))),
                 const SizedBox(height: 8),
-                if ((materi['deskripsi'] ?? '').isNotEmpty)
-                  Text(materi['deskripsi'],
-                    style: GoogleFonts.inter(height: 1.5, color: Colors.grey.shade500, fontWeight: FontWeight.w500, fontSize: 13),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
-                if (materi['file_url'] != null && materi['file_url'].toString().isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Row(children: [
-                    const Icon(LucideIcons.paperclip, size: 12, color: _kTeal),
-                    const SizedBox(width: 5),
-                    Text('Ada lampiran file',
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: _kTeal)),
-                  ]),
-                ],
-              ]),
+                if ((widget.materi['deskripsi'] ?? '').isNotEmpty)
+                  Text(
+                    widget.materi['deskripsi'],
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: _onSurfaceVariant,
+                      height: 1.5,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.only(top: 16),
+                  decoration: const BoxDecoration(
+                    border: Border(top: BorderSide(color: _outlineVariant)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: widget.profileBgColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: _onSurface, width: 1.5),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                initials,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color: widget.profileTextColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Guru: $guruNama',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _onSurface,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _primaryContainer,
+                          border: Border.all(color: _onSurface, width: 2),
+                          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+                        ),
+                        child: Text(
+                          'Lihat Detail',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NeoModalButton extends StatefulWidget {
+  final String label;
+  final IconData icon;
+
+  const _NeoModalButton({required this.label, required this.icon});
+
+  @override
+  State<_NeoModalButton> createState() => _NeoModalButtonState();
+}
+
+class _NeoModalButtonState extends State<_NeoModalButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: _primaryContainer,
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: _isPressed ? [] : const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.icon, color: _onSurface, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              widget.label,
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onPrimaryContainer),
             ),
           ],
         ),

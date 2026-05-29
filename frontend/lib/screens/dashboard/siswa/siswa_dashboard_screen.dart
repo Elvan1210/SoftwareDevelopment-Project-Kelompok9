@@ -1,21 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../config/api_config.dart';
-import '../../../config/theme.dart';
-import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../config/api_config.dart';
 import 'siswa_tugas_detail_screen.dart';
 
+// Tailwind Colors Mapping
+const Color _bgBackground = Color(0xFFF4FAFF);
+const Color _bgPrimaryContainer = Color(0xFFB7E5CD);
+const Color _bgErrorContainer = Color(0xFFFFDAD6);
+const Color _bgTertiaryContainer = Color(0xFFFFD1C0);
+const Color _bgSurfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _bgSurfaceContainerLow = Color(0xFFE8F6FF);
+const Color _bgSurfaceContainerLowest = Color(0xFFFFFFFF);
+const Color _primary = Color(0xFF3D6754);
+const Color _secondary = Color(0xFF336763);
+const Color _tertiary = Color(0xFF8D4D33);
+const Color _onBackground = Color(0xFF001E2B);
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _onPrimary = Color(0xFFFFFFFF);
+const Color _onSecondary = Color(0xFFFFFFFF);
+const Color _onErrorContainer = Color(0xFF93000A);
+const Color _onTertiaryContainer = Color(0xFF8E4F34);
+const Color _onTertiaryFixed = Color(0xFF370E00);
+const Color _tertiaryFixedDim = Color(0xFFFFB598);
+const Color _neutralSlate = Color(0xFF414944);
+const Color _outlineVariant = Color(0xFFC1C8C2);
 
 class SiswaDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  const SiswaDashboardScreen(
-      {super.key, required this.userData, required this.token});
+  const SiswaDashboardScreen({
+    super.key,
+    required this.userData,
+    required this.token,
+  });
 
   @override
   State<SiswaDashboardScreen> createState() => _SiswaDashboardScreenState();
@@ -23,11 +45,11 @@ class SiswaDashboardScreen extends StatefulWidget {
 
 class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   bool _isLoading = true;
-  List<dynamic> _tugasList        = [];
-  List<dynamic> _pengumumanList   = [];
-  List<dynamic> _pengumpulanList  = [];
-  List<dynamic> _kelasList        = [];
-  Set<String>   _readIds          = {};
+  List<dynamic> _tugasList = [];
+  List<dynamic> _pengumumanList = [];
+  List<dynamic> _pengumpulanList = [];
+  List<dynamic> _kelasList = [];
+  Set<String> _readIds = {};
 
   @override
   void initState() {
@@ -37,7 +59,7 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
 
   Future<void> _loadAndFetch() async {
     final prefs = await SharedPreferences.getInstance();
-    final list  = prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
+    final list = prefs.getStringList('read_pengumuman_${widget.userData['id']}') ?? [];
     _readIds = list.toSet();
     await _fetchData();
   }
@@ -45,17 +67,14 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   Future<void> _markRead(String id) async {
     setState(() => _readIds.add(id));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'read_pengumuman_${widget.userData['id']}',
-      _readIds.toList(),
-    );
+    await prefs.setStringList('read_pengumuman_${widget.userData['id']}', _readIds.toList());
   }
 
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      final headers  = {'Authorization': 'Bearer ${widget.token}'};
-      final siswaId  = Uri.encodeComponent(widget.userData['id'].toString());
+      final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final siswaId = Uri.encodeComponent(widget.userData['id'].toString());
 
       final results = await Future.wait([
         http.get(Uri.parse('$baseUrl/api/kelas?siswa_id=$siswaId'), headers: headers),
@@ -93,7 +112,6 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  // ── Stat computation ─────────────────────────────────────────────────────
   Map<String, int> get _stats {
     int lewat = 0, belum = 0, selesai = 0;
     for (var t in _tugasList) {
@@ -102,7 +120,10 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
         continue;
       }
       final dl = DateTime.tryParse(t['deadline']?.toString() ?? '');
-      if (dl != null && dl.isBefore(DateTime.now())) { lewat++; continue; }
+      if (dl != null && dl.isBefore(DateTime.now())) {
+        lewat++;
+        continue;
+      }
       belum++;
     }
     return {'belum': belum, 'lewat': lewat, 'selesai': selesai};
@@ -111,802 +132,597 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return AppShell(child: _skeleton());
+      return const Center(child: CircularProgressIndicator(color: _primary));
     }
 
-    final s      = _stats;
-    final name   = (widget.userData['nama'] ?? widget.userData['name'] ?? 'Siswa').toString().split(' ').first;
+    final s = _stats;
+    final name = widget.userData['nama'] ?? widget.userData['name'] ?? 'Siswa';
+    final dateStr = DateFormat('EEEE, dd MMM yyyy', 'id_ID').format(DateTime.now());
 
-    return AppShell(
-      child: RefreshIndicator(
+    return Scaffold(
+      backgroundColor: _bgBackground,
+      body: RefreshIndicator(
         onRefresh: _fetchData,
-        color: AppTheme.indigoPrimary,
-        child: LayoutBuilder(builder: (ctx, c) {
-          final w       = c.maxWidth;
-          final isWide  = w >= 950;
-          final pad     = isWide ? 40.0 : 24.0;
+        color: _primary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome Section
+              _BentoCard(
+                color: Colors.white,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        text: 'Selamat siang, ',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: _onBackground,
+                          height: 1.2,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: name,
+                            style: const TextStyle(color: _primary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today_outlined, size: 16, color: _onSurfaceVariant),
+                        const SizedBox(width: 8),
+                        Text(
+                          dateStr,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: _onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
 
-          if (isWide) {
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              padding: EdgeInsets.fromLTRB(pad, 24, pad, 120),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              // Quotes of the Day
+              InkWell(
+                onTap: () {
+                  showDialog(context: context, builder: (_) => const _QuoteDialog());
+                },
+                child: _BentoCard(
+                  color: _bgPrimaryContainer,
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _GreetingBanner(name: name, kelasList: _kelasList),
-                      const SizedBox(height: 24),
                       Row(
+                        children: [
+                          const Icon(Icons.format_quote_rounded, color: _onSurface),
+                          const SizedBox(width: 12),
+                          Text(
+                            'QUOTES OF THE DAY',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: _onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Icon(Icons.arrow_forward_rounded, color: _onSurface),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Stats Row
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _BentoCard(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(24),
+                      borderWidth: 2,
+                      borderColor: _primary,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${_kelasList.length} Kelas Aktif',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: _onBackground,
+                            ),
+                          ),
+                          Container(
+                            height: 48,
+                            width: 48,
+                            decoration: BoxDecoration(
+                              color: _secondary,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _neutralSlate),
+                            ),
+                            child: const Icon(Icons.school_rounded, color: _onSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _BentoCard(
+                      color: _bgErrorContainer,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _StatRow(stats: s, isWide: isWide),
-                                const SizedBox(height: 28),
-                                SectionHeader(
-                                  title: 'Tugas Mendatang',
-                                  subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
-                                ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                                const SizedBox(height: 16),
-                                _buildTugasSection(),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildPengumumanHeader(),
-                                const SizedBox(height: 16),
-                                _buildPengumumanSectionWide(),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(pad, 24, pad, 120),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _GreetingBanner(name: name, kelasList: _kelasList),
-                    const SizedBox(height: 24),
-                    _StatRow(stats: s, isWide: isWide),
-                    const SizedBox(height: 36),
-                    SectionHeader(
-                      title: 'Tugas Mendatang',
-                      subtitle: '${_tugasList.length} tugas aktif dari semua kelas',
-                    ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart),
-                    const SizedBox(height: 16),
-                    _buildTugasSection(),
-                    const SizedBox(height: 36),
-                    _buildPengumumanHeader(),
-                    const SizedBox(height: 12),
-                    _buildPengumumanSection(),
-                    const SizedBox(height: 32),
-                  ]),
-                ),
-              ),
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  // ── Tugas Section ─────────────────────────────────────────────────────────
-  Widget _buildTugasSection() {
-    if (_tugasList.isEmpty) {
-      return const _EmptyCard(
-        icon: LucideIcons.clipboardCheck,
-        message: 'Tidak ada tugas mendatang',
-        subtitle: 'Semua tugas sudah dikumpulkan!',
-        color: AppTheme.emerald,
-      );
-    }
-
-    return Column(
-      children: List.generate(_tugasList.length.clamp(0, 5), (i) {
-        final t         = _tugasList[i];
-        final submitted = _pengumpulanList.any((p) =>
-            p['tugas_id'].toString() == t['id'].toString());
-        final dl        = DateTime.tryParse(t['deadline']?.toString() ?? '');
-        final isLate    = dl != null && dl.isBefore(DateTime.now()) && !submitted;
-
-        return _TugasCard(
-          tugas: t,
-          submitted: submitted,
-          isLate: isLate,
-          deadline: dl,
-          onTap: () => Navigator.push(context, MaterialPageRoute(
-            builder: (_) => SiswaTugasDetailScreen(
-              tugas: t, userData: widget.userData, token: widget.token,
-            ),
-          )),
-        )
-            .animate(delay: (300 + i * 70).ms)
-            .fadeIn(duration: 400.ms)
-            .slideY(begin: 0.08, curve: Curves.easeOutQuart);
-      }),
-    );
-  }
-
-  // ── Pengumuman Header ─────────────────────────────────────────────────────
-  Widget _buildPengumumanHeader() {
-    final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).length;
-    return Row(
-      children: [
-        Expanded(
-          child: SectionHeader(
-            title: 'Pengumuman Sekolah',
-            subtitle: unread > 0 ? '$unread belum dibaca' : 'Semua sudah dibaca',
-          ),
-        ),
-        if (unread > 0)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.amber.withAlpha(25),
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: AppTheme.amber.withAlpha(50)),
-            ),
-            child: Text('$unread baru',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: AppTheme.amber)),
-          ).animate().fadeIn(delay: 300.ms),
-      ],
-    ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.05, curve: Curves.easeOutQuart);
-  }
-
-  // ── Pengumuman Section (horizontal scroll) ────────────────────────────────
-  Widget _buildPengumumanSection() {
-    final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
-    if (_pengumumanList.isEmpty) {
-      return const _EmptyCard(
-        icon: LucideIcons.megaphone,
-        message: 'Belum ada pengumuman',
-        subtitle: 'Pantau terus ya!',
-        color: AppTheme.amber,
-      );
-    }
-    if (unread.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4))],
-        ),
-        child: Row(children: [
-          const Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
-          const SizedBox(width: 12),
-          Text('Semua pengumuman sudah dibaca!',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
-                  color: AppTheme.emerald)),
-        ]),
-      );
-    }
-    return SizedBox(
-      height: 140,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: unread.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (ctx, i) {
-          final p = unread[i];
-          return _PengumumanChipCard(
-            pengumuman: p,
-            onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
-          ).animate(delay: (i * 60).ms).fadeIn(duration: 350.ms);
-        },
-      ),
-    );
-  }
-
-  // ── Pengumuman Section Wide (vertical list) ───────────────────────────────
-  Widget _buildPengumumanSectionWide() {
-    final unread = _pengumumanList.where((p) => !_readIds.contains(p['id']?.toString())).toList();
-    if (_pengumumanList.isEmpty) {
-      return const _EmptyCard(
-        icon: LucideIcons.megaphone,
-        message: 'Belum ada pengumuman',
-        subtitle: 'Pantau terus ya!',
-        color: AppTheme.amber,
-      );
-    }
-    if (unread.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4))],
-        ),
-        child: Row(children: [
-          const Icon(LucideIcons.checkCircle2, color: AppTheme.emerald, size: 20),
-          const SizedBox(width: 12),
-          Text('Semua pengumuman sudah dibaca!',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
-                  color: AppTheme.emerald)),
-        ]),
-      );
-    }
-    return Column(
-      children: List.generate(unread.length, (i) {
-        final p = unread[i];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _PengumumanVerticalCard(
-            pengumuman: p,
-            onMarkRead: () => _markRead(p['id']?.toString() ?? ''),
-          ).animate(delay: (i * 60).ms).fadeIn(duration: 350.ms),
-        );
-      }),
-    );
-  }
-
-  // ── Skeleton ──────────────────────────────────────────────────────────────
-  Widget _skeleton() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-      child: Column(children: [
-        const SkeletonLoader(height: 120, radius: 24),
-        const SizedBox(height: 20),
-        Row(children: List.generate(3, (_) => const Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: SkeletonLoader(height: 90, radius: 18),
-          ),
-        ))),
-        const SizedBox(height: 24),
-        ...List.generate(4, (_) => const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: SkeletonLoader(height: 88, radius: 20),
-        )),
-      ]),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Greeting Banner — Premium Light Mode
-// ═══════════════════════════════════════════════════════════════════════════
-class _GreetingBanner extends StatelessWidget {
-  final String name;
-  final List<dynamic> kelasList;
-  const _GreetingBanner({required this.name, required this.kelasList});
-
-  String get _greeting {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Selamat Pagi';
-    if (h < 15) return 'Selamat Siang';
-    if (h < 18) return 'Selamat Sore';
-    return 'Selamat Malam';
-  }
-
-  IconData get _greetingIcon {
-    if (_greeting.contains('Pagi')) return LucideIcons.sun;
-    if (_greeting.contains('Siang') || _greeting.contains('Sore')) return LucideIcons.cloudSun;
-    return LucideIcons.moon;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.indigoPrimary.withAlpha(15),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Time-of-day pill badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppTheme.indigoPrimary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(_greetingIcon, size: 12, color: AppTheme.indigoPrimary),
-                          const SizedBox(width: 6),
                           Text(
-                            _greeting.toUpperCase(),
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.indigoPrimary,
-                              letterSpacing: 0.8,
+                            'BELUM KUMPUL',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: _onErrorContainer,
+                              letterSpacing: 1.2,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                '${s['belum']}'.padLeft(2, '0'),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w800,
+                                  color: _onErrorContainer,
+                                  height: 1.1,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Tugas',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: _onErrorContainer.withAlpha(178),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.textLight,
-                        letterSpacing: -0.8,
-                        height: 1.1,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _BentoCard(
+                      color: _bgTertiaryContainer,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'LEWAT DEADLINE',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: _onTertiaryContainer,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                '${s['lewat']}'.padLeft(2, '0'),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w800,
+                                  color: _onTertiaryContainer,
+                                  height: 1.1,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Tugas',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: _onTertiaryContainer.withAlpha(178),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${kelasList.length} kelas aktif hari ini',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textMutedLt),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Progress Card
+              _BentoCard(
+                color: _bgSurfaceContainerHighest,
+                padding: const EdgeInsets.all(16),
+                isDashed: true,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SELESAI',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _onSurfaceVariant,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text.rich(
+                          TextSpan(
+                            text: '${s['selesai']} ',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: _onSurface,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: '/ ${_tugasList.length} Total',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: _onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      width: 96,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _outlineVariant,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: _neutralSlate),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      child: FractionallySizedBox(
+                        widthFactor: _tugasList.isEmpty ? 0 : s['selesai']! / _tugasList.length,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _primary,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
-              // Rounded indigo icon circle
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.indigoPrimary.withAlpha(15),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.school_rounded, color: AppTheme.indigoPrimary, size: 32),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          const Divider(color: AppTheme.lightBorder, height: 1, thickness: 1),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  'Selamat belajar & tingkatkan prestasimu! ✨',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textMutedLt,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (ctx) => const _MotivationalSheet(),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                  constraints: const BoxConstraints(minHeight: 40),
-                  decoration: BoxDecoration(
-                    color: AppTheme.indigoPrimary,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.indigoPrimary.withAlpha(50),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    'Motivasi',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.3,
+              const SizedBox(height: 24),
+
+              // Tugas Mendatang
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Tugas Mendatang',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: _onBackground,
                     ),
                   ),
+                  InkWell(
+                    onTap: () {}, // Navigate to full tasks view if needed
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        border: Border(bottom: BorderSide(color: _primary, width: 2)),
+                      ),
+                      child: Text(
+                        'LIHAT SEMUA',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: _primary,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ..._tugasList.take(5).map((t) {
+                final submitted = _pengumpulanList.any((p) => p['tugas_id'].toString() == t['id'].toString());
+                final dl = DateTime.tryParse(t['deadline']?.toString() ?? '');
+                final isLate = dl != null && dl.isBefore(DateTime.now()) && !submitted;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: InkWell(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => SiswaTugasDetailScreen(tugas: t, userData: widget.userData, token: widget.token),
+                    )),
+                    child: _TugasBentoCard(
+                      tugas: t,
+                      submitted: submitted,
+                      isLate: isLate,
+                      deadline: dl,
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+
+              // Pengumuman Sekolah
+              _BentoCard(
+                color: _bgSurfaceContainerLowest,
+                borderWidth: 2,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Pengumuman Sekolah',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: _onBackground,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _secondary,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: _neutralSlate),
+                          ),
+                          child: Text(
+                            '${_pengumumanList.length} INFO',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: _onSecondary,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    ..._pengumumanList.take(5).map((p) => _PengumumanItem(
+                          pengumuman: p,
+                          isNew: !_readIds.contains(p['id'].toString()),
+                          onMarkRead: () => _markRead(p['id'].toString()),
+                        )),
+                  ],
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
-        ],
+        ),
       ),
-    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.05);
+    );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Motivational Bottom Sheet — Premium Light Mode
-// ─────────────────────────────────────────────────────────────────────────────
-class _MotivationalSheet extends StatelessWidget {
-  const _MotivationalSheet();
+class _BentoCard extends StatelessWidget {
+  final Widget child;
+  final Color color;
+  final EdgeInsetsGeometry padding;
+  final double borderWidth;
+  final Color? borderColor;
+  final bool isDashed;
+
+  const _BentoCard({
+    required this.child,
+    required this.color,
+    this.padding = const EdgeInsets.all(0),
+    this.borderWidth = 1.0,
+    this.borderColor,
+    this.isDashed = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(4),
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(4),
+        ),
+        border: Border.all(
+          color: borderColor ?? _neutralSlate,
+          width: borderWidth,
+        ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.lightBorder,
-                borderRadius: BorderRadius.circular(100),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.indigoPrimary.withAlpha(15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(LucideIcons.sparkles, color: AppTheme.indigoPrimary, size: 22),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Quotes of the Day',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.textLight,
-                      ),
-                    ),
-                    Text(
-                      'Inspirasi belajar harianmu',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppTheme.indigoPrimary.withAlpha(10),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(30), width: 1.2),
-            ),
-            child: Text(
-              '"Pendidikan adalah senjata paling mematikan di dunia, karena dengan pendidikan, Anda dapat mengubah dunia."\n\n— Nelson Mandela',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                height: 1.6,
-                color: AppTheme.indigoPrimary,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: AppTheme.indigoPrimary,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.indigoPrimary.withAlpha(50),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  'Siap Belajar! 🚀',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: child,
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Stat Row — Premium Light Mode Cards
-// ═══════════════════════════════════════════════════════════════════════════
-class _StatRow extends StatelessWidget {
-  final Map<String, int> stats;
-  final bool isWide;
-  const _StatRow({required this.stats, required this.isWide});
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      _StatItem(LucideIcons.clipboardList, 'Belum\nDikumpul', stats['belum'] ?? 0, AppTheme.amber, const Color(0xFFFFFBEB)),
-      _StatItem(LucideIcons.alertTriangle, 'Lewat\nDeadline',  stats['lewat'] ?? 0, AppTheme.rose,  const Color(0xFFFFF1F2)),
-      _StatItem(LucideIcons.checkCircle2,  'Selesai',          stats['selesai'] ?? 0, AppTheme.emerald, const Color(0xFFF0FDF4)),
-    ];
-
-    return Row(
-      children: items.asMap().entries.map((e) {
-        final item   = e.value;
-        final isLast = e.key == items.length - 1;
-
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: isLast ? 0 : 10),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(12),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: item.bgLight,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(item.icon, color: item.accent, size: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${item.value}',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textLight,
-                      height: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item.label,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: item.accent,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-            ).animate(delay: (100 + e.key * 80).ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.08, curve: Curves.easeOut),
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class _StatItem {
-  final IconData icon;
-  final String label;
-  final int value;
-  final Color accent;
-  final Color bgLight;
-  _StatItem(this.icon, this.label, this.value, this.accent, this.bgLight);
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Tugas Card — Premium Light Mode
-// ═══════════════════════════════════════════════════════════════════════════
-class _TugasCard extends StatelessWidget {
+class _TugasBentoCard extends StatelessWidget {
   final dynamic tugas;
   final bool submitted;
   final bool isLate;
   final DateTime? deadline;
-  final VoidCallback onTap;
-  const _TugasCard({
+
+  const _TugasBentoCard({
     required this.tugas,
     required this.submitted,
     required this.isLate,
     required this.deadline,
-    required this.onTap,
   });
-
-  Color get _statusColor {
-    if (submitted) return AppTheme.emerald;
-    if (isLate)   return AppTheme.rose;
-    return AppTheme.amber;
-  }
-
-  String get _statusLabel {
-    if (submitted) return 'Selesai';
-    if (isLate)   return 'Terlambat';
-    return 'Belum';
-  }
-
-  String _fmtDl() {
-    if (deadline == null) return '-';
-    final now  = DateTime.now();
-    final diff = deadline!.difference(now);
-    if (submitted) return DateFormat('dd MMM, HH:mm').format(deadline!);
-    if (diff.isNegative) return 'Lewat ${diff.inDays.abs()}h';
-    if (diff.inDays > 0)  return '${diff.inDays} hari lagi';
-    if (diff.inHours > 0) return '${diff.inHours} jam lagi';
-    return '< 1 jam';
-  }
 
   @override
   Widget build(BuildContext context) {
-    final accent = _statusColor;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _BentoCard(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(12),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Rounded icon container
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: accent.withAlpha(20),
-                borderRadius: BorderRadius.circular(12),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _bgSurfaceContainerLow,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _neutralSlate),
+                ),
+                child: const Icon(Icons.description_outlined, color: _primary),
               ),
-              child: Icon(LucideIcons.fileText, color: accent, size: 20),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tugas['judul'] ?? '-',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: _onBackground,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      deadline != null ? 'Deadline: ${DateFormat('dd MMM yyyy, HH:mm').format(deadline!)}' : '-',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: _onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: -10,
+          right: 16, // Instead of left, matching punch out but preventing overlap with left content
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: submitted ? _primary : (isLate ? _onErrorContainer : _onTertiaryFixed),
+              border: Border.all(color: _neutralSlate),
             ),
-            const SizedBox(width: 14),
+            child: Text(
+              submitted ? 'SELESAI' : (isLate ? 'TERLAMBAT' : 'BELUM'),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: submitted ? _onPrimary : (isLate ? _bgErrorContainer : _tertiaryFixedDim),
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-            // Info
+class _PengumumanItem extends StatelessWidget {
+  final dynamic pengumuman;
+  final bool isNew;
+  final VoidCallback onMarkRead;
+
+  const _PengumumanItem({
+    required this.pengumuman,
+    required this.isNew,
+    required this.onMarkRead,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onMarkRead,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isNew ? 8 : 4,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isNew ? _primary : _tertiary,
+              ),
+            ),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    tugas['judul'] ?? '-',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    isNew ? 'INFO BARU' : 'DIBACA',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.textLight,
+                      color: _onSurfaceVariant,
+                      letterSpacing: 1.2,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Row(children: [
-                    const Icon(LucideIcons.bookOpen, size: 12, color: AppTheme.textMutedLt),
-                    const SizedBox(width: 4),
-                    Text(
-                      tugas['mapel'] ?? '-',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-
-            // Right: status pill + deadline
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accent.withAlpha(20),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Text(
-                    _statusLabel,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: accent,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(children: [
-                  Icon(LucideIcons.clock, size: 11, color: accent.withAlpha(180)),
-                  const SizedBox(width: 3),
                   Text(
-                    _fmtDl(),
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    pengumuman['judul'] ?? '-',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: accent,
+                      color: _onSurface,
+                      height: 1.2,
                     ),
                   ),
-                ]),
-              ],
-            ),
-            const SizedBox(width: 10),
-            // Kerjakan button
-            GestureDetector(
-              onTap: onTap,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                constraints: const BoxConstraints(minHeight: 36),
-                decoration: BoxDecoration(
-                  color: accent,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accent.withAlpha(50),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                  const SizedBox(height: 8),
+                  Text(
+                    pengumuman['isi'] ?? '-',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: _onSurfaceVariant,
                     ),
-                  ],
-                ),
-                child: Text(
-                  submitted ? 'Buka' : 'Kerjakan',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 0.2,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ],
               ),
             ),
           ],
@@ -916,242 +732,100 @@ class _TugasCard extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Pengumuman Chip Card — Premium (horizontal scroll, compact)
-// ═══════════════════════════════════════════════════════════════════════════
-class _PengumumanChipCard extends StatelessWidget {
-  final dynamic pengumuman;
-  final VoidCallback onMarkRead;
-  const _PengumumanChipCard({
-    required this.pengumuman,
-    required this.onMarkRead,
-  });
+class _QuoteDialog extends StatelessWidget {
+  const _QuoteDialog();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 240,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(16),
+      child: _BentoCard(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppTheme.amber.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.megaphone, color: AppTheme.amber, size: 12),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  pengumuman['judul'] ?? '-',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textLight,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              // Mark as read X button
-              GestureDetector(
-                onTap: onMarkRead,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.lightBorder.withAlpha(80),
-                    borderRadius: BorderRadius.circular(6),
+                    color: _onTertiaryFixed,
+                    border: Border.all(color: _neutralSlate),
                   ),
-                  child: const Icon(LucideIcons.x, size: 11, color: AppTheme.textMutedLt),
+                  child: Text(
+                    'DAILY WISDOM',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _tertiaryFixedDim,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Text(
-              pengumuman['isi'] ?? '-',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                height: 1.5,
-                color: AppTheme.textMutedLt,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
+                InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close_rounded, color: _onSurfaceVariant),
+                ),
+              ],
             ),
-          ),
-          if (pengumuman['tanggal'] != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 24),
             Text(
-              pengumuman['tanggal'].toString(),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppTheme.amber.withAlpha(200),
+              '"Pendidikan adalah senjata paling mematikan di dunia, karena dengan itu Anda bisa mengubah dunia."',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: _onSurface,
+                height: 1.5,
               ),
             ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Pengumuman Vertical Card — Premium
-// ═══════════════════════════════════════════════════════════════════════════
-class _PengumumanVerticalCard extends StatelessWidget {
-  final dynamic pengumuman;
-  final VoidCallback onMarkRead;
-  const _PengumumanVerticalCard({
-    required this.pengumuman,
-    required this.onMarkRead,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.amber.withAlpha(25),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(LucideIcons.megaphone, color: AppTheme.amber, size: 14),
+            const SizedBox(height: 16),
+            Container(
+              height: 4,
+              width: 48,
+              decoration: BoxDecoration(
+                color: _primary,
+                borderRadius: BorderRadius.circular(999),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  pengumuman['judul'] ?? '-',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textLight,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '� Nelson Mandela',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: _primary,
+                letterSpacing: 1.2,
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: onMarkRead,
+            ),
+            const SizedBox(height: 32),
+            Align(
+              alignment: Alignment.centerRight,
+              child: InkWell(
+                onTap: () => Navigator.pop(context),
                 child: Container(
-                  padding: const EdgeInsets.all(6),
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppTheme.lightBorder.withAlpha(80),
+                    color: _bgSurfaceContainerLow,
+                    border: Border.all(color: _neutralSlate),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(LucideIcons.x, size: 13, color: AppTheme.textMutedLt),
+                  child: Text(
+                    'TUTUP',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _onSurface,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            pengumuman['isi'] ?? '-',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              height: 1.5,
-              color: AppTheme.textMutedLt,
-            ),
-          ),
-          if (pengumuman['tanggal'] != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              pengumuman['tanggal'].toString(),
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppTheme.amber.withAlpha(200),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Empty Card — Premium Light Mode
-// ═══════════════════════════════════════════════════════════════════════════
-class _EmptyCard extends StatelessWidget {
-  final IconData icon;
-  final String message;
-  final String subtitle;
-  final Color color;
-  const _EmptyCard({required this.icon, required this.message, required this.subtitle, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withAlpha(20),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textLight,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMutedLt),
             ),
           ],
         ),

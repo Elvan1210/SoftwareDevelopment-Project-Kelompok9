@@ -2,11 +2,26 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:intl/intl.dart';
-import '../../../config/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../../services/quiz_service.dart';
 import '../../../models/quiz_model.dart';
 import 'siswa_exam_screen.dart';
+
+// --- Tailwind Neo-Brutalist Tokens -----------------------------------------
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _secondary = Color(0xFF336763);
+const Color _tertiary = Color(0xFF8D4D33);
+const Color _onTertiary = Color(0xFFFFFFFF);
+const Color _primaryFixed = Color(0xFFBFEDD5);
+const Color _onPrimaryFixedVariant = Color(0xFF244F3D);
+const Color _surfaceContainerLow = Color(0xFFE8F6FF);
+const Color _surfaceVariant = Color(0xFFC1E8FF);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _outlineVariant = Color(0xFFC1C8C2);
+const Color _onSurface = Color(0xFF001E2B);
 
 class SiswaQuizView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -29,6 +44,7 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
   bool _isLoading = true;
   final Map<String, bool> _submittedMap = {};
   Timer? _refreshTimer;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -50,41 +66,43 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
 
     final kelasId = widget.teamData['id']?.toString() ?? '';
 
-    final quizzes = await QuizService.getQuizzesByKelas(
-      token: widget.token,
-      kelasId: kelasId,
-    );
-    final studentId = widget.userData['id']?.toString() ??
-        widget.userData['_id']?.toString() ??
-        '';
-
-    for (final quiz in quizzes) {
-      final submitted = await QuizService.hasSubmitted(
+    try {
+      final quizzes = await QuizService.getQuizzesByKelas(
         token: widget.token,
-        quizId: quiz.id,
-        studentId: studentId,
+        kelasId: kelasId,
       );
-      _submittedMap[quiz.id] = submitted;
-    }
+      final studentId = widget.userData['id']?.toString() ??
+          widget.userData['_id']?.toString() ??
+          '';
 
-    if (mounted) {
-      setState(() {
-        _quizzes = quizzes
-            .where(
-                (q) => q.isActive || (q.isScheduled && q.scheduledAt != null))
-            .toList();
-        _isLoading = false;
-      });
+      for (final quiz in quizzes) {
+        final submitted = await QuizService.hasSubmitted(
+          token: widget.token,
+          quizId: quiz.id,
+          studentId: studentId,
+        );
+        _submittedMap[quiz.id] = submitted;
+      }
+
+      if (mounted) {
+        setState(() {
+          _quizzes = quizzes
+              .where((q) => q.isActive || (q.isScheduled && q.scheduledAt != null))
+              .toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _startExam(Quiz quiz) {
     if (_submittedMap[quiz.id] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Anda sudah mengerjakan kuis ini',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-          backgroundColor: AppTheme.orangeVivid,
+        SnackBar(
+          content: Text('Anda sudah mengerjakan kuis ini', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          backgroundColor: _onSurface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -94,7 +112,7 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => _ExamStartDialog(
+      builder: (ctx) => _ExamStartDialogNeo(
         quiz: quiz,
         onStart: () {
           Navigator.pop(ctx);
@@ -113,364 +131,661 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
     );
   }
 
+  List<Quiz> get _filteredQuizzes {
+    if (_searchQuery.isEmpty) return _quizzes;
+    return _quizzes.where((q) {
+      final qStr = q.title.toLowerCase() + q.subject.toLowerCase();
+      return qStr.contains(_searchQuery.toLowerCase());
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.success))
-          : _quizzes.isEmpty
-              ? _buildEmptyState(theme, isDark)
-              : RefreshIndicator(
-                  onRefresh: _loadQuizzes,
-                  color: AppTheme.indigoPrimary,
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(24),
-                    itemCount: _quizzes.length,
-                    itemBuilder: (context, index) {
-                      final quiz = _quizzes[index];
-                      final isSubmitted = _submittedMap[quiz.id] ?? false;
+      body: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final isDesktop = constraints.maxWidth >= 768;
 
-                      return _QuizTile(
-                        quiz: quiz,
-                        isDark: isDark,
-                        isSubmitted: isSubmitted,
-                        onStart: () => _startExam(quiz),
-                      )
-                          .animate(delay: (100 + index * 60).ms)
-                          .fadeIn(duration: 400.ms)
-                          .slideY(begin: 0.05, curve: Curves.easeOutQuart);
-                    },
-                  ),
-                ),
+          return RefreshIndicator(
+            onRefresh: _loadQuizzes,
+            color: _primary,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.only(
+                left: isDesktop ? 40 : 16,
+                right: isDesktop ? 40 : 16,
+                top: 32,
+                bottom: 100,
+              ),
+              children: [
+                _buildHeader(isDesktop),
+                const SizedBox(height: 48),
+                if (_isLoading)
+                  _buildLoading(isDesktop)
+                else if (_filteredQuizzes.isEmpty)
+                  _buildEmpty()
+                else
+                  _buildGrid(isDesktop),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme, bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: AppTheme.indigoPrimary.withAlpha(20),
-              shape: BoxShape.circle,
-              border: Border.all(
-                  color: AppTheme.indigoPrimary.withAlpha(50), width: 1.5),
+  Widget _buildHeader(bool isDesktop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (isDesktop) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'Daftar Kuis',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 48,
+                  letterSpacing: -1.92,
+                  color: _onSurface,
+                  height: 1.1,
+                ),
+              ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1),
+              _buildSearchBar().animate().fadeIn(duration: 400.ms).slideX(begin: 0.1),
+            ],
+          ),
+        ] else ...[
+          Text(
+            'Daftar Kuis',
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w800,
+              fontSize: 36,
+              letterSpacing: -1.44,
+              color: _onSurface,
+              height: 1.1,
             ),
-            child: Icon(LucideIcons.clipboardCheck,
-                size: 56, color: AppTheme.indigoPrimary.withAlpha(180)),
-          ),
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1),
           const SizedBox(height: 24),
-          Text(
-            'Belum ada kuis tersedia',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppTheme.textLight),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Kuis dari guru akan muncul di sini',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+          _buildSearchBar().animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      width: 384,
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: _onSurface, width: 1),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          const Icon(LucideIcons.search, color: _onSurfaceVariant, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              style: GoogleFonts.inter(fontSize: 16, color: _onSurface),
+              decoration: InputDecoration(
+                hintText: 'Cari kuis atau materi...',
+                hintStyle: GoogleFonts.inter(fontSize: 16, color: _onSurfaceVariant.withAlpha(153)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildGrid(bool isDesktop) {
+    if (!isDesktop) {
+      return Column(
+        children: _filteredQuizzes.map((quiz) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: _QuizCardNeo(
+              quiz: quiz,
+              isSubmitted: _submittedMap[quiz.id] ?? false,
+              onStart: () => _startExam(quiz),
+            ),
+          );
+        }).toList(),
+      );
+    } else {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 400,
+          mainAxisSpacing: 24,
+          crossAxisSpacing: 24,
+          mainAxisExtent: 380,
+        ),
+        itemCount: _filteredQuizzes.length,
+        itemBuilder: (ctx, i) {
+          final quiz = _filteredQuizzes[i];
+          return _QuizCardNeo(
+            quiz: quiz,
+            isSubmitted: _submittedMap[quiz.id] ?? false,
+            onStart: () => _startExam(quiz),
+          );
+        },
+      );
+    }
+  }
+
+  Widget _buildLoading(bool isDesktop) {
+    return const Center(
+      child: CircularProgressIndicator(color: _primary),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _surfaceContainerLow,
+              shape: BoxShape.circle,
+              border: Border.all(color: _onSurface, width: 2),
+            ),
+            child: const Icon(LucideIcons.clipboardCheck, color: _onSurface, size: 32),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada kuis.',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 24, color: _onSurface),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Kuis dari guru akan muncul di sini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 16, color: _onSurfaceVariant, fontWeight: FontWeight.w400),
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
-class _QuizTile extends StatelessWidget {
+class _QuizCardNeo extends StatefulWidget {
   final Quiz quiz;
-  final bool isDark;
   final bool isSubmitted;
   final VoidCallback onStart;
 
-  const _QuizTile({
+  const _QuizCardNeo({
     required this.quiz,
-    required this.isDark,
     required this.isSubmitted,
     required this.onStart,
   });
 
   @override
+  State<_QuizCardNeo> createState() => _QuizCardNeoState();
+}
+
+class _QuizCardNeoState extends State<_QuizCardNeo> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     bool isUpcoming = false;
-    if (quiz.isScheduled && quiz.scheduledAt != null && !quiz.isActive) {
-      if (quiz.scheduledAt!.isAfter(DateTime.now())) {
+    if (widget.quiz.isScheduled && widget.quiz.scheduledAt != null && !widget.quiz.isActive) {
+      if (widget.quiz.scheduledAt!.isAfter(DateTime.now())) {
         isUpcoming = true;
       }
     }
 
     bool isClosed = false;
-    if (quiz.closedAt != null && DateTime.now().isAfter(quiz.closedAt!)) {
+    if (widget.quiz.closedAt != null && DateTime.now().isAfter(widget.quiz.closedAt!)) {
       isClosed = true;
     }
 
-    final accentColor = isSubmitted ? AppTheme.success : AppTheme.indigoPrimary;
+    final bool isDisabled = isClosed || isUpcoming || widget.isSubmitted;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
-                ),
-                child: Icon(
-                  isSubmitted ? LucideIcons.checkCircle : (quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.fileText),
-                  color: Colors.white, size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      quiz.title,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: Theme.of(context).textTheme.bodyLarge!.color!,
-                          letterSpacing: -0.3),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${quiz.subject} • oleh ${quiz.createdByName}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyMedium!.color!),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (quiz.description.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              quiz.description,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).textTheme.bodyMedium!.color!,
-                  height: 1.45, fontWeight: FontWeight.w500),
-              maxLines: 2, overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8, runSpacing: 8,
-            children: [
-              _InfoTag(icon: LucideIcons.helpCircle, label: '${quiz.questions.length} Soal', color: AppTheme.info),
-              _InfoTag(icon: LucideIcons.clock, label: '${quiz.durationMinutes} Menit', color: AppTheme.primary),
-              _InfoTag(icon: LucideIcons.target, label: '${quiz.totalPoints} Poin', color: AppTheme.warning),
-              if (quiz.isSecureMode)
-                const _InfoTag(icon: LucideIcons.shieldAlert, label: 'Secure Mode', color: AppTheme.error),
-            ],
-          ),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: isClosed || isUpcoming || isSubmitted ? null : onStart,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isClosed ? Theme.of(context).colorScheme.surface
-                    : isUpcoming ? AppTheme.warning
-                    : isSubmitted ? AppTheme.success
-                    : AppTheme.indigoPrimary,
-                border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                boxShadow: isClosed || isUpcoming || isSubmitted ? [] :
-                  [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(3, 3), blurRadius: 0)],
-              ),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(
-                  isClosed ? LucideIcons.xCircle
-                      : isUpcoming ? LucideIcons.calendarClock
-                      : isSubmitted ? LucideIcons.checkCircle
-                      : LucideIcons.play,
-                  size: 15,
-                  color: isClosed ? Theme.of(context).textTheme.bodyMedium!.color! : Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isClosed ? 'UJIAN TELAH DITUTUP'
-                      : isUpcoming ? 'TERSEDIA: ${DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!)}'
-                      : isSubmitted ? 'SUDAH DIKERJAKAN'
-                      : 'MULAI UJIAN',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w900, letterSpacing: 0.5,
-                    color: isClosed ? Theme.of(context).textTheme.bodyMedium!.color! : Colors.white,
-                  ),
-                ),
-              ]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoTag extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _InfoTag({required this.icon, required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ExamStartDialog extends StatelessWidget {
-  final Quiz quiz;
-  final VoidCallback onStart;
-
-  const _ExamStartDialog({required this.quiz, required this.onStart});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(20),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 420),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border.all(color: theme.colorScheme.onSurface, width: 2),
-          boxShadow: [BoxShadow(color: theme.colorScheme.onSurface, offset: const Offset(6, 6))],
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        transform: Matrix4.translationValues(
+          _isHovered && !isDisabled ? -2 : 0,
+          _isHovered && !isDisabled ? -2 : 0,
+          0,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        decoration: BoxDecoration(
+          color: isDisabled ? _surfaceContainerLow : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 1),
+          boxShadow: _isHovered && !isDisabled
+              ? const [BoxShadow(color: _onSurface, offset: Offset(4, 4))]
+              : const [],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            // Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              color: AppTheme.error,
-              child: Row(children: [
-                const Icon(LucideIcons.shieldAlert, size: 24, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('MULAI UJIAN?', style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
-                      Text(quiz.title, style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700, color: Colors.white.withAlpha(200)),
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-              ]),
-            ),
-            // Rules
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: theme.colorScheme.onSurface, width: 2)),
-              ),
+            Padding(
+              padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('PERATURAN UJIAN:', style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w900, letterSpacing: 0.5, color: AppTheme.error)),
-                  const SizedBox(height: 10),
-                  if (quiz.isSecureMode) ...[
-                    _rule(context, 'Aplikasi akan masuk mode fullscreen'),
-                    _rule(context, 'Dilarang pindah aplikasi (Alt+Tab)'),
-                    _rule(context, 'Dilarang copy, paste, dan klik kanan'),
-                    _rule(context, 'Setiap pelanggaran akan dicatat'),
-                  ],
-                  _rule(context, 'Durasi: ${quiz.durationMinutes} menit'),
-                  _rule(context, 'Jumlah soal: ${quiz.questions.length}'),
-                  _rule(context, 'Jawaban akan auto-save'),
+                  if (widget.quiz.isSecureMode) const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.quiz.subject.toUpperCase(),
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                                letterSpacing: 0.6,
+                                color: _secondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.quiz.title,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                height: 1.4,
+                                color: _isHovered && !isDisabled ? _primary : _onSurface,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isClosed || widget.isSubmitted ? _surfaceVariant : _primaryContainer,
+                          border: Border.all(color: _onSurface, width: 1),
+                        ),
+                        child: Text(
+                          isClosed ? 'DITUTUP' : (widget.isSubmitted ? 'SELESAI' : 'DIBUKA'),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            letterSpacing: 0.6,
+                            color: isClosed || widget.isSubmitted ? _onSurfaceVariant : _onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Text(
+                      widget.quiz.description.isNotEmpty ? widget.quiz.description : 'Evaluasi kuis. Pastikan koneksi internet stabil.',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        height: 1.5,
+                        color: _onSurfaceVariant,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(LucideIcons.user, size: 16, color: _onSurfaceVariant),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          widget.quiz.createdByName,
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurface),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(LucideIcons.fileText, size: 16, color: _onSurfaceVariant),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${widget.quiz.questions.length} Soal',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurface),
+                      ),
+                      const SizedBox(width: 24),
+                      const Icon(LucideIcons.clock, size: 16, color: _onSurfaceVariant),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${widget.quiz.durationMinutes} Menit',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurface),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.only(top: 16),
+                    decoration: const BoxDecoration(
+                      border: Border(top: BorderSide(color: Color(0x33414944), width: 1)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'TOTAL POIN',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onSurfaceVariant),
+                            ),
+                            Text(
+                              '${widget.quiz.totalPoints}',
+                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 20, color: _onSurface),
+                            ),
+                          ],
+                        ),
+                        _KerjakanButton(
+                          isDisabled: isDisabled,
+                          isSubmitted: widget.isSubmitted,
+                          onTap: widget.onStart,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-            // Actions
-            Padding(
+            if (widget.quiz.isSecureMode)
+              Positioned(
+                top: -12,
+                left: 20,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _tertiary,
+                    border: Border.all(color: _onSurface, width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock, color: _onTertiary, size: 14),
+                      const SizedBox(width: 8),
+                      Text(
+                        'SECURE EXAM',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onTertiary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _KerjakanButton extends StatefulWidget {
+  final bool isDisabled;
+  final bool isSubmitted;
+  final VoidCallback onTap;
+
+  const _KerjakanButton({
+    required this.isDisabled,
+    required this.isSubmitted,
+    required this.onTap,
+  });
+
+  @override
+  State<_KerjakanButton> createState() => _KerjakanButtonState();
+}
+
+class _KerjakanButtonState extends State<_KerjakanButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isDisabled) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        decoration: BoxDecoration(
+          color: _outlineVariant,
+          border: Border.all(color: _onSurface, width: 1),
+        ),
+        child: Text(
+          widget.isSubmitted ? 'SELESAI' : 'TUTUP',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onSurfaceVariant),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        transform: Matrix4.translationValues(
+          _isPressed ? 0 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: _primaryFixed,
+          border: Border.all(color: _onSurface, width: 1),
+        ),
+        child: Text(
+          'KERJAKAN',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _onPrimaryFixedVariant),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Neo-Brutalist Exam Start Dialog ────────────────────────────────────────
+
+class _ExamStartDialogNeo extends StatefulWidget {
+  final Quiz quiz;
+  final VoidCallback onStart;
+
+  const _ExamStartDialogNeo({required this.quiz, required this.onStart});
+
+  @override
+  State<_ExamStartDialogNeo> createState() => _ExamStartDialogNeoState();
+}
+
+class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
+  bool _isStartPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(16),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 512),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(8, 8))],
+        ),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Column(
+              children: [
+                Text(
+                  'Mulai Ujian?',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                    color: _onSurface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _primaryContainer,
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(color: _onSurface, width: 1),
+                  ),
+                  child: Text(
+                    '${widget.quiz.subject.toUpperCase()} - ${widget.quiz.title}',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                      color: _onPrimaryContainer,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // Rules
+            Text(
+              'Peraturan Ujian',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: _onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (widget.quiz.isSecureMode) ...[
+              _buildRule(Icons.fullscreen, 'Aplikasi akan masuk mode fullscreen', _primary),
+              _buildRule(Icons.block, 'Dilarang pindah aplikasi (Alt + Tab)', const Color(0xFFBA1A1A)),
+              _buildRule(Icons.content_copy, 'Dilarang copy, paste, dan klik kanan', _onSurfaceVariant),
+              _buildRule(Icons.report, 'Setiap pelanggaran akan dicatat', _tertiary),
+            ] else ...[
+              _buildRule(Icons.report, 'Ujian ini tidak menggunakan secure mode', _onSurfaceVariant),
+            ],
+            const SizedBox(height: 24),
+            // Stats Grid
+            Container(
               padding: const EdgeInsets.all(16),
-              child: Row(children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: theme.colorScheme.onSurface, width: 1.5),
-                        boxShadow: [BoxShadow(color: theme.colorScheme.onSurface, offset: const Offset(2, 2))],
+              decoration: BoxDecoration(
+                color: _surfaceContainerLow,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _onSurfaceVariant.withAlpha(77), width: 1),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('DURASI', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 10, color: _onSurfaceVariant)),
+                            Text('${widget.quiz.durationMinutes} Menit', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _onSurface)),
+                          ],
+                        ),
                       ),
-                      child: Center(child: Text('BATAL', style: theme.textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w900, color: theme.textTheme.bodyLarge!.color!))),
-                    ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('JUMLAH SOAL', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 10, color: _onSurfaceVariant)),
+                            Text('${widget.quiz.questions.length} Soal', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _onSurface)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.save, size: 16, color: _secondary),
+                      const SizedBox(width: 8),
+                      Text('Status: Jawaban akan auto-save', style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 12, color: _secondary)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Actions
+            GestureDetector(
+              onTap: widget.onStart,
+              onTapDown: (_) => setState(() => _isStartPressed = true),
+              onTapUp: (_) => setState(() => _isStartPressed = false),
+              onTapCancel: () => setState(() => _isStartPressed = false),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 100),
+                height: 48,
+                transform: Matrix4.translationValues(
+                  _isStartPressed ? 0 : 0,
+                  _isStartPressed ? 2 : 0,
+                  0,
+                ),
+                decoration: BoxDecoration(
+                  color: _primary,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _onSurface, width: 2),
+                  boxShadow: _isStartPressed
+                      ? const []
+                      : const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+                ),
+                child: Center(
+                  child: Text(
+                    'MULAI SEKARANG',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.6, color: Colors.white),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: GestureDetector(
-                    onTap: onStart,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.indigoPrimary,
-                        border: Border.all(color: theme.colorScheme.onSurface, width: 1.5),
-                        boxShadow: [BoxShadow(color: theme.colorScheme.onSurface, offset: const Offset(3, 3))],
-                      ),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        const Icon(LucideIcons.play, size: 16, color: Colors.white),
-                        const SizedBox(width: 8),
-                        Text('MULAI SEKARANG', style: theme.textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w900, color: Colors.white)),
-                      ]),
-                    ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _onSurface, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    'KEMBALI',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.6, color: _onSurface),
                   ),
                 ),
-              ]),
+              ),
             ),
           ],
         ),
@@ -478,25 +793,17 @@ class _ExamStartDialog extends StatelessWidget {
     );
   }
 
-  Widget _rule(BuildContext context, String text) {
+  Widget _buildRule(IconData icon, String text, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.error)),
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.error.withAlpha(200),
-                    height: 1.35,
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurface),
             ),
           ),
         ],

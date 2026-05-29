@@ -10,6 +10,7 @@ import 'services/theme_provider.dart';
 import 'config/theme.dart';
 import 'widgets/smooth_scroll.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 
 import 'package:flutter/services.dart';
@@ -22,6 +23,8 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  
+  await initializeDateFormatting('id_ID', null);
   
   // Ubah bagian ini, tambahkan opsi default
   await Firebase.initializeApp(
