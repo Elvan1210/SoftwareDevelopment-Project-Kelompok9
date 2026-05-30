@@ -4,8 +4,25 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../config/api_config.dart';
-import '../config/theme.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+// Neo-Brutalism Colors from Tailwind config
+const Color _bgSurface = Color(0xFFF4FAFF);
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primary = Color(0xFF3D6754);
+const Color _onPrimary = Color(0xFFFFFFFF);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _secondary = Color(0xFF336763);
+const Color _onSecondary = Color(0xFFFFFFFF);
+const Color _tertiary = Color(0xFF8D4D33);
+const Color _onTertiary = Color(0xFFFFFFFF);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _onTertiaryContainer = Color(0xFF8E4F34);
+const Color _tertiaryFixedDim = Color(0xFFFFB598);
+const Color _surfaceVariant = Color(0xFFC1E8FF);
+const Color _surfaceContainerHigh = Color(0xFFCEEDFF);
+const Color _outlineVariant = Color(0xFFC1C8C2);
 
 class NotificationBell extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -23,8 +40,7 @@ class NotificationBell extends StatefulWidget {
   State<NotificationBell> createState() => _NotificationBellState();
 }
 
-class _NotificationBellState extends State<NotificationBell>
-    with SingleTickerProviderStateMixin {
+class _NotificationBellState extends State<NotificationBell> with SingleTickerProviderStateMixin {
   List<dynamic> _notifikasi = [];
   int _unreadCount = 0;
   late AnimationController _bellController;
@@ -69,10 +85,8 @@ class _NotificationBellState extends State<NotificationBell>
         }).toList();
 
         myNotifs.sort((a, b) {
-          DateTime timeA =
-              DateTime.tryParse(a['waktu'] ?? '') ?? DateTime.now();
-          DateTime timeB =
-              DateTime.tryParse(b['waktu'] ?? '') ?? DateTime.now();
+          DateTime timeA = DateTime.tryParse(a['waktu'] ?? '') ?? DateTime.now();
+          DateTime timeB = DateTime.tryParse(b['waktu'] ?? '') ?? DateTime.now();
           return timeB.compareTo(timeA);
         });
 
@@ -159,44 +173,24 @@ class _NotificationBellState extends State<NotificationBell>
     }
   }
 
-  // Get icon based on notification title/content
   _NotifMeta _getNotifMeta(Map<String, dynamic> notif) {
     final judul = (notif['judul'] ?? '').toString().toLowerCase();
 
-    if (judul.contains('diterima') ||
-        judul.contains('accepted') ||
-        judul.contains('✅')) {
-      return _NotifMeta(LucideIcons.checkCircle, const Color(0xFF22C55E));
-    }
-    if (judul.contains('ditolak') ||
-        judul.contains('rejected') ||
-        judul.contains('❌')) {
-      return _NotifMeta(LucideIcons.xCircle, const Color(0xFFEF4444));
-    }
-    if (judul.contains('bergabung') ||
-        judul.contains('permintaan') ||
-        judul.contains('join')) {
-      return _NotifMeta(LucideIcons.userPlus, const Color(0xFFF27F33));
-    }
-    if (judul.contains('tugas') || judul.contains('assignment')) {
-      return _NotifMeta(LucideIcons.clipboardList, const Color(0xFF76AFB8));
+    if (judul.contains('pengumuman') || judul.contains('jadwal')) {
+      return _NotifMeta(Icons.campaign, _secondary, _onSecondary);
     }
     if (judul.contains('nilai') || judul.contains('grade')) {
-      return _NotifMeta(LucideIcons.award, const Color(0xFF075864));
+      return _NotifMeta(Icons.school, _tertiary, _onTertiary);
     }
-    if (judul.contains('materi') || judul.contains('material')) {
-      return _NotifMeta(LucideIcons.bookOpen, const Color(0xFF0891B2));
+    if (judul.contains('tugas') || judul.contains('assignment')) {
+      return _NotifMeta(Icons.assignment, _primary, _onPrimary);
     }
-    if (judul.contains('pengumuman') || judul.contains('broadcast')) {
-      return _NotifMeta(LucideIcons.megaphone, const Color(0xFFEC4899));
+    if (judul.contains('diskusi') || judul.contains('pesan')) {
+      return _NotifMeta(Icons.chat, _onSurfaceVariant, _bgSurface);
     }
-    if (judul.contains('presensi') || judul.contains('hadir')) {
-      return _NotifMeta(LucideIcons.userCheck, const Color(0xFF22C55E));
-    }
-    return _NotifMeta(LucideIcons.bell, AppTheme.getAccent(context));
+    return _NotifMeta(Icons.archive, _bgSurface, _onSurfaceVariant);
   }
 
-  // Group notifications by date
   Map<String, List<dynamic>> _groupByDate() {
     final Map<String, List<dynamic>> grouped = {};
     for (var n in _notifikasi) {
@@ -210,9 +204,9 @@ class _NotificationBellState extends State<NotificationBell>
       } else if (diff.inDays <= 1 && dt.day == now.day - 1) {
         key = 'Kemarin';
       } else if (diff.inDays < 7) {
-        key = 'Minggu Ini';
+        key = 'Minggu lalu';
       } else {
-        key = DateFormat('d MMMM yyyy').format(dt);
+        key = 'Bulan lalu';
       }
 
       grouped.putIfAbsent(key, () => []);
@@ -228,244 +222,144 @@ class _NotificationBellState extends State<NotificationBell>
       final diff = DateTime.now().difference(dt);
       if (diff.inMinutes < 1) return 'Baru saja';
       if (diff.inMinutes < 60) return '${diff.inMinutes}m lalu';
-      if (diff.inHours < 24) return '${diff.inHours}j lalu';
-      if (diff.inDays < 7) return '${diff.inDays}h lalu';
-      return DateFormat('dd MMM').format(dt);
+      if (diff.inHours < 24) return '${DateFormat('HH:mm').format(dt)} WIB';
+      if (diff.inDays < 7) return 'Kemarin';
+      return DateFormat('d MMM').format(dt);
     } catch (_) {
       return '';
     }
   }
 
   void _showNotificationPanel() {
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
+      barrierColor: _onSurface.withAlpha(100),
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final theme = Theme.of(context);
-            final isDark = theme.brightness == Brightness.dark;
             final grouped = _groupByDate();
 
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.75,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF121212) : Colors.white,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(28)),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withAlpha(15)
-                      : Colors.black.withAlpha(8),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(isDark ? 80 : 30),
-                    blurRadius: 40,
-                    offset: const Offset(0, -10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // ── Handle Bar ──
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
+            return SafeArea(
+              child: Align(
+                alignment: MediaQuery.of(context).size.width < 600 ? Alignment.bottomCenter : Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Material(
+                    color: Colors.transparent,
                     child: Container(
-                      width: 40,
-                      height: 4,
+                      width: double.infinity,
+                      constraints: const BoxConstraints(maxWidth: 512, maxHeight: 800),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withAlpha(160),
-                        borderRadius: BorderRadius.circular(100),
+                        color: _bgSurface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: _onSurface, width: 2),
+                        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            decoration: const BoxDecoration(
+                              border: Border(bottom: BorderSide(color: _onSurface, width: 2)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Notifikasi',
+                                  style: TextStyle(
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: _onSurface,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  borderRadius: BorderRadius.circular(100),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                                    child: const Icon(Icons.close, color: _onSurface),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Scrollable Content
+                          Flexible(
+                            child: ListView(
+                              padding: const EdgeInsets.all(24),
+                              shrinkWrap: true,
+                              children: [
+                                // Actions
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      _buildNeoActionBtn(
+                                        icon: Icons.done_all,
+                                        label: 'Tandai Semua Dibaca',
+                                        bgColor: _primaryContainer,
+                                        textColor: _onPrimaryContainer,
+                                        onTap: () {
+                                          _markAllAsRead();
+                                          setModalState(() {});
+                                        },
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildNeoActionBtn(
+                                        icon: Icons.delete_sweep,
+                                        label: 'Hapus Semua',
+                                        bgColor: _tertiaryContainer,
+                                        textColor: _onTertiaryContainer,
+                                        onTap: () {
+                                          _hideAllNotifs();
+                                          setModalState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                
+                                if (_notifikasi.isEmpty) _buildEmptyState(),
+                                
+                                ...grouped.entries.map((entry) {
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 4, bottom: 8, top: 24),
+                                        child: Text(
+                                          entry.key,
+                                          style: const TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: _onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ),
+                                      ...entry.value.map((n) => _buildNotifCard(n, setModalState)),
+                                    ],
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-
-                  // ── Header ──
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .secondary
-                                .withAlpha(20),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(
-                            LucideIcons.bell,
-                            color: Theme.of(context).colorScheme.secondary,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Notifikasi',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              if (_unreadCount > 0)
-                                Text(
-                                  '$_unreadCount belum dibaca',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        Theme.of(context).colorScheme.secondary,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (_unreadCount > 0)
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    _markAllAsRead();
-                                    setModalState(() {});
-                                  },
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary
-                                          .withAlpha(15),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary
-                                              .withAlpha(40)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(LucideIcons.checkCheck,
-                                            size: 14,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondary),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Baca Semua',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w800,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            if (_notifikasi.isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    _hideAllNotifs();
-                                    setModalState(() {});
-                                  },
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withAlpha(15),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: Colors.red.withAlpha(160)),
-                                    ),
-                                    child: const Icon(Icons.delete_sweep_rounded,
-                                        size: 16, color: Colors.red),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // ── Divider ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Divider(
-                      color: theme.colorScheme.onSurface.withAlpha(20),
-                      height: 16,
-                    ),
-                  ),
-
-                  // ── Notification List ──
-                  Expanded(
-                    child: _notifikasi.isEmpty
-                        ? _buildEmptyState(theme)
-                        : ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: grouped.keys.length,
-                            itemBuilder: (context, groupIndex) {
-                              final groupKey =
-                                  grouped.keys.elementAt(groupIndex);
-                              final items = grouped[groupKey]!;
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Date group header
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
-                                    child: Text(
-                                      groupKey,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                        color: theme.colorScheme.onSurface
-                                            .withAlpha(160),
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
-                                  ...items.asMap().entries.map((entry) {
-                                    final n = entry.value;
-                                    return _buildNotifCard(
-                                            n, theme, isDark, setModalState)
-                                        .animate(delay: (entry.key * 30).ms)
-                                        .fadeIn(duration: 300.ms)
-                                        .slideX(
-                                            begin: 0.03,
-                                            curve: Curves.easeOutQuart);
-                                  }),
-                                ],
-                              );
-                            },
-                          ),
-                  ),
-                ],
+                ),
               ),
             );
           },
@@ -474,228 +368,189 @@ class _NotificationBellState extends State<NotificationBell>
     ).then((_) => _fetchNotifikasi());
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary.withAlpha(15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              LucideIcons.bellOff,
-              size: 48,
-              color: Theme.of(context).colorScheme.secondary.withAlpha(80),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
+          const SizedBox(height: 40),
+          Icon(Icons.notifications_off, size: 48, color: _onSurfaceVariant.withAlpha(150)),
+          const SizedBox(height: 16),
+          const Text(
             'Belum ada notifikasi',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: theme.colorScheme.onSurface.withAlpha(160),
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: _onSurface,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Notifikasi baru akan muncul di sini',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withAlpha(160),
-            ),
-          ),
+          const SizedBox(height: 40),
         ],
       ),
-    ).animate().fadeIn(delay: 200.ms);
+    );
   }
 
-  Widget _buildNotifCard(
-      dynamic n, ThemeData theme, bool isDark, StateSetter setModalState) {
+  Widget _buildNeoActionBtn({required IconData icon, required String label, required Color bgColor, required Color textColor, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: textColor),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotifCard(dynamic n, StateSetter setModalState) {
     List dibaca = n['dibaca_oleh'] ?? [];
     bool isRead = dibaca.contains(widget.userData['id']);
     final meta = _getNotifMeta(n);
     final timeAgo = _getTimeAgo(n['waktu']);
+    final bool isPengumuman = n['judul'].toString().toLowerCase().contains('pengumuman');
+    final bool isPesan = n['judul'].toString().toLowerCase().contains('diskusi') || n['judul'].toString().toLowerCase().contains('pesan');
+
+    Color bgColor = _bgSurface;
+    if (!isRead) {
+      if (isPengumuman) bgColor = _surfaceContainerHigh;
+      if (isPesan) bgColor = _surfaceVariant;
+    }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            if (!isRead) {
-              _markAsRead(n);
-              setModalState(() {});
-            }
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isRead
-                  ? Colors.transparent
-                  : meta.color.withAlpha(isDark ? 15 : 8),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isRead
-                    ? Colors.transparent
-                    : meta.color.withAlpha(isDark ? 30 : 20),
-                width: 1,
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Opacity(
+        opacity: isRead ? 0.75 : 1.0,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _onSurface, width: 2),
+                boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
               ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: isRead
-                        ? theme.colorScheme.onSurface
-                            .withAlpha(isDark ? 20 : 10)
-                        : meta.color.withAlpha(isDark ? 30 : 20),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    meta.icon,
-                    color: isRead
-                        ? theme.colorScheme.onSurface.withAlpha(160)
-                        : meta.color,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-
-                // Content
-                Expanded(
-                  child: Column(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              n['judul'] ?? 'Notifikasi',
-                              style: TextStyle(
-                                fontWeight:
-                                    isRead ? FontWeight.w600 : FontWeight.w800,
-                                fontSize: 13,
-                                color: isRead
-                                    ? theme.colorScheme.onSurface.withAlpha(160)
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      Expanded(
+                        child: Text(
+                          n['judul'] ?? 'Notifikasi',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: 18,
+                            fontWeight: isRead ? FontWeight.w600 : FontWeight.w800,
+                            color: _onSurface,
+                            height: 1.1,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            timeAgo,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: isRead
-                                  ? theme.colorScheme.onSurface.withAlpha(160)
-                                  : meta.color.withAlpha(180),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        n['pesan'] ?? '',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: theme.colorScheme.onSurface
-                              .withAlpha(isRead ? 80 : 120),
-                          height: 1.4,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      // Actions Column
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            if (!isRead)
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    _markAsRead(n);
-                                    setModalState(() {});
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: meta.color.withAlpha(20),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: meta.color.withAlpha(50)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(LucideIcons.checkCircle,
-                                            size: 12, color: meta.color),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Tandai dibaca',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w800,
-                                            color: meta.color,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            const Spacer(),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  _hideNotif(n);
-                                  setModalState(() {});
-                                },
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.onSurface
-                                        .withAlpha(isDark ? 10 : 5),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 14,
-                                    color: theme.colorScheme.onSurface
-                                        .withAlpha(160),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(width: 8),
+                      Text(
+                        timeAgo,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: _onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    n['pesan'] ?? '',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: _onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        onTap: isRead ? null : () {
+                          _markAsRead(n);
+                          setModalState(() {});
+                        },
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: isRead ? _outlineVariant : _surfaceVariant,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _onSurface, width: 2),
+                            boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+                          ),
+                          child: Icon(isRead ? Icons.check_circle : Icons.check, size: 20, color: isRead ? _onSurfaceVariant : _onSurface),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      InkWell(
+                        onTap: () {
+                          _hideNotif(n);
+                          setModalState(() {});
+                        },
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: _tertiaryFixedDim,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _onSurface, width: 2),
+                            boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+                          ),
+                          child: const Icon(Icons.delete, size: 20, color: _onSurface),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
+            
+            Positioned(
+              top: 0,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: meta.bgColor,
+                  border: Border.all(color: _onSurface, width: 2),
+                ),
+                child: Icon(meta.icon, size: 16, color: meta.iconColor),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -703,7 +558,6 @@ class _NotificationBellState extends State<NotificationBell>
 
   @override
   Widget build(BuildContext context) {
-    // Removed dependency on AppShell just in case, AppTheme is there
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -718,7 +572,7 @@ class _NotificationBellState extends State<NotificationBell>
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Icon(
-                _unreadCount > 0 ? LucideIcons.bellRing : LucideIcons.bell,
+                _unreadCount > 0 ? Icons.notifications_active : Icons.notifications,
                 color: widget.iconColor,
                 size: 24,
               ),
@@ -765,6 +619,7 @@ class _NotificationBellState extends State<NotificationBell>
 
 class _NotifMeta {
   final IconData icon;
-  final Color color;
-  _NotifMeta(this.icon, this.color);
+  final Color bgColor;
+  final Color iconColor;
+  _NotifMeta(this.icon, this.bgColor, this.iconColor);
 }

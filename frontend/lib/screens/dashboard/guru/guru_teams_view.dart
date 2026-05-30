@@ -357,7 +357,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                                 _accentColors[index % _accentColors.length];
 
                             final cardW = crossAxisCount == 1
-                                ? double.infinity
+                                ? (w - pad * 2)
                                 : (isWide && w >= 1200
                                     ? (1100 - (20 * 2)) / 3
                                     : (w - pad * 2 - 20) / 2);

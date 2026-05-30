@@ -100,7 +100,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
       body: LayoutBuilder(
         builder: (ctx, constraints) {
           final isDesktop = constraints.maxWidth >= 768;
-          final padding = Breakpoints.screenPadding(constraints.maxWidth);
+
 
           return RefreshIndicator(
             onRefresh: _fetchPengumuman,
@@ -275,8 +275,8 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
       return LayoutBuilder(
         builder: (ctx, constraints) {
           final totalWidth = constraints.maxWidth;
-          final gap = 20.0;
-          final colWidth = (totalWidth - (2 * gap)) / 12;
+          const gap = 20.0;
+          final colWidth = (totalWidth - (11 * gap)) / 12;
 
           List<Widget> rows = [];
           for (int i = 0; i < _filtered.length; i++) {
@@ -291,7 +291,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                   width: (colWidth * 4) + (gap * 3),
                   child: _SideCard(data: _filtered[i + 1]),
                 );
-                rows.add(Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [hero, const SizedBox(width: 20), side]));
+                rows.add(IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [hero, const SizedBox(width: 20), side])));
                 i++; // skip next since we rendered it
               } else {
                 rows.add(Row(children: [hero]));
@@ -310,7 +310,7 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
                   if (j < 2) rowItems.add(const SizedBox(width: 20));
                 }
               }
-              rows.add(Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: rowItems));
+              rows.add(IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: rowItems)));
               i += 2; // advance loop
             }
             rows.add(const SizedBox(height: 20));
@@ -369,17 +369,19 @@ class _SiswaPengumumanViewState extends State<SiswaPengumumanView> {
   }
 
   Widget _buildSkeleton() {
-    return Padding(
-      padding: const EdgeInsets.all(40),
-      child: Column(
+    return const SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(40),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SkeletonLoader(height: 60, width: 300),
-          const SizedBox(height: 40),
-          const SkeletonLoader(height: 100),
-          const SizedBox(height: 40),
-          const SkeletonLoader(height: 250),
+          SkeletonLoader(height: 60, width: 300),
+          SizedBox(height: 40),
+          SkeletonLoader(height: 100),
+          SizedBox(height: 40),
+          SkeletonLoader(height: 250),
         ],
+      ),
       ),
     );
   }

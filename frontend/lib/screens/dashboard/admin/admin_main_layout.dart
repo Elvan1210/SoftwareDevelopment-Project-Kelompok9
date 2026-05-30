@@ -490,7 +490,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     return AppShell(
       fullWidth: true,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 24.0, 16.0, 24.0),
+        padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
         child: Row(
           children: [
             Sidebar(

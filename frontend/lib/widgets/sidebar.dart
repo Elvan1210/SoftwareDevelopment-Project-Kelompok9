@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../config/theme.dart';
+
+// --- Neo-Brutalist Tokens ---
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _onPrimaryContainer = Color(0xFF3E6855);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _onBackground = Color(0xFF001E2B);
+const Color _error = Color(0xFFEF4444);
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 class Sidebar extends StatelessWidget {
@@ -27,79 +36,41 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return RepaintBoundary(
       child: Container(
         width: 270,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    AppTheme.darkCard,
-                    const Color(0xFF16162A),
-                  ]
-                : [
-                    Colors.white,
-                    const Color(0xFFF5F4FF),
-                  ],
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isDark
-                ? AppTheme.indigoPrimary.withAlpha(40)
-                : AppTheme.lightBorder,
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withAlpha(160)
-                  : AppTheme.indigoPrimary.withAlpha(20),
-              blurRadius: 30,
-              offset: const Offset(4, 0),
-            ),
-          ],
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(6, 6))],
         ),
         child: Column(
           children: [
             // ── Brand Header ──
-            _BrandHeader(isDark: isDark),
+            const _BrandHeaderNeo(),
 
             // ── Divider ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Divider(
-                height: 1,
-                color: isDark
-                    ? AppTheme.indigoPrimary.withAlpha(30)
-                    : AppTheme.lightBorder,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Divider(height: 1, color: _onSurface.withAlpha(50), thickness: 2),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             // ── Profile ──
-            _ProfileChip(
+            _ProfileChipNeo(
               name: userName,
               role: userRole,
               kelas: userKelas,
-              isDark: isDark,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             // ── Divider ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Divider(
-                height: 1,
-                color: isDark
-                    ? AppTheme.indigoPrimary.withAlpha(30)
-                    : AppTheme.lightBorder,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Divider(height: 1, color: _onSurface.withAlpha(50), thickness: 2),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
 
             // ── Nav Label ──
             Padding(
@@ -108,30 +79,28 @@ class Sidebar extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'MENU',
-                  style: GoogleFonts.poppins(
-                    fontSize: 9,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2.0,
-                    color: isDark
-                        ? AppTheme.textMutedDk
-                        : AppTheme.textMutedLt,
+                    color: _onSurfaceVariant,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // ── Menu Items ──
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: destinations.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 4),
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final item = destinations[index];
                   final isSelected = selectedIndex == index;
 
-                  return _SidebarItem(
+                  return _SidebarItemNeo(
                     icon: isSelected ? item.selectedIcon : item.icon,
                     label: item.label,
                     isSelected: isSelected,
@@ -140,13 +109,14 @@ class Sidebar extends StatelessWidget {
                   )
                       .animate(delay: (200 + index * 40).ms)
                       .fadeIn(duration: 350.ms)
-                      .slideX(begin: -0.08, curve: Curves.easeOutQuart);
+                      .slideX(begin: -0.05, curve: Curves.easeOutQuart);
                 },
               ),
             ),
 
             // ── Logout ──
-            _LogoutButton(onLogout: onLogout, isDark: isDark),
+            _LogoutButtonNeo(onLogout: onLogout),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -167,57 +137,47 @@ class SidebarItemData {
 }
 
 // ─── Brand Header ─────────────────────────────────────────────────────────────
-class _BrandHeader extends StatelessWidget {
-  final bool isDark;
-  const _BrandHeader({required this.isDark});
+class _BrandHeaderNeo extends StatelessWidget {
+  const _BrandHeaderNeo();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
       child: Row(
         children: [
           // Logo badge
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppTheme.indigoPrimary, AppTheme.primary],
-              ),
+              color: _primary,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.indigoPrimary.withAlpha(100),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border: Border.all(color: _onSurface, width: 2),
+              boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
             ),
-            child: const Icon(Icons.school_rounded, color: Colors.white, size: 20),
+            child: const Icon(Icons.school_rounded, color: Colors.white, size: 24),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'MyPSKD',
-                style: GoogleFonts.poppins(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
-                  color: isDark ? Colors.white : AppTheme.textLight,
+                  color: _onBackground,
+                  height: 1.1,
                 ),
               ),
               Text(
                 'Academic Portal',
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                  letterSpacing: 0.3,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _onSurfaceVariant,
                 ),
               ),
             ],
@@ -229,16 +189,14 @@ class _BrandHeader extends StatelessWidget {
 }
 
 // ─── Profile Chip ─────────────────────────────────────────────────────────────
-class _ProfileChip extends StatelessWidget {
+class _ProfileChipNeo extends StatelessWidget {
   final String name, role;
   final String? kelas;
-  final bool isDark;
 
-  const _ProfileChip({
+  const _ProfileChipNeo({
     required this.name,
     required this.role,
     this.kelas,
-    required this.isDark,
   });
 
   @override
@@ -246,23 +204,13 @@ class _ProfileChip extends StatelessWidget {
     final initials = name.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppTheme.indigoPrimary.withAlpha(isDark ? 35 : 20),
-              AppTheme.primary.withAlpha(isDark ? 20 : 12),
-            ],
-          ),
+          color: _surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppTheme.indigoPrimary.withAlpha(isDark ? 50 : 30),
-            width: 1.0,
-          ),
+          border: Border.all(color: _onSurface, width: 2),
         ),
         child: Row(
           children: [
@@ -271,27 +219,17 @@ class _ProfileChip extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppTheme.indigoPrimary, AppTheme.primary],
-                ),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.indigoPrimary.withAlpha(80),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                color: _primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _onSurface, width: 1.5),
               ),
               child: Center(
                 child: Text(
                   initials,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: _onPrimaryContainer,
                     fontWeight: FontWeight.w800,
-                    fontSize: 15,
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -303,23 +241,22 @@ class _ProfileChip extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                      color: isDark ? Colors.white : AppTheme.textLight,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: _onBackground,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
-                      _Pill(label: role, color: AppTheme.indigoPrimary),
+                      _PillNeo(label: role, color: _primary, textColor: Colors.white),
                       if (kelas != null) ...[
                         const SizedBox(width: 4),
                         Flexible(
-                          child: _Pill(label: kelas!, color: AppTheme.primary),
+                          child: _PillNeo(label: kelas!, color: const Color(0xFFF59E0B), textColor: Colors.white),
                         ),
                       ],
                     ],
@@ -334,28 +271,29 @@ class _ProfileChip extends StatelessWidget {
   }
 }
 
-class _Pill extends StatelessWidget {
+class _PillNeo extends StatelessWidget {
   final String label;
   final Color color;
-  const _Pill({required this.label, required this.color});
+  final Color textColor;
+  
+  const _PillNeo({required this.label, required this.color, required this.textColor});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withAlpha(isDark ? 35 : 20),
+        color: color,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withAlpha(isDark ? 70 : 50), width: 1),
+        border: Border.all(color: _onSurface, width: 1),
       ),
       child: Text(
         label.toUpperCase(),
-        style: GoogleFonts.poppins(
-          fontSize: 8,
+        style: GoogleFonts.inter(
+          fontSize: 9,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
-          color: color,
+          color: textColor,
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -365,14 +303,14 @@ class _Pill extends StatelessWidget {
 }
 
 // ─── Sidebar Item ─────────────────────────────────────────────────────────────
-class _SidebarItem extends StatefulWidget {
+class _SidebarItemNeo extends StatefulWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
   final int index;
 
-  const _SidebarItem({
+  const _SidebarItemNeo({
     required this.icon,
     required this.label,
     required this.isSelected,
@@ -381,16 +319,14 @@ class _SidebarItem extends StatefulWidget {
   });
 
   @override
-  State<_SidebarItem> createState() => _SidebarItemState();
+  State<_SidebarItemNeo> createState() => _SidebarItemNeoState();
 }
 
-class _SidebarItemState extends State<_SidebarItem> {
+class _SidebarItemNeoState extends State<_SidebarItemNeo> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -398,95 +334,55 @@ class _SidebarItemState extends State<_SidebarItem> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            gradient: widget.isSelected
-                ? LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      AppTheme.indigoPrimary.withAlpha(isDark ? 50 : 30),
-                      AppTheme.primary.withAlpha(isDark ? 25 : 15),
-                    ],
-                  )
-                : _hovered
-                    ? LinearGradient(
-                        colors: [
-                          AppTheme.indigoPrimary.withAlpha(isDark ? 20 : 12),
-                          Colors.transparent,
-                        ],
-                      )
-                    : const LinearGradient(colors: [Colors.transparent, Colors.transparent]),
-            borderRadius: BorderRadius.circular(14),
-            border: widget.isSelected
-                ? Border.all(
-                    color: AppTheme.indigoPrimary.withAlpha(isDark ? 80 : 50),
-                    width: 1.0,
-                  )
-                : Border.all(color: Colors.transparent),
+            color: widget.isSelected ? _primaryContainer : (_hovered ? _surface : Colors.transparent),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.isSelected || _hovered ? _onSurface : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: widget.isSelected || _hovered ? const [BoxShadow(color: _onSurface, offset: Offset(2, 2))] : [],
           ),
           child: Row(
             children: [
               // Icon container
               AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: 34,
-                height: 34,
+                duration: const Duration(milliseconds: 150),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  gradient: widget.isSelected
-                      ? const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppTheme.indigoPrimary, AppTheme.primary],
-                        )
-                      : LinearGradient(
-                          colors: [
-                            (isDark ? Colors.white : AppTheme.textLight).withAlpha(_hovered ? 15 : 8),
-                            Colors.transparent,
-                          ],
-                        ),
+                  color: widget.isSelected ? _primary : Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  boxShadow: widget.isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppTheme.indigoPrimary.withAlpha(90),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]
-                      : [],
+                  border: Border.all(color: widget.isSelected ? _onSurface : (_hovered ? _onSurface : Colors.transparent), width: 1.5),
                 ),
                 child: Icon(
                   widget.icon,
-                  color: widget.isSelected
-                      ? Colors.white
-                      : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  size: 18,
+                  color: widget.isSelected ? Colors.white : _onSurfaceVariant,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   widget.label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: widget.isSelected
-                        ? (isDark ? Colors.white : AppTheme.indigoDark)
-                        : (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                    letterSpacing: 0.1,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: widget.isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: widget.isSelected ? _onBackground : _onSurfaceVariant,
                   ),
                 ),
               ),
               // Active dot
               if (widget.isSelected)
                 Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.indigoPrimary,
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _onSurface,
                     shape: BoxShape.circle,
+                    border: Border.all(color: _onSurface, width: 1),
                   ),
                 ),
             ],
@@ -498,17 +394,16 @@ class _SidebarItemState extends State<_SidebarItem> {
 }
 
 // ─── Logout Button ────────────────────────────────────────────────────────────
-class _LogoutButton extends StatefulWidget {
+class _LogoutButtonNeo extends StatefulWidget {
   final VoidCallback onLogout;
-  final bool isDark;
 
-  const _LogoutButton({required this.onLogout, required this.isDark});
+  const _LogoutButtonNeo({required this.onLogout});
 
   @override
-  State<_LogoutButton> createState() => _LogoutButtonState();
+  State<_LogoutButtonNeo> createState() => _LogoutButtonNeoState();
 }
 
-class _LogoutButtonState extends State<_LogoutButton> {
+class _LogoutButtonNeoState extends State<_LogoutButtonNeo> {
   bool _hovered = false;
 
   @override
@@ -522,44 +417,35 @@ class _LogoutButtonState extends State<_LogoutButton> {
         child: GestureDetector(
           onTap: widget.onLogout,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            duration: const Duration(milliseconds: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            transform: Matrix4.translationValues(
+              _hovered ? 2 : 0,
+              _hovered ? 2 : 0,
+              0,
+            ),
             decoration: BoxDecoration(
-              gradient: _hovered
-                  ? const LinearGradient(
-                      colors: [Color(0xFF7F1D1D), Color(0xFFEF4444)],
-                    )
-                  : LinearGradient(
-                      colors: [
-                        AppTheme.rose.withAlpha(widget.isDark ? 25 : 15),
-                        AppTheme.rose.withAlpha(widget.isDark ? 15 : 8),
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: AppTheme.rose.withAlpha(_hovered ? 150 : (widget.isDark ? 50 : 30)),
-                width: 1.0,
-              ),
-              boxShadow: _hovered
-                  ? [BoxShadow(color: AppTheme.rose.withAlpha(80), blurRadius: 15, offset: const Offset(0, 4))]
-                  : [],
+              color: _error,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _onSurface, width: 2),
+              boxShadow: _hovered ? [] : const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   LucideIcons.logOut,
-                  color: _hovered ? Colors.white : AppTheme.rose,
-                  size: 16,
+                  color: Colors.white,
+                  size: 20,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Text(
                   'Keluar',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: _hovered ? Colors.white : AppTheme.rose,
-                    letterSpacing: 0.2,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],

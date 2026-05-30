@@ -357,12 +357,15 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
       child: Row(
         children: [
           // -- Premium Light Sidebar --
-          SizedBox(
-            width: 260,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
             child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(right: BorderSide(color: AppTheme.lightBorder)),
+              width: 270,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4FAFF), // Light blue background for Teams
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xFF001E2B), width: 2),
+                boxShadow: const [BoxShadow(color: Color(0xFF001E2B), offset: Offset(6, 6))],
               ),
               child: SafeArea(
                 right: false,
