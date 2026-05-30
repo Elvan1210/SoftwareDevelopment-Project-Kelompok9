@@ -3,10 +3,22 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import '../../../config/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+// --- Tailwind Neo-Brutalist Tokens ---
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _onSecondaryContainer = Color(0xFF3A6D69);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _onBackground = Color(0xFF001E2B);
 
 class SiswaPresensiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -89,162 +101,162 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Riwayat Kehadiran',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22,
-                        letterSpacing: -0.5,
-                        color: AppTheme.textLight,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${widget.teamData['nama_kelas'] ?? 'Kelas'} · ${_riwayat.length} catatan',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
-                        color: AppTheme.textMutedLt,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(10),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  onPressed: _fetchRiwayat,
-                  icon: const Icon(LucideIcons.refreshCw, color: AppTheme.success, size: 18),
-                ),
-              ),
-            ],
-          ).animate().fadeIn().slideY(begin: -0.05),
+    if (_isLoading) return _buildSkeleton();
 
-          const SizedBox(height: 24),
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        final isDesktop = constraints.maxWidth >= 768;
 
-          if (_isLoading)
-            const Expanded(child: Center(child: CircularProgressIndicator(color: AppTheme.primary)))
-          else ...[
-            _buildVisualDashboard().animate().fadeIn(delay: 100.ms).scale(),
-
-            const SizedBox(height: 28),
-            const Text(
-              'Detail Riwayat',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-                color: AppTheme.textLight,
-              ),
-            ).animate().fadeIn(delay: 200.ms),
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: _riwayat.isEmpty
-                  ? const EmptyState(
-                      icon: LucideIcons.calendarCheck,
-                      message: 'Belum ada catatan presensi.',
-                    )
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 24),
-                      itemCount: _riwayat.length,
-                      itemBuilder: (context, index) {
-                        return _buildRiwayatCard(_riwayat[index])
-                            .animate(delay: (index * 40).ms)
-                            .fadeIn()
-                            .slideX(begin: 0.05, curve: Curves.easeOutQuart);
-                      },
-                    ),
+        return RefreshIndicator(
+          onRefresh: _fetchRiwayat,
+          color: _primary,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(
+              left: isDesktop ? 40 : 16,
+              right: isDesktop ? 40 : 16,
+              top: 32,
+              bottom: 100,
             ),
-          ],
-        ],
-      ),
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Riwayat Kehadiran',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: isDesktop ? 48 : 36,
+                              fontWeight: FontWeight.w800,
+                              color: _onBackground,
+                              letterSpacing: -1.92,
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${widget.teamData['nama_kelas'] ?? 'Kelas'} · ${_riwayat.length} catatan',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: _onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _NeoIconButton(
+                      icon: LucideIcons.refreshCw,
+                      onTap: _fetchRiwayat,
+                      color: _secondaryContainer,
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn().slideY(begin: -0.1),
+
+              // Visual Dashboard
+              Padding(
+                padding: const EdgeInsets.only(bottom: 32),
+                child: _buildVisualDashboardNeo(),
+              ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.05),
+
+              // Riwayat List
+              if (_riwayat.isEmpty)
+                _buildEmpty()
+              else ...[
+                Text(
+                  'Detail Riwayat',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                    color: _onBackground,
+                  ),
+                ).animate().fadeIn(delay: 200.ms),
+                const SizedBox(height: 16),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _riwayat.length,
+                  itemBuilder: (context, index) {
+                    return _buildRiwayatCardNeo(_riwayat[index])
+                        .animate(delay: (index * 40 + 200).ms)
+                        .fadeIn()
+                        .slideX(begin: 0.05, curve: Curves.easeOutQuart);
+                  },
+                ),
+              ],
+            ],
+          ),
+        );
+      }
     );
   }
 
-  Widget _buildVisualDashboard() {
+  Widget _buildVisualDashboardNeo() {
     final total = _riwayat.length;
     final pct = total > 0 ? (_hadir / total) : 0.0;
 
-    Color pctColor = const Color(0xFF22C55E);
-    if (pct < 0.75) pctColor = const Color(0xFFF59E0B);
-    if (pct < 0.50) pctColor = const Color(0xFFEF4444);
+    Color pctColor = const Color(0xFF10B981); // Green
+    if (pct < 0.75) pctColor = const Color(0xFFF59E0B); // Orange
+    if (pct < 0.50) pctColor = const Color(0xFFEF4444); // Red
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: _onSurface, width: 2),
+        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Persentase Kehadiran',
-                style: TextStyle(
-                  color: AppTheme.textLight,
+                style: GoogleFonts.plusJakartaSans(
+                  color: _onSurface,
                   fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                  fontSize: 20,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: pctColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(100),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(color: _onSurface, width: 2),
                 ),
                 child: Text(
                   '${(pct * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: pctColor,
                     fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                    fontSize: 16,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
           ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: Container(
-              height: 8,
+              height: 12,
               width: double.infinity,
-              color: AppTheme.lightBorder,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: _onSurface, width: 1.5),
+                borderRadius: BorderRadius.circular(100),
+              ),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: pct.clamp(0.0, 1.0),
@@ -259,13 +271,16 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             children: [
-              _buildStatDetail('Hadir', _hadir, const Color(0xFF22C55E)),
-              _buildStatDetail('Izin', _izin, AppTheme.info),
-              _buildStatDetail('Sakit', _sakit, const Color(0xFFF59E0B)),
-              _buildStatDetail('Alpa', _alpha, const Color(0xFFEF4444)),
+              _buildStatDetailNeo('Hadir', _hadir, _primaryContainer),
+              const SizedBox(width: 12),
+              _buildStatDetailNeo('Izin', _izin, _secondaryContainer),
+              const SizedBox(width: 12),
+              _buildStatDetailNeo('Sakit', _sakit, _tertiaryContainer),
+              const SizedBox(width: 12),
+              _buildStatDetailNeo('Alpa', _alpha, _surfaceContainerHighest),
             ],
           ),
         ],
@@ -273,33 +288,43 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
     );
   }
 
-  Widget _buildStatDetail(String label, int count, Color color) {
+  Widget _buildStatDetailNeo(String label, int count, Color bgColor) {
     return Expanded(
-      child: Column(
-        children: [
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 24,
-              color: color,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+        ),
+        child: Column(
+          children: [
+            Text(
+              count.toString(),
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w900,
+                fontSize: 28,
+                color: _onBackground,
+                height: 1,
+              ),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-              color: color.withAlpha(200),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                color: _onSurfaceVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRiwayatCard(Map<String, dynamic> record) {
+  Widget _buildRiwayatCardNeo(Map<String, dynamic> record) {
     final status = record['status'] ?? 'Alpa';
     final tanggal = DateTime.tryParse(record['tanggal'] ?? '');
     final tanggalStr = tanggal != null
@@ -310,55 +335,50 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
     final statusConfig = _getStatusConfig(status);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
         ),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: statusConfig.color.withAlpha(22),
+                color: statusConfig.color,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _onSurface, width: 1.5),
               ),
-              child: Icon(statusConfig.icon, color: statusConfig.color, size: 20),
+              child: Icon(statusConfig.icon, color: Colors.white, size: 24),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     tanggalStr,
-                    style: const TextStyle(
+                    style: GoogleFonts.plusJakartaSans(
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      color: AppTheme.textLight,
+                      fontSize: 16,
+                      color: _onBackground,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(LucideIcons.clock, size: 13, color: AppTheme.textMutedLt),
-                      const SizedBox(width: 4),
+                      const Icon(LucideIcons.clock, size: 14, color: _onSurfaceVariant),
+                      const SizedBox(width: 6),
                       Text(
                         'Pukul $waktu',
-                        style: const TextStyle(
-                          color: AppTheme.textMutedLt,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        style: GoogleFonts.inter(
+                          color: _onSurfaceVariant,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -367,17 +387,18 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: statusConfig.color.withAlpha(22),
-                borderRadius: BorderRadius.circular(100),
+                color: statusConfig.color,
+                borderRadius: BorderRadius.circular(9999),
+                border: Border.all(color: _onSurface, width: 2),
               ),
               child: Text(
                 status.toUpperCase(),
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11,
-                  color: statusConfig.color,
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -389,11 +410,73 @@ class _SiswaPresensiViewState extends State<SiswaPresensiView> {
 
   _StatusConfig _getStatusConfig(String status) {
     switch (status.toLowerCase()) {
-      case 'hadir': return _StatusConfig(const Color(0xFF22C55E), LucideIcons.checkSquare);
-      case 'izin': return _StatusConfig(const Color(0xFF76AFB8), LucideIcons.fileText);
-      case 'sakit': return _StatusConfig(const Color(0xFFF59E0B), LucideIcons.activity);
-      default: return _StatusConfig(const Color(0xFFEF4444), LucideIcons.xSquare);
+      case 'hadir': return _StatusConfig(_primary, LucideIcons.checkSquare);
+      case 'izin': return _StatusConfig(_onSecondaryContainer, LucideIcons.fileText);
+      case 'sakit': return _StatusConfig(const Color(0xFFF59E0B), LucideIcons.activity); // Orange
+      default: return _StatusConfig(const Color(0xFFEF4444), LucideIcons.xSquare); // Red
     }
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _surfaceContainerHighest,
+              shape: BoxShape.circle,
+              border: Border.all(color: _onSurface, width: 2),
+            ),
+            child: const Icon(LucideIcons.calendarCheck, color: _onSurface, size: 32),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada catatan presensi',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 24, color: _onSurface),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Kamu belum memiliki riwayat presensi di kelas ini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 16, color: _onSurfaceVariant, fontWeight: FontWeight.w400),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonLoader(height: 60, width: 200),
+          const SizedBox(height: 40),
+          const SkeletonLoader(height: 250, radius: 16),
+          const SizedBox(height: 40),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 4,
+              itemBuilder: (context, index) => const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: SkeletonLoader(height: 100, radius: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -401,4 +484,45 @@ class _StatusConfig {
   final Color color;
   final IconData icon;
   _StatusConfig(this.color, this.icon);
+}
+
+class _NeoIconButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _NeoIconButton({required this.icon, required this.onTap, required this.color});
+
+  @override
+  State<_NeoIconButton> createState() => _NeoIconButtonState();
+}
+
+class _NeoIconButtonState extends State<_NeoIconButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        padding: const EdgeInsets.all(12),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: widget.color,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: _isPressed ? [] : const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+        ),
+        child: Icon(widget.icon, color: _onSurface, size: 24),
+      ),
+    );
+  }
 }

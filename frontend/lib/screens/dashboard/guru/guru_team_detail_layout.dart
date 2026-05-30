@@ -16,6 +16,7 @@ import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
 import '../../../widgets/jitsi_embed.dart';
+import '../../../widgets/neo_brutalism.dart';
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -1130,9 +1131,16 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       child: Row(
         children: [
           // ── Cosmic Sidebar ──
-          SizedBox(
-            width: 260,
-            child: CosmicBackground(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
+            child: Container(
+              width: 270,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4FAFF), // Light blue background for Teams
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xFF001E2B), width: 2),
+                boxShadow: const [BoxShadow(color: Color(0xFF001E2B), offset: Offset(6, 6))],
+              ),
               child: SafeArea(
                 right: false,
                 child: Column(
@@ -1140,44 +1148,31 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(children: [
-                              Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                      color: Colors.white.withAlpha(20),
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: const Icon(Icons.psychology_rounded,
-                                      color: Colors.white, size: 22)),
-                              const SizedBox(width: 12),
-                              const Text('MyPSKD',
-                                  style: TextStyle(
-                                      color: CosmicColors.textPrimary,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: -0.5)),
-                            ]),
-                            const SizedBox(height: 20),
-                            Text(widget.teamData['nama_kelas'] ?? 'Ruang Kelas',
-                                style: const TextStyle(
-                                    color: CosmicColors.textPrimary,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.2)),
-                            const SizedBox(height: 4),
-                            Text(widget.teamData['kode_kelas'] ?? '',
-                                style: const TextStyle(
-                                    color: CosmicColors.textMuted,
-                                    fontSize: 12)),
-                          ]),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Row(children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withAlpha(15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.school, color: AppTheme.primary, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text('MyPSKD', style: TextStyle(color: AppTheme.textLight, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        ]),
+                        const SizedBox(height: 20),
+                        Text(widget.teamData['nama_kelas'] ?? 'Ruang Kelas',
+                          style: const TextStyle(color: AppTheme.textLight, fontSize: 15, fontWeight: FontWeight.w700, height: 1.2)),
+                        const SizedBox(height: 4),
+                        Text(widget.teamData['kode_kelas'] ?? '', style: const TextStyle(color: AppTheme.textMutedLt, fontSize: 12, fontWeight: FontWeight.w500)),
+                      ]),
                     ),
                     Expanded(
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         children: [
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.hub_outlined,
                               label: 'Dashboard',
                               isSelected: _activeTabID == 'dashboard',
@@ -1185,7 +1180,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'dashboard';
                                     _activeTitle = 'Dashboard';
                                   })),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.person_add_alt_rounded,
                               label: 'Permintaan',
                               isSelected: _activeTabID == 'permintaan',
@@ -1194,7 +1189,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'permintaan';
                                     _activeTitle = 'Permintaan';
                                   })),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.how_to_reg_outlined,
                               label: 'Presensi Kelas',
                               isSelected: _activeTabID == 'presensi',
@@ -1202,7 +1197,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'presensi';
                                     _activeTitle = 'Presensi';
                                   })),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.assignment_outlined,
                               label: 'Penugasan',
                               isSelected: _activeTabID == 'tugas',
@@ -1210,7 +1205,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'tugas';
                                     _activeTitle = 'Penugasan';
                                   })),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.quiz_outlined,
                               label: 'Kuis & Ujian',
                               isSelected: _activeTabID == 'kuis',
@@ -1218,7 +1213,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'kuis';
                                     _activeTitle = 'Kuis & Ujian';
                                   })),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.military_tech_outlined,
                               label: 'Nilai Siswa',
                               isSelected: _activeTabID == 'nilai',
@@ -1226,7 +1221,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'nilai';
                                     _activeTitle = 'Nilai Siswa';
                                   })),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.auto_stories_outlined,
                               label: 'Materi Ajar',
                               isSelected: _activeTabID == 'materi',
@@ -1246,7 +1241,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                         style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w800,
-                                            color: Colors.white.withAlpha(100),
+                                            color: AppTheme.textMutedLt.withAlpha(160),
                                             letterSpacing: 1.5)),
                                     InkWell(
                                         onTap: _showCreateChannelDialog,
@@ -1255,7 +1250,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                             color:
                                                 Colors.white.withAlpha(150))),
                                   ])),
-                          CosmicSidebarItem(
+                          NeoSidebarItem(
                               icon: Icons.tag_rounded,
                               label: 'General',
                               isSelected: _activeTabID == 'channel_general',
@@ -1265,7 +1260,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTitle = 'General';
                                   })),
                           for (var c in _channels)
-                            CosmicSidebarItem(
+                            NeoSidebarItem(
                                 icon: Icons.tag_rounded,
                                 label: c['nama_channel'] ?? 'Unnamed',
                                 isSelected:
@@ -1286,37 +1281,22 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                       margin: const EdgeInsets.all(14),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(15),
+                        color: AppTheme.lightBg,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withAlpha(20)),
+                        border: Border.all(color: AppTheme.lightBorder, width: 1.0),
                       ),
                       child: Row(children: [
-                        CircleAvatar(
-                            radius: 16,
-                            backgroundColor: CosmicColors.violet.withAlpha(80),
-                            child: Text(
-                                (widget.userData['nama'] ?? 'G')[0]
-                                    .toUpperCase(),
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 13))),
+                        CircleAvatar(radius: 16,
+                          backgroundColor: AppTheme.primary.withAlpha(25),
+                          child: Text((widget.userData['nama'] ?? 'G')[0].toUpperCase(),
+                            style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13))),
                         const SizedBox(width: 10),
-                        Expanded(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                              Text(widget.userData['nama'] ?? 'Guru',
-                                  style: const TextStyle(
-                                      color: CosmicColors.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 12),
-                                  overflow: TextOverflow.ellipsis),
-                              const Text('Guru',
-                                  style: TextStyle(
-                                      color: CosmicColors.textMuted,
-                                      fontSize: 11)),
-                            ])),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(widget.userData['nama'] ?? 'Guru',
+                            style: const TextStyle(color: AppTheme.textLight, fontWeight: FontWeight.w700, fontSize: 12),
+                            overflow: TextOverflow.ellipsis),
+                          const Text('Guru', style: TextStyle(color: AppTheme.textMutedLt, fontSize: 11)),
+                        ])),
                       ]),
                     ),
                   ],
@@ -1606,3 +1586,4 @@ class GlassCard extends StatelessWidget {
     );
   }
 }
+

@@ -5,8 +5,19 @@ import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../config/api_config.dart';
-import '../../../config/theme.dart';
+
+// --- Tailwind Neo-Brutalist Tokens ---
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryContainer = Color(0xFFB7E5CD);
+const Color _secondaryContainer = Color(0xFFB7EDE7);
+const Color _tertiaryContainer = Color(0xFFFFD1C0);
+const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _onBackground = Color(0xFF001E2B);
 
 class SiswaNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -22,8 +33,6 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
   List<dynamic> _allNilai = [];
   bool _isLoading = true;
   String _selectedFilter = 'Semua';
-  int _currentPage = 1;
-  static const int _itemsPerPage = 6;
 
   @override
   void initState() {
@@ -89,16 +98,6 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
             'feedback': q['autoSubmitted'] == true ? 'Disubmit otomatis oleh sistem' : 'Disubmit oleh siswa'
           });
         }
-      } else if (responses[1].statusCode == 404) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('API Kuis belum aktif. Tolong RESTART server backend (Node.js).',
-                style: TextStyle(fontWeight: FontWeight.w700)),
-              backgroundColor: Colors.red,
-            )
-          );
-        }
       }
       
       // Sort berdasarkan waktu terbaru
@@ -122,18 +121,12 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
     }
   }
 
-  Color _gradeColor(dynamic nilai) {
-    final v = double.tryParse(nilai.toString()) ?? 0;
-    if (v >= 80) return const Color(0xFF10B981);
-    if (v >= 60) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
-  }
-
   String _formatDate(String? isoDate) {
     if (isoDate == null) return '-';
     try {
       final date = DateTime.parse(isoDate);
-      return '${date.day}-${date.month}-${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      final listBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return '${date.day} ${listBulan[date.month - 1]} ${date.year}, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return isoDate;
     }
@@ -148,402 +141,410 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
       return n['type'] == _selectedFilter;
     }).toList();
 
-    final totalItems = filteredList.length;
-    final totalPages = (totalItems / _itemsPerPage).ceil();
-    if (_currentPage > totalPages && totalPages > 0) {
-      _currentPage = totalPages;
-    }
-    
-    final startIndex = (_currentPage - 1) * _itemsPerPage;
-    final endIndex = (startIndex + _itemsPerPage > totalItems) ? totalItems : (startIndex + _itemsPerPage);
-    final pagedList = filteredList.isNotEmpty ? filteredList.sublist(startIndex, endIndex) : [];
-
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          // Filter Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: Row(
-                children: [
-                  _buildFilterChip('Semua'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Assignment'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Kuis'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Penilaian Mandiri'),
-                ],
+      body: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final isDesktop = constraints.maxWidth >= 768;
+
+          return RefreshIndicator(
+            onRefresh: _fetchNilai,
+            color: _primary,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.only(
+                left: isDesktop ? 40 : 16,
+                right: isDesktop ? 40 : 16,
+                top: 32,
+                bottom: 100,
               ),
-            ),
-          ),
-          
-          Expanded(
-            child: filteredList.isEmpty
-                ? EmptyState(
-                    icon: LucideIcons.award,
-                    message: 'Belum ada $_selectedFilter\nyang dinilai.',
-                    color: const Color(0xFF76AFB8))
-                : RefreshIndicator(
-                    onRefresh: _fetchNilai,
-                    color: AppTheme.primary,
-                    child: Column(
+              children: [
+                // Headline
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: Text(
+                    'Nilai Kamu',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isDesktop ? 48 : 36,
+                      fontWeight: FontWeight.w800,
+                      color: _onBackground,
+                      letterSpacing: -1.92,
+                      height: 1.1,
+                    ),
+                  ),
+                ).animate().fadeIn().slideY(begin: -0.1),
+
+                // Filters
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 40),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    child: Row(
                       children: [
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder: (ctx, c) {
-                              final isWeb = c.maxWidth > 700;
-                              return isWeb 
-                                ? _buildGridView(pagedList) 
-                                : _buildListView(pagedList);
-                            },
-                          ),
-                        ),
-                        if (totalPages > 1) _buildPagination(totalPages),
+                        _buildFilterChip('Semua'),
+                        const SizedBox(width: 12),
+                        _buildFilterChip('Assignment'),
+                        const SizedBox(width: 12),
+                        _buildFilterChip('Kuis'),
+                        const SizedBox(width: 12),
+                        _buildFilterChip('Penilaian Mandiri'),
                       ],
                     ),
                   ),
-          ),
-        ],
+                ).animate().fadeIn().slideX(begin: -0.05),
+
+                if (filteredList.isEmpty)
+                  _buildEmpty()
+                else
+                  _buildList(filteredList, isDesktop),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildPagination(int totalPages) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(LucideIcons.chevronLeft),
-            color: _currentPage > 1 ? AppTheme.indigoPrimary : AppTheme.textMutedLt.withAlpha(100),
-            onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
-          ),
-          const SizedBox(width: 8),
-          ...List.generate(totalPages, (index) {
-            final page = index + 1;
-            final isSelected = page == _currentPage;
-            return GestureDetector(
-              onTap: () => setState(() => _currentPage = page),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.indigoPrimary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isSelected ? AppTheme.indigoPrimary : AppTheme.lightBorder,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  page.toString(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : AppTheme.textLight,
-                  ),
-                ),
-              ),
-            );
-          }),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(LucideIcons.chevronRight),
-            color: _currentPage < totalPages ? AppTheme.indigoPrimary : AppTheme.textMutedLt.withAlpha(100),
-            onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
-          ),
-        ],
-      ),
-    );
-  }
-  
   Widget _buildFilterChip(String label) {
     final isSelected = _selectedFilter == label;
     return GestureDetector(
       onTap: () {
         if (_selectedFilter != label) {
-          setState(() {
-            _selectedFilter = label;
-            _currentPage = 1; // Reset ke halaman 1 saat ganti filter
-          });
+          setState(() => _selectedFilter = label);
         }
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        transform: Matrix4.translationValues(
+          isSelected ? 2 : 0,
+          isSelected ? 2 : 0,
+          0,
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.indigoPrimary : AppTheme.indigoPrimary.withAlpha(10),
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: isSelected ? AppTheme.indigoPrimary : AppTheme.indigoPrimary.withAlpha(20)),
+          color: isSelected ? _primary : _surface,
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: isSelected ? [] : const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
         ),
         child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            fontSize: 13,
-            color: isSelected ? Colors.white : AppTheme.indigoPrimary,
+          label.toUpperCase(),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+            letterSpacing: 0.6,
+            color: isSelected ? Colors.white : _onSurface,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildGridView(List<dynamic> list) {
-    return GridView.builder(
-      padding: const EdgeInsets.only(left: 24, right: 24, top: 10, bottom: 20),
-      physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 400,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 20,
-        childAspectRatio: 0.85,
-      ),
-      itemCount: list.length,
-      itemBuilder: (_, i) => _buildCard(list[i], i),
+  Widget _buildList(List<dynamic> list, bool isDesktop) {
+    return Column(
+      children: List.generate(list.length, (i) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: _GradeCardNeo(
+            nilai: list[i],
+            index: i,
+            formatDate: _formatDate,
+          ),
+        );
+      }),
     );
   }
 
-  Widget _buildListView(List<dynamic> list) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 24, right: 24, top: 10, bottom: 20),
-      physics: const BouncingScrollPhysics(),
-      itemCount: list.length,
-      itemBuilder: (_, i) => Container(
-        height: 380, // Fix layout error from unbounded height for Spacer
-        padding: const EdgeInsets.only(bottom: 16),
-        child: _buildCard(list[i], i),
-      ),
-    );
-  }
-
-  Widget _buildCard(dynamic n, int i, {bool isPage = false}) {
-    final color = _gradeColor(n['nilai']);
-    final valStr = n['nilai']?.toString() ?? '-';
-    final val = double.tryParse(valStr) ?? 0;
-    final isKuis = n['type'] == 'Kuis';
-    final isManual = n['type'] == 'Penilaian Mandiri';
-    
-    Color badgeColor = AppTheme.orangeVivid;
-    if (isKuis) badgeColor = AppTheme.indigoPrimary;
-    if (isManual) badgeColor = const Color(0xFF6366F1);
-    
-    IconData cardIcon = LucideIcons.clipboardList;
-    if (isKuis) cardIcon = LucideIcons.laptop;
-    if (isManual) cardIcon = LucideIcons.fileText;
-
-    return RepaintBoundary(
+  Widget _buildEmpty() {
+    return Center(
       child: Container(
-        margin: EdgeInsets.only(right: isPage ? 16 : 0, bottom: isPage ? 20 : 0, top: isPage ? 10 : 0),
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppTheme.lightBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: color.withAlpha(20),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _onSurface, width: 2),
+          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Section
-            Row(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _surfaceContainerHighest,
+              shape: BoxShape.circle,
+              border: Border.all(color: _onSurface, width: 2),
+            ),
+            child: const Icon(LucideIcons.award, color: _onSurface, size: 32),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada $_selectedFilter',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 24, color: _onSurface),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Belum ada penilaian yang masuk untuk kategori ini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 16, color: _onSurfaceVariant, fontWeight: FontWeight.w400),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonLoader(height: 60, width: 200),
+          const SizedBox(height: 40),
+          const Row(
+            children: [
+              SkeletonLoader(height: 40, width: 100, radius: 20),
+              SizedBox(width: 12),
+              SkeletonLoader(height: 40, width: 100, radius: 20),
+            ],
+          ),
+          const SizedBox(height: 40),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 4,
+              itemBuilder: (context, index) => const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: SkeletonLoader(height: 160, radius: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GradeCardNeo extends StatelessWidget {
+  final dynamic nilai;
+  final int index;
+  final String Function(String?) formatDate;
+
+  const _GradeCardNeo({required this.nilai, required this.index, required this.formatDate});
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColors = [
+      _primaryContainer,
+      _secondaryContainer,
+      _tertiaryContainer,
+      _surfaceContainerHighest
+    ];
+    final colorIdx = index % bgColors.length;
+    final bgColor = bgColors[colorIdx];
+
+    final valStr = nilai['nilai']?.toString() ?? '-';
+    final val = double.tryParse(valStr) ?? 0;
+    
+    // Status color
+    Color statusColor = const Color(0xFFEF4444); // Red
+    if (val >= 80) {
+      statusColor = const Color(0xFF10B981); // Green
+    } else if (val >= 60) {
+      statusColor = const Color(0xFFF59E0B); // Orange
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _onSurface, width: 2),
+        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              border: const Border(bottom: BorderSide(color: _onSurface, width: 2)),
+              color: Colors.white.withAlpha(128),
+            ),
+            child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withAlpha(25),
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white,
+                    border: Border.all(color: _onSurface, width: 1.5),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(cardIcon, color: color, size: 28),
+                  child: Icon(
+                    nilai['type'] == 'Kuis' ? LucideIcons.laptop : LucideIcons.clipboardList,
+                    color: _onSurface,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        (n['judul'] ?? 'Tidak Ada Judul').toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                          color: AppTheme.textLight,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _onSurface,
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          (nilai['type'] ?? 'TUGAS').toString().toUpperCase(),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
+                            letterSpacing: 1.2,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        n['guru_nama'] != null ? 'Oleh: ${n['guru_nama']}' : 'Dinilai oleh Guru',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                          color: AppTheme.textMutedLt,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            
-            // Badge Section
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: badgeColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Text(
-                    (n['type'] ?? 'TUGAS').toString().toUpperCase(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11,
-                      letterSpacing: 0.5,
-                      color: badgeColor,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: color.withAlpha(20),
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(color: color.withAlpha(50)),
-                  ),
-                  child: Text(
-                    val >= 80 ? 'Lulus' : (val >= 60 ? 'Cukup' : 'Gagal'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      color: color,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            
-            // Score
-            Center(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        val.toStringAsFixed(0),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 72,
-                          color: color,
-                          letterSpacing: -2,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        '/ 100',
-                        style: TextStyle(
+                        (nilai['judul'] ?? 'Tidak Ada Judul').toString(),
+                        style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                          color: AppTheme.textMutedLt,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (n['waktu'] != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightBg,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(LucideIcons.calendar, size: 14, color: AppTheme.textMutedLt),
-                          const SizedBox(width: 6),
-                          Text(
-                            _formatDate(n['waktu']),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                              color: AppTheme.textMutedLt,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]
-                ],
-              ),
-            ),
-            const Spacer(),
-            
-            // Feedback
-            if (n['feedback'] != null && n['feedback'].toString().isNotEmpty) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.indigoPrimary.withAlpha(10),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.indigoPrimary.withAlpha(20)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(LucideIcons.messageSquareQuote, size: 18, color: AppTheme.indigoPrimary),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '"${n['feedback']}"',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                          color: AppTheme.indigoPrimary,
-                          fontStyle: FontStyle.italic,
-                          height: 1.4,
+                          fontSize: 18,
+                          height: 1.2,
+                          color: _onBackground,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ],
+                  ),
+                ),
+                if (nilai['waktu'] != null)
+                  Text(
+                    formatDate(nilai['waktu']),
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: _onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Body
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dinilai Oleh:',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          color: _onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        nilai['guru_nama'] != null ? '${nilai['guru_nama']}' : 'Sistem / Guru',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: _onBackground,
+                        ),
+                      ),
+                      if (nilai['feedback'] != null && nilai['feedback'].toString().isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _onSurface, width: 1.5),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(LucideIcons.messageSquareQuote, size: 16, color: _onSurfaceVariant),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '"${nilai['feedback']}"',
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                    color: _onSurfaceVariant,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: statusColor, width: 2),
+                      ),
+                      child: Text(
+                        val >= 80 ? 'LULUS' : (val >= 60 ? 'CUKUP' : 'GAGAL'),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          val.toStringAsFixed(0),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 48,
+                            height: 1,
+                            letterSpacing: -2,
+                            color: _onBackground,
+                          ),
+                        ),
+                        Text(
+                          '/100',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: _onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
-          ],
-        ),
-      ).animate(delay: (i * 100).ms).scale(duration: 500.ms, curve: Curves.easeOutBack),
-    );
-  }
-
-  Widget _buildSkeleton() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(24),
-      itemCount: 4,
-      itemBuilder: (_, i) => const Padding(
-        padding: EdgeInsets.only(bottom: 16),
-        child: SkeletonLoader(height: 140, radius: 20),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

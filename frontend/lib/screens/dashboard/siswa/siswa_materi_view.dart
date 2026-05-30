@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 // --- Tailwind Neo-Brutalist Tokens -----------------------------------------
 const Color _onSurface = Color(0xFF001E2B);
@@ -24,7 +23,6 @@ const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
 const Color _outlineVariant = Color(0xFFC1C8C2);
 const Color _primaryFixed = Color(0xFFBFEDD5);
 const Color _onPrimaryFixed = Color(0xFF002115);
-const Color _background = Color(0xFFF4FAFF);
 
 BorderRadius get _asymmetricRadius => const BorderRadius.only(
       topLeft: Radius.circular(4),
@@ -376,7 +374,7 @@ class _MateriCardNeoState extends State<_MateriCardNeo> {
                                     children: [
                                       GestureDetector(
                                         onTap: () => _launchURL(widget.materi['file_url']),
-                                        child: _NeoModalButton(
+                                        child: const _NeoModalButton(
                                           label: 'Buka',
                                           icon: Icons.open_in_new,
                                         ),

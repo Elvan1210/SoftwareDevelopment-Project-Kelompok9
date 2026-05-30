@@ -1,4 +1,3 @@
-import '../../../config/theme.dart';
 // import 'package:flutter/material.dart';
 // import 'siswa_dashboard_screen.dart';
 // import 'siswa_teams_view.dart';
@@ -290,7 +289,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     return AppShell(
       fullWidth: true,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 24.0, 16.0, 24.0),
+        padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
         child: Row(
           children: [
             Sidebar(
@@ -336,37 +335,52 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
             const SizedBox(width: 24),
 
             Expanded(
-              child: GlassCard(
-                padding: EdgeInsets.zero,
-                child: Scaffold(
-                  backgroundColor: Colors.transparent,
-                  appBar: AppBar(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFF001E2B), width: 2),
+                  boxShadow: const [BoxShadow(color: Color(0xFF001E2B), offset: Offset(6, 6))],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Scaffold(
                     backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    scrolledUnderElevation: 0,
-                    title: Text(
-                      _titles[_selectedIndex],
-                      style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                    ),
-                    actions: [
-                      NotificationBell(
-                        userData: widget.userData, 
-                        token: widget.token,
-                        iconColor: AppTheme.textLight,
+                    appBar: AppBar(
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      scrolledUnderElevation: 0,
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(1.0),
+                        child: Container(
+                          color: const Color(0xFF001E2B),
+                          height: 2.0,
+                        ),
                       ),
-                      const SizedBox(width: 28),
-                    ],
-                  ),
-                  body: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    switchInCurve: Curves.linear,
-                    switchOutCurve: Curves.linear,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    child: KeyedSubtree(
-                      key: ValueKey(_selectedIndex),
-                      child: _views[_selectedIndex],
+                      title: Text(
+                        _titles[_selectedIndex],
+                        style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5, color: Color(0xFF001E2B), fontFamily: 'Plus Jakarta Sans', fontSize: 24),
+                      ),
+                      actions: [
+                        NotificationBell(
+                          userData: widget.userData, 
+                          token: widget.token,
+                          iconColor: const Color(0xFF001E2B),
+                        ),
+                        const SizedBox(width: 28),
+                      ],
+                    ),
+                    body: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.linear,
+                      switchOutCurve: Curves.linear,
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                      child: KeyedSubtree(
+                        key: ValueKey(_selectedIndex),
+                        child: _views[_selectedIndex],
+                      ),
                     ),
                   ),
                 ),

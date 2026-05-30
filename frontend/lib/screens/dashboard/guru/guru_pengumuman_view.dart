@@ -162,7 +162,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                           _FormField(controller: isiCtrl, label: 'Isi Pengumuman', icon: LucideIcons.alignLeft, isDark: isDark, maxLines: 5),
                           const SizedBox(height: 16),
                           Text('KATEGORI', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyMedium!.color!, letterSpacing: 1.0)),
+                            fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyMedium?.color, letterSpacing: 1.0)),
                           const SizedBox(height: 10),
                           Wrap(
                             spacing: 8, runSpacing: 8,
@@ -223,7 +223,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                               boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2))],
                             ),
                             child: Text('BATAL', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge!.color!)),
+                              fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodyLarge?.color)),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -404,7 +404,7 @@ class _GuruPengumumanViewState extends State<GuruPengumumanView> {
                                 children: List.generate(_filtered.length, (i) {
                                   final p = _filtered[i];
                                   final cardW = crossAxisCount == 1
-                                      ? double.infinity
+                                      ? (w - pad * 2)
                                       : (w >= 1100
                                           ? (1100 - (20 * 2)) / 3
                                           : (w - pad * 2 - 20) / 2);
@@ -577,7 +577,7 @@ class _GuruPengumumanCard extends StatelessWidget {
                 Text(pengumuman['isi'] ?? '-',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.6,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyMedium!.color!),
+                    color: Theme.of(context).textTheme.bodyMedium?.color),
                   maxLines: 4, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 12),
                 Container(height: 2, color: Theme.of(context).colorScheme.onSurface.withAlpha(30)),
@@ -597,7 +597,7 @@ class _GuruPengumumanCard extends StatelessWidget {
                     Expanded(
                       child: Text('Oleh: $author',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w800, color: Theme.of(context).textTheme.bodyLarge!.color!),
+                          fontWeight: FontWeight.w800, color: Theme.of(context).textTheme.bodyLarge?.color),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                     ),
                     const SizedBox(width: 8),

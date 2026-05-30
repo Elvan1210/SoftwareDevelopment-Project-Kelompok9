@@ -225,9 +225,11 @@ class _SiswaTugasViewState extends State<SiswaTugasView> {
         rows.add(
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [left, const SizedBox(width: 24), right],
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [left, const SizedBox(width: 24), right],
+              ),
             ),
           ),
         );
@@ -294,8 +296,8 @@ class _SiswaTugasViewState extends State<SiswaTugasView> {
         children: [
           const SkeletonLoader(height: 60, width: 200),
           const SizedBox(height: 40),
-          Row(
-            children: const [
+          const Row(
+            children: [
               SkeletonLoader(height: 40, width: 100, radius: 20),
               SizedBox(width: 12),
               SkeletonLoader(height: 40, width: 100, radius: 20),
