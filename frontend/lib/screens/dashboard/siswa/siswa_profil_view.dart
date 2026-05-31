@@ -6,6 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../auth/login_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
+import 'package:image_picker/image_picker.dart';
+import '../shared/crop_screen.dart';
+import '../../../widgets/avatar_widget.dart';
 // ─── Tailwind Neo-Brutalist Tokens ─────────────────────────────────────────
 const Color _primary = Color(0xFF3D6754);
 const Color _primaryContainer = Color(0xFFB7E5CD);
@@ -66,6 +69,7 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
 
     final String role = _userData['role'] ?? 'Siswa';
     final String currentStatus = _userData['status'] ?? 'Available';
+    final String photoUrl = _userData['photoUrl'] ?? '';
     final String initials = nama.isNotEmpty
         ? nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
         : 'SW';
@@ -94,7 +98,7 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
                         flex: 8,
                         child: Column(
                           children: [
-                            _ProfileCard(initials: initials, nama: nama, role: role),
+                            _ProfileCard(initials: initials, nama: nama, role: role, photoUrl: photoUrl, onUpdated: _loadUserData),
                             const SizedBox(height: 20),
                             _StatusCard(
                               userId: userId,
@@ -115,7 +119,7 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
                   )
                 : Column(
                     children: [
-                      _ProfileCard(initials: initials, nama: nama, role: role),
+                      _ProfileCard(initials: initials, nama: nama, role: role, photoUrl: photoUrl, onUpdated: _loadUserData),
                       const SizedBox(height: 20),
                       _InfoCard(email: email),
                       const SizedBox(height: 20),
@@ -139,11 +143,15 @@ class _ProfileCard extends StatefulWidget {
   final String initials;
   final String nama;
   final String role;
+  final String photoUrl;
+  final VoidCallback onUpdated;
 
   const _ProfileCard({
     required this.initials,
     required this.nama,
     required this.role,
+    required this.photoUrl,
+    required this.onUpdated,
   });
 
   @override
@@ -152,6 +160,23 @@ class _ProfileCard extends StatefulWidget {
 
 class _ProfileCardState extends State<_ProfileCard> {
   bool _isHovered = false;
+
+  Future<void> _pickAndCropImage() async {
+    final picker = ImagePicker();
+    final xFile = await picker.pickImage(source: ImageSource.gallery);
+    if (xFile != null && mounted) {
+      final bytes = await xFile.readAsBytes();
+      final newUrl = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CropScreen(imageBytes: bytes),
+        ),
+      );
+      if (newUrl != null) {
+        widget.onUpdated();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,27 +209,17 @@ class _ProfileCardState extends State<_ProfileCard> {
           spacing: 32,
           runSpacing: 24,
           children: [
-            Container(
-              width: 128,
-              height: 128,
-              decoration: BoxDecoration(
-                color: _surface,
-                shape: BoxShape.circle,
-                border: Border.all(color: _onSurface, width: 4),
-              ),
+            GestureDetector(
+              onTap: _pickAndCropImage,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Center(
-                    child: Text(
-                      widget.initials,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 48,
-                        color: _primary,
-                        letterSpacing: -1.92,
-                      ),
-                    ),
+                  AvatarWidget(
+                    initial: widget.initials,
+                    photoUrl: widget.photoUrl,
+                    size: 128,
+                    bgColor: _surface,
+                    textColor: _primary,
                   ),
                   Positioned(
                     bottom: 0,

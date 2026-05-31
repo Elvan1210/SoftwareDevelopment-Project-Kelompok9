@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../../widgets/avatar_widget.dart';
 
 import '../../../config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1160,39 +1161,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   Widget _buildAvatar(String? userId, String initial, {bool isGroup = false}) {
     if (isGroup) {
-      return Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: const Color(0xFFE0E7FF), // Sangat bersih, Light Indigo
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(8),
-            bottomLeft: Radius.circular(24),
-            bottomRight: Radius.circular(8),
-          ),
-          border: Border.all(color: AppTheme.textLight, width: 2),
-        ),
-        alignment: Alignment.center,
-        child: const Icon(LucideIcons.users, color: Color(0xFF3730A3), size: 28),
-      );
+      return AvatarWidget(initial: initial, isGroup: true, size: 56);
     }
 
     if (userId == null || userId.isEmpty || userId == 'null') {
-      return Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppTheme.primaryContainer,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.textLight, width: 2),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          initial,
-          style: const TextStyle(color: Color(0xFF244F3D), fontWeight: FontWeight.w800, fontSize: 24),
-        ),
-      );
+      return AvatarWidget(initial: initial, size: 56);
     }
 
     return StreamBuilder<DocumentSnapshot>(
@@ -1202,24 +1175,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
           .snapshots(),
       builder: (context, snapshot) {
 
-
+        final data = snapshot.hasData ? (snapshot.data!.data() as Map<String, dynamic>?) : null;
+        final photoUrl = data?['photoUrl'] as String?;
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.textLight, width: 2),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                initial,
-                style: const TextStyle(color: Color(0xFF244F3D), fontWeight: FontWeight.w800, fontSize: 24),
-              ),
-            ),
+            AvatarWidget(initial: initial, photoUrl: photoUrl, size: 56),
             Positioned(
               right: -6,
               top: -6,

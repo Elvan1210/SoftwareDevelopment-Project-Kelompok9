@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'avatar_widget.dart';
 
 // --- Neo-Brutalist Tokens ---
 const Color _onSurface = Color(0xFF001E2B);
@@ -20,6 +21,7 @@ class Sidebar extends StatelessWidget {
   final List<SidebarItemData> destinations;
   final String userName;
   final String userRole;
+  final String photoUrl;
   final VoidCallback onLogout;
 
   const Sidebar({
@@ -29,6 +31,7 @@ class Sidebar extends StatelessWidget {
     required this.destinations,
     required this.userName,
     required this.userRole,
+    required this.photoUrl,
     required this.onLogout,
   });
 
@@ -59,6 +62,7 @@ class Sidebar extends StatelessWidget {
             _ProfileChipNeo(
               name: userName,
               role: userRole,
+              photoUrl: photoUrl,
             ),
             const SizedBox(height: 16),
 
@@ -186,11 +190,12 @@ class _BrandHeaderNeo extends StatelessWidget {
 }
 
 class _ProfileChipNeo extends StatelessWidget {
-  final String name, role;
+  final String name, role, photoUrl;
 
   const _ProfileChipNeo({
     required this.name,
     required this.role,
+    required this.photoUrl,
   });
 
   @override
@@ -209,24 +214,12 @@ class _ProfileChipNeo extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _onSurface, width: 1.5),
-              ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: GoogleFonts.plusJakartaSans(
-                    color: _onPrimaryContainer,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+            AvatarWidget(
+              initial: initials,
+              photoUrl: photoUrl,
+              size: 44,
+              bgColor: _primaryContainer,
+              textColor: _onPrimaryContainer,
             ),
             const SizedBox(width: 12),
             Expanded(

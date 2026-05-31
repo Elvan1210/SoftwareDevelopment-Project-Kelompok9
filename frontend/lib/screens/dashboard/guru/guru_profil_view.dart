@@ -6,6 +6,9 @@ import '../../../services/auth_service.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../config/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:image_picker/image_picker.dart';
+import '../shared/crop_screen.dart';
+import '../../../widgets/avatar_widget.dart';
 
 class GuruProfilView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -53,6 +56,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
     final String email = _userData['email'] ?? '-';
     final String role = _userData['role'] ?? 'Guru';
     final String currentStatus = _userData['status'] ?? 'Available';
+    final String photoUrl = _userData['photoUrl'] ?? '';
     final String initials = nama.isNotEmpty
         ? nama.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
         : 'GR';
@@ -66,7 +70,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
           final isWide = w >= Breakpoints.tablet;
           return SingleChildScrollView(
             child: Column(children: [
-              _ProfileHeroHeader(initials: initials, nama: nama, role: role, primaryColor: primaryColor, isDark: isDark),
+              _ProfileHeroHeader(initials: initials, nama: nama, role: role, primaryColor: primaryColor, isDark: isDark, photoUrl: photoUrl, onUpdated: _loadUserData),
               const SizedBox(height: 32),
               Padding(
                 padding: padding,
@@ -99,15 +103,40 @@ class _GuruProfilViewState extends State<GuruProfilView> {
   }
 }
 
-class _ProfileHeroHeader extends StatelessWidget {
+class _ProfileHeroHeader extends StatefulWidget {
   final String initials, nama, role;
   final Color primaryColor;
   final bool isDark;
+  final String photoUrl;
+  final VoidCallback onUpdated;
 
   const _ProfileHeroHeader({
     required this.initials, required this.nama, required this.role,
     required this.primaryColor, required this.isDark,
+    required this.photoUrl, required this.onUpdated,
   });
+
+  @override
+  State<_ProfileHeroHeader> createState() => _ProfileHeroHeaderState();
+}
+
+class _ProfileHeroHeaderState extends State<_ProfileHeroHeader> {
+  Future<void> _pickAndCropImage() async {
+    final picker = ImagePicker();
+    final xFile = await picker.pickImage(source: ImageSource.gallery);
+    if (xFile != null && mounted) {
+      final bytes = await xFile.readAsBytes();
+      final newUrl = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CropScreen(imageBytes: bytes),
+        ),
+      );
+      if (newUrl != null) {
+        widget.onUpdated();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,30 +144,44 @@ class _ProfileHeroHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 56, bottom: 40, left: 32, right: 32),
       decoration: BoxDecoration(
-        color: primaryColor,
+        color: AppTheme.primary,
         border: Border(
           bottom: BorderSide(color: Colors.black.withAlpha(160), width: 2),
         ),
         boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(0, 4))],
       ),
       child: Column(children: [
-        Container(
-          width: 96, height: 96,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black.withAlpha(160), width: 2),
-            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
+        GestureDetector(
+          onTap: _pickAndCropImage,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              AvatarWidget(
+                initial: widget.initials,
+                photoUrl: widget.photoUrl,
+                size: 96,
+                bgColor: Colors.white,
+                textColor: widget.primaryColor,
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(200),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                ),
+              ),
+            ],
           ),
-          child: Center(
-            child: Text(
-              initials,
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: primaryColor),
-            ),
-          ),
-        ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+        ),
         const SizedBox(height: 20),
         Text(
-          nama,
+          widget.nama,
           style: Theme.of(context).textTheme.displayLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: -0.5),
           textAlign: TextAlign.center,
         ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
@@ -150,7 +193,7 @@ class _ProfileHeroHeader extends StatelessWidget {
             border: Border.all(color: Colors.white.withAlpha(120), width: 1.5),
           ),
           child: Text(
-            role.toUpperCase(),
+            widget.role.toUpperCase(),
             style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5),
           ),
         ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),

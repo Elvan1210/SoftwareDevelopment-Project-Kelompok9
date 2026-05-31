@@ -493,12 +493,17 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
         child: Row(
           children: [
-            Sidebar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _selectedIndex = index),
-              userName: _adminUserData['nama'] ?? 'Admin',
-              userRole: 'Admin',
+            FutureBuilder<Map<String, dynamic>?>(
+              future: AuthService.getUserData(),
+              builder: (context, snapshot) {
+                final currentData = snapshot.data ?? _adminUserData;
+                return Sidebar(
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: (index) =>
+                      setState(() => _selectedIndex = index),
+                  userName: currentData['nama'] ?? 'Admin',
+                  userRole: 'Admin',
+                  photoUrl: currentData['photoUrl'] ?? '',
               onLogout: _handleLogout,
               destinations: [
                 SidebarItemData(
@@ -542,6 +547,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   label: 'Profil Admin',
                 ),
               ],
+            );
+              },
             ),
             const SizedBox(width: 24),
             Expanded(

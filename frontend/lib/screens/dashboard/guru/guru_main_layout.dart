@@ -299,12 +299,17 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
         padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
         child: Row(
           children: [
-            Sidebar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _selectedIndex = index),
-              userName: widget.userData['nama'] ?? 'Guru',
-              userRole: 'Guru',
+            FutureBuilder<Map<String, dynamic>?>(
+              future: AuthService.getUserData(),
+              builder: (context, snapshot) {
+                final currentData = snapshot.data ?? widget.userData;
+                return Sidebar(
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: (index) =>
+                      setState(() => _selectedIndex = index),
+                  userName: currentData['nama'] ?? 'Guru',
+                  userRole: 'Guru',
+                  photoUrl: currentData['photoUrl'] ?? '',
               onLogout: () async {
                 final navigator = Navigator.of(context);
                 await AuthService.logout();
@@ -333,6 +338,8 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                     selectedIcon: Icons.manage_accounts_rounded,
                     label: 'Profil'),
               ],
+            );
+            },
             ),
             const SizedBox(width: 24),
             Expanded(
