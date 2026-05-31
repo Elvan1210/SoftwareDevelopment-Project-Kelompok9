@@ -415,7 +415,7 @@ class _GuruTeamCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final namaKelas = tim['nama_kelas']?.toString() ?? '-';
-    final mapel = tim['mapel']?.toString() ?? '';
+
     final siswaCount = (tim['siswa_ids'] as List?)?.length ?? 0;
     final kodeKelas = tim['kode_kelas']?.toString() ?? '';
     final isDark = Theme.of(context).brightness == Brightness.dark;

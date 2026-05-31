@@ -19,17 +19,7 @@ const createCrudController = (collectionName) => ({
       delete filters.limit;
       delete filters.offset;
       
-      // Dukungan untuk OR query pada 'kelas' dan 'mapel'
-      if (filters.kelas_or_mapel) {
-        const { Filter } = require('firebase-admin/firestore');
-        queryRef = queryRef.where(
-          Filter.or(
-            Filter.where('kelas', '==', filters.kelas_or_mapel),
-            Filter.where('mapel', '==', filters.kelas_or_mapel)
-          )
-        );
-        delete filters.kelas_or_mapel;
-      }
+
       
       for (const key in filters) {
         if (key === 'start_date' || key === 'end_date') continue;

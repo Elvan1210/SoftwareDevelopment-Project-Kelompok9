@@ -182,6 +182,9 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       debugPrint('⏱️ [ExamScreen] Restored timer: $savedRemaining seconds remaining');
     }
 
+    // Cek pelanggaran yang tersimpan
+    await _violationService.restorePersisted(widget.quiz.id);
+
     _timerService.start();
     _autoSaveService.start();
     _focusNode.requestFocus();
@@ -267,6 +270,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
         _timerService.stop();
         await _autoSaveService.clear();
         await TimerService.clearPersistedTimer('exam_timer_${widget.quiz.id}_$_studentId');
+        await ViolationService.clearPersisted(widget.quiz.id);
 
         if (mounted) {
           setState(() { _isSubmitting = false; _isSubmitted = true; });

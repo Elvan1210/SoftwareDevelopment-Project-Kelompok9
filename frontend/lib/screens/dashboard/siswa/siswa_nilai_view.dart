@@ -69,7 +69,7 @@ class _SiswaNilaiViewState extends State<SiswaNilaiView> {
             combined.add({
               'id': n['id']?.toString() ?? UniqueKey().toString(),
               'type': isManual ? 'Penilaian Mandiri' : 'Assignment',
-              'judul': isManual ? (n['mapel'] ?? 'Input Manual') : (n['tugas_judul'] ?? 'Tugas Kelas'),
+              'judul': isManual ? (n['judul'] ?? 'Input Manual') : (n['tugas_judul'] ?? 'Tugas Kelas'),
               'guru_nama': n['guru_nama'],
               'nilai': n['nilai'],
               'waktu': n['waktu_dinilai'] ?? n['tanggal'],

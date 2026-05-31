@@ -79,11 +79,9 @@ class _KelasManagementViewState extends State<KelasManagementView> {
     }
 
     final namaCtrl =
-        TextEditingController(text: isEditing ? kelas['nama_kelas'] : '');
+        TextEditingController(text: isEditing ? (kelas['nama_kelas'] ?? '') : '');
     final kodeCtrl = TextEditingController(
         text: isEditing ? (kelas['kode_kelas'] ?? '') : generateRandomCode(6));
-    final mapelCtrl =
-        TextEditingController(text: isEditing ? (kelas['mapel'] ?? '') : '');
     final tahunAjaranCtrl = TextEditingController(
         text: isEditing ? (kelas['tahun_ajaran'] ?? '') : '');
 
@@ -215,11 +213,6 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                         prefixIcon: LucideIcons.library),
                     const SizedBox(height: 16),
                     AppTextField(
-                        controller: mapelCtrl,
-                        labelText: 'Mata Pelajaran',
-                        prefixIcon: LucideIcons.bookOpen),
-                    const SizedBox(height: 16),
-                    AppTextField(
                         controller: tahunAjaranCtrl,
                         labelText: 'Tahun Ajaran (cth: 2024/2025 Ganjil)',
                         prefixIcon: LucideIcons.calendar),
@@ -249,7 +242,6 @@ class _KelasManagementViewState extends State<KelasManagementView> {
                             final Map<String, dynamic> body = {
                               'nama_kelas': namaCtrl.text,
                               'kode_kelas': kodeCtrl.text,
-                              'mapel': mapelCtrl.text,
                               'tahun_ajaran': tahunAjaranCtrl.text,
                               'warna_card': selectedColor.toARGB32().toString(),
                             };

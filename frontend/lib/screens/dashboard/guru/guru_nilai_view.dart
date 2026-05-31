@@ -77,7 +77,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
             if (tugasMap.containsKey(tId)) {
               n['tipe'] = 'Assignment';
               n['isManual'] = false;
-              n['mapel'] = tugasMap[tId] ?? n['tugas_judul'] ?? n['mapel'] ?? 'Tugas';
+              n['judul'] = tugasMap[tId] ?? n['tugas_judul'] ?? n['judul'] ?? 'Tugas';
               n['tanggal'] = n['waktu_dinilai'] ?? n['tanggal'];
               allNilai.add(n);
             }
@@ -116,7 +116,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 allNilai.add({
                   'id': s['_id'],
                   'siswa_id': s['studentId'],
-                  'mapel': q['title'] ?? 'Kuis',
+                  'judul': q['title'] ?? 'Kuis',
                   'nilai': finalScore,
                   'keterangan': 'Otomatis dari kuis',
                   'tipe': 'Kuis',
@@ -167,8 +167,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     final isEditing = nilai != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     String? selectedSiswaId = isEditing ? nilai['siswa_id'].toString() : null;
-    final mapelCtrl = TextEditingController(
-        text: isEditing ? nilai['mapel'] : widget.userData['kelas'] ?? '');
+    final judulCtrl = TextEditingController(
+        text: isEditing ? nilai['judul'] : widget.userData['kelas'] ?? '');
     final nilaiCtrl = TextEditingController(
         text: isEditing ? nilai['nilai']?.toString() : '');
     final keteranganCtrl =
@@ -233,7 +233,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                   
                   const SizedBox(height: 16),
                   
-                  _buildFormInput('Judul / Topik', mapelCtrl, LucideIcons.bookOpen, isDark),
+                  _buildFormInput('Judul / Topik', judulCtrl, LucideIcons.bookOpen, isDark),
                   
                   const SizedBox(height: 16),
                   
@@ -266,7 +266,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                 final body = {
                   'siswa_id': selectedSiswaId,
                   'siswa_nama': siswa['nama'],
-                  'mapel': mapelCtrl.text,
+                  'judul': judulCtrl.text,
                   'nilai': double.tryParse(nilaiCtrl.text) ?? 0,
                   'keterangan': keteranganCtrl.text,
                   'tipe': 'Lainnya',
@@ -584,7 +584,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
-                                                    n['mapel'] ?? '-',
+                                                    n['judul'] ?? '-',
                                                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800, 
                                                       color: isDark ? Colors.white : AppTheme.textLight),
                                                     maxLines: 1, 

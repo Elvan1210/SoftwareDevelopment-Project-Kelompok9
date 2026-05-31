@@ -142,7 +142,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       onChanged: (val) => setDialogState(() => role = val!),
                     ),
                     const SizedBox(height: 16),
-                    AppTextField(controller: kelasCtrl, labelText: 'Kelas / Mapel', prefixIcon: LucideIcons.library),
+                    AppTextField(controller: kelasCtrl, labelText: 'Kelas', prefixIcon: LucideIcons.library),
                     const SizedBox(height: 28),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,

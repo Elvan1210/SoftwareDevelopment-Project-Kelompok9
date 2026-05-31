@@ -51,7 +51,6 @@ class _GuruProfilViewState extends State<GuruProfilView> {
     final String userId = _userData['id'] ?? _userData['uid'] ?? _userData['_id'] ?? '';
     final String nama = _userData['nama'] ?? '-';
     final String email = _userData['email'] ?? '-';
-    final String mapel = _userData['kelas'] ?? '-';
     final String role = _userData['role'] ?? 'Guru';
     final String currentStatus = _userData['status'] ?? 'Available';
     final String initials = nama.isNotEmpty
@@ -74,7 +73,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
                 child: isWide
                     ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Expanded(child: _InfoSection(
-                          email: email, extra: mapel, extraLabel: 'Mata Pelajaran',
+                          email: email, 
                           userId: userId, initialStatus: currentStatus,
                           onStatusChanged: _loadUserData, isDark: isDark,
                         )),
@@ -83,7 +82,7 @@ class _GuruProfilViewState extends State<GuruProfilView> {
                       ])
                     : Column(children: [
                         _InfoSection(
-                          email: email, extra: mapel, extraLabel: 'Mata Pelajaran',
+                          email: email, 
                           userId: userId, initialStatus: currentStatus,
                           onStatusChanged: _loadUserData, isDark: isDark,
                         ),
@@ -161,12 +160,12 @@ class _ProfileHeroHeader extends StatelessWidget {
 }
 
 class _InfoSection extends StatelessWidget {
-  final String email, extra, extraLabel, userId, initialStatus;
+  final String email, userId, initialStatus;
   final VoidCallback onStatusChanged;
   final bool isDark;
 
   const _InfoSection({
-    required this.email, required this.extra, required this.extraLabel,
+    required this.email, 
     required this.userId, required this.initialStatus, required this.onStatusChanged,
     required this.isDark,
   });
@@ -190,8 +189,6 @@ class _InfoSection extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         _row(context, LucideIcons.mail, 'Email', email),
-        const SizedBox(height: 16),
-        _row(context, LucideIcons.bookOpen, extraLabel, extra),
         const SizedBox(height: 20),
         Container(
           height: 2,

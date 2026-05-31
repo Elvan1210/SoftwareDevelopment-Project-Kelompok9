@@ -150,9 +150,13 @@ const kelasController = {
         return res.status(400).json({ message: 'Kode akses diperlukan' });
       }
 
-      // 1. Cari kelas berdasarkan kode_akses
+      // 1. Cari kelas berdasarkan kode_akses atau kode_kelas
       const kelasRef = db.collection('kelas');
-      const snapshot = await kelasRef.where('kode_akses', '==', kode_akses).get();
+      let snapshot = await kelasRef.where('kode_akses', '==', kode_akses).get();
+
+      if (snapshot.empty) {
+        snapshot = await kelasRef.where('kode_kelas', '==', kode_akses).get();
+      }
 
       if (snapshot.empty) {
         return res.status(404).json({ message: 'Kode akses tidak valid atau kelas tidak ditemukan' });
