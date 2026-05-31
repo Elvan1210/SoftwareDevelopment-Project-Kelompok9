@@ -373,8 +373,12 @@ class _QuizCardNeoState extends State<_QuizCardNeo> {
     final bgColor = isDisabled ? Colors.grey.shade100 : bgColors[colorIdx];
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) {
+        if (mounted) setState(() => _isHovered = true);
+      },
+      onExit: (_) {
+        if (mounted) setState(() => _isHovered = false);
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
@@ -601,9 +605,9 @@ class _KerjakanButtonState extends State<_KerjakanButton> {
 
     return GestureDetector(
       onTap: widget.onTap,
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
+      onTapDown: (_) { if (mounted) setState(() => _isPressed = true); },
+      onTapUp: (_) { if (mounted) setState(() => _isPressed = false); },
+      onTapCancel: () { if (mounted) setState(() => _isPressed = false); },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -681,9 +685,9 @@ class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(LucideIcons.x, color: _onSurface),
-                        onPressed: () => Navigator.pop(context),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(LucideIcons.x, color: _onSurface, size: 28),
                       ),
                     ],
                   ),
@@ -783,9 +787,9 @@ class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
             // Actions
             GestureDetector(
               onTap: widget.onStart,
-              onTapDown: (_) => setState(() => _isStartPressed = true),
-              onTapUp: (_) => setState(() => _isStartPressed = false),
-              onTapCancel: () => setState(() => _isStartPressed = false),
+              onTapDown: (_) { if (mounted) setState(() => _isStartPressed = true); },
+              onTapUp: (_) { if (mounted) setState(() => _isStartPressed = false); },
+              onTapCancel: () { if (mounted) setState(() => _isStartPressed = false); },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 height: 56,
@@ -813,9 +817,9 @@ class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
             const SizedBox(height: 16),
             GestureDetector(
               onTap: () => Navigator.pop(context),
-              onTapDown: (_) => setState(() => _isCancelPressed = true),
-              onTapUp: (_) => setState(() => _isCancelPressed = false),
-              onTapCancel: () => setState(() => _isCancelPressed = false),
+              onTapDown: (_) { if (mounted) setState(() => _isCancelPressed = true); },
+              onTapUp: (_) { if (mounted) setState(() => _isCancelPressed = false); },
+              onTapCancel: () { if (mounted) setState(() => _isCancelPressed = false); },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 height: 56,
