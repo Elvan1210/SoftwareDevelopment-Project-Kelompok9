@@ -412,15 +412,6 @@ class _QuizCardNeoState extends State<_QuizCardNeo> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              widget.quiz.subject.toUpperCase(),
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 12,
-                                letterSpacing: 1.2,
-                                color: _onSurfaceVariant,
-                              ),
-                            ),
                             const SizedBox(height: 4),
                             Text(
                               widget.quiz.title,
@@ -705,7 +696,7 @@ class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
                 border: Border.all(color: _onSurface, width: 2),
               ),
               child: Text(
-                '${widget.quiz.subject.toUpperCase()} - ${widget.quiz.title}',
+                widget.quiz.title,
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,

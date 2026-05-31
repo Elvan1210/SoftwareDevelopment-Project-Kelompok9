@@ -96,9 +96,12 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       }
     }
 
+    final _timerPersistKey = 'exam_timer_${widget.quiz.id}_$_studentId';
+
     _timerService = TimerService(
       durationMinutes: examDuration,
       onTimeUp: () => _autoSubmit('Waktu habis'),
+      persistKey: _timerPersistKey,
     );
     _timerService.addListener(() {
       if (mounted) setState(() {});
@@ -169,6 +172,14 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       if (!kIsWeb && !_isDesktop) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       }
+    }
+
+    // Cek apakah ada sisa waktu tersimpan (jika app pernah dibuka sebelumnya)
+    final _timerPersistKey = 'exam_timer_${widget.quiz.id}_$_studentId';
+    final savedRemaining = await TimerService.getSavedRemainingSeconds(_timerPersistKey);
+    if (savedRemaining != null && savedRemaining < _timerService.totalSeconds) {
+      _timerService.setRemainingSeconds(savedRemaining);
+      debugPrint('⏱️ [ExamScreen] Restored timer: $savedRemaining seconds remaining');
     }
 
     _timerService.start();
@@ -255,6 +266,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       if (result['success'] == true) {
         _timerService.stop();
         await _autoSaveService.clear();
+        await TimerService.clearPersistedTimer('exam_timer_${widget.quiz.id}_$_studentId');
 
         if (mounted) {
           setState(() { _isSubmitting = false; _isSubmitted = true; });
@@ -670,15 +682,6 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text(
-                  widget.quiz.subject.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                    letterSpacing: 1.2,
-                    color: _primary,
-                  ),
-                ),
               ],
             ),
           ),
@@ -1063,7 +1066,7 @@ class _QuestionGridModal extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${quiz.subject} - ${quiz.title}',
+                        quiz.title,
                         style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 14, color: _onSurfaceVariant),
                       ),
                     ],

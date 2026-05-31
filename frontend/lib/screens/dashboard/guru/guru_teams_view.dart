@@ -114,11 +114,17 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                           color: isDark ? Colors.white : AppTheme.textLight)),
                   const SizedBox(height: 6),
                   Text(
-                      'Masukkan kode akses kelas yang diberikan oleh Admin.',
+                      'Masukkan kode akses 8 karakter yang diberikan oleh Admin.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: isDark
                               ? AppTheme.textMutedDk
                               : AppTheme.textMutedLt)),
+                  const SizedBox(height: 4),
+                  Text(
+                      '⚠ Kode akses BERBEDA dengan kode kelas yang tertera di kartu.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.error,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 24),
 
                   // Label
@@ -154,7 +160,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
                           color: isDark ? Colors.white : AppTheme.textLight,
                           letterSpacing: 2),
                       decoration: InputDecoration(
-                        hintText: 'X7KL9M',
+                        hintText: 'AB3X9KL2',
                         hintStyle:
                             Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 color: isDark
@@ -429,33 +435,7 @@ class _GuruTeamCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Stack(
                 children: [
-                  // Mapel label
-                  if (mapel.isNotEmpty)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: accentColor,
-                          border: Border.all(
-                              color: accentColor,
-                              width: 1),
-                        ),
-                        child: Text(
-                          mapel.toUpperCase(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: 0.8),
-                        ),
-                      ),
-                    ),
-                  // Kode kelas
+                  // Kode kelas badge (bottom right)
                   if (kodeKelas.isNotEmpty)
                     Positioned(
                       bottom: 0,

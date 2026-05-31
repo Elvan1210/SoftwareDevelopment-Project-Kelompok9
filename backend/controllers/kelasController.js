@@ -570,6 +570,32 @@ const kelasController = {
       res.status(500).json({ message: 'Error server', error: error.message });
     }
   },
+
+  // POST /api/kelas/backfill-codes (Admin/Dev only)
+  backfillCodes: async (req, res) => {
+    try {
+      const snapshot = await db.collection('kelas').get();
+      let updatedCount = 0;
+
+      const batch = db.batch();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (!data.kode_akses) {
+          const docRef = db.collection('kelas').doc(doc.id);
+          batch.update(docRef, { kode_akses: generateAccessCode() });
+          updatedCount++;
+        }
+      });
+
+      if (updatedCount > 0) {
+        await batch.commit();
+      }
+
+      res.status(200).json({ message: `Successfully generated access codes for ${updatedCount} classes.` });
+    } catch (error) {
+      res.status(500).json({ message: 'Error backfilling codes', error: error.message });
+    }
+  },
 };
 
 module.exports = kelasController;

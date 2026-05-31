@@ -4,6 +4,7 @@ const ctrl = require('../controllers/kelasController');
 
 // Rute Spesifik/Custom (harus di atas rute /:id)
 router.post('/join', verifyToken, ctrl.joinKelasWithCode);
+router.post('/backfill-codes', verifyToken, ctrl.backfillCodes);
 
 // Rute untuk pending requests & approval
 router.get('/:id/pending', verifyToken, ctrl.getPendingRequests);

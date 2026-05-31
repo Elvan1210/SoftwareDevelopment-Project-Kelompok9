@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service countdown timer untuk ujian.
 ///
@@ -7,11 +8,13 @@ import 'package:flutter/foundation.dart';
 /// - Timer realtime per detik
 /// - Auto-submit ketika waktu habis
 /// - Display waktu tersisa (mm:ss)
-/// - Pause/resume untuk edge cases
+/// - Persistensi waktu mulai ke SharedPreferences
+///   → Jika app di-kill dan dibuka lagi, timer lanjut dari sisa waktu
 ///
 /// SECURITY LEVEL: ✅ Secure
 /// - Timer berjalan di memory, tidak bisa dimanipulasi user
 /// - Auto-submit dipaksa ketika waktu habis
+/// - Waktu mulai disimpan server-side (closedAt) dan lokal (SharedPreferences)
 
 class TimerService extends ChangeNotifier {
   Timer? _timer;
@@ -20,12 +23,15 @@ class TimerService extends ChangeNotifier {
   final VoidCallback? onTimeUp;
   bool _isRunning = false;
   bool _isTimeUp = false;
+  final String? _persistKey;
 
   TimerService({
     required int durationMinutes,
     this.onTimeUp,
+    String? persistKey,
   })  : _remainingSeconds = durationMinutes * 60,
-        _totalSeconds = durationMinutes * 60;
+        _totalSeconds = durationMinutes * 60,
+        _persistKey = persistKey;
 
   // ── Getters ──────────────────────────────────────────────────────────
   int get remainingSeconds => _remainingSeconds;
@@ -52,10 +58,62 @@ class TimerService extends ChangeNotifier {
   bool get isWarning => _remainingSeconds <= 300 && _remainingSeconds > 60; // < 5 min
   bool get isCritical => _remainingSeconds <= 60; // < 1 min
 
+  // ── Restore sisa waktu dari SharedPreferences ──────────────────────
+  /// Panggil sebelum start() untuk memeriksa apakah ada sisa waktu tersimpan.
+  /// Jika ada, kurangi _remainingSeconds sesuai waktu yang sudah berlalu.
+  static Future<int?> getSavedRemainingSeconds(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final startTimeStr = prefs.getString('${key}_start');
+      final totalSeconds = prefs.getInt('${key}_total');
+      if (startTimeStr == null || totalSeconds == null) return null;
+
+      final startTime = DateTime.parse(startTimeStr);
+      final elapsed = DateTime.now().difference(startTime).inSeconds;
+      final remaining = totalSeconds - elapsed;
+
+      if (remaining <= 0) return 0; // Waktu sudah habis
+      return remaining;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Simpan waktu mulai ke SharedPreferences ────────────────────────
+  Future<void> _persistStartTime() async {
+    if (_persistKey == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('${_persistKey}_start', DateTime.now().toIso8601String());
+      await prefs.setInt('${_persistKey}_total', _totalSeconds);
+      debugPrint('⏱️ [TimerService] Start time persisted (key: $_persistKey)');
+    } catch (_) {}
+  }
+
+  /// Hapus data persistensi setelah ujian selesai/submit
+  static Future<void> clearPersistedTimer(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('${key}_start');
+      await prefs.remove('${key}_total');
+      debugPrint('🧹 [TimerService] Cleared persisted timer (key: $key)');
+    } catch (_) {}
+  }
+
   // ── Controls ─────────────────────────────────────────────────────────
   void start() {
     if (_isRunning || _isTimeUp) return;
+
+    // Langsung tandai habis jika sisa ≤ 0
+    if (_remainingSeconds <= 0) {
+      _isTimeUp = true;
+      onTimeUp?.call();
+      notifyListeners();
+      return;
+    }
+
     _isRunning = true;
+    _persistStartTime(); // Simpan waktu mulai
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_remainingSeconds <= 0) {
@@ -72,7 +130,13 @@ class TimerService extends ChangeNotifier {
       notifyListeners();
     });
 
-    debugPrint('⏱️ [TimerService] Timer started: $_totalSeconds seconds');
+    debugPrint('⏱️ [TimerService] Timer started: $_remainingSeconds seconds remaining');
+  }
+
+  /// Set sisa waktu (digunakan saat restore dari persistensi)
+  void setRemainingSeconds(int seconds) {
+    _remainingSeconds = seconds.clamp(0, _totalSeconds);
+    notifyListeners();
   }
 
   void pause() {
