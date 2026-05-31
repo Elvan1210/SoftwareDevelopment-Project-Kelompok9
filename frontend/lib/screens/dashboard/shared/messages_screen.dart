@@ -1095,11 +1095,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   Future<void> _hideChat(String convId) async {
     try {
-      await http.delete(
-        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations/$convId/clear'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': myId}),
-      );
+      final nowStr = DateTime.now().toIso8601String();
+      await FirebaseFirestore.instance.collection('conversations').doc(convId).set({
+        'clearedFor': {myId: nowStr}
+      }, SetOptions(merge: true));
+
       if (activeConversationId == convId) {
         setState(() {
           activeConversationId = null;
@@ -1137,11 +1137,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Future<void> _deleteMessage(String messageId) async {
     if (activeConversationId == null) return;
     try {
-      await http.delete(
-        Uri.parse('https://mypskd-backend.vercel.app/api/chat/messages/$activeConversationId/$messageId'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'senderId': myId}),
-      );
+      await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(activeConversationId)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+        'text': 'Pesan ini telah dihapus',
+        'isUnsent': true,
+      });
+
+      await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(activeConversationId)
+          .update({
+        'lastMessage': 'Pesan ini telah dihapus',
+      });
     } catch (e) {
       debugPrint("Error delete message: $e");
     }
