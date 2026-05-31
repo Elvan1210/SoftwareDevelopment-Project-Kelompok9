@@ -501,66 +501,168 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: _primary),
-          onPressed: () => Navigator.pop(context), // Using back button functionally for menu placeholder if needed
-        ),
-        title: Text(
-          'MyPSKD',
-          style: GoogleFonts.plusJakartaSans(
-            color: _onSurface,
-            fontWeight: FontWeight.w800,
-            fontSize: 24,
-            letterSpacing: -0.5,
+    final nama = widget.userData['nama'] ?? 'Siswa';
+    final namaKelas = widget.teamData['nama_kelas'] ?? 'Kelas';
+
+    return AppShell(
+      child: Scaffold(
+        backgroundColor: _background,
+        body: Column(children: [
+
+          // ── HEADER ──────────────────────────────────────────────────
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(bottom: BorderSide(color: _onBackground.withAlpha(40))),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Back + notif
+                    Row(children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: _onBackground),
+                            boxShadow: const [BoxShadow(
+                              color: _onBackground,
+                              offset: Offset(2, 2), blurRadius: 0,
+                            )],
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: _onBackground),
+                        ),
+                      ),
+                      const Spacer(),
+                      NotificationBell(
+                        userData: widget.userData,
+                        token: widget.token,
+                        iconColor: _onBackground,
+                      ),
+                    ]),
+                    const SizedBox(height: 14),
+
+                    // Avatar + nama + kelas
+                    Row(children: [
+                      Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          color: _primaryContainer,
+                          border: Border.all(color: _onBackground),
+                          boxShadow: const [BoxShadow(
+                            color: _onBackground,
+                            offset: Offset(2, 2), blurRadius: 0,
+                          )],
+                        ),
+                        child: Center(child: Text(
+                          nama[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: _primary,
+                            fontWeight: FontWeight.w900, fontSize: 18,
+                          ),
+                        )),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Halo, $nama',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: _onSurface,
+                              fontWeight: FontWeight.w800, fontSize: 15,
+                            )),
+                          Text(namaKelas,
+                            style: GoogleFonts.inter(
+                              color: _onSurfaceVariant, fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      )),
+                    ]),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: _primary),
-            onPressed: () {},
+
+          // ── CONTENT ─────────────────────────────────────────────────
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: KeyedSubtree(
+                key: ValueKey(_activeTabID),
+                child: _getActiveView(),
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: _onBackground.withAlpha(50), height: 1.0), // outline-variant
-        ),
-      ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 280),
-        child: KeyedSubtree(
-          key: ValueKey(_activeTabID),
-          child: _getActiveView(),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: const Border(top: BorderSide(color: _onBackground, width: 1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(10),
-                offset: const Offset(0, -4),
-                blurRadius: 10,
-              )
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        ]),
+
+        // ── BOTTOM NAV ────────────────────────────────────────────────
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: _onBackground.withAlpha(60))),
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItemNeo(Icons.home_outlined, 'Home', 'dashboard'),
-                _buildNavItemNeo(Icons.school_outlined, 'Classes', 'materi'), // Mocking assignment/classes
-                _buildNavItemNeo(Icons.chat_bubble_outline, 'Messages', 'pesan'), // Placeholder
-                _buildNavItemNeo(Icons.person_outline, 'Profile', 'profil'), // Placeholder
+                _navItem(
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home_rounded,
+                  label: 'Home',
+                  id: 'dashboard',
+                ),
+                _navItem(
+                  icon: Icons.menu_book_outlined,
+                  selectedIcon: Icons.menu_book_rounded,
+                  label: 'Materi',
+                  id: 'materi',
+                ),
+                _navItem(
+                  icon: Icons.assignment_outlined,
+                  selectedIcon: Icons.assignment_rounded,
+                  label: 'Tugas',
+                  id: 'tugas',
+                ),
+                _navItem(
+                  icon: Icons.grade_outlined,
+                  selectedIcon: Icons.grade_rounded,
+                  label: 'Nilai',
+                  id: 'nilai',
+                ),
+                // Menu button
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _showMobileMenu,
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.menu_rounded,
+                            size: 22,
+                            color: _onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 3),
+                          Text('Menu',
+                            style: GoogleFonts.inter(
+                              fontSize: 9, fontWeight: FontWeight.w600,
+                              color: _onSurfaceVariant,
+                            )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -569,44 +671,112 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     );
   }
 
-  Widget _buildNavItemNeo(IconData icon, String label, String tabId) {
-    // In actual implementation, we might map tabs differently, but for styling demo we highlight appropriately.
-    // Assuming 'materi' tab means classes is highlighted, unless dashboard.
-    final bool active = (tabId == 'dashboard' && _activeTabID == 'dashboard') || 
-                        (tabId == 'materi' && _activeTabID != 'dashboard');
-
-    return GestureDetector(
-      onTap: () {
-        if (tabId == 'dashboard') {
-          setState(() { _activeTabID = 'dashboard'; _activeTitle = 'Dashboard'; });
-        } else if (tabId == 'materi') {
-          // If clicking classes when on dashboard, default to materi
-          setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; });
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? _primaryContainer : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+  Widget _navItem({
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required String id,
+  }) {
+    final isSelected = _activeTabID == id;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() {
+          _activeTabID = id;
+          _activeTitle = label;
+        }),
+        child: Container(
+          color: isSelected ? _primaryContainer : Colors.transparent,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(isSelected ? selectedIcon : icon,
+                size: 22,
+                color: isSelected ? _onPrimaryContainer : _onSurfaceVariant,
+              ),
+              const SizedBox(height: 3),
+              Text(label,
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                  color: isSelected ? _onPrimaryContainer : _onSurfaceVariant,
+                )),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  void _showMobileMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+        ),
+        padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: active ? _onPrimaryContainer : _onSurfaceVariant, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: active ? _onPrimaryContainer : _onSurfaceVariant,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 12,
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE0E0E0),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
+            Text('Menu Lainnya',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                color: _onSurface,
+              )),
+            const SizedBox(height: 16),
+            _buildMenuSheetItem(ctx, 'kuis', Icons.quiz_outlined,
+                'Kuis & Ujian', const Color(0xFFF27F33)),
+            _buildMenuSheetItem(ctx, 'presensi', Icons.how_to_reg_outlined,
+                'Presensi Saya', const Color(0xFF7B83EB)),
+            _buildMenuSheetItem(ctx, 'channel_general', Icons.tag_rounded,
+                'Channel General', const Color(0xFF10B981)),
+            for (var c in _channels)
+              _buildMenuSheetItem(ctx, 'channel_${c['id']}', Icons.tag_rounded,
+                  c['nama_channel'] ?? 'Channel', const Color(0xFF10B981)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMenuSheetItem(BuildContext ctx, String id, IconData icon,
+      String label, Color color) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: color.withAlpha(20),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(label,
+        style: GoogleFonts.inter(
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+          color: _onSurface,
+        )),
+      onTap: () {
+        Navigator.pop(ctx);
+        setState(() {
+          _activeTabID = id;
+          _activeTitle = label;
+        });
+      },
     );
   }
 

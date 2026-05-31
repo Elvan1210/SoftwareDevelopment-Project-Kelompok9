@@ -373,8 +373,12 @@ class _QuizCardNeoState extends State<_QuizCardNeo> {
     final bgColor = isDisabled ? Colors.grey.shade100 : bgColors[colorIdx];
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) {
+        if (mounted) setState(() => _isHovered = true);
+      },
+      onExit: (_) {
+        if (mounted) setState(() => _isHovered = false);
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
@@ -601,9 +605,9 @@ class _KerjakanButtonState extends State<_KerjakanButton> {
 
     return GestureDetector(
       onTap: widget.onTap,
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
+      onTapDown: (_) { if (mounted) setState(() => _isPressed = true); },
+      onTapUp: (_) { if (mounted) setState(() => _isPressed = false); },
+      onTapCancel: () { if (mounted) setState(() => _isPressed = false); },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -650,128 +654,154 @@ class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
       insetPadding: const EdgeInsets.all(16),
       child: Container(
         width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 512),
+        constraints: const BoxConstraints(maxWidth: 512, maxHeight: 700),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: _onSurface, width: 2),
           boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(8, 8))],
         ),
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            Column(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Mulai Ujian?',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 32,
-                    color: _onSurface,
+                const SizedBox(width: 36),
+                Expanded(
+                  child: Text(
+                    'Mulai Ujian?',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 28,
+                      color: _onSurface,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: _onSurface, width: 2),
-                  ),
-                  child: Text(
-                    '${widget.quiz.subject.toUpperCase()} - ${widget.quiz.title}',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
-                      color: _onBackground,
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade100,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _onSurface, width: 2),
                     ),
-                    textAlign: TextAlign.center,
+                    child: const Icon(Icons.close, color: _onSurface, size: 24),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            // Rules
-            Text(
-              'Peraturan Ujian',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-                color: _onSurface,
-              ),
-            ),
             const SizedBox(height: 16),
-            if (widget.quiz.isSecureMode) ...[
-              _buildRule(Icons.fullscreen, 'Aplikasi akan masuk mode fullscreen', _primary),
-              _buildRule(Icons.block, 'Dilarang pindah aplikasi (Alt + Tab)', const Color(0xFFEF4444)),
-              _buildRule(Icons.content_copy, 'Dilarang copy, paste, dan klik kanan', _onSurfaceVariant),
-              _buildRule(Icons.report, 'Setiap pelanggaran akan dicatat', const Color(0xFFF59E0B)),
-            ] else ...[
-              _buildRule(Icons.report, 'Ujian ini tidak menggunakan secure mode', _onSurfaceVariant),
-            ],
-            const SizedBox(height: 32),
-            // Stats Grid
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: _surface,
-                borderRadius: BorderRadius.circular(16),
+                color: _surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(9999),
                 border: Border.all(color: _onSurface, width: 2),
-                boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
               ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('DURASI', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 12, color: _onSurfaceVariant)),
-                            Text('${widget.quiz.durationMinutes} Menit', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 20, color: _onSurface)),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('JUMLAH SOAL', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 12, color: _onSurfaceVariant)),
-                            Text('${widget.quiz.questions.length} Soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 20, color: _onSurface)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: _onSurface, width: 1.5),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.save, size: 20, color: _primary),
-                        const SizedBox(width: 12),
-                        Text('Jawaban akan auto-save', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _primary)),
-                      ],
-                    ),
-                  ),
-                ],
+              child: Text(
+                '${widget.quiz.subject.toUpperCase()} - ${widget.quiz.title}',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  color: _onBackground,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            // Scrollable Content
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Peraturan Ujian',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                        color: _onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (widget.quiz.isSecureMode) ...[
+                      _buildRule(Icons.fullscreen, 'Aplikasi akan masuk mode fullscreen', _primary),
+                      _buildRule(Icons.block, 'Dilarang pindah aplikasi (Alt + Tab)', const Color(0xFFEF4444)),
+                      _buildRule(Icons.content_copy, 'Dilarang copy, paste, dan klik kanan', _onSurfaceVariant),
+                      _buildRule(Icons.report, 'Setiap pelanggaran akan dicatat', const Color(0xFFF59E0B)),
+                    ] else ...[
+                      _buildRule(Icons.report, 'Ujian ini tidak menggunakan secure mode', _onSurfaceVariant),
+                    ],
+                    const SizedBox(height: 24),
+                    // Stats Grid
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: _surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: _onSurface, width: 2),
+                        boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('DURASI', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 12, color: _onSurfaceVariant)),
+                                    Text('${widget.quiz.durationMinutes} Menit', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 20, color: _onSurface)),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('JUMLAH SOAL', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 12, color: _onSurfaceVariant)),
+                                    Text('${widget.quiz.questions.length} Soal', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 20, color: _onSurface)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _onSurface, width: 1.5),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.save, size: 20, color: _primary),
+                                const SizedBox(width: 12),
+                                Text('Jawaban akan auto-save', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _primary)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
             // Actions
             GestureDetector(
               onTap: widget.onStart,
-              onTapDown: (_) => setState(() => _isStartPressed = true),
-              onTapUp: (_) => setState(() => _isStartPressed = false),
-              onTapCancel: () => setState(() => _isStartPressed = false),
+              onTapDown: (_) { if (mounted) setState(() => _isStartPressed = true); },
+              onTapUp: (_) { if (mounted) setState(() => _isStartPressed = false); },
+              onTapCancel: () { if (mounted) setState(() => _isStartPressed = false); },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 height: 56,
@@ -799,9 +829,9 @@ class _ExamStartDialogNeoState extends State<_ExamStartDialogNeo> {
             const SizedBox(height: 16),
             GestureDetector(
               onTap: () => Navigator.pop(context),
-              onTapDown: (_) => setState(() => _isCancelPressed = true),
-              onTapUp: (_) => setState(() => _isCancelPressed = false),
-              onTapCancel: () => setState(() => _isCancelPressed = false),
+              onTapDown: (_) { if (mounted) setState(() => _isCancelPressed = true); },
+              onTapUp: (_) { if (mounted) setState(() => _isCancelPressed = false); },
+              onTapCancel: () { if (mounted) setState(() => _isCancelPressed = false); },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 height: 56,
