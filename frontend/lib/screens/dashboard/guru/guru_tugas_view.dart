@@ -891,7 +891,6 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
     final showBadge = _isOverdue || _isDeadlineSoon;
     final badgeColor = _isOverdue ? _error : _tertiary;
     final badgeLabel = _isOverdue ? 'TERLAMBAT' : 'DEADLINE DEKAT';
-    final kelas = widget.tugas['kelas']?.toString() ?? '';
 
     return Stack(
       clipBehavior: Clip.none,
@@ -955,12 +954,7 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
                                       spacing: 6,
                                       runSpacing: 4,
                                       children: [
-                                        if (kelas.isNotEmpty)
-                                          _PillTag(
-                                            label: kelas,
-                                            bg: const Color(0xFFB7EDE7),
-                                            fg: const Color(0xFF3A6D69),
-                                          ),
+
                                       ],
                                     ),
                                     const SizedBox(height: 8),
@@ -1174,36 +1168,6 @@ class _NeoButtonState extends State<_NeoButton> {
   }
 }
 
-// ── Pill Tag ──────────────────────────────────────────────────────────────────
-class _PillTag extends StatelessWidget {
-  final String label;
-  final Color bg;
-  final Color fg;
-
-  const _PillTag({required this.label, required this.bg, required this.fg});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: fg, width: 1),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          color: fg,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}
 
 // ── Info Tile ─────────────────────────────────────────────────────────────────
 class _InfoTile extends StatelessWidget {

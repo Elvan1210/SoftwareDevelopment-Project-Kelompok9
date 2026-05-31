@@ -20,7 +20,6 @@ class Sidebar extends StatelessWidget {
   final List<SidebarItemData> destinations;
   final String userName;
   final String userRole;
-  final String? userKelas;
   final VoidCallback onLogout;
 
   const Sidebar({
@@ -30,7 +29,6 @@ class Sidebar extends StatelessWidget {
     required this.destinations,
     required this.userName,
     required this.userRole,
-    this.userKelas,
     required this.onLogout,
   });
 
@@ -61,7 +59,6 @@ class Sidebar extends StatelessWidget {
             _ProfileChipNeo(
               name: userName,
               role: userRole,
-              kelas: userKelas,
             ),
             const SizedBox(height: 16),
 
@@ -188,15 +185,12 @@ class _BrandHeaderNeo extends StatelessWidget {
   }
 }
 
-// ─── Profile Chip ─────────────────────────────────────────────────────────────
 class _ProfileChipNeo extends StatelessWidget {
   final String name, role;
-  final String? kelas;
 
   const _ProfileChipNeo({
     required this.name,
     required this.role,
-    this.kelas,
   });
 
   @override
@@ -253,12 +247,6 @@ class _ProfileChipNeo extends StatelessWidget {
                   Row(
                     children: [
                       _PillNeo(label: role, color: _primary, textColor: Colors.white),
-                      if (kelas != null) ...[
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: _PillNeo(label: kelas!, color: const Color(0xFFF59E0B), textColor: Colors.white),
-                        ),
-                      ],
                     ],
                   ),
                 ],

@@ -181,7 +181,7 @@ class _AdminTugasCard extends StatelessWidget {
               children: [
                 Icon(LucideIcons.library, size: 12, color: theme.colorScheme.onSurface.withAlpha(160)),
                 const SizedBox(width: 6),
-                Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
+
               ],
             ),
           ),

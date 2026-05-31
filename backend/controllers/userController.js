@@ -21,7 +21,7 @@ exports.getAll = async (req, res) => {
 // POST /api/users
 exports.create = async (req, res) => {
   try {
-    const { nama, email, password, role, kelas } = req.body;
+    const { nama, email, password, role } = req.body;
 
     // --- TAMBAHAN BARU: Cek apakah email sudah terdaftar ---
     const existingUser = await db.collection('users').where('email', '==', email).get();
@@ -38,7 +38,6 @@ exports.create = async (req, res) => {
         email, 
         password: hashedPassword, 
         role, 
-        kelas: kelas || '', 
         status: 'Available', // <-- Default status
         waktu_daftar: new Date() 
     };
@@ -55,9 +54,9 @@ exports.update = async (req, res) => {
   try {
     const { id } = req.params;
     // Tambahkan status di destructuring body
-    const { nama, email, role, password, kelas, status } = req.body;
+    const { nama, email, role, password, status } = req.body;
     
-    const updateData = { nama, email, role, kelas };
+    const updateData = { nama, email, role };
     // Jika status dikirim dari frontend, masukkan ke data update
     if (status) updateData.status = status;
     

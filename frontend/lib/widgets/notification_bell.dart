@@ -63,9 +63,26 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
 
   Future<void> _fetchNotifikasi() async {
     try {
+      final headers = {'Authorization': 'Bearer ${widget.token}'};
+      final userId = widget.userData['id'];
+      final role = widget.userData['role'];
+      
+      List<String> myKelasIds = [];
+      if (role == 'Siswa' || role == 'Guru') {
+        final kelasUrl = role == 'Guru' ? '$baseUrl/api/kelas?guru_id=$userId' : '$baseUrl/api/kelas?siswa_id=$userId';
+        final kRes = await http.get(Uri.parse(kelasUrl), headers: headers);
+        if (kRes.statusCode == 200) {
+          final kDec = jsonDecode(kRes.body);
+          if (kDec is List) {
+            myKelasIds = kDec.map((e) => e['id'].toString()).toList();
+            myKelasIds.addAll(kDec.map((e) => e['nama_kelas'].toString()).toList());
+          }
+        }
+      }
+
       final response = await http.get(
         Uri.parse('$baseUrl/api/notifikasi'),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -74,13 +91,15 @@ class _NotificationBellState extends State<NotificationBell> with SingleTickerPr
 
         List myNotifs = allData.where((n) {
           if (n['target_user_id'] != null) {
-            return n['target_user_id'] == widget.userData['id'];
+            return n['target_user_id'] == userId;
           }
           bool roleMatch = n['target_role'] == null ||
               n['target_role'] == 'Semua' ||
-              n['target_role'] == widget.userData['role'];
-          bool kelasMatch = n['target_kelas'] == null ||
-              n['target_kelas'] == widget.userData['kelas'];
+              n['target_role'] == role;
+          
+          bool kelasMatch = n['target_kelas'] == null || 
+              myKelasIds.contains(n['target_kelas'].toString());
+              
           return roleMatch && kelasMatch;
         }).toList();
 

@@ -46,7 +46,6 @@ exports.login = async (req, res) => {
         nama: userData.nama, 
         role: userData.role, 
         email: userData.email, 
-        kelas: userData.kelas,
         status: userData.status || 'Available' // <-- Tambahan status
       }
     });

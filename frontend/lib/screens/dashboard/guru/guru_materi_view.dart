@@ -484,7 +484,7 @@ class _GuruMateriViewState extends State<GuruMateriView> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                m['deskripsi'] ?? (m['kelas'] ?? '-'),
+                                m['deskripsi'] ?? '-',
                                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                   color: Theme.of(context).textTheme.bodyMedium!.color!,
                                   fontWeight: FontWeight.w600),

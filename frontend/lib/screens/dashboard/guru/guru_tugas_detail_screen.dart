@@ -423,11 +423,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                                 label: isPast ? '⚠ TERLAMBAT' : '✓ AKTIF',
                                 bg: isPast ? _kCoral : _kGreen,
                               ),
-                              if (widget.tugas['kelas'] != null)
-                                _heroBadge(
-                                  label: widget.tugas['kelas'],
-                                  bg: _kTeal,
-                                ),
+
                             ],
                           ),
                           const SizedBox(height: 10),
@@ -553,17 +549,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          if (widget.tugas['kelas'] != null) ...[
-                            const SizedBox(height: 14),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                if (widget.tugas['kelas'] != null)
-                                  _boldBadge(
-                                      widget.tugas['kelas'], _kTeal),
-                              ],
-                            ),
-                          ],
+
                         ],
                       ),
                     ),
@@ -732,26 +718,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
         ),
       );
 
-  Widget _boldBadge(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
-          border:
-              const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.5)),
-          boxShadow: [
-            BoxShadow(
-                color: color.withAlpha(100),
-                offset: const Offset(2, 2),
-                blurRadius: 0)
-          ],
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-              fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
-        ),
-      );
+
 
   Widget _lampiranCard() => GestureDetector(
         onTap: () async {

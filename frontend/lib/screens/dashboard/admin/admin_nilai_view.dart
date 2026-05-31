@@ -159,7 +159,7 @@ class _AdminNilaiCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 2),
-              Text('Kelas: ${nilai['kelas'] ?? '-'} | TA: ${nilai['tahun_ajaran'] ?? '-'}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
+              Text('TA: ${nilai['tahun_ajaran'] ?? '-'}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
               Text('Guru: ${nilai['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(160))),
             ],
           ),

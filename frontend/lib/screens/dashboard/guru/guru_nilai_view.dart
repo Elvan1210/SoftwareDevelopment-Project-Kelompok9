@@ -168,7 +168,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     String? selectedSiswaId = isEditing ? nilai['siswa_id'].toString() : null;
     final judulCtrl = TextEditingController(
-        text: isEditing ? nilai['judul'] : widget.userData['kelas'] ?? '');
+        text: isEditing ? nilai['judul'] : '');
     final nilaiCtrl = TextEditingController(
         text: isEditing ? nilai['nilai']?.toString() : '');
     final keteranganCtrl =

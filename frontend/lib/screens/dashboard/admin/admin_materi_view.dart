@@ -172,7 +172,7 @@ class _AdminMateriCard extends StatelessWidget {
                 Text(materi['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text('Kelas: ${materi['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
+
               ],
             ),
           ),

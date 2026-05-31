@@ -67,7 +67,6 @@ class _UserManagementViewState extends State<UserManagementView> {
     final namaCtrl = TextEditingController(text: isEditing ? user['nama'] : '');
     final emailCtrl = TextEditingController(text: isEditing ? user['email'] : '');
     final passCtrl = TextEditingController();
-    final kelasCtrl = TextEditingController(text: isEditing ? (user['kelas'] ?? '') : '');
     String role = isEditing ? (user['role'] ?? 'Siswa') : 'Siswa';
 
     showDialog(
@@ -141,8 +140,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       items: ['Siswa', 'Guru', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)))).toList(),
                       onChanged: (val) => setDialogState(() => role = val!),
                     ),
-                    const SizedBox(height: 16),
-                    AppTextField(controller: kelasCtrl, labelText: 'Kelas', prefixIcon: LucideIcons.library),
+
                     const SizedBox(height: 28),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -162,7 +160,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                               'nama': namaCtrl.text,
                               'email': emailCtrl.text,
                               'role': role,
-                              'kelas': kelasCtrl.text,
                             };
                             if (!isEditing || passCtrl.text.isNotEmpty) {
                               body['password'] = passCtrl.text;
@@ -454,16 +451,7 @@ class _UserCard extends StatelessWidget {
                 Expanded(child: Text(user['email'] ?? '-', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
               ],
             ),
-            if ((user['kelas'] ?? '').toString().isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(LucideIcons.library, size: 13, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  const SizedBox(width: 8),
-                  Text(user['kelas'], style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800, color: isDark ? Colors.white.withAlpha(220) : AppTheme.textLight)),
-                ],
-              ),
-            ],
+
           ],
         ),
     );
