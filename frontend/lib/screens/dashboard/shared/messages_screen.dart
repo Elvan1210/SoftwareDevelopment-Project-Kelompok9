@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
+import 'package:mypskd/config/api_config.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../widgets/avatar_widget.dart';
 
@@ -493,7 +494,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     );
     try {
       final res =
-          await http.get(Uri.parse('https://mypskd-backend.vercel.app/api/chat/users'));
+          await http.get(Uri.parse('$baseUrl/api/chat/users'));
       if (mounted) Navigator.pop(context);
       if (res.statusCode == 200) {
         List<dynamic> users = json.decode(res.body);
@@ -1068,7 +1069,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }) async {
     try {
       final res = await http.post(
-        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations'),
+        Uri.parse('$baseUrl/api/chat/conversations'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'participants': parts,
