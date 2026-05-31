@@ -599,10 +599,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
               duration: const Duration(milliseconds: 250),
               child: KeyedSubtree(
                 key: ValueKey(_activeTabID),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 72),
-                  child: _getActiveView(),
-                ),
+                child: _getActiveView(),
               ),
             ),
           ),
