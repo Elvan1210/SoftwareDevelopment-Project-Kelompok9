@@ -52,7 +52,7 @@ class SiswaExamScreen extends StatefulWidget {
   State<SiswaExamScreen> createState() => _SiswaExamScreenState();
 }
 
-class _SiswaExamScreenState extends State<SiswaExamScreen> {
+class _SiswaExamScreenState extends State<SiswaExamScreen> with WidgetsBindingObserver {
   late final ViolationService _violationService;
   late final TimerService _timerService;
   late final AutoSaveService _autoSaveService;
@@ -80,6 +80,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initShuffle();
 
     _violationService = ViolationService(
@@ -162,6 +163,9 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
           }
         }
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showAutoSaveNotification();
+      });
     }
 
     if (widget.quiz.isSecureMode) {
@@ -227,6 +231,47 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     }
     _focusNode.requestFocus();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      if (_answers.isNotEmpty || _essayAnswers.isNotEmpty) {
+        _showAutoSaveNotification();
+      }
+    }
+  }
+
+  void _showAutoSaveNotification() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(LucideIcons.save, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Jawabanmu telah aman tersimpan dengan fitur Autosave!',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF10B981), // kGreen
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF1A1F3C), width: 2), // kNavy
+        ),
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(20),
+      ),
+    );
   }
 
   void _selectAnswer(String questionId, dynamic answer, String type) {
@@ -593,6 +638,7 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _violationService.removeListener(_onViolationChanged);
     _timerService.dispose();
     _autoSaveService.dispose();
