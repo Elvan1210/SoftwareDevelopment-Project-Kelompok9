@@ -56,7 +56,6 @@
 //               onDestinationSelected: (index) => setState(() => _selectedIndex = index),
 //               userName: widget.userData['nama'] ?? 'Siswa',
 //               userRole: 'Siswa',
-//               userKelas: widget.userData['kelas'],
 //               onLogout: () async {
 //                 final navigator = Navigator.of(context);
 //                 await AuthService.logout();
@@ -296,8 +295,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
               selectedIndex: _selectedIndex,
               onDestinationSelected: (index) => setState(() => _selectedIndex = index),
               userName: widget.userData['nama'] ?? 'Siswa',
-              userRole: 'Siswa',
-              userKelas: widget.userData['kelas'],
+              userRole: widget.userData['role'] ?? 'Siswa',
               onLogout: () async {
                 final navigator = Navigator.of(context);
                 await AuthService.logout();

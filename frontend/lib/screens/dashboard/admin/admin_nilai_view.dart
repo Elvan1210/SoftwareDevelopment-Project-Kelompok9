@@ -47,7 +47,6 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
       ? _nilaiList
       : _nilaiList.where((n) =>
           (n['siswa_nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (n['mapel'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
           (n['guru_nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
   @override
@@ -64,7 +63,7 @@ class _AdminNilaiViewState extends State<AdminNilaiView> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
-                hintText: 'Cari siswa, mapel, atau guru...',
+                hintText: 'Cari siswa atau guru...',
                 prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
@@ -160,8 +159,7 @@ class _AdminNilaiCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 2),
-              Text(nilai['mapel'] ?? '-', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
-              Text('Kelas: ${nilai['kelas'] ?? '-'} | TA: ${nilai['tahun_ajaran'] ?? '-'}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
+              Text('TA: ${nilai['tahun_ajaran'] ?? '-'}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withAlpha(160))),
               Text('Guru: ${nilai['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withAlpha(160))),
             ],
           ),

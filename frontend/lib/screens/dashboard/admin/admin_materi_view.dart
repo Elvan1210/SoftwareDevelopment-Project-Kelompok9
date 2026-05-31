@@ -60,8 +60,7 @@ class _AdminMateriViewState extends State<AdminMateriView> {
       ? _materiList
       : _materiList.where((m) =>
           (m['judul'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (m['guru_nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (m['mapel'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+          (m['guru_nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +76,7 @@ class _AdminMateriViewState extends State<AdminMateriView> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
-                hintText: 'Cari materi, guru, atau mapel...',
+                hintText: 'Cari materi atau guru...',
                 prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
@@ -161,7 +160,7 @@ class _AdminMateriCard extends StatelessWidget {
             children: [
               Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.graduationCap, color: accent, size: 20)),
               const SizedBox(width: 12),
-              Expanded(child: Text(materi['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text('Materi', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
               IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: AppTheme.error, size: 20)),
             ],
           ),
@@ -173,7 +172,7 @@ class _AdminMateriCard extends StatelessWidget {
                 Text(materi['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text('Kelas: ${materi['kelas'] ?? 'Semua'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
+
               ],
             ),
           ),

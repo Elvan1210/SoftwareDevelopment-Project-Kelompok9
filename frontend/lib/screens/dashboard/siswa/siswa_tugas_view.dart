@@ -396,7 +396,7 @@ class _TaskCardNeoState extends State<_TaskCardNeo> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  (widget.tugas['mapel'] ?? widget.tugas['kategori'] ?? 'UMUM').toString().toUpperCase(),
+                  (widget.tugas['kategori'] ?? 'UMUM').toString().toUpperCase(),
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w700,
                     fontSize: 10,

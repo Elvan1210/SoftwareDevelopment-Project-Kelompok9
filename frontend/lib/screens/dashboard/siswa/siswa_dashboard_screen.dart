@@ -86,16 +86,23 @@ class _SiswaDashboardScreenState extends State<SiswaDashboardScreen> {
         final dec = jsonDecode(results[0].body);
         _kelasList = dec is List ? dec : [];
         List<dynamic> allTugas = [];
-        for (var k in _kelasList) {
-          final tResp = await http.get(
+        
+        // Fetch tugas in parallel for all classes
+        final tugasFutures = _kelasList.map((k) {
+          return http.get(
             Uri.parse('$baseUrl/api/tugas?kelas=${Uri.encodeComponent(k['nama_kelas'])}'),
             headers: headers,
           );
+        });
+        
+        final tugasResponses = await Future.wait(tugasFutures);
+        for (var tResp in tugasResponses) {
           if (tResp.statusCode == 200) {
             final tDec = jsonDecode(tResp.body);
             if (tDec is List) allTugas.addAll(tDec);
           }
         }
+        
         _tugasList = allTugas;
       }
       if (results[1].statusCode == 200) {

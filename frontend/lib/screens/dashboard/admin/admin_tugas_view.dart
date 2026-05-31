@@ -59,8 +59,7 @@ class _AdminTugasViewState extends State<AdminTugasView> {
       ? _tugasList
       : _tugasList.where((t) =>
           (t['judul'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (t['guru_nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (t['mapel'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+          (t['guru_nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +74,7 @@ class _AdminTugasViewState extends State<AdminTugasView> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: AppTextField(
-                hintText: 'Cari tugas, guru, atau mapel...',
+                hintText: 'Cari tugas atau guru...',
                 prefixIcon: LucideIcons.search,
                 onChanged: (val) => setState(() => _searchQuery = val),
               ).animate().fadeIn().slideY(begin: -0.1),
@@ -157,7 +156,7 @@ class _AdminTugasCard extends StatelessWidget {
             children: [
               Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.clipboardList, color: accent, size: 20)),
               const SizedBox(width: 12),
-              Expanded(child: Text(tugas['mapel'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text('Tugas', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
               IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: AppTheme.error, size: 20)),
             ],
           ),
@@ -182,7 +181,7 @@ class _AdminTugasCard extends StatelessWidget {
               children: [
                 Icon(LucideIcons.library, size: 12, color: theme.colorScheme.onSurface.withAlpha(160)),
                 const SizedBox(width: 6),
-                Text('Kelas: ${tugas['kelas'] ?? '-'}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(180))),
+
               ],
             ),
           ),

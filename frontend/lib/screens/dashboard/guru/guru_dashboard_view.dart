@@ -521,7 +521,6 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
               final i = e.key;
               final k = e.value;
               final nama = k['nama_kelas']?.toString() ?? '-';
-              final mapel = k['mapel']?.toString() ?? '';
               final siswa = (k['siswa_ids'] as List?)?.length ?? 0;
               final isLast = i == _kelasList.length - 1;
 
@@ -560,11 +559,6 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                         child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (mapel.isNotEmpty)
-                          Text(mapel.toUpperCase(),
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700,
-                                color: color,
-                                letterSpacing: 0.5)),
                         Text(
                           nama,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,

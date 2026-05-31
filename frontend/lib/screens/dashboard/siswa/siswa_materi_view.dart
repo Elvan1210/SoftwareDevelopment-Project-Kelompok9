@@ -80,7 +80,7 @@ class _SiswaMateriViewState extends State<SiswaMateriView> {
   List<dynamic> get _filtered {
     if (_searchQuery.isEmpty) return _materiList;
     return _materiList.where((m) {
-      final text = ("${m['judul']} ${m['mapel']} ${m['deskripsi']}").toLowerCase();
+      final text = ("${m['judul']} ${m['deskripsi']}").toLowerCase();
       return text.contains(_searchQuery.toLowerCase());
     }).toList();
   }

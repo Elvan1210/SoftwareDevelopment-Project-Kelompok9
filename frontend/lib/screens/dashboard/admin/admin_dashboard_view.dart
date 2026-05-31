@@ -23,7 +23,7 @@ class AdminDashboardView extends StatefulWidget {
 }
 
 class _AdminDashboardViewState extends State<AdminDashboardView> {
-  int _totalSiswa = 0, _totalGuru = 0, _totalKelas = 0, _totalMapel = 0;
+  int _totalSiswa = 0, _totalGuru = 0, _totalKelas = 0;
   bool _isLoading = true;
   List<dynamic> _kelasList = [];
 
@@ -46,12 +46,6 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
         _totalSiswa = users.where((u) => u['role'] == 'Siswa').length;
         final gurus = users.where((u) => u['role'] == 'Guru').toList();
         _totalGuru = gurus.length;
-        final mapels = <String>{};
-        for (var g in gurus) {
-          final m = (g['kelas'] ?? '').toString().trim();
-          if (m.isNotEmpty && m != '-') mapels.add(m.toUpperCase());
-        }
-        _totalMapel = mapels.length;
       }
       if (results[1].statusCode == 200) {
         final dec = jsonDecode(results[1].body);
@@ -116,7 +110,6 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       _StatData(LucideIcons.graduationCap, 'Total Siswa', '$_totalSiswa', AppTheme.success, const Color(0xFF0EA5E9)),
       _StatData(LucideIcons.user, 'Total Guru', '$_totalGuru', AppTheme.indigoPrimary, AppTheme.primary),
       _StatData(LucideIcons.library, 'Total Kelas', '$_totalKelas', AppTheme.amber, const Color(0xFFF97316)),
-      _StatData(LucideIcons.bookOpen, 'Mata Pelajaran', '$_totalMapel', AppTheme.rose, const Color(0xFFE11D48)),
     ];
     final crossCount = w > 1100 ? 4 : (w > 600 ? 2 : 1);
     return GridView.builder(
@@ -256,7 +249,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   }
 
   Widget _buildBarChart(ThemeData theme, bool isDark) {
-    final values = [_totalSiswa.toDouble(), _totalGuru.toDouble(), _totalKelas.toDouble(), _totalMapel.toDouble()];
+    final values = [_totalSiswa.toDouble(), _totalGuru.toDouble(), _totalKelas.toDouble()];
     final maxVal = values.reduce((curr, next) => curr > next ? curr : next);
     final maxY = (maxVal * 1.15).clamp(5.0, 1000.0);
 
@@ -279,7 +272,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (v, _) {
-                        final labels = ['Siswa', 'Guru', 'Kelas', 'Mapel'];
+                        final labels = ['Siswa', 'Guru', 'Kelas'];
                         if (v.toInt() >= labels.length) return const SizedBox.shrink();
                         return Padding(
                           padding: const EdgeInsets.only(top: 6),
@@ -304,7 +297,6 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   _bar(0, _totalSiswa.toDouble(), AppTheme.indigoPrimary, maxY, isDark),
                   _bar(1, _totalGuru.toDouble(), AppTheme.success, maxY, isDark),
                   _bar(2, _totalKelas.toDouble(), AppTheme.amber, maxY, isDark),
-                  _bar(3, _totalMapel.toDouble(), AppTheme.rose, maxY, isDark),
                 ],
               )),
             ),

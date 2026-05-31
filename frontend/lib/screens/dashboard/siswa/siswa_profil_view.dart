@@ -63,7 +63,7 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
     final String userId = _userData['id'] ?? _userData['uid'] ?? _userData['_id'] ?? '';
     final String nama = _userData['nama'] ?? '-';
     final String email = _userData['email'] ?? '-';
-    final String kelas = _userData['kelas'] ?? '-';
+
     final String role = _userData['role'] ?? 'Siswa';
     final String currentStatus = _userData['status'] ?? 'Available';
     final String initials = nama.isNotEmpty
@@ -109,7 +109,7 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
                       const SizedBox(width: 20),
                       Expanded(
                         flex: 4,
-                        child: _InfoCard(email: email, kelas: kelas),
+                        child: _InfoCard(email: email),
                       ),
                     ],
                   )
@@ -117,7 +117,7 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
                     children: [
                       _ProfileCard(initials: initials, nama: nama, role: role),
                       const SizedBox(height: 20),
-                      _InfoCard(email: email, kelas: kelas),
+                      _InfoCard(email: email),
                       const SizedBox(height: 20),
                       _StatusCard(
                         userId: userId,
@@ -262,9 +262,7 @@ class _ProfileCardState extends State<_ProfileCard> {
 
 class _InfoCard extends StatefulWidget {
   final String email;
-  final String kelas;
-
-  const _InfoCard({required this.email, required this.kelas});
+  const _InfoCard({required this.email});
 
   @override
   State<_InfoCard> createState() => _InfoCardState();
@@ -318,14 +316,7 @@ class _InfoCardState extends State<_InfoCard> {
                 Text(widget.email, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onSurface)),
               ],
             ),
-            const SizedBox(height: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Kelas', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _primary, letterSpacing: 0.6)),
-                Text(widget.kelas, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onSurface)),
-              ],
-            ),
+
           ],
         ),
       ),

@@ -543,9 +543,6 @@ class _GuruTugasViewState extends State<GuruTugasView> {
                                             ?.toIso8601String() ??
                                         (isEditing ? tugas['deadline'] : null),
                                     'link': linkCtrl.text,
-                                    'mapel': widget.teamData['mapel'] ??
-                                        widget.userData['kelas'] ??
-                                        '-',
                                     'kelas': widget.teamData['nama_kelas'],
                                     'kelas_id': widget.teamData['id'],
                                     'guru_id': widget.userData['id'],
@@ -862,7 +859,6 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
   static const _ink = Color(0xFF001E2B);
   static const _primary = Color(0xFF3D6754);
   static const _outline = Color(0xFF717974);
-  static const _secondary = Color(0xFF336763);
   static const _tertiary = Color(0xFF8D4D33);
   static const _error = Color(0xFFBA1A1A);
 
@@ -895,8 +891,6 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
     final showBadge = _isOverdue || _isDeadlineSoon;
     final badgeColor = _isOverdue ? _error : _tertiary;
     final badgeLabel = _isOverdue ? 'TERLAMBAT' : 'DEADLINE DEKAT';
-    final kelas = widget.tugas['kelas']?.toString() ?? '';
-    final mapel = widget.tugas['mapel']?.toString() ?? '';
 
     return Stack(
       clipBehavior: Clip.none,
@@ -960,18 +954,7 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
                                       spacing: 6,
                                       runSpacing: 4,
                                       children: [
-                                        if (kelas.isNotEmpty)
-                                          _PillTag(
-                                            label: kelas,
-                                            bg: const Color(0xFFB7EDE7),
-                                            fg: const Color(0xFF3A6D69),
-                                          ),
-                                        if (mapel.isNotEmpty)
-                                          _PillTag(
-                                            label: mapel,
-                                            bg: const Color(0xFFFFD1C0),
-                                            fg: const Color(0xFF8E4F34),
-                                          ),
+
                                       ],
                                     ),
                                     const SizedBox(height: 8),
@@ -1037,17 +1020,6 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
                               value: _formatDeadline(
                                   widget.tugas['deadline']?.toString()),
                             )),
-                            if (mapel.isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              Expanded(
-                                  child: _InfoTile(
-                                icon: Icons.fact_check_rounded,
-                                iconBg: const Color(0xFFB7EDE7),
-                                iconColor: _secondary,
-                                label: 'MAPEL',
-                                value: mapel,
-                              )),
-                            ],
                           ]),
                           const SizedBox(height: 10),
                           Align(
@@ -1196,36 +1168,6 @@ class _NeoButtonState extends State<_NeoButton> {
   }
 }
 
-// ── Pill Tag ──────────────────────────────────────────────────────────────────
-class _PillTag extends StatelessWidget {
-  final String label;
-  final Color bg;
-  final Color fg;
-
-  const _PillTag({required this.label, required this.bg, required this.fg});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: fg, width: 1),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          color: fg,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}
 
 // ── Info Tile ─────────────────────────────────────────────────────────────────
 class _InfoTile extends StatelessWidget {

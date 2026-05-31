@@ -1,4 +1,7 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/violation_model.dart';
 
 /// Service untuk mengelola pelanggaran selama ujian berlangsung.
@@ -25,6 +28,47 @@ class ViolationService extends ChangeNotifier {
     this.onMaxViolationsReached,
   });
 
+  String? _persistKey;
+
+  /// Load existing violations from storage if they exist.
+  Future<void> restorePersisted(String examId) async {
+    _persistKey = 'violation_$examId';
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString(_persistKey!);
+    if (data != null) {
+      try {
+        final List<dynamic> list = jsonDecode(data);
+        _violations.clear();
+        for (var item in list) {
+          _violations.add(ViolationRecord.fromJson(item));
+        }
+        if (_violations.length >= maxViolations) {
+          _isLocked = true;
+          // Notify synchronously or wait for next frame depending on usage, but we'll do next frame to be safe
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            onMaxViolationsReached?.call();
+          });
+        }
+        notifyListeners();
+        debugPrint('🔄 [ViolationService] Restored ${_violations.length} violations from storage.');
+      } catch (e) {
+        debugPrint('Error parsing persisted violations: $e');
+      }
+    }
+  }
+
+  Future<void> _savePersisted() async {
+    if (_persistKey == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final String data = jsonEncode(exportLog());
+    await prefs.setString(_persistKey!, data);
+  }
+
+  static Future<void> clearPersisted(String examId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('violation_$examId');
+  }
+
   // ── Getters ──────────────────────────────────────────────────────────
   List<ViolationRecord> get violations => List.unmodifiable(_violations);
   int get violationCount => _violations.length;
@@ -48,6 +92,7 @@ class ViolationService extends ChangeNotifier {
 
     _violations.add(record);
     debugPrint('🚨 [ViolationService] Violation #$violationCount: $type - $description');
+    _savePersisted();
     notifyListeners();
 
     if (hasExceededLimit) {

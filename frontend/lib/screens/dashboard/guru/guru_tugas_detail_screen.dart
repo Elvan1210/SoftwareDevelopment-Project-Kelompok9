@@ -15,13 +15,11 @@ const _kBorderWidth  = 2.2;
 const _kShadowOffset = Offset(4, 4);
 
 const _kNavy    = Color(0xFF1A1F3C);
-const _kTeal    = Color(0xFF2A7C76);
-
 const _kCoral   = Color(0xFFFF6B6B);
 const _kAmber   = Color(0xFFFFA41B);
 const _kIndigo  = Color(0xFF4F46E5);
-const _kPurple  = Color(0xFF7C3AED);
 const _kGreen   = Color(0xFF10B981);
+const Color _kTeal = Color(0xFF14B8A6);
 const _kBorder  = Color(0xFF1A1F3C);
 
 BoxDecoration _comicCard({
@@ -253,9 +251,6 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                         'siswa_nama': p['siswa_nama'],
                         'guru_id': widget.tugas['guru_id'],
                         'guru_nama': widget.tugas['guru_nama'],
-                        'mapel': widget.tugas['mapel'] ??
-                            widget.tugas['kelas'] ??
-                            'Umum',
                         'tugas_id': widget.tugas['id'],
                         'tugas_judul': widget.tugas['judul'],
                         'kelas_id': widget.tugas['kelas_id'],
@@ -428,16 +423,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                                 label: isPast ? '⚠ TERLAMBAT' : '✓ AKTIF',
                                 bg: isPast ? _kCoral : _kGreen,
                               ),
-                              if (widget.tugas['kelas'] != null)
-                                _heroBadge(
-                                  label: widget.tugas['kelas'],
-                                  bg: _kTeal,
-                                ),
-                              if (widget.tugas['mapel'] != null)
-                                _heroBadge(
-                                  label: widget.tugas['mapel'],
-                                  bg: _kPurple,
-                                ),
+
                             ],
                           ),
                           const SizedBox(height: 10),
@@ -563,21 +549,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          if (widget.tugas['kelas'] != null ||
-                              widget.tugas['mapel'] != null) ...[
-                            const SizedBox(height: 14),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                if (widget.tugas['kelas'] != null)
-                                  _boldBadge(
-                                      widget.tugas['kelas'], _kTeal),
-                                if (widget.tugas['mapel'] != null)
-                                  _boldBadge(
-                                      widget.tugas['mapel'], _kPurple),
-                              ],
-                            ),
-                          ],
+
                         ],
                       ),
                     ),
@@ -746,26 +718,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
         ),
       );
 
-  Widget _boldBadge(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
-          border:
-              const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.5)),
-          boxShadow: [
-            BoxShadow(
-                color: color.withAlpha(100),
-                offset: const Offset(2, 2),
-                blurRadius: 0)
-          ],
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-              fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
-        ),
-      );
+
 
   Widget _lampiranCard() => GestureDetector(
         onTap: () async {
