@@ -145,9 +145,7 @@ router.delete('/messages/:conversationId/:messageId', async (req, res) => {
     const msg = msgDoc.data();
     if (msg.senderId !== senderId) return res.status(403).json({ error: 'Bukan pesan kamu' });
 
-    const sentAt = new Date(msg.timestamp);
-    const diffHours = (new Date() - sentAt) / (1000 * 60 * 60);
-    if (diffHours > 2) return res.status(400).json({ error: 'Pesan lebih dari 2 jam' });
+    // Batas waktu dihapus (sebelumnya max 2 jam, sekarang semua pesan bisa dihapus)
 
     await msgRef.update({
       text: 'Pesan ini telah dihapus',
