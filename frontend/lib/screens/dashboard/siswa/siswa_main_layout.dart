@@ -291,11 +291,16 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
         padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 24.0),
         child: Row(
           children: [
-            Sidebar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-              userName: widget.userData['nama'] ?? 'Siswa',
-              userRole: widget.userData['role'] ?? 'Siswa',
+            FutureBuilder<Map<String, dynamic>?>(
+              future: AuthService.getUserData(),
+              builder: (context, snapshot) {
+                final currentData = snapshot.data ?? widget.userData;
+                return Sidebar(
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+                  userName: currentData['nama'] ?? 'Siswa',
+                  userRole: currentData['role'] ?? 'Siswa',
+                  photoUrl: currentData['photoUrl'] ?? '',
               onLogout: () async {
                 final navigator = Navigator.of(context);
                 await AuthService.logout();
@@ -328,9 +333,10 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
                   label: 'Profil',
                 ),
               ],
-            ),
-
-            const SizedBox(width: 24),
+            );
+            },
+          ),
+          const SizedBox(width: 24),
 
             Expanded(
               child: Container(
