@@ -107,12 +107,19 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Masukkan kode akses dari guru Anda.',
+                    'Masukkan kode akses 8 karakter dari gurumu.',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: _onSurfaceVariant,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                      '⚠ Kode akses BERBEDA dengan kode kelas yang tertera di kartu.',
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: _error,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
@@ -133,7 +140,7 @@ class _SiswaTeamsViewState extends State<SiswaTeamsView> {
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         counterText: '',
-                        hintText: 'XXXXXXXX',
+                        hintText: 'AB3X9KL2',
                         hintStyle: GoogleFonts.plusJakartaSans(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
