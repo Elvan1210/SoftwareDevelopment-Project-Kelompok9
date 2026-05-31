@@ -76,11 +76,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
             if (clearedAt == null) return data['lastMessage'] ?? '';
             final lu = DateTime.tryParse(data['lastUpdate']?.toString() ?? '');
             final ca = DateTime.tryParse(clearedAt);
-            if (lu != null && ca != null && lu.isBefore(ca)) return '';
+            if (lu != null && ca != null && !lu.isAfter(ca)) return '';
             return data['lastMessage'] ?? '';
           }(),
         };
-      }).toList();
+      }).where((conv) => (conv['lastMessage']?.toString() ?? '').isNotEmpty).toList();
 
       // Sort by lastUpdate descending in Dart
       list.sort((a, b) {
@@ -1093,6 +1093,60 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
+  Future<void> _hideChat(String convId) async {
+    try {
+      await http.delete(
+        Uri.parse('https://mypskd-backend.vercel.app/api/chat/conversations/$convId/clear'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'userId': myId}),
+      );
+      if (activeConversationId == convId) {
+        setState(() {
+          activeConversationId = null;
+          activeChatName = null;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error hide chat: $e');
+    }
+  }
+
+  void _confirmDeleteMessage(String messageId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Hapus Pesan", style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+        content: Text("Yakin ingin menghapus pesan ini untuk semua orang?", style: GoogleFonts.inter()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("Batal", style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: AppTheme.textMutedLt)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteMessage(messageId);
+            },
+            child: Text("Hapus", style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteMessage(String messageId) async {
+    if (activeConversationId == null) return;
+    try {
+      await http.delete(
+        Uri.parse('https://mypskd-backend.vercel.app/api/chat/messages/$activeConversationId/$messageId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'senderId': myId}),
+      );
+    } catch (e) {
+      debugPrint("Error delete message: $e");
+    }
+  }
+
   Widget _buildAvatar(String? userId, String initial, {bool isGroup = false}) {
     if (isGroup) {
       return Container(
@@ -1322,6 +1376,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                               ],
                                             ),
                                           ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            icon: const Icon(LucideIcons.x, size: 16, color: AppTheme.textMutedLt),
+                                            onPressed: () => _hideChat(conv['id']),
+                                            tooltip: 'Sembunyikan Obrolan',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            splashRadius: 16,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -1506,21 +1569,61 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                       clipBehavior: Clip.none,
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.all(16),
+                                          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
                                           decoration: BoxDecoration(
-                                            color: isMe ? AppTheme.primaryContainer : Colors.white,
+                                            color: msg['isUnsent'] == true 
+                                                ? const Color(0xFFF1F5F9)
+                                                : (isMe ? AppTheme.primaryContainer : Colors.white),
                                             borderRadius: BorderRadius.circular(24),
                                             border: Border.all(color: AppTheme.textLight, width: 2),
-                                            boxShadow: const [
+                                            boxShadow: msg['isUnsent'] == true ? [] : const [
                                               BoxShadow(color: AppTheme.textLight, offset: Offset(4, 4))
                                             ],
                                           ),
-                                          child: Text(
-                                            msg['text'] ?? '',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              color: isMe ? AppTheme.primaryFixedVariant : AppTheme.textLight,
-                                            ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Flexible(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(top: 4, bottom: 4, right: 8),
+                                                  child: Text(
+                                                    msg['isUnsent'] == true ? "Pesan telah dihapus" : (msg['text'] ?? ''),
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontStyle: msg['isUnsent'] == true ? FontStyle.italic : FontStyle.normal,
+                                                      color: msg['isUnsent'] == true 
+                                                          ? AppTheme.textMutedLt 
+                                                          : (isMe ? AppTheme.primaryFixedVariant : AppTheme.textLight),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (isMe && !(msg['isUnsent'] == true))
+                                                SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child: PopupMenuButton<String>(
+                                                    icon: const Icon(LucideIcons.chevronDown, size: 18, color: AppTheme.textLight),
+                                                    padding: EdgeInsets.zero,
+                                                    onSelected: (val) {
+                                                      if (val == 'delete') _confirmDeleteMessage(msg['id']);
+                                                    },
+                                                    itemBuilder: (context) => [
+                                                      PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Row(
+                                                          children: [
+                                                            const Icon(LucideIcons.trash2, size: 16, color: Colors.red),
+                                                            const SizedBox(width: 8),
+                                                            Text("Hapus Pesan", style: GoogleFonts.inter(color: Colors.red, fontWeight: FontWeight.bold)),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                         if (isGroup && !isMe)
