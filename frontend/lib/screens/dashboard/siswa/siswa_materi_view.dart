@@ -4,7 +4,8 @@ import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:url_launcher/url_launcher.dart';
+
+import 'package:url_launcher/link.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -279,24 +280,17 @@ class _MateriCardNeo extends StatefulWidget {
 class _MateriCardNeoState extends State<_MateriCardNeo> {
   bool _isHovering = false;
 
-  Future<void> _launchURL(String? url) async {
-    if (url == null || url.isEmpty) return;
+  // Helper for Link widget
+  String _formatUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
     if (url.startsWith('http://')) {
-      url = url.replaceFirst('http://', 'https://');
+      return url.replaceFirst('http://', 'https://');
     } else if (!url.startsWith('https://')) {
-      url = 'https://$url';
+      return 'https://$url';
     }
-    final uri = Uri.parse(url);
-    try {
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-        webOnlyWindowName: '_blank',
-      );
-    } catch (e) {
-      debugPrint("Gagal buka URL: $e");
-    }
+    return url;
   }
+
 
   void _showDetail(BuildContext context) {
     showDialog(
@@ -383,10 +377,14 @@ class _MateriCardNeoState extends State<_MateriCardNeo> {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      _NeoModalButton(
-                                        label: 'Buka',
-                                        icon: Icons.open_in_new,
-                                        onTap: () => _launchURL(widget.materi['file_url']),
+                                      Link(
+                                        uri: Uri.parse(_formatUrl(widget.materi['file_url'])),
+                                        target: LinkTarget.blank,
+                                        builder: (context, followLink) => _NeoModalButton(
+                                          label: 'Buka',
+                                          icon: Icons.open_in_new,
+                                          onTap: followLink,
+                                        ),
                                       ),
                                     ],
                                   ),
