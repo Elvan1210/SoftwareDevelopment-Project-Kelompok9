@@ -504,8 +504,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     final nama = widget.userData['nama'] ?? 'Siswa';
     final namaKelas = widget.teamData['nama_kelas'] ?? 'Kelas';
 
-    return AppShell(
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: _background,
         body: Column(children: [
 
@@ -667,8 +666,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _navItem({
