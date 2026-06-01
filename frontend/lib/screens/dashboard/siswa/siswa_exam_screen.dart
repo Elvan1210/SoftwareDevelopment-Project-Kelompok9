@@ -97,12 +97,12 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> with WidgetsBindingOb
       }
     }
 
-    final _timerPersistKey = 'exam_timer_${widget.quiz.id}_$_studentId';
+    final timerPersistKey = 'exam_timer_${widget.quiz.id}_$_studentId';
 
     _timerService = TimerService(
       durationMinutes: examDuration,
       onTimeUp: () => _autoSubmit('Waktu habis'),
-      persistKey: _timerPersistKey,
+      persistKey: timerPersistKey,
     );
     _timerService.addListener(() {
       if (mounted) setState(() {});
@@ -179,8 +179,8 @@ class _SiswaExamScreenState extends State<SiswaExamScreen> with WidgetsBindingOb
     }
 
     // Cek apakah ada sisa waktu tersimpan (jika app pernah dibuka sebelumnya)
-    final _timerPersistKey = 'exam_timer_${widget.quiz.id}_$_studentId';
-    final savedRemaining = await TimerService.getSavedRemainingSeconds(_timerPersistKey);
+    final timerPersistKey = 'exam_timer_${widget.quiz.id}_$_studentId';
+    final savedRemaining = await TimerService.getSavedRemainingSeconds(timerPersistKey);
     if (savedRemaining != null && savedRemaining < _timerService.totalSeconds) {
       _timerService.setRemainingSeconds(savedRemaining);
       debugPrint('⏱️ [ExamScreen] Restored timer: $savedRemaining seconds remaining');

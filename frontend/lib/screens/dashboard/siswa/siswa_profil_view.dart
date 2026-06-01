@@ -166,6 +166,7 @@ class _ProfileCardState extends State<_ProfileCard> {
     final xFile = await picker.pickImage(source: ImageSource.gallery);
     if (xFile != null && mounted) {
       final bytes = await xFile.readAsBytes();
+      if (!mounted) return;
       final newUrl = await Navigator.push(
         context,
         MaterialPageRoute(
