@@ -375,12 +375,10 @@ class _MateriCardNeoState extends State<_MateriCardNeo> {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      GestureDetector(
+                                      _NeoModalButton(
+                                        label: 'Buka',
+                                        icon: Icons.open_in_new,
                                         onTap: () => _launchURL(widget.materi['file_url']),
-                                        child: const _NeoModalButton(
-                                          label: 'Buka',
-                                          icon: Icons.open_in_new,
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -551,8 +549,9 @@ class _MateriCardNeoState extends State<_MateriCardNeo> {
 class _NeoModalButton extends StatefulWidget {
   final String label;
   final IconData icon;
+  final VoidCallback? onTap;
 
-  const _NeoModalButton({required this.label, required this.icon});
+  const _NeoModalButton({required this.label, required this.icon, this.onTap});
 
   @override
   State<_NeoModalButton> createState() => _NeoModalButtonState();
@@ -567,6 +566,7 @@ class _NeoModalButtonState extends State<_NeoModalButton> {
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
         transform: Matrix4.translationValues(
