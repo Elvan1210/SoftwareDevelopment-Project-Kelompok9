@@ -231,11 +231,13 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     String finalUrl = url;
     if (url.toLowerCase().contains('.pdf') || url.contains('/raw/')) {
       finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}';
+    } else if (!finalUrl.startsWith('http')) {
+      finalUrl = 'https://$finalUrl';
     }
     final uri = Uri.parse(finalUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.platformDefault);
-    } else {
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Tidak bisa membuka file')),

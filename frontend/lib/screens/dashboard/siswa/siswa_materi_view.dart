@@ -281,9 +281,12 @@ class _MateriCardNeoState extends State<_MateriCardNeo> {
 
   Future<void> _launchURL(String? url) async {
     if (url == null || url.isEmpty) return;
+    if (!url.startsWith('http')) url = 'https://$url';
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint("Gagal buka URL: $e");
     }
   }
 

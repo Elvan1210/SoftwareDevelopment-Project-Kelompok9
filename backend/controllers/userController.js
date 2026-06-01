@@ -56,6 +56,13 @@ exports.update = async (req, res) => {
     // Tambahkan status di destructuring body
     const { nama, email, role, password, status } = req.body;
     
+    if (email) {
+      const existingUser = await db.collection('users').where('email', '==', email).get();
+      let isDuplicate = false;
+      existingUser.forEach(doc => { if (doc.id !== id) isDuplicate = true; });
+      if (isDuplicate) return res.status(400).json({ message: 'Email sudah terdaftar untuk user lain' });
+    }
+    
     const updateData = { nama, email, role };
     // Jika status dikirim dari frontend, masukkan ke data update
     if (status) updateData.status = status;

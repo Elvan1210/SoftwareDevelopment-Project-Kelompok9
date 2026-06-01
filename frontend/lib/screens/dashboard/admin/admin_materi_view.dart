@@ -205,7 +205,9 @@ class _AdminMateriCard extends StatelessWidget {
     }
     
     final uri = Uri.parse(finalUrl);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
   }
 }
 

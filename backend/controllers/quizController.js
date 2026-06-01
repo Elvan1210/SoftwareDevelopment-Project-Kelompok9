@@ -285,7 +285,10 @@ const quizController = {
 
   checkSubmission: async (req, res) => {
     try {
-      const studentId = req.query.studentId || req.user?.id || req.user?.uid;
+      const studentId = req.query.studentId || req.user?.id || req.user?.uid || '';
+      if (!studentId) {
+        return res.status(400).json({ message: 'Student ID diperlukan' });
+      }
 
       const snapshot = await db.collection('quiz_submissions')
         .where('quizId', '==', req.params.id)
