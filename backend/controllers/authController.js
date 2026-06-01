@@ -151,7 +151,7 @@ exports.verifyOtp = async (req, res) => {
 
     const snapshot = await db.collection('otpCodes')
       .where('email', '==', email)
-      .where('code', '==', code)
+      .where('code', '==', String(code))
       .get();
 
     if (snapshot.empty) return res.status(400).json({ message: 'Kode verifikasi tidak valid' });
@@ -184,7 +184,7 @@ exports.resetPassword = async (req, res) => {
 
     const otpSnapshot = await db.collection('otpCodes')
       .where('email', '==', email)
-      .where('code', '==', code)
+      .where('code', '==', String(code))
       .get();
 
     if (otpSnapshot.empty) return res.status(400).json({ message: 'Kode verifikasi tidak valid' });

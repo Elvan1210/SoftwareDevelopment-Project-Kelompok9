@@ -174,8 +174,8 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
           _showError('Soal ${i + 1} harus memiliki minimal 2 opsi jawaban');
           return;
         }
-        if (q.correctAnswers.isEmpty) {
-          _showError('Soal ${i + 1} harus memiliki minimal 1 jawaban benar');
+        if (q.correctAnswers.where((ans) => ans < filledOptions).isEmpty) {
+          _showError('Soal ${i + 1} harus memiliki minimal 1 jawaban benar yang merujuk ke opsi terisi');
           return;
         }
       }

@@ -726,14 +726,18 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
           if (raw.toLowerCase().contains('.pdf') || raw.contains('/raw/')) {
             raw =
                 'https://docs.google.com/viewer?url=${Uri.encodeComponent(raw)}';
+          } else if (!raw.startsWith('http')) {
+            raw = 'https://$raw';
           }
           final url = Uri.parse(raw);
-          if (await canLaunchUrl(url)) {
+          try {
             await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Gagal membuka file!')),
-            );
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Gagal membuka file!')),
+              );
+            }
           }
         },
         child: Container(
@@ -998,11 +1002,12 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                         padding: const EdgeInsets.only(bottom: 6),
                         child: GestureDetector(
                           onTap: () async {
-                            final url = Uri.parse(e.value.toString());
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url,
-                                  mode: LaunchMode.externalApplication);
-                            }
+                            String rawUrl = e.value.toString();
+                            if (!rawUrl.startsWith('http')) rawUrl = 'https://$rawUrl';
+                            final url = Uri.parse(rawUrl);
+                            try {
+                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                            } catch (_) {}
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
