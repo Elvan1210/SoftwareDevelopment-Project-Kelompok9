@@ -835,8 +835,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     final nama = widget.userData['nama'] ?? 'Guru';
     final namaKelas = widget.teamData['nama_kelas'] ?? 'Kelas';
  
-    return AppShell(
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: isDark ? const Color(0xFF0F1420) : _surface,
         body: Column(children: [
  
@@ -976,10 +975,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
               duration: const Duration(milliseconds: 250),
               child: KeyedSubtree(
                 key: ValueKey(_activeTabID),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 72),
-                  child: _getActiveView(),
-                ),
+                child: _getActiveView(),
               ),
             ),
           ),
@@ -1054,8 +1050,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
  
   // ── Nav Item ──────────────────────────────────────────────────────────────

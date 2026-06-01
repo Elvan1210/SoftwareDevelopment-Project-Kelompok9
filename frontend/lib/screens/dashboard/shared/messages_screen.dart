@@ -826,7 +826,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                 boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
                               ),
                               child: TextField(
-                                onChanged: (v) => groupName = v,
+                                onChanged: (v) {
+                                  setDialogState(() {
+                                    groupName = v;
+                                  });
+                                },
                                 style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textLight),
                                 decoration: InputDecoration(
                                   hintText: "Contoh: Projek Biologi 12-A",
@@ -1018,7 +1022,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             flex: 3,
                             child: GestureDetector(
                               onTap: () {
-                                if (groupName.isEmpty || selectedIds.isEmpty) return;
+                                if (groupName.trim().isEmpty || selectedIds.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Nama grup dan minimal 1 anggota harus diisi!",
+                                        style: GoogleFonts.inter(),
+                                      ),
+                                      backgroundColor: AppTheme.error,
+                                    ),
+                                  );
+                                  return;
+                                }
                                 Navigator.pop(context);
                                 Map<String, String> pNames = {myId: myName};
                                 for (var u in selectedUsers) {
