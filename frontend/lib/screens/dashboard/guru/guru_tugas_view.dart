@@ -950,12 +950,10 @@ class _BentoTugasCardState extends State<_BentoTugasCard> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Wrap(
+                                    const Wrap(
                                       spacing: 6,
                                       runSpacing: 4,
-                                      children: [
-
-                                      ],
+                                      children: [],
                                     ),
                                     const SizedBox(height: 8),
                                     Text(

@@ -647,7 +647,7 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.menu_rounded,
+                          const Icon(Icons.menu_rounded,
                             size: 22,
                             color: _onSurfaceVariant,
                           ),

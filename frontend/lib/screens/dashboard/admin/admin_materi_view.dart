@@ -160,7 +160,7 @@ class _AdminMateriCard extends StatelessWidget {
             children: [
               Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.graduationCap, color: accent, size: 20)),
               const SizedBox(width: 12),
-              Expanded(child: Text('Materi', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              const Expanded(child: Text('Materi', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
               IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: AppTheme.error, size: 20)),
             ],
           ),
