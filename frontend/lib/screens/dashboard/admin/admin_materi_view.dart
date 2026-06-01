@@ -200,14 +200,19 @@ class _AdminMateriCard extends StatelessWidget {
     String finalUrl = url;
     if (url.startsWith('/')) {
       finalUrl = '$baseUrl$url';
-    } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    } else if (url.startsWith('http://')) {
+      finalUrl = url.replaceFirst('http://', 'https://');
+    } else if (!url.startsWith('https://')) {
       finalUrl = 'https://$url';
     }
     
     final uri = Uri.parse(finalUrl);
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+        webOnlyWindowName: '_blank',
+      );
     } catch (_) {}
   }
 }
-
