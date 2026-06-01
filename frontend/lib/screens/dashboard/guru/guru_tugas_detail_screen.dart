@@ -726,12 +726,18 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
           if (raw.toLowerCase().contains('.pdf') || raw.contains('/raw/')) {
             raw =
                 'https://docs.google.com/viewer?url=${Uri.encodeComponent(raw)}';
-          } else if (!raw.startsWith('http')) {
+          } else if (raw.startsWith('http://')) {
+            raw = raw.replaceFirst('http://', 'https://');
+          } else if (!raw.startsWith('https://')) {
             raw = 'https://$raw';
           }
           final url = Uri.parse(raw);
           try {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
+            await launchUrl(
+              url,
+              mode: LaunchMode.externalApplication,
+              webOnlyWindowName: '_blank',
+            );
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1003,10 +1009,18 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                         child: GestureDetector(
                           onTap: () async {
                             String rawUrl = e.value.toString();
-                            if (!rawUrl.startsWith('http')) rawUrl = 'https://$rawUrl';
+                            if (rawUrl.startsWith('http://')) {
+                              rawUrl = rawUrl.replaceFirst('http://', 'https://');
+                            } else if (!rawUrl.startsWith('https://')) {
+                              rawUrl = 'https://$rawUrl';
+                            }
                             final url = Uri.parse(rawUrl);
                             try {
-                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                              await launchUrl(
+                                url,
+                                mode: LaunchMode.externalApplication,
+                                webOnlyWindowName: '_blank',
+                              );
                             } catch (_) {}
                           },
                           child: Container(

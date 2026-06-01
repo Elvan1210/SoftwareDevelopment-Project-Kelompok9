@@ -231,12 +231,18 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
     String finalUrl = url;
     if (url.toLowerCase().contains('.pdf') || url.contains('/raw/')) {
       finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}';
-    } else if (!finalUrl.startsWith('http')) {
+    } else if (finalUrl.startsWith('http://')) {
+      finalUrl = finalUrl.replaceFirst('http://', 'https://');
+    } else if (!finalUrl.startsWith('https://')) {
       finalUrl = 'https://$finalUrl';
     }
     final uri = Uri.parse(finalUrl);
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+        webOnlyWindowName: '_blank',
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

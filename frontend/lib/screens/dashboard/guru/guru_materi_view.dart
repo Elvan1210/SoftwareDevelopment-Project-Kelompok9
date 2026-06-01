@@ -290,10 +290,18 @@ class _GuruMateriViewState extends State<GuruMateriView> {
 
   Future<void> _openFile(String? url) async {
     if (url == null || url.isEmpty) return;
-    if (!url.startsWith('http')) url = 'https://$url';
+    if (url.startsWith('http://')) {
+      url = url.replaceFirst('http://', 'https://');
+    } else if (!url.startsWith('https://')) {
+      url = 'https://$url';
+    }
     final uri = Uri.parse(url);
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+        webOnlyWindowName: '_blank',
+      );
     } catch (e) {
       debugPrint("Gagal buka URL: $e");
     }
