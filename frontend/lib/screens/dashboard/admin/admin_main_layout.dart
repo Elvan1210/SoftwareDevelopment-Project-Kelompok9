@@ -408,6 +408,7 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/app_shell.dart';
@@ -619,39 +620,61 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       child: ContentSurface(
         child: Scaffold(
           backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+              statusBarBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.dark : Brightness.light,
+            ),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1040) : Colors.white,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            titleSpacing: 20,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(2.0),
+              child: Container(
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 2.0,
+              ),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)
+                    ],
+                  ),
+                  child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 18),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _titles[_selectedIndex],
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                        ),
+                  ).animate(key: ValueKey(_selectedIndex)).fade(duration: 250.ms),
+                ),
+              ],
+            ),
+            actions: [
+              const ThemeToggle(),
+              const SizedBox(width: 4),
+              NotificationBell(
+                userData: _adminUserData,
+                token: widget.token,
+                iconColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9090B0) : Theme.of(context).colorScheme.onSurface,
+              ),
+              const SizedBox(width: 20),
+            ],
+          ),
           body: Column(
             children: [
-              // Mobile topbar — adaptive
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1040) : Colors.white,
-                  border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.onSurface, width: 2)),
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                    child: Row(children: [
-                      Container(padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(color: AppTheme.primary, border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5), boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)]),
-                        child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 18)),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(_titles[_selectedIndex],
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, 
-                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                        ))
-                        .animate(key: ValueKey(_selectedIndex)).fade(duration: 250.ms)),
-                      const ThemeToggle(),
-                      const SizedBox(width: 4),
-                      NotificationBell(
-                        userData: _adminUserData, 
-                        token: widget.token, 
-                        iconColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF9090B0) : Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ]),
-                  ),
-                ),
-              ),
 
               Expanded(
                 child: AnimatedSwitcher(
@@ -659,10 +682,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   switchInCurve: Curves.easeOutQuart,
                   child: KeyedSubtree(
                     key: ValueKey(_selectedIndex),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 88),
-                      child: _views[_selectedIndex],
-                    ),
+                    child: _views[_selectedIndex],
                   ),
                 ),
               ),
