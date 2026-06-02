@@ -14,7 +14,6 @@ import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
-import '../../../widgets/neo_brutalism.dart';
 import '../../../widgets/jitsi_embed.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -37,6 +36,7 @@ const Color _onTertiaryContainer = Color(0xFF8E4F34);
 const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
 const Color _tertiaryContainer = Color(0xFFFFD1C0);
 const Color _rose = Color(0xFFE11D48);
+const Color _error = Color(0xFFEF4444);
 
 BoxDecoration _neoCardDecoration({Color color = _surfaceContainerLowest}) => BoxDecoration(
   color: color,
@@ -340,91 +340,195 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
             child: Container(
               width: 270,
               decoration: BoxDecoration(
-                color: const Color(0xFFF4FAFF), // Light blue background for Teams
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF001E2B), width: 2),
-                boxShadow: const [BoxShadow(color: Color(0xFF001E2B), offset: Offset(6, 6))],
+                border: Border.all(color: _onSurface, width: 2),
+                boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(6, 6))],
               ),
               child: SafeArea(
                 right: false,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ── Brand Header ──
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Row(children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(LucideIcons.graduationCap, color: AppTheme.primary, size: 22),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text('MyPSKD', style: TextStyle(color: AppTheme.textLight, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                        ]),
-                        const SizedBox(height: 20),
-                        Text(widget.teamData['nama_kelas'] ?? 'Mata Pelajaran',
-                          style: const TextStyle(color: AppTheme.textLight, fontSize: 15, fontWeight: FontWeight.w700, height: 1.2)),
-                        const SizedBox(height: 4),
-                        Text(widget.teamData['kode_kelas'] ?? '', style: const TextStyle(color: AppTheme.textMutedLt, fontSize: 12, fontWeight: FontWeight.w500)),
-                      ]),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                      child: Row(
                         children: [
-                          NeoSidebarItem(icon: LucideIcons.layoutDashboard, label: 'Dashboard',
-                            isSelected: _activeTabID == 'dashboard', onTap: () => setState(() { _activeTabID = 'dashboard'; _activeTitle = 'Dashboard'; })),
-                          NeoSidebarItem(icon: LucideIcons.userCheck, label: 'Presensi Saya',
-                            isSelected: _activeTabID == 'presensi', onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; })),
-                          NeoSidebarItem(icon: LucideIcons.clipboardList, label: 'Tugas Kelas',
-                            isSelected: _activeTabID == 'tugas', onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; })),
-                          NeoSidebarItem(icon: LucideIcons.helpCircle, label: 'Kuis & Ujian',
-                            isSelected: _activeTabID == 'kuis', onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
-                          NeoSidebarItem(icon: LucideIcons.award, label: 'Nilai Saya',
-                            isSelected: _activeTabID == 'nilai', onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai'; })),
-                          NeoSidebarItem(icon: LucideIcons.bookOpen, label: 'Materi Pelajaran',
-                            isSelected: _activeTabID == 'materi', onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; })),
-                          const SizedBox(height: 20),
-                          Padding(padding: const EdgeInsets.only(left: 12, bottom: 8),
-                            child: Text('CHANNELS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.textMutedLt.withAlpha(160), letterSpacing: 1.5))),
-                          NeoSidebarItem(icon: LucideIcons.hash, label: 'General',
-                            isSelected: _activeTabID == 'channel_general', isChannel: true,
-                            onTap: () => setState(() { _activeTabID = 'channel_general'; _activeTitle = 'General'; })),
-                          for (var c in _channels)
-                            NeoSidebarItem(icon: LucideIcons.hash, label: c['nama_channel'] ?? 'Unnamed',
-                              isSelected: _activeTabID == 'channel_${c['id']}', isChannel: true,
-                              onTap: () => setState(() { _activeTabID = 'channel_${c['id']}'; _activeTitle = c['nama_channel'] ?? ''; })),
-                          const SizedBox(height: 24),
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: _primary,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _onSurface, width: 2),
+                              boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+                            ),
+                            child: const Icon(Icons.school_rounded, color: Colors.white, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MyPSKD',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                    color: _onBackground,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                Text(
+                                  widget.teamData['nama_kelas'] ?? 'Academic Portal',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: _onSurfaceVariant,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    // User info footer
-                    Container(
-                      margin: const EdgeInsets.all(14),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightBg,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppTheme.lightBorder, width: 1.0),
-                      ),
-                      child: Row(children: [
-                        CircleAvatar(radius: 16,
-                          backgroundColor: AppTheme.primary.withAlpha(25),
-                          child: Text((widget.userData['nama'] ?? 'S')[0].toUpperCase(),
-                            style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13))),
-                        const SizedBox(width: 10),
-                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(widget.userData['nama'] ?? 'Siswa',
-                            style: const TextStyle(color: AppTheme.textLight, fontWeight: FontWeight.w700, fontSize: 12),
-                            overflow: TextOverflow.ellipsis),
-                          const Text('Siswa', style: TextStyle(color: AppTheme.textMutedLt, fontSize: 11)),
-                        ])),
-                      ]),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Divider(height: 1, color: _onSurface.withAlpha(50), thickness: 2),
                     ),
+                    const SizedBox(height: 16),
+                    // ── Profile Chip ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: _background,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: _onSurface, width: 2),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: const BoxDecoration(
+                                color: _primaryContainer,
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                (widget.userData['nama'] ?? 'S').trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase(),
+                                style: GoogleFonts.plusJakartaSans(color: _onPrimaryContainer, fontWeight: FontWeight.w800, fontSize: 16),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.userData['nama'] ?? 'Siswa',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: _onBackground,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: _primary,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: _onSurface, width: 1),
+                                    ),
+                                    child: Text(
+                                      'SISWA',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Divider(height: 1, color: _onSurface.withAlpha(50), thickness: 2),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'MENU KELAS',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2.0,
+                          color: _onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: [
+                          _TeamSidebarItemNeo(icon: LucideIcons.layoutDashboard, label: 'Dashboard',
+                            isSelected: _activeTabID == 'dashboard', onTap: () => setState(() { _activeTabID = 'dashboard'; _activeTitle = 'Dashboard'; })),
+                          const SizedBox(height: 8),
+                          _TeamSidebarItemNeo(icon: LucideIcons.userCheck, label: 'Presensi Saya',
+                            isSelected: _activeTabID == 'presensi', onTap: () => setState(() { _activeTabID = 'presensi'; _activeTitle = 'Presensi'; })),
+                          const SizedBox(height: 8),
+                          _TeamSidebarItemNeo(icon: LucideIcons.clipboardList, label: 'Tugas Kelas',
+                            isSelected: _activeTabID == 'tugas', onTap: () => setState(() { _activeTabID = 'tugas'; _activeTitle = 'Tugas'; })),
+                          const SizedBox(height: 8),
+                          _TeamSidebarItemNeo(icon: LucideIcons.helpCircle, label: 'Kuis & Ujian',
+                            isSelected: _activeTabID == 'kuis', onTap: () => setState(() { _activeTabID = 'kuis'; _activeTitle = 'Kuis & Ujian'; })),
+                          const SizedBox(height: 8),
+                          _TeamSidebarItemNeo(icon: LucideIcons.award, label: 'Nilai Saya',
+                            isSelected: _activeTabID == 'nilai', onTap: () => setState(() { _activeTabID = 'nilai'; _activeTitle = 'Nilai'; })),
+                          const SizedBox(height: 8),
+                          _TeamSidebarItemNeo(icon: LucideIcons.bookOpen, label: 'Materi Pelajaran',
+                            isSelected: _activeTabID == 'materi', onTap: () => setState(() { _activeTabID = 'materi'; _activeTitle = 'Materi'; })),
+                          const SizedBox(height: 20),
+                          Padding(padding: const EdgeInsets.only(left: 8, bottom: 8),
+                            child: Text('CHANNELS', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: _onSurfaceVariant, letterSpacing: 2.0))),
+                          _TeamSidebarItemNeo(icon: LucideIcons.hash, label: 'General',
+                            isSelected: _activeTabID == 'channel_general', isChannel: true,
+                            onTap: () => setState(() { _activeTabID = 'channel_general'; _activeTitle = 'General'; })),
+                          for (var c in _channels) ...[
+                            const SizedBox(height: 8),
+                            _TeamSidebarItemNeo(icon: LucideIcons.hash, label: c['nama_channel'] ?? 'Unnamed',
+                              isSelected: _activeTabID == 'channel_${c['id']}', isChannel: true,
+                              onTap: () => setState(() { _activeTabID = 'channel_${c['id']}'; _activeTitle = c['nama_channel'] ?? ''; })),
+                          ],
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                    _TeamLogoutButtonNeo(
+                      onLogout: () => Navigator.pop(context),
+                      label: 'Kembali',
+                      icon: Icons.arrow_back_rounded,
+                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -881,6 +985,157 @@ class GlassCard extends StatelessWidget {
         ],
       ),
       child: child,
+    );
+  }
+}
+
+class _TeamSidebarItemNeo extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isChannel;
+
+  const _TeamSidebarItemNeo({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.isChannel = false,
+  });
+
+  @override
+  State<_TeamSidebarItemNeo> createState() => _TeamSidebarItemNeoState();
+}
+
+class _TeamSidebarItemNeoState extends State<_TeamSidebarItemNeo> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: widget.isSelected ? _primaryContainer : (_hovered ? _background : Colors.transparent),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.isSelected || _hovered ? _onSurface : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: widget.isSelected || _hovered ? const [BoxShadow(color: _onSurface, offset: Offset(2, 2))] : [],
+          ),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: widget.isSelected ? _primary : Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: widget.isSelected ? _onSurface : (_hovered ? _onSurface : Colors.transparent), width: 1.5),
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: widget.isSelected ? Colors.white : _onSurfaceVariant,
+                  size: widget.isChannel ? 16 : 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  widget.label,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: widget.isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: widget.isSelected ? _onBackground : _onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (widget.isSelected)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _onSurface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _onSurface, width: 1),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TeamLogoutButtonNeo extends StatefulWidget {
+  final VoidCallback onLogout;
+  final String label;
+  final IconData icon;
+
+  const _TeamLogoutButtonNeo({required this.onLogout, required this.label, required this.icon});
+
+  @override
+  State<_TeamLogoutButtonNeo> createState() => _TeamLogoutButtonNeoState();
+}
+
+class _TeamLogoutButtonNeoState extends State<_TeamLogoutButtonNeo> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit:  (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onLogout,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            transform: Matrix4.translationValues(
+              _hovered ? 2 : 0,
+              _hovered ? 2 : 0,
+              0,
+            ),
+            decoration: BoxDecoration(
+              color: _error,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _onSurface, width: 2),
+              boxShadow: _hovered ? [] : const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(widget.icon, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  widget.label,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
