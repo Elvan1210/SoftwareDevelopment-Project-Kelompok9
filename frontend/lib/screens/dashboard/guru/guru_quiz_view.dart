@@ -385,10 +385,15 @@ class _QuizCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: NeoCard(
-        color: Theme.of(context).colorScheme.surface,
-        borderColor: Theme.of(context).colorScheme.onSurface,
+      child: Container(
         padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E2060) : Colors.white,
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: const [
+            BoxShadow(color: Colors.black, offset: Offset(4, 4), blurRadius: 0),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -397,9 +402,9 @@ class _QuizCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: accentColor.withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: accentColor.withAlpha(80)),
+                      color: isDark ? const Color(0xFF2A2D70) : Colors.white,
+                      border: Border.all(color: Colors.black, width: 1.5),
+                      boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
                     ),
                     child: Icon(
                       quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.clipboardList,
@@ -414,15 +419,21 @@ class _QuizCard extends StatelessWidget {
                       children: [
                         Text(
                           quiz.title,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : AppTheme.textLight,
-                            letterSpacing: -0.3),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 18,
+                            letterSpacing: -0.3,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           quiz.description.isNotEmpty ? quiz.description : 'Tidak ada deskripsi',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                            fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                            color: isDark ? Colors.white70 : Colors.black87,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -431,11 +442,24 @@ class _QuizCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   if (quiz.isScheduled)
-                    const NeoBadge(label: 'TERJADWAL', color: AppTheme.warning)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.warning,
+                        border: Border.all(color: Colors.black, width: 1.5),
+                        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                      ),
+                      child: Text('TERJADWAL', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                    )
                   else
-                    NeoBadge(
-                      label: quiz.isActive ? 'AKTIF' : 'NONAKTIF',
-                      color: quiz.isActive ? AppTheme.success : Colors.grey,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: quiz.isActive ? AppTheme.success : Colors.grey,
+                        border: Border.all(color: Colors.black, width: 1.5),
+                        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                      ),
+                      child: Text(quiz.isActive ? 'AKTIF' : 'NONAKTIF', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
                     ),
                 ],
               ),
@@ -476,7 +500,7 @@ class _QuizCard extends StatelessWidget {
               ),
 
               const SizedBox(height: 16),
-              Divider(height: 1, color: Theme.of(context).dividerColor),
+              const Divider(height: 1, color: Colors.black, thickness: 1.5),
               const SizedBox(height: 14),
 
               Wrap(
@@ -546,9 +570,9 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withAlpha(isDark ? 25 : 15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withAlpha(80), width: 1.2),
+        color: isDark ? const Color(0xFF2A2D70) : Colors.white,
+        border: Border.all(color: Colors.black, width: 1.2),
+        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -565,7 +589,7 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-class _ActionBtn extends StatelessWidget {
+class _ActionBtn extends StatefulWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -581,25 +605,40 @@ class _ActionBtn extends StatelessWidget {
   });
 
   @override
+  State<_ActionBtn> createState() => _ActionBtnState();
+}
+
+class _ActionBtnState extends State<_ActionBtn> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        transform: Matrix4.translationValues(
+          _isPressed ? 2 : 0,
+          _isPressed ? 2 : 0,
+          0,
+        ),
         decoration: BoxDecoration(
-          color: color.withAlpha(isDark ? 30 : 20),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withAlpha(80), width: 1.2),
+          color: widget.color,
+          border: Border.all(color: Colors.black, width: 1.5),
+          boxShadow: _isPressed ? [] : const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: color),
+            Icon(widget.icon, size: 14, color: Colors.white),
             const SizedBox(width: 6),
             Text(
-              label,
-              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: color, fontSize: 13),
+              widget.label,
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 13),
             ),
           ],
         ),

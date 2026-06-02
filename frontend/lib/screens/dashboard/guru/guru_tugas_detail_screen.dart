@@ -9,23 +9,23 @@ import '../../../config/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ─── Comic-style design tokens ───────────────────────────────────────────────
-const _kBorderRadius = 16.0;
-const _kBorderWidth  = 2.2;
+// ─── Neo-Brutalism style design tokens ───────────────────────────────────────────────
+const _kBorderRadius = 12.0;
+const _kBorderWidth  = 2.0;
 const _kShadowOffset = Offset(4, 4);
 
-const _kNavy    = Color(0xFF1A1F3C);
+const _kNavy    = Color(0xFF1E2060); // matching theme
 const _kCoral   = Color(0xFFFF6B6B);
 const _kAmber   = Color(0xFFFFA41B);
 const _kIndigo  = Color(0xFF4F46E5);
 const _kGreen   = Color(0xFF10B981);
 const Color _kTeal = Color(0xFF14B8A6);
-const _kBorder  = Color(0xFF1A1F3C);
+const _kBorder  = Colors.black;
 
 BoxDecoration _comicCard({
   Color bg = Colors.white,
   Color? borderColor,
-  Color shadowColor = const Color(0x55000000),
+  Color shadowColor = Colors.black,
   double radius = _kBorderRadius,
 }) =>
     BoxDecoration(
@@ -346,7 +346,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
     final gradedCount = _nilaiList.length;
     final totalCount = _pengumpulanList.length;
 
-    if (_isLoading) {
+if (_isLoading) {
       return Scaffold(
         backgroundColor: const Color(0xFFF0F2FF),
         appBar: _appBar(),
@@ -365,24 +365,23 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
         slivers: [
           // ── HERO HEADER ──────────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 230,
+            backgroundColor: const Color(0xFFF4FAFF),
             pinned: true,
-            stretch: true,
-            backgroundColor: _kNavy,
-            elevation: 0,
+            expandedHeight: 180,
             leading: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(20),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: Colors.white.withAlpha(60), width: 1.5),
+                        color: Colors.black, width: 2),
+                    boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
                   ),
                   child: const Icon(LucideIcons.arrowLeft,
-                      color: Colors.white, size: 20),
+                      color: Colors.black, size: 20),
                 ),
               ),
             ),
@@ -391,20 +390,12 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Gradient background
+                  // Solid background
                   Container(
                     decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [_kNavy, Color(0xFF2D1B69), Color(0xFF4F46E5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: Color(0xFFF4FAFF),
+                      border: Border(bottom: BorderSide(color: Colors.black, width: 2)),
                     ),
-                  ),
-                  // Dot pattern overlay
-                  Opacity(
-                    opacity: 0.07,
-                    child: CustomPaint(painter: _DotPatternPainter()),
                   ),
                   // Content
                   SafeArea(
@@ -420,20 +411,19 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                             runSpacing: 6,
                             children: [
                               _heroBadge(
-                                label: isPast ? '⚠ TERLAMBAT' : '✓ AKTIF',
-                                bg: isPast ? _kCoral : _kGreen,
+                                label: isPast ? 'TERLAMBAT' : 'AKTIF',
+                                bg: isPast ? const Color(0xFFFAD5C5) : const Color(0xFFC1E8CE),
                               ),
-
                             ],
                           ),
                           const SizedBox(height: 10),
                           // Title
                           Text(
                             widget.tugas['judul'] ?? 'Tanpa Judul',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: Colors.black,
                               letterSpacing: -0.5,
                               height: 1.2,
                             ),
@@ -446,14 +436,14 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                               children: [
                                 const Icon(LucideIcons.clock,
                                     size: 13,
-                                    color: Color(0xFFFFD166)),
+                                    color: Colors.black87),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Tenggat: ${_formatDate(widget.tugas['deadline'])}',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFFFFD166),
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black87,
                                   ),
                                 ),
                               ],
@@ -483,17 +473,17 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                             label: 'Mengumpulkan',
                             value: '$totalCount',
                             icon: LucideIcons.users,
-                            bg: const Color(0xFFE8F4FD),
-                            iconColor: AppTheme.info,
-                            borderColor: AppTheme.info),
+                            bg: const Color(0xFFC6EAFB),
+                            iconColor: Colors.black,
+                            borderColor: Colors.black),
                         const SizedBox(width: 10),
                         _statCard(
                             label: 'Dinilai',
                             value: '$gradedCount',
                             icon: LucideIcons.checkSquare,
-                            bg: const Color(0xFFE6F9F3),
-                            iconColor: _kGreen,
-                            borderColor: _kGreen),
+                            bg: const Color(0xFFC1E8CE),
+                            iconColor: Colors.black,
+                            borderColor: Colors.black),
                         const SizedBox(width: 10),
                         _statCard(
                             label: 'Pending',
@@ -514,8 +504,6 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                       width: double.infinity,
                       decoration: _comicCard(
                         bg: Colors.white,
-                        borderColor: _kIndigo,
-                        shadowColor: _kIndigo.withAlpha(80),
                       ),
                       padding: const EdgeInsets.all(18),
                       child: Column(
@@ -523,10 +511,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                         children: [
                           Text(
                             widget.tugas['judul'] ?? 'Tanpa Judul',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
                               fontWeight: FontWeight.w900,
-                              color: _kNavy,
+                              color: Colors.black,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -534,7 +522,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                             height: 3,
                             width: 40,
                             decoration: BoxDecoration(
-                              color: _kIndigo,
+                              color: Colors.black,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -543,10 +531,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                             widget.tugas['deskripsi'] ??
                                 'Tidak ada deskripsi.',
                             style: GoogleFonts.inter(
-                              fontSize: 13,
+                              fontSize: 14,
                               height: 1.65,
-                              color: const Color(0xFF4B5563),
-                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
 
@@ -608,21 +596,21 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withAlpha(80), width: 1.2),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black, width: 2),
+          boxShadow: const [
             BoxShadow(
-                color: bg.withAlpha(120),
-                blurRadius: 8,
-                offset: const Offset(0, 2))
+                color: Colors.black,
+                blurRadius: 0,
+                offset: Offset(3, 3))
           ],
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Colors.white,
+            color: Colors.black,
             letterSpacing: 0.3,
           ),
         ),
@@ -633,26 +621,26 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
           Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(9),
+              color: const Color(0xFFC6EAFB),
+              borderRadius: BorderRadius.circular(8),
               border:
-                  const Border.fromBorderSide(BorderSide(color: _kBorder, width: 1.8)),
-              boxShadow: [
+                  const Border.fromBorderSide(BorderSide(color: Colors.black, width: 2.0)),
+              boxShadow: const [
                 BoxShadow(
-                    color: color.withAlpha(100),
-                    offset: const Offset(2, 2),
+                    color: Colors.black,
+                    offset: Offset(2, 2),
                     blurRadius: 0)
               ],
             ),
-            child: Icon(icon, size: 14, color: Colors.white),
+            child: Icon(icon, size: 14, color: Colors.black),
           ),
           const SizedBox(width: 10),
           Text(
             title,
-            style: GoogleFonts.inter(
-              fontSize: 11,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
               fontWeight: FontWeight.w900,
-              color: color,
+              color: Colors.black,
               letterSpacing: 1.5,
             ),
           ),
@@ -660,11 +648,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
           Expanded(
             child: Container(
               height: 2,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [color.withAlpha(160), Colors.transparent]),
-                borderRadius: BorderRadius.circular(2),
-              ),
+              color: Colors.black,
             ),
           ),
         ],
@@ -683,12 +667,12 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: _kBorderWidth),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.black, width: 2),
+            boxShadow: const [
               BoxShadow(
-                  color: borderColor.withAlpha(80),
-                  offset: const Offset(3, 3),
+                  color: Colors.black,
+                  offset: Offset(4, 4),
                   blurRadius: 0)
             ],
           ),
@@ -749,8 +733,6 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
         child: Container(
           decoration: _comicCard(
             bg: const Color(0xFFE8F4FD),
-            borderColor: AppTheme.info,
-            shadowColor: AppTheme.info.withAlpha(120),
           ),
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -758,19 +740,19 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.info,
+                  color: const Color(0xFFC6EAFB),
                   borderRadius: BorderRadius.circular(12),
                   border: const Border.fromBorderSide(
-                      BorderSide(color: _kBorder, width: 1.5)),
-                  boxShadow: [
+                      BorderSide(color: _kBorder, width: 2.0)),
+                  boxShadow: const [
                     BoxShadow(
-                        color: AppTheme.info.withAlpha(100),
-                        offset: const Offset(2, 2),
+                        color: Colors.black,
+                        offset: Offset(2, 2),
                         blurRadius: 0)
                   ],
                 ),
                 child: const Icon(LucideIcons.fileText,
-                    color: Colors.white, size: 22),
+                    color: Colors.black, size: 22),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -779,18 +761,18 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                   children: [
                     Text(
                       'Buka File Lampiran',
-                      style: GoogleFonts.inter(
-                          fontSize: 14,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
                           fontWeight: FontWeight.w900,
-                          color: AppTheme.info),
+                          color: Colors.black),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'Ketuk untuk mengunduh / melihat',
                       style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.info.withAlpha(180)),
+                          color: Colors.black87),
                     ),
                   ],
                 ),
@@ -816,8 +798,6 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
         decoration: _comicCard(
           bg: Colors.white,
-          borderColor: Colors.grey.shade300,
-          shadowColor: Colors.grey.withAlpha(60),
         ),
         child: Column(
           children: [
@@ -862,15 +842,13 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
     }
     final isGraded = existing != null;
     final List<dynamic> files = p['files'] ?? [];
-    final accent = isGraded ? _kGreen : _kIndigo;
+    final accent = isGraded ? const Color(0xFFC1E8CE) : const Color(0xFFC6EAFB);
     final int? score = existing != null ? existing['nilai'] as int? : null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       decoration: _comicCard(
         bg: Colors.white,
-        borderColor: accent,
-        shadowColor: accent.withAlpha(100),
       ),
       child: Column(
         children: [
@@ -882,19 +860,20 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                 topLeft: Radius.circular(_kBorderRadius - 2),
                 topRight: Radius.circular(_kBorderRadius - 2),
               ),
+              border: const Border(bottom: BorderSide(color: Colors.black, width: 2.0)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 // Avatar
                 CircleAvatar(
-                  backgroundColor: Colors.white.withAlpha(30),
+                  backgroundColor: Colors.white,
                   radius: 20,
                   child: Text(
                     (p['siswa_nama'] ?? 'S').substring(0, 1).toUpperCase(),
                     style: GoogleFonts.inter(
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 16),
                   ),
                 ),
@@ -905,22 +884,22 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                     children: [
                       Text(
                         p['siswa_nama'] ?? 'Siswa',
-                        style: GoogleFonts.inter(
-                            fontSize: 14,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white),
+                            color: Colors.black),
                       ),
                       Row(
                         children: [
                           const Icon(LucideIcons.clock,
-                              size: 11, color: Colors.white70),
+                              size: 11, color: Colors.black87),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(p['waktu_pengumpulan']),
                             style: GoogleFonts.inter(
                                 fontSize: 11,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.w600),
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -933,9 +912,14 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                       horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: Colors.white.withAlpha(180), width: 1.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black, width: 2),
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Colors.black,
+                          offset: Offset(2, 2),
+                          blurRadius: 0)
+                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -945,7 +929,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                             ? LucideIcons.checkCircle
                             : LucideIcons.clock,
                         size: 12,
-                        color: accent,
+                        color: Colors.black,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -953,7 +937,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                         style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            color: accent),
+                            color: Colors.black),
                       ),
                     ],
                   ),
@@ -1130,7 +1114,7 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
                     _comicButton(
                       label: isGraded ? 'Edit Nilai' : 'Beri Nilai →',
                       icon: isGraded ? LucideIcons.edit2 : LucideIcons.checkSquare,
-                      bg: isGraded ? _kGreen : _kTeal,
+                      bg: const Color(0xFF3B6358), // Muted dark green
                       onTap: () => _showNilaiDialog(p, existing),
                     ),
                   ],
@@ -1158,10 +1142,10 @@ class _GuruTugasDetailScreenState extends State<GuruTugasDetailScreen>
             borderRadius: BorderRadius.circular(12),
             border: const Border.fromBorderSide(
                 BorderSide(color: _kBorder, width: 1.8)),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
-                  color: bg.withAlpha(150),
-                  offset: const Offset(3, 3),
+                  color: Colors.black,
+                  offset: Offset(3, 3),
                   blurRadius: 0)
             ],
           ),

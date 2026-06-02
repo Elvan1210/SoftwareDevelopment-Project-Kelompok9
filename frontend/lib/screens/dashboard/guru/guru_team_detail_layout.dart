@@ -12,11 +12,12 @@ import 'guru_quiz_view.dart';
 import '../shared/saluran_view.dart';
 import '../../../config/api_config.dart';
 import '../../../config/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
 import '../../../widgets/theme_toggle.dart';
 import '../../../widgets/jitsi_embed.dart';
-import '../../../widgets/neo_brutalism.dart';
+
 
 class GuruTeamDetailLayout extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -1123,7 +1124,9 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
 
   Widget _buildWebLayout(BuildContext context) {
     return AppShell(
+      fullWidth: true,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // ── Cosmic Sidebar ──
           Padding(
@@ -1167,7 +1170,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         children: [
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.hub_outlined,
                               label: 'Dashboard',
                               isSelected: _activeTabID == 'dashboard',
@@ -1175,7 +1178,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'dashboard';
                                     _activeTitle = 'Dashboard';
                                   })),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.person_add_alt_rounded,
                               label: 'Permintaan',
                               isSelected: _activeTabID == 'permintaan',
@@ -1184,7 +1187,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'permintaan';
                                     _activeTitle = 'Permintaan';
                                   })),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.how_to_reg_outlined,
                               label: 'Presensi Kelas',
                               isSelected: _activeTabID == 'presensi',
@@ -1192,7 +1195,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'presensi';
                                     _activeTitle = 'Presensi';
                                   })),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.assignment_outlined,
                               label: 'Penugasan',
                               isSelected: _activeTabID == 'tugas',
@@ -1200,7 +1203,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'tugas';
                                     _activeTitle = 'Penugasan';
                                   })),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.quiz_outlined,
                               label: 'Kuis & Ujian',
                               isSelected: _activeTabID == 'kuis',
@@ -1208,7 +1211,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'kuis';
                                     _activeTitle = 'Kuis & Ujian';
                                   })),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.military_tech_outlined,
                               label: 'Nilai Siswa',
                               isSelected: _activeTabID == 'nilai',
@@ -1216,7 +1219,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTabID = 'nilai';
                                     _activeTitle = 'Nilai Siswa';
                                   })),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.auto_stories_outlined,
                               label: 'Materi Ajar',
                               isSelected: _activeTabID == 'materi',
@@ -1245,7 +1248,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                             color:
                                                 Colors.white.withAlpha(150))),
                                   ])),
-                          NeoSidebarItem(
+                          _TeamSidebarItemNeo(
                               icon: Icons.tag_rounded,
                               label: 'General',
                               isSelected: _activeTabID == 'channel_general',
@@ -1255,7 +1258,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                     _activeTitle = 'General';
                                   })),
                           for (var c in _channels)
-                            NeoSidebarItem(
+                            _TeamSidebarItemNeo(
                                 icon: Icons.tag_rounded,
                                 label: c['nama_channel'] ?? 'Unnamed',
                                 isSelected:
@@ -1581,4 +1584,138 @@ class GlassCard extends StatelessWidget {
     );
   }
 }
+
+class _TeamSidebarItemNeo extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isChannel;
+  final int? badgeCount;
+  final VoidCallback? onDelete;
+
+  const _TeamSidebarItemNeo({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.isChannel = false,
+    this.badgeCount,
+    this.onDelete,
+  });
+
+  @override
+  State<_TeamSidebarItemNeo> createState() => _TeamSidebarItemNeoState();
+}
+
+class _TeamSidebarItemNeoState extends State<_TeamSidebarItemNeo> {
+  bool _hovered = false;
+  static const Color _background = Color(0xFFE8F1F5);
+  static const Color _primaryContainer = Color(0xFFB7E5CD);
+  static const Color _onSurface = Colors.black;
+  static const Color _onSurfaceVariant = Colors.black87;
+  static const Color _primary = Color(0xFF001E2B);
+  static const Color _onBackground = Colors.black;
+  static const Color _error = Color(0xFFEF4444);
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.only(bottom: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: widget.isSelected ? _primaryContainer : (_hovered ? _background : Colors.transparent),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.isSelected || _hovered ? _onSurface : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: widget.isSelected || _hovered ? const [BoxShadow(color: _onSurface, offset: Offset(2, 2))] : [],
+          ),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: widget.isSelected ? _primary : Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: widget.isSelected ? _onSurface : (_hovered ? _onSurface : Colors.transparent), width: 1.5),
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: widget.isSelected ? Colors.white : _onSurfaceVariant,
+                  size: widget.isChannel ? 16 : 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  widget.label,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: widget.isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: widget.isSelected ? _onBackground : _onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (widget.badgeCount != null && widget.badgeCount! > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _error,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _onSurface, width: 1.5),
+                  ),
+                  child: Text(
+                    '${widget.badgeCount}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              if (widget.onDelete != null && _hovered)
+                GestureDetector(
+                  onTap: widget.onDelete,
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: _error,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: _onSurface, width: 1.5),
+                    ),
+                    child: const Icon(Icons.close, size: 14, color: Colors.white),
+                  ),
+                ),
+              if (widget.isSelected && widget.badgeCount == null && widget.onDelete == null)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _onSurface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _onSurface, width: 1),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
