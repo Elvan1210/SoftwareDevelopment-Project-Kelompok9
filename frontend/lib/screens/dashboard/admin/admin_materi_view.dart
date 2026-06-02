@@ -1,4 +1,4 @@
-import '../../../config/theme.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
@@ -8,6 +8,7 @@ import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AdminMateriView extends StatefulWidget {
   final String token;
@@ -75,10 +76,24 @@ class _AdminMateriViewState extends State<AdminMateriView> {
             // ── Admin Explorer Header ──────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: AppTextField(
-                hintText: 'Cari materi atau guru...',
-                prefixIcon: LucideIcons.search,
-                onChanged: (val) => setState(() => _searchQuery = val),
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black, width: 2),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                ),
+                child: TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: 'Cari materi atau guru...',
+                    hintStyle: GoogleFonts.inter(color: Colors.black54, fontWeight: FontWeight.w600),
+                    prefixIcon: const Icon(LucideIcons.search, color: Colors.black),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                ),
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
 
@@ -146,47 +161,97 @@ class _AdminMateriCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = theme.primaryColor;
-
-    return PremiumCard(
-      accentColor: accent,
+    return Container(
       padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.graduationCap, color: accent, size: 20)),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC1E8FF), // Pastel blue
+                  border: Border.all(color: Colors.black, width: 1.5),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                ),
+                child: const Icon(LucideIcons.graduationCap, color: Colors.black, size: 20),
+              ),
               const SizedBox(width: 12),
-              const Expanded(child: Text('Materi', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-              IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: AppTheme.error, size: 20)),
+              Expanded(
+                child: Text(
+                  'Materi',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.black),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: onDelete,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444), // Red
+                    border: Border.all(color: Colors.black, width: 1.5),
+                    boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                  ),
+                  child: const Icon(LucideIcons.trash, color: Colors.white, size: 16),
+                ),
+              ),
             ],
           ),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
-                Text(materi['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text('Oleh: ${materi['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
-
+                const SizedBox(height: 12),
+                Text(
+                  materi['judul'] ?? '-',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5, color: Colors.black),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Oleh: ${materi['guru_nama'] ?? '-'}',
+                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.black87),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: PremiumElevatedButton(
-              onPressed: () => _launchURL(materi['file_url'] ?? materi['link']),
-              icon: LucideIcons.externalLink,
-              iconSize: 16,
-              color: accent.withAlpha(30),
-              textColor: accent,
-              radius: 12,
-              child: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+            child: GestureDetector(
+              onTap: () => _launchURL(materi['file_url'] ?? materi['link']),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFB7E5CD), // Pastel green
+                  border: Border.all(color: Colors.black, width: 2),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(3, 3))],
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(LucideIcons.externalLink, color: Colors.black, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Buka Materi',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.black, letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
