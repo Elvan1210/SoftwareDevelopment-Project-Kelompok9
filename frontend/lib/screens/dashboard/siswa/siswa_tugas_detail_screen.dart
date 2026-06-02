@@ -341,6 +341,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return AppShell(
+      fullWidth: true,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -354,8 +355,9 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
           actions: [
             if (!_isLoading)
               Padding(
-                padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-                child: _isTurnedIn
+                padding: const EdgeInsets.only(right: 16),
+                child: Center(
+                  child: _isTurnedIn
                     ? _NeoButton(
                         label: 'Batalkan',
                         color: _surface,
@@ -377,6 +379,7 @@ class _SiswaTugasDetailScreenState extends State<SiswaTugasDetailScreen> {
                             icon: Icons.send_rounded,
                             onTap: _isUploading ? null : _turnIn,
                           ),
+                ),
               ),
           ],
         ),
@@ -759,7 +762,7 @@ class _NeoButtonState extends State<_NeoButton> {
       onTap: widget.onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         transform: Matrix4.translationValues(
           _isPressed ? 2 : 0,
           _isPressed ? 2 : 0,

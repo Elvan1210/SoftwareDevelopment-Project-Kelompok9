@@ -191,6 +191,7 @@ class _SiswaTugasViewState extends State<SiswaTugasView> {
   Widget _buildGrid(bool isDesktop) {
     if (!isDesktop) {
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: List.generate(_filtered.length, (i) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 24),

@@ -400,6 +400,7 @@ class _SiswaMainLayoutState extends State<SiswaMainLayout> {
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     
     return AppShell(
+      fullWidth: true,
       child: Stack(
         children: [
           Column(

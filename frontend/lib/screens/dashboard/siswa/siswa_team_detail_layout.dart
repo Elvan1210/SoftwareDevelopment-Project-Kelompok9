@@ -83,28 +83,6 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     _fetchChannels();
     _fetchLiveStatus();
     _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) => _fetchLiveStatus());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final isM = MediaQuery.of(context).size.width <= 600;
-        if (isM){
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(LucideIcons.panelLeftOpen, color: Colors.white, size: 16),
-                  SizedBox(width: 8),
-                  Text('Geser dari kiri untuk lihat menu kelas',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ),
-              duration: const Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
-        }
-      }
-    });
   }
 
   @override
