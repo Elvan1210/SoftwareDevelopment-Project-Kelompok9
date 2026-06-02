@@ -1,4 +1,4 @@
-import '../../../config/theme.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
@@ -7,6 +7,7 @@ import 'dart:convert';
 import '../../../config/api_config.dart';
 import '../../../widgets/app_shell.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AdminTugasView extends StatefulWidget {
   final String token;
@@ -73,10 +74,24 @@ class _AdminTugasViewState extends State<AdminTugasView> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: AppTextField(
-                hintText: 'Cari tugas atau guru...',
-                prefixIcon: LucideIcons.search,
-                onChanged: (val) => setState(() => _searchQuery = val),
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black, width: 2),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                ),
+                child: TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: 'Cari tugas atau guru...',
+                    hintStyle: GoogleFonts.inter(color: Colors.black54, fontWeight: FontWeight.w600),
+                    prefixIcon: const Icon(LucideIcons.search, color: Colors.black),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                ),
               ).animate().fadeIn().slideY(begin: -0.1),
             ),
             Expanded(
@@ -142,46 +157,91 @@ class _AdminTugasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = theme.colorScheme.secondary;
-
-    return PremiumCard(
-      accentColor: accent,
+    return Container(
       padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: accent.withAlpha(20), shape: BoxShape.circle), child: Icon(LucideIcons.clipboardList, color: accent, size: 20)),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD1C0), // Pastel orange
+                  border: Border.all(color: Colors.black, width: 1.5),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                ),
+                child: const Icon(LucideIcons.clipboardList, color: Colors.black, size: 20),
+              ),
               const SizedBox(width: 12),
-              const Expanded(child: Text('Tugas', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-              IconButton(onPressed: onDelete, icon: const Icon(LucideIcons.trash, color: AppTheme.error, size: 20)),
+              Expanded(
+                child: Text(
+                  'Tugas',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.black),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: onDelete,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444), // Red
+                    border: Border.all(color: Colors.black, width: 1.5),
+                    boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                  ),
+                  child: const Icon(LucideIcons.trash, color: Colors.white, size: 16),
+                ),
+              ),
             ],
           ),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
-                Text(tugas['judul'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.3), maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text('Guru: ${tugas['guru_nama'] ?? '-'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text('Deadline: ${tugas['deadline'] ?? '-'}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withAlpha(160)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 12),
+                Text(
+                  tugas['judul'] ?? '-',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5, color: Colors.black),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Guru: ${tugas['guru_nama'] ?? '-'}',
+                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.black87),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  'Deadline: ${tugas['deadline'] ?? '-'}',
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black54),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(color: theme.colorScheme.onSurface.withAlpha(10), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              border: Border.all(color: Colors.black, width: 1),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.library, size: 12, color: theme.colorScheme.onSurface.withAlpha(160)),
+                const Icon(LucideIcons.library, size: 12, color: Colors.black),
                 const SizedBox(width: 6),
-
+                Text('TUGAS KELAS', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 10, color: Colors.black)),
               ],
             ),
           ),
