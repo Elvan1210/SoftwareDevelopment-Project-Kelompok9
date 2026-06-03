@@ -265,6 +265,39 @@ class QuizService {
     }
   }
 
+  static Future<Map<String, dynamic>> lockQuiz({
+    required String token,
+    required String quizId,
+    required String deviceId,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/quiz/$quizId/lock'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'deviceId': deviceId}),
+      );
+
+      if (res.statusCode == 200) {
+        return {'success': true};
+      }
+      
+      String message = 'Gagal masuk ke kuis';
+      try {
+        final body = jsonDecode(res.body);
+        if (body['message'] != null) message = body['message'];
+      } catch (_) {
+        // If response is not JSON (e.g. 404 HTML from server)
+      }
+      return {'success': false, 'message': message};
+    } catch (e) {
+      debugPrint('lockQuiz error: $e');
+      return {'success': false, 'message': 'Koneksi ke server gagal. Pastikan backend menyala.'};
+    }
+  }
+
   static Future<Map<String, dynamic>> shareQuiz({
     required String token,
     required String quizId,

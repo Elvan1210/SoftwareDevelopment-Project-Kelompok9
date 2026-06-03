@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,14 +43,28 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
   final Map<String, bool> _submittedMap = {};
   Timer? _refreshTimer;
   String _searchQuery = '';
+  String _deviceId = '';
 
   @override
   void initState() {
     super.initState();
+    _initDevice();
     _loadQuizzes();
     _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
+  }
+
+  Future<void> _initDevice() async {
+    final prefs = await SharedPreferences.getInstance();
+    _deviceId = prefs.getString('device_id') ?? '';
+    if (_deviceId.isEmpty) {
+      final random = math.Random();
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      _deviceId = String.fromCharCodes(Iterable.generate(
+          16, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+      await prefs.setString('device_id', _deviceId);
+    }
   }
 
   @override
@@ -93,12 +109,37 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
     }
   }
 
-  void _startExam(Quiz quiz) {
+  Future<void> _startExam(Quiz quiz) async {
     if (_submittedMap[quiz.id] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Anda sudah mengerjakan kuis ini', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           backgroundColor: _onSurface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator(color: _primary)),
+    );
+
+    final lockRes = await QuizService.lockQuiz(
+      token: widget.token,
+      quizId: quiz.id,
+      deviceId: _deviceId,
+    );
+
+    if (mounted) Navigator.pop(context);
+
+    if (lockRes['success'] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(lockRes['message'] ?? 'Gagal masuk ke kuis', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
         ),
       );

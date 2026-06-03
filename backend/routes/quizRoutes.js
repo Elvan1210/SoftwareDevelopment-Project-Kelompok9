@@ -13,6 +13,7 @@ router.delete('/:id', verifyToken, quizController.remove);
 
 router.post('/:id/share', verifyToken, quizController.shareToKelas);
 router.post('/:id/submit', verifyToken, quizController.submitAnswers);
+router.post('/:id/lock', verifyToken, quizController.lockQuiz);
 router.get('/:id/submissions', verifyToken, quizController.getSubmissions);
 router.get('/:id/check', verifyToken, quizController.checkSubmission);
 router.get('/:id/export', verifyToken, quizController.exportCsv);
