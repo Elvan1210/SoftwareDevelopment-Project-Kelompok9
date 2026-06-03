@@ -791,42 +791,76 @@ class _SiswaTeamDetailLayoutState extends State<SiswaTeamDetailLayout> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40, height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2),
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.85,
+        expand: false,
+        builder: (_, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle bar + judul (tidak ikut scroll)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40, height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE0E0E0),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Text('Menu Lainnya',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: _onSurface,
+                      )),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
-            ),
-            Text('Menu Lainnya',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-                color: _onSurface,
-              )),
-            const SizedBox(height: 16),
-            _buildMenuSheetItem(ctx, 'kuis', Icons.quiz_outlined,
-                'Kuis & Ujian', const Color(0xFFF27F33)),
-            _buildMenuSheetItem(ctx, 'presensi', Icons.how_to_reg_outlined,
-                'Presensi Saya', const Color(0xFF7B83EB)),
-            _buildMenuSheetItem(ctx, 'channel_general', Icons.tag_rounded,
-                'Channel General', const Color(0xFF10B981)),
-            for (var c in _channels)
-              _buildMenuSheetItem(ctx, 'channel_${c['id']}', Icons.tag_rounded,
-                  c['nama_channel'] ?? 'Channel', const Color(0xFF10B981)),
-          ],
+              // Daftar item yang bisa di-scroll
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                  children: [
+                    _buildMenuSheetItem(ctx, 'kuis', Icons.quiz_outlined,
+                        'Kuis & Ujian', const Color(0xFFF27F33)),
+                    _buildMenuSheetItem(ctx, 'presensi', Icons.how_to_reg_outlined,
+                        'Presensi Saya', const Color(0xFF7B83EB)),
+                    const Divider(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 4),
+                      child: Text('CHANNELS',
+                        style: GoogleFonts.inter(
+                          fontSize: 10, fontWeight: FontWeight.w800,
+                          color: Colors.black38, letterSpacing: 1.5,
+                        )),
+                    ),
+                    _buildMenuSheetItem(ctx, 'channel_general', Icons.tag_rounded,
+                        'General', const Color(0xFF10B981)),
+                    for (var c in _channels)
+                      _buildMenuSheetItem(ctx, 'channel_${c['id']}', Icons.tag_rounded,
+                          c['nama_channel'] ?? 'Channel', const Color(0xFF10B981)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

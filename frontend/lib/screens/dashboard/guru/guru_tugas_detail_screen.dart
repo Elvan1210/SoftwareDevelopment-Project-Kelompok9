@@ -474,24 +474,21 @@ if (_isLoading) {
                             value: '$totalCount',
                             icon: LucideIcons.users,
                             bg: const Color(0xFFC6EAFB),
-                            iconColor: Colors.black,
-                            borderColor: Colors.black),
+                            iconColor: Colors.black),
                         const SizedBox(width: 10),
                         _statCard(
                             label: 'Dinilai',
                             value: '$gradedCount',
                             icon: LucideIcons.checkSquare,
                             bg: const Color(0xFFC1E8CE),
-                            iconColor: Colors.black,
-                            borderColor: Colors.black),
+                            iconColor: Colors.black),
                         const SizedBox(width: 10),
                         _statCard(
                             label: 'Pending',
                             value: '${totalCount - gradedCount}',
                             icon: LucideIcons.clock,
                             bg: const Color(0xFFFFF8E8),
-                            iconColor: _kAmber,
-                            borderColor: _kAmber),
+                            iconColor: _kAmber),
                       ],
                     ),
                     const SizedBox(height: 22),
@@ -660,7 +657,6 @@ if (_isLoading) {
     required IconData icon,
     required Color bg,
     required Color iconColor,
-    required Color borderColor,
   }) =>
       Expanded(
         child: Container(
@@ -701,6 +697,7 @@ if (_isLoading) {
           ),
         ),
       );
+
 
 
 
@@ -1165,24 +1162,4 @@ if (_isLoading) {
           ),
         ),
       );
-}
-
-// ─── Dot pattern painter ──────────────────────────────────────────────────────
-class _DotPatternPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const spacing = 20.0;
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.fill;
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), 1.5, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotPatternPainter _) => false;
 }

@@ -399,7 +399,7 @@ class _GuruTeamsViewState extends State<GuruTeamsView> {
 }
 
 // ── Team Card ──────────────────────────────────────────────────────────────
-class _GuruTeamCard extends StatelessWidget {
+class _GuruTeamCard extends StatefulWidget {
   final dynamic tim;
   final Color headerColor;
   final Color accentColor;
@@ -413,103 +413,226 @@ class _GuruTeamCard extends StatelessWidget {
   });
 
   @override
+  State<_GuruTeamCard> createState() => _GuruTeamCardState();
+}
+
+class _GuruTeamCardState extends State<_GuruTeamCard> {
+  bool _isHovered = false;
+
+  static const _subjectIcons = [
+    LucideIcons.calculator,
+    LucideIcons.beaker,
+    LucideIcons.bookOpen,
+    LucideIcons.pen,
+    LucideIcons.globe,
+    LucideIcons.music,
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    final namaKelas = tim['nama_kelas']?.toString() ?? '-';
+    final namaKelas = widget.tim['nama_kelas']?.toString() ?? '-';
+    final siswaCount = (widget.tim['siswa_ids'] as List?)?.length ?? 0;
+    final kodeKelas  = widget.tim['kode_kelas']?.toString() ?? '';
+    final isDark     = Theme.of(context).brightness == Brightness.dark;
 
-    final siswaCount = (tim['siswa_ids'] as List?)?.length ?? 0;
-    final kodeKelas = tim['kode_kelas']?.toString() ?? '';
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Stable index from kodeKelas or namaKelas for icon cycling
+    final stableIdx  = (widget.tim['id']?.hashCode ?? namaKelas.hashCode).abs();
+    final subjectIcon = _subjectIcons[stableIdx % _subjectIcons.length];
 
-    return GestureDetector(
-      onTap: onTap,
-      child: NeoCard(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header color block ──────────────────────────────
-            Container(
-              width: double.infinity,
-              height: 100,
-              color: headerColor,
-              padding: const EdgeInsets.all(16),
-              child: Stack(
-                children: [
-                  // Kode kelas badge (bottom right)
-                  if (kodeKelas.isNotEmpty)
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit:  (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1C2230) : Colors.white,
+            border: Border.all(
+              color: _isHovered ? widget.accentColor : (isDark ? const Color(0xFF2D3748) : const Color(0xFF001E2B)),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: _isHovered
+                    ? widget.accentColor.withAlpha(100)
+                    : (isDark ? const Color(0xFF000000) : const Color(0xFF001E2B)),
+                offset: _isHovered ? const Offset(6, 6) : const Offset(4, 4),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──────────────────────────────────────────────────
+              SizedBox(
+                height: 110,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Base color
+                    Container(color: widget.headerColor),
+
+                    // Decorative circles
                     Positioned(
-                      bottom: 0,
-                      right: 0,
+                      right: -20, top: -20,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                        width: 110, height: 110,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                              color: accentColor,
-                              width: 1.5),
-                        ),
-                        child: Text(
-                          kodeKelas,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  color: accentColor,
-                                  letterSpacing: 1),
+                          shape: BoxShape.circle,
+                          color: widget.accentColor.withAlpha(25),
+                          border: Border.all(color: widget.accentColor.withAlpha(40), width: 2),
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
+                    Positioned(
+                      right: 30, bottom: -30,
+                      child: Container(
+                        width: 70, height: 70,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: widget.accentColor.withAlpha(15),
+                        ),
+                      ),
+                    ),
 
-            // ── Body ───────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nama kelas
-                  Text(namaKelas,
-                      style: Theme.of(context)
-                          .textTheme
-                          .displayLarge
-                          ?.copyWith(
+                    // Large background icon
+                    Positioned(
+                      left: 16, bottom: -8,
+                      child: Icon(
+                        subjectIcon,
+                        size: 80,
+                        color: widget.accentColor.withAlpha(30),
+                      ),
+                    ),
+
+                    // Foreground icon badge (top-left)
+                    Positioned(
+                      left: 16, top: 16,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: widget.accentColor, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.accentColor.withAlpha(80),
+                              offset: const Offset(2, 2),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Icon(subjectIcon, size: 20, color: widget.accentColor),
+                      ),
+                    ),
+
+                    // Kode kelas badge (bottom-right)
+                    if (kodeKelas.isNotEmpty)
+                      Positioned(
+                        bottom: 12, right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: widget.accentColor, width: 1.5),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: widget.accentColor.withAlpha(60),
+                                offset: const Offset(2, 2),
+                                blurRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            kodeKelas,
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
                               fontWeight: FontWeight.w900,
-                              color: isDark ? Colors.white : AppTheme.textLight,
-                              letterSpacing: -0.5,
-                              height: 1.2)),
-                  const SizedBox(height: 8),
-
-                  // Siswa count
-                  Row(children: [
-                    Icon(LucideIcons.users,
-                        size: 14,
-                        color: isDark
-                            ? AppTheme.textMutedDk
-                            : AppTheme.textMutedLt),
-                    const SizedBox(width: 6),
-                    Text('$siswaCount Siswa',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: isDark
-                                ? AppTheme.textMutedDk
-                                : AppTheme.textMutedLt)),
-                  ]),
-
-                  const SizedBox(height: 16),
-
-                  // Button MASUK KELAS
-                  NeoButton(
-                    text: 'MASUK KELAS',
-                    color: accentColor,
-                    onTap: onTap,
-                  ),
-                ],
+                              color: widget.accentColor,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // ── Left accent strip ───────────────────────────────────────
+              Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [widget.accentColor, widget.accentColor.withAlpha(80)],
+                  ),
+                ),
+              ),
+
+              // ── Body ───────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Nama kelas
+                    Text(
+                      namaKelas,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : AppTheme.textLight,
+                        letterSpacing: -0.5,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Siswa count pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: widget.headerColor.withAlpha(120),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: widget.accentColor.withAlpha(60),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.users, size: 12, color: widget.accentColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$siswaCount Siswa',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: widget.accentColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Button MASUK KELAS
+                    NeoButton(
+                      text: 'MASUK KELAS',
+                      color: widget.accentColor,
+                      onTap: widget.onTap,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
