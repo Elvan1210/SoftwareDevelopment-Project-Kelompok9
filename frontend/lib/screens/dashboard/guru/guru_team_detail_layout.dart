@@ -1230,7 +1230,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                           const SizedBox(height: 20),
                           Padding(
                               padding:
-                                  const EdgeInsets.only(left: 12, bottom: 8),
+                                  const EdgeInsets.only(left: 12, right: 10, bottom: 8),
                               child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -1241,12 +1241,29 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                                             fontWeight: FontWeight.w800,
                                             color: AppTheme.textMutedLt.withAlpha(160),
                                             letterSpacing: 1.5)),
-                                    InkWell(
+                                    Tooltip(
+                                      message: 'Buat Channel Baru',
+                                      child: InkWell(
                                         onTap: _showCreateChannelDialog,
-                                        child: Icon(Icons.add,
-                                            size: 16,
-                                            color:
-                                                Colors.white.withAlpha(150))),
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primary.withAlpha(15),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: AppTheme.primary.withAlpha(60),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.add_rounded,
+                                            size: 14,
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ])),
                           _TeamSidebarItemNeo(
                               icon: Icons.tag_rounded,
@@ -1420,8 +1437,59 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                 'Kuis & Ujian', const Color(0xFFF27F33), isDark),
             _buildMenuSheetItem(ctx, 'materi', Icons.auto_stories_outlined,
                 'Materi Ajar', const Color(0xFF8B5CF6), isDark),
+            const Divider(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('CHANNELS',
+                    style: TextStyle(
+                      fontSize: 10, fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                      letterSpacing: 1.5,
+                    )),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showCreateChannelDialog();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withAlpha(20),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF10B981).withAlpha(80),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_rounded, size: 13, color: Color(0xFF10B981)),
+                          SizedBox(width: 4),
+                          Text('Buat Channel', style: TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w700,
+                            color: Color(0xFF10B981),
+                          )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             _buildMenuSheetItem(ctx, 'channel_general', Icons.tag_rounded,
-                'Channel General', const Color(0xFF10B981), isDark),
+                'General', const Color(0xFF10B981), isDark),
+            for (var c in _channels)
+              _buildMenuSheetItem(
+                ctx,
+                'channel_${c['id']}',
+                Icons.tag_rounded,
+                c['nama_channel'] ?? 'Unnamed',
+                const Color(0xFF10B981),
+                isDark,
+              ),
           ],
         ),
       ),
