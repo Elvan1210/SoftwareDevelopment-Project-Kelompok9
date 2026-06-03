@@ -600,6 +600,43 @@ const kelasController = {
       res.status(500).json({ message: 'Error backfilling codes', error: error.message });
     }
   },
+  // POST /api/kelas/:id/kick — Keluarkan siswa dari kelas
+  kickStudent: async (req, res) => {
+    try {
+      const { user_id } = req.body;
+      if (!user_id) return res.status(400).json({ message: 'user_id diperlukan' });
+
+      const docRef = db.collection('kelas').doc(req.params.id);
+      const doc = await docRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+
+      const kelasData = doc.data();
+      const siswaIds = kelasData.siswa_ids || [];
+
+      if (!siswaIds.includes(user_id)) {
+        return res.status(404).json({ message: 'Siswa tidak ditemukan di kelas ini' });
+      }
+
+      // Hapus siswa dari siswa_ids
+      const updatedSiswaIds = siswaIds.filter(id => id !== user_id);
+
+      await docRef.update({ siswa_ids: updatedSiswaIds });
+
+      // Kirim notifikasi ke siswa yang di-kick
+      await sendNotification({
+        judul: 'Dikeluarkan dari Kelas',
+        pesan: `Anda telah dikeluarkan dari kelas "${kelasData.nama_kelas}" oleh guru.`,
+        targetUserId: user_id,
+      });
+
+      res.status(200).json({
+        message: 'Siswa berhasil dikeluarkan dari kelas',
+        user_id,
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error server', error: error.message });
+    }
+  },
 };
 
 module.exports = kelasController;

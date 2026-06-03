@@ -22,7 +22,8 @@ class GuruPendingRequestsView extends StatefulWidget {
   State<GuruPendingRequestsView> createState() => _GuruPendingRequestsViewState();
 }
 
-class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
+class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView>
+    with SingleTickerProviderStateMixin {
   static const _ink      = Color(0xFF001E2B);
   static const _primary  = Color(0xFF3D6754);
   static const _secondary = Color(0xFF336763);
@@ -32,23 +33,45 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
   static const _error    = Color(0xFFBA1A1A);
 
   static const List<Color> _avatarColors = [
-    Color(0xFFB7EDE7), // secondary-container
-    Color(0xFFB7E5CD), // primary-container
-    Color(0xFFC1E8FF), // surface-variant
-    Color(0xFFFFDBCE), // tertiary-fixed
+    Color(0xFFB7EDE7),
+    Color(0xFFB7E5CD),
+    Color(0xFFC1E8FF),
+    Color(0xFFFFDBCE),
   ];
 
+  late TabController _tabController;
+
+  // Tab 1: Pending
   List<dynamic> _pendingRequests = [];
   bool _isLoading = true;
   bool _autoAccept = false;
   bool _isProcessing = false;
 
+  // Tab 2: Members (Kick)
+  List<dynamic> _members = [];
+  bool _isMembersLoading = true;
+  bool _isKicking = false;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.index == 1 && _members.isEmpty && !_isMembersLoading) {
+        _fetchMembers();
+      }
+    });
     _fetchPendingRequests();
+    _fetchMembers();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // ─── Fetch Pending ──────────────────────────────────────────────────────────
   Future<void> _fetchPendingRequests() async {
     setState(() => _isLoading = true);
     try {
@@ -63,11 +86,32 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
         _autoAccept = data['auto_accept'] ?? false;
       }
     } catch (e) {
-      debugPrint('Error fetching pending requests: $e');
+      debugPrint('Error fetching pending: $e');
     }
     if (mounted) setState(() => _isLoading = false);
   }
 
+  // ─── Fetch Members ──────────────────────────────────────────────────────────
+  Future<void> _fetchMembers() async {
+    setState(() => _isMembersLoading = true);
+    try {
+      final kelasId = widget.teamData['id'];
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/kelas/$kelasId/members'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _members = data is List ? data : [];
+        widget.teamData['siswa_ids'] = _members.map((m) => m['id']).toList();
+      }
+    } catch (e) {
+      debugPrint('Error fetching members: $e');
+    }
+    if (mounted) setState(() => _isMembersLoading = false);
+  }
+
+  // ─── Accept ─────────────────────────────────────────────────────────────────
   Future<void> _acceptStudent(String userId, String nama) async {
     setState(() => _isProcessing = true);
     try {
@@ -90,6 +134,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           ));
         }
         _fetchPendingRequests();
+        _fetchMembers();
         widget.onRequestsChanged?.call();
       } else {
         final resBody = jsonDecode(response.body);
@@ -115,6 +160,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     if (mounted) setState(() => _isProcessing = false);
   }
 
+  // ─── Reject ─────────────────────────────────────────────────────────────────
   Future<void> _rejectStudent(String userId, String nama) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -157,6 +203,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     if (mounted) setState(() => _isProcessing = false);
   }
 
+  // ─── Accept All ─────────────────────────────────────────────────────────────
   Future<void> _acceptAll() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -192,6 +239,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
           ));
         }
         _fetchPendingRequests();
+        _fetchMembers();
         widget.onRequestsChanged?.call();
       }
     } catch (e) {
@@ -200,6 +248,7 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     if (mounted) setState(() => _isProcessing = false);
   }
 
+  // ─── Toggle Auto-Accept ─────────────────────────────────────────────────────
   Future<void> _toggleAutoAccept(bool value) async {
     try {
       final kelasId = widget.teamData['id'];
@@ -231,8 +280,174 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
     }
   }
 
+  // ─── KICK ───────────────────────────────────────────────────────────────────
+  Future<void> _kickStudent(String userId, String nama) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _ConfirmDialog(
+        title: 'Keluarkan Siswa?',
+        content:
+            'Apakah Anda yakin ingin mengeluarkan $nama dari kelas ini?\n\nSiswa dapat bergabung kembali menggunakan kode kelas.',
+        confirmLabel: 'KELUARKAN',
+        confirmColor: _error,
+        icon: Icons.person_remove_rounded,
+      ),
+    );
+    if (confirm != true) return;
+
+    setState(() => _isKicking = true);
+    try {
+      final kelasId = widget.teamData['id'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/kelas/$kelasId/kick'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({'user_id': userId}),
+      );
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('$nama telah dikeluarkan dari kelas',
+                style: const TextStyle(fontWeight: FontWeight.w800)),
+            backgroundColor: _error,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+        _fetchMembers();
+        widget.onRequestsChanged?.call();
+      } else {
+        final resBody = jsonDecode(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(resBody['message'] ?? 'Gagal mengeluarkan siswa',
+                style: const TextStyle(fontWeight: FontWeight.w800)),
+            backgroundColor: _error,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      }
+    } catch (e) {
+      debugPrint('Error kicking student: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Terjadi kesalahan. Pastikan backend sudah di-restart.',
+              style: TextStyle(fontWeight: FontWeight.w800)),
+          backgroundColor: _error,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+    if (mounted) setState(() => _isKicking = false);
+  }
+
+  // ─── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // ── Tab Bar ────────────────────────────────────────────────────────
+        Container(
+          margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          decoration: const BoxDecoration(
+            color: _surface,
+            border: Border.fromBorderSide(BorderSide(color: _ink, width: 2)),
+            boxShadow: [BoxShadow(color: _ink, offset: Offset(3, 3))],
+          ),
+          child: TabBar(
+            controller: _tabController,
+            indicatorColor: _primary,
+            indicatorWeight: 3,
+            labelColor: _primary,
+            unselectedLabelColor: _outline,
+            labelStyle: const TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+            tabs: [
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.pending_actions_rounded, size: 16),
+                    const SizedBox(width: 6),
+                    const Text('Permintaan'),
+                    if (_pendingRequests.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _tertiary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${_pendingRequests.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.people_rounded, size: 16),
+                    const SizedBox(width: 6),
+                    const Text('Siswa Aktif'),
+                    if (_members.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _primary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${_members.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ── Tab Content ────────────────────────────────────────────────────
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildPendingTab(),
+              _buildMembersTab(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Tab 1: Pending Requests ─────────────────────────────────────────────
+  Widget _buildPendingTab() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: _primary));
     }
@@ -258,6 +473,201 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
                   const SizedBox(height: 20),
                   _buildAcceptAllButton(),
                 ],
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Tab 2: Active Members (Kick) ────────────────────────────────────────
+  Widget _buildMembersTab() {
+    if (_isMembersLoading) {
+      return const Center(child: CircularProgressIndicator(color: _primary));
+    }
+
+    return RefreshIndicator(
+      onRefresh: _fetchMembers,
+      color: _primary,
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // Header
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Siswa Aktif',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: _ink,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_members.length} siswa terdaftar di kelas ini',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _outline,
+                      ),
+                    ),
+                  ],
+                ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05),
+
+                const SizedBox(height: 8),
+
+                // Info bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFF8E8),
+                    border: Border.fromBorderSide(BorderSide(color: _ink, width: 1.5)),
+                    boxShadow: [BoxShadow(color: _ink, offset: Offset(2, 2))],
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, size: 16, color: _tertiary),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Siswa yang di-kick dapat bergabung kembali menggunakan kode kelas.',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _tertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
+
+                const SizedBox(height: 16),
+
+                if (_members.isEmpty)
+                  _buildMembersEmptyState()
+                else
+                  ..._members.asMap().entries.map((e) {
+                    final member = e.value;
+                    final idx = e.key;
+                    final nama = member['nama'] ?? 'Siswa';
+                    final email = member['email'] ?? '';
+                    final userId = member['id'] ?? '';
+                    final avatarBg = _avatarColors[idx % _avatarColors.length];
+
+                    String initials = '??';
+                    final parts = nama.trim().split(' ');
+                    if (parts.length >= 2) {
+                      initials = (parts[0][0] + parts[1][0]).toUpperCase();
+                    } else if (nama.trim().isNotEmpty) {
+                      initials = nama.trim().substring(0, nama.trim().length >= 2 ? 2 : 1).toUpperCase();
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: _surface,
+                          border: Border.fromBorderSide(BorderSide(color: _ink, width: 2)),
+                          boxShadow: [BoxShadow(color: _ink, offset: Offset(3, 3), blurRadius: 0)],
+                        ),
+                        child: Row(
+                          children: [
+                            // Avatar strip
+                            Container(
+                              width: 56,
+                              height: 70,
+                              color: avatarBg,
+                              child: Center(
+                                child: Text(
+                                  initials,
+                                  style: const TextStyle(
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: _ink,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Info
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      nama,
+                                      style: const TextStyle(
+                                        fontFamily: 'Plus Jakarta Sans',
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: _ink,
+                                      ),
+                                    ),
+                                    if (email.isNotEmpty)
+                                      Text(
+                                        email,
+                                        style: const TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 12,
+                                          color: _outline,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFB7E5CD),
+                                        border: Border.all(color: _primary, width: 1),
+                                      ),
+                                      child: const Text(
+                                        'AKTIF',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                          color: _primary,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Kick button
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: _NeoButton(
+                                label: 'KICK',
+                                icon: Icons.person_remove_rounded,
+                                color: Colors.white,
+                                textColor: _error,
+                                shadowOffset: const Offset(2, 2),
+                                borderColor: _error,
+                                onTap: _isKicking ? null : () => _kickStudent(userId, nama),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ).animate(delay: (idx * 50).ms).fadeIn(duration: 300.ms).slideX(begin: 0.05),
+                    );
+                  }),
               ]),
             ),
           ),
@@ -305,14 +715,28 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
       child: Row(
         children: [
           const Expanded(
-            child: Text(
-              'Auto Terima Siswa',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: _ink,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Auto Terima Siswa',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: _ink,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Siswa langsung masuk tanpa persetujuan manual',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    color: _outline,
+                  ),
+                ),
+              ],
             ),
           ),
           Switch.adaptive(
@@ -344,7 +768,6 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
             }).toList(),
           );
         }
-        // Two-column grid
         final rows = <Widget>[];
         for (int i = 0; i < _pendingRequests.length; i += 2) {
           rows.add(Padding(
@@ -419,6 +842,48 @@ class _GuruPendingRequestsViewState extends State<GuruPendingRequestsView> {
             const SizedBox(height: 6),
             const Text(
               'Permintaan bergabung dari siswa akan muncul di sini.',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: _outline,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+
+  Widget _buildMembersEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 60),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFFC1E8FF),
+                border: Border.fromBorderSide(BorderSide(color: _ink, width: 2)),
+                boxShadow: [BoxShadow(color: _ink, offset: Offset(4, 4))],
+              ),
+              child: const Icon(Icons.people_outline_rounded, size: 52, color: _secondary),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Belum Ada Siswa',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: _ink,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Siswa yang sudah bergabung akan ditampilkan di sini.',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
@@ -697,6 +1162,7 @@ class _NeoButton extends StatefulWidget {
   final IconData? icon;
   final Color color;
   final Color textColor;
+  final Color? borderColor;
   final Offset shadowOffset;
   final VoidCallback? onTap;
 
@@ -705,6 +1171,7 @@ class _NeoButton extends StatefulWidget {
     this.icon,
     required this.color,
     required this.textColor,
+    this.borderColor,
     this.shadowOffset = const Offset(2, 2),
     this.onTap,
   });
@@ -719,6 +1186,7 @@ class _NeoButtonState extends State<_NeoButton> {
 
   @override
   Widget build(BuildContext context) {
+    final borderCol = widget.borderColor ?? _ink;
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) {
@@ -735,12 +1203,12 @@ class _NeoButtonState extends State<_NeoButton> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: widget.onTap == null ? Colors.grey.shade300 : widget.color,
-          border: Border.all(color: _ink, width: 2),
+          border: Border.all(color: borderCol, width: 2),
           boxShadow: _pressed
               ? []
               : [
                   BoxShadow(
-                      color: _ink,
+                      color: borderCol,
                       offset: widget.shadowOffset,
                       blurRadius: 0)
                 ],

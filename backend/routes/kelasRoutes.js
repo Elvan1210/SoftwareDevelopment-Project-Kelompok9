@@ -12,6 +12,7 @@ router.post('/:id/accept', verifyToken, ctrl.acceptStudent);
 router.post('/:id/reject', verifyToken, ctrl.rejectStudent);
 router.post('/:id/accept-all', verifyToken, ctrl.acceptAllStudents);
 router.put('/:id/auto-accept', verifyToken, ctrl.toggleAutoAccept);
+router.post('/:id/kick', verifyToken, ctrl.kickStudent);
 router.get('/:id/members', verifyToken, ctrl.getMembers);
 router.get('/:id/live-url', verifyToken, ctrl.generateLiveClassUrl);
 router.get('/:id/live-status', verifyToken, ctrl.getLiveStatus);
