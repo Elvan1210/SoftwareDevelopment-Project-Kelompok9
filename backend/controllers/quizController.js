@@ -248,6 +248,9 @@ const quizController = {
 
       const docRef = await db.collection('quiz_submissions').add(submissionData);
 
+      // Remove the lock since they have submitted
+      await db.collection('quiz_sessions').doc(`${quizId}_${userId}`).delete().catch(() => {});
+
       res.status(201).json({
         message: 'Jawaban berhasil disimpan',
         data: { _id: docRef.id, ...submissionData }
@@ -609,6 +612,42 @@ Pastikan kembalian hanya JSON murni tanpa markdown \`\`\`.`;
       res.status(200).json({ data: submissions });
     } catch (error) {
       res.status(500).json({ message: 'Error mengambil riwayat kuis siswa', error: error.message });
+    }
+  },
+
+  lockQuiz: async (req, res) => {
+    try {
+      const { deviceId } = req.body;
+      const quizId = req.params.id;
+      const studentId = req.user?.id || req.user?.uid;
+
+      if (!studentId || !deviceId) {
+        return res.status(400).json({ message: 'studentId dan deviceId diperlukan' });
+      }
+
+      const sessionRef = db.collection('quiz_sessions').doc(`${quizId}_${studentId}`);
+      const doc = await sessionRef.get();
+
+      if (doc.exists) {
+        const data = doc.data();
+        // If the lock belongs to a DIFFERENT device, reject.
+        // If it belongs to the SAME device, allow them to resume.
+        if (data.deviceId !== deviceId) {
+          return res.status(403).json({ message: 'Akun ini sedang mengerjakan kuis ini di perangkat lain. Silakan pilih kuis lain.' });
+        }
+      }
+
+      // Set or update the lock
+      await sessionRef.set({
+        quizId,
+        studentId,
+        deviceId,
+        lockedAt: new Date().toISOString()
+      }, { merge: true });
+
+      res.status(200).json({ message: 'Kuis dikunci untuk perangkat ini' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error locking quiz', error: error.message });
     }
   },
 };
