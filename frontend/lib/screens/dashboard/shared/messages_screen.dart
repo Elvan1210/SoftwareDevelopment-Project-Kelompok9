@@ -1198,21 +1198,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
           children: [
             AvatarWidget(initial: initial, photoUrl: photoUrl, size: 56),
             Positioned(
-              right: -6,
-              top: -6,
+              right: 0,
+              bottom: 0,
               child: Container(
-                width: 20,
-                height: 20,
+                width: 16,
+                height: 16,
                 decoration: BoxDecoration(
-                  color: AppTheme.secondary,
+                  color: AppTheme.getStatusColor(data?['status'] as String? ?? 'Available'),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    width: 2,
+                    color: Theme.of(context).colorScheme.surface,
+                    width: 2.5,
                   ),
                 ),
-                alignment: Alignment.center,
-                child: const Icon(LucideIcons.check, color: Colors.white, size: 12),
               ),
             ),
           ],
@@ -1290,6 +1288,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               final isActive = activeConversationId == conv['id'];
                               final initial = convName.isNotEmpty ? convName[0].toUpperCase() : '?';
                               final isGroup = conv['type'] == 'group';
+                              String? partnerId;
+                              if (!isGroup) {
+                                final parts = List<String>.from(conv['participants'] ?? []);
+                                partnerId = parts.firstWhere((id) => id != myId, orElse: () => '');
+                              }
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 8),
@@ -1317,7 +1320,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                       child: Row(
                                         children: [
                                           // Avatar
-                                          _buildAvatar(null, initial, isGroup: isGroup),
+                                          _buildAvatar(partnerId, initial, isGroup: isGroup),
                                           const SizedBox(width: 16),
                                           // Text Area
                                           Expanded(
@@ -1471,7 +1474,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ),
                       ),
                     _buildAvatar(
-                      null, 
+                      activeConversationType == 'group' ? null : () {
+                        try {
+                          final conv = conversations.firstWhere((c) => c['id'] == activeConversationId);
+                          final parts = List<String>.from(conv['participants'] ?? []);
+                          return parts.firstWhere((id) => id != myId, orElse: () => '');
+                        } catch (_) {
+                          return null;
+                        }
+                      }(), 
                       activeChatName?.isNotEmpty == true ? activeChatName![0].toUpperCase() : '?',
                       isGroup: activeConversationType == 'group',
                     ),
