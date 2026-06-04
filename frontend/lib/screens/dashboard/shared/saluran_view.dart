@@ -126,35 +126,132 @@ class _SaluranViewState extends State<SaluranView> {
       if (mounted) setState(() => _isSending = false);
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final primaryBg = isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF);
 
     final mainPosts = _allData
         .where((m) =>
             (m['channel_id']?.toString() ?? 'general') == widget.channelId &&
             m['parentId'] == null)
         .toList();
+        
+    final allReplies = _allData
+        .where((m) =>
+            (m['channel_id']?.toString() ?? 'general') == widget.channelId &&
+            m['parentId'] != null)
+        .toList();
 
     return Scaffold(
-      backgroundColor:
-          Theme.of(context).colorScheme.surface,
-      body: Column(
+      backgroundColor: primaryBg,
+      body: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
+                : SingleChildScrollView(
                     controller: _scrollCtrl,
-                    padding: const EdgeInsets.all(20),
-                    itemCount: mainPosts.length,
-                    itemBuilder: (context, i) =>
-                        _buildPostThread(mainPosts[i], isDark, theme),
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final infoCard = _buildInfoCard(isDark, mainPosts.length, allReplies.length);
+                        
+                        final threads = ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: mainPosts.length,
+                          itemBuilder: (context, i) =>
+                              _buildPostThread(mainPosts[i], isDark, theme),
+                        );
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            infoCard,
+                            const SizedBox(height: 24),
+                            threads,
+                          ],
+                        );
+                      },
+                    ),
                   ),
           ),
-          _buildNewPostButton(theme, isDark),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildNewPostButton(theme, isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(bool isDark, int topicCount, int replyCount) {
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF161B27) : Colors.white,
+        border: Border(
+          top: BorderSide(color: onSurfaceVariant),
+          right: BorderSide(color: onSurfaceVariant),
+          bottom: BorderSide(color: onSurfaceVariant),
+          left: const BorderSide(color: Color(0xFF3D6754), width: 4),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('INFO SALURAN',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF3D6754),
+                letterSpacing: 0.5,
+                fontFamily: 'Inter',
+              )),
+          const SizedBox(height: 8),
+          Text(widget.channelName,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: onSurface,
+                fontFamily: 'Plus Jakarta Sans',
+              )),
+          const SizedBox(height: 16),
+          Text('Tempat berbagi informasi, bertanya, dan berkolaborasi antar siswa dan pengajar.',
+              style: TextStyle(
+                fontSize: 14,
+                color: onSurfaceVariant,
+                fontFamily: 'Inter',
+              )),
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$topicCount', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF336763), fontFamily: 'Plus Jakarta Sans')),
+                  Text('TOPIK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurfaceVariant, fontFamily: 'Inter')),
+                ],
+              ),
+              const SizedBox(width: 24),
+              Container(width: 1, height: 40, color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2)),
+              const SizedBox(width: 24),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$replyCount', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF336763), fontFamily: 'Plus Jakarta Sans')),
+                  Text('BALASAN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurfaceVariant, fontFamily: 'Inter')),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -164,200 +261,238 @@ class _SaluranViewState extends State<SaluranView> {
       Map<String, dynamic> post, bool isDark, ThemeData theme) {
     final postId = post['id']?.toString() ?? post['_id']?.toString() ?? '';
     final replies = _allData.where((m) => m['parentId'] == postId).toList();
+    
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.surface,
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 40 : 8),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // POSTINGAN UTAMA
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  CircleAvatar(
-                      radius: 18,
-                      child:
-                          Text(post['pengirim_nama']?[0].toUpperCase() ?? '?')),
-                  const SizedBox(width: 12),
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(post['pengirim_nama'] ?? 'User',
-                            style:
-                                GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                        Text(post['waktu']?.toString().split('T')[0] ?? '',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.65))),
-                      ])
-                ]),
-                const SizedBox(height: 12),
-                // Cek apakah ini post tugas
-                if (post['tipe'] == 'tugas') ...[
-                  GestureDetector(
-                    onTap: () async {
-                      final tugasId = post['tugas_id'];
-                      if (tugasId == null) return;
+    final isTugas = post['tipe'] == 'tugas';
+    final author = post['pengirim_nama'] ?? 'User';
+    final timeAgo = post['waktu']?.toString().split('T')[0] ?? '';
+    final repliesCount = replies.length;
+    final lastActive = replies.isNotEmpty ? (replies.last['waktu']?.toString().split('T')[0] ?? timeAgo) : timeAgo;
 
-                      // Fetch data tugas
-                      try {
-                        final res = await http.get(
-                          Uri.parse('$baseUrl/api/tugas/$tugasId'),
-                          headers: {'Authorization': 'Bearer ${widget.token}'},
-                        );
-                        if (res.statusCode == 200 && mounted) {
-                          final tugas = jsonDecode(res.body);
-                          if (_myRole == 'Guru') {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => GuruTugasDetailScreen(
-                                      tugas: tugas, token: widget.token),
-                                ));
-                          } else {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => SiswaTugasDetailScreen(
-                                    tugas: tugas,
-                                    userData: widget.userData,
-                                    token: widget.token,
-                                    // hapus teamData
-                                  ),
-                                ));
-                          }
-                        }
-                      } catch (e) {
-                        debugPrint('Error fetch tugas: $e');
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 24, top: 12, right: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161B27) : Colors.white,
+            border: Border.all(color: onSurfaceVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // POSTINGAN UTAMA
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.secondary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: theme.colorScheme.secondary.withAlpha(60)),
+                        color: const Color(0xFFB7EDE7),
+                        border: Border.all(color: onSurfaceVariant),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.secondary.withAlpha(30),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(LucideIcons.clipboardList,
-                                color: theme.colorScheme.secondary, size: 22),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post['judul_tugas'] ?? post['pesan'] ?? '-',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (post['deadline_tugas'] != null) ...[
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Icon(LucideIcons.clock,
-                                          size: 12,
-                                          color: theme.colorScheme.secondary),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Deadline: ${post['deadline_tugas'].toString().split('T')[0]}',
-                                        style: Theme.of(context).textTheme.labelLarge?.copyWith(color: theme.colorScheme.secondary,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          Icon(LucideIcons.chevronRight,
-                              size: 16, color: theme.colorScheme.secondary),
-                        ],
+                      child: Center(
+                        child: Text(author.isNotEmpty ? author[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF336763),
+                            )),
                       ),
                     ),
-                  ),
-                ] else ...[
-                  Text(post['pesan'] ?? '',
-                      style: Theme.of(context).textTheme.headlineMedium),
-                ],
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-
-          // DAFTAR BALASAN (REPLIES)
-          if (replies.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: isDark
-                  ? Colors.white.withAlpha(5)
-                  : Colors.grey.withAlpha(10),
-              child: Column(
-                children: replies
-                    .map((r) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CircleAvatar(
-                                  radius: 12,
-                                  child: Text(
-                                      r['pengirim_nama']?[0].toUpperCase() ??
-                                          '?',
-                                      style: Theme.of(context).textTheme.labelMedium)),
-                              const SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Text(isTugas ? (post['judul_tugas'] ?? 'Tugas Baru') : (author + ' memulai diskusi'),
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: onSurface,
+                                      fontFamily: 'Plus Jakarta Sans',
+                                    )),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(timeAgo,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: onSurfaceVariant,
+                                    fontFamily: 'Inter',
+                                  )),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text('Oleh $author',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF336763),
+                                fontFamily: 'Inter',
+                              )),
+                          const SizedBox(height: 12),
+                          
+                          if (isTugas) ...[
+                            GestureDetector(
+                              onTap: () async {
+                                final tugasId = post['tugas_id'];
+                                if (tugasId == null) return;
+                                try {
+                                  final res = await http.get(
+                                    Uri.parse('$baseUrl/api/tugas/$tugasId'),
+                                    headers: {'Authorization': 'Bearer ${widget.token}'},
+                                  );
+                                  if (res.statusCode == 200 && mounted) {
+                                    final tugas = jsonDecode(res.body);
+                                    if (_myRole == 'Guru') {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => GuruTugasDetailScreen(tugas: tugas, token: widget.token)));
+                                    } else {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => SiswaTugasDetailScreen(tugas: tugas, userData: widget.userData, token: widget.token)));
+                                    }
+                                  }
+                                } catch (e) {
+                                  debugPrint('Error fetch tugas: $e');
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.secondary.withAlpha(15),
+                                  border: Border.all(color: theme.colorScheme.secondary.withAlpha(60)),
+                                ),
+                                child: Row(
                                   children: [
-                                    Text(r['pengirim_nama'] ?? 'User',
-                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-                                    Text(r['pesan'] ?? '',
-                                        style: Theme.of(context).textTheme.titleMedium),
+                                    Icon(LucideIcons.clipboardList, color: theme.colorScheme.secondary, size: 20),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(post['pesan'] ?? 'Lihat detail tugas', style: TextStyle(color: onSurface, fontFamily: 'Inter')),
+                                          if (post['deadline_tugas'] != null)
+                                            Text('Deadline: ${post['deadline_tugas'].toString().split('T')[0]}',
+                                                style: TextStyle(fontSize: 12, color: theme.colorScheme.secondary, fontWeight: FontWeight.w600)),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(LucideIcons.chevronRight, size: 16, color: theme.colorScheme.secondary),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ))
-                    .toList(),
-              ),
-            ),
+                            ),
+                          ] else ...[
+                            Text(post['pesan'] ?? '',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: onSurfaceVariant,
+                                  fontFamily: 'Inter',
+                                  height: 1.5,
+                                )),
+                          ],
 
-          // INPUT BALASAN BAWAH (REPLY)
-          _buildReplySection(postId, isDark),
-        ],
-      ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.only(top: 16),
+                            decoration: BoxDecoration(
+                              border: Border(top: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.forum, size: 16, color: onSurfaceVariant),
+                                const SizedBox(width: 4),
+                                Text('$repliesCount Balasan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
+                                const SizedBox(width: 24),
+                                Icon(Icons.history, size: 16, color: onSurfaceVariant),
+                                const SizedBox(width: 4),
+                                Text('Aktif $lastActive', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // DAFTAR BALASAN (REPLIES)
+              if (replies.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withAlpha(5) : const Color(0xFFF4FAFF),
+                    border: Border(top: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: replies
+                        .map((r) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: onSurfaceVariant.withAlpha(50),
+                                      child: Text(
+                                          r['pengirim_nama']?[0].toUpperCase() ?? '?',
+                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: onSurface))),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(r['pengirim_nama'] ?? 'User',
+                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
+                                        const SizedBox(height: 2),
+                                        Text(r['pesan'] ?? '',
+                                            style: TextStyle(fontSize: 13, color: onSurfaceVariant, fontFamily: 'Inter')),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ),
+
+              // INPUT BALASAN BAWAH (REPLY)
+              _buildReplySection(postId, isDark),
+            ],
+          ),
+        ),
+        if (isTugas)
+          Positioned(
+            top: 11,
+            right: 11,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8D4D33),
+                border: Border.all(color: onSurfaceVariant),
+              ),
+              child: const Text('TUGAS',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontFamily: 'Inter',
+                    letterSpacing: 0.5,
+                  )),
+            ),
+          ),
+      ],
     ).animate().fadeIn();
   }
 
@@ -410,10 +545,9 @@ class _SaluranViewState extends State<SaluranView> {
   Widget _buildNewPostButton(ThemeData theme, bool isDark) {
     const accentColor = Color(0xFF76AFB8);
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
       child: PremiumElevatedButton(
         onPressed: () => _showNewPostDialog(),
