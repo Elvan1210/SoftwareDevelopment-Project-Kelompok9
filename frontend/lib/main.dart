@@ -115,70 +115,48 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final primaryBg = isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF);
+    final gridColor = isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2);
+
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
+      backgroundColor: primaryBg,
       body: Stack(
         children: [
-          // Background blobs
-          Positioned(
-            top: -150, left: -100,
-            child: Container(
-              width: 500, height: 500,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppTheme.indigoPrimary.withAlpha(isDark ? 60 : 35),
-                  Colors.transparent,
-                ]),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -200, right: -80,
-            child: Container(
-              width: 600, height: 600,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppTheme.primary.withAlpha(isDark ? 45 : 25),
-                  Colors.transparent,
-                ]),
-              ),
-            ),
-          ),
-
           // Content
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo with pulse glow
+                // Asymmetric Bento-style container for the icon
                 AnimatedBuilder(
                   animation: _pulseCtrl,
                   builder: (_, __) => Container(
-                    width: 110,
-                    height: 110,
+                    width: 96,
+                    height: 96,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [AppTheme.indigoPrimary, AppTheme.primary],
+                      color: isDark ? const Color(0xFF161B27) : const Color(0xFFB7E5CD),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF414944) : const Color(0xFF717974),
+                        width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        bottomRight: Radius.circular(24),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.indigoPrimary.withAlpha(
-                            (80 + 60 * _pulseCtrl.value).round(),
+                          color: const Color(0xFF3D6754).withAlpha(
+                            (40 + 20 * _pulseCtrl.value).round(),
                           ),
-                          blurRadius: 30 + 20 * _pulseCtrl.value,
-                          spreadRadius: 4 * _pulseCtrl.value,
+                          blurRadius: 15 + 10 * _pulseCtrl.value,
+                          spreadRadius: 2 * _pulseCtrl.value,
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.school_rounded,
-                      size: 52,
-                      color: Colors.white,
+                    child: Icon(
+                      Icons.school_outlined,
+                      size: 48,
+                      color: isDark ? Colors.white : const Color(0xFF3D6754),
                     ),
                   ),
                 ).animate().fadeIn(duration: 600.ms).scale(
@@ -191,97 +169,81 @@ class _SplashScreenState extends State<SplashScreen>
                 // App name
                 Text(
                   'MyPSKD',
-                  style: GoogleFonts.poppins(
-                    fontSize: 40,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 48,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -1.5,
-                    foreground: Paint()
-                      ..shader = const LinearGradient(
-                        colors: [AppTheme.indigoLight, AppTheme.primaryDark],
-                      ).createShader(const Rect.fromLTWH(0, 0, 200, 50)),
+                    color: isDark ? Colors.white : const Color(0xFF3D6754),
                   ),
                 ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.2),
 
                 const SizedBox(height: 8),
 
                 Text(
-                  'Academic Management Platform',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    letterSpacing: 1.5,
+                  'Belajar Pintar, Kapan saja,\nDimana Saja',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    color: isDark ? Colors.white70 : const Color(0xFF414944),
+                    height: 1.5,
                   ),
                 ).animate().fadeIn(delay: 450.ms),
 
-                const SizedBox(height: 60),
+                const SizedBox(height: 80),
 
-                // Loading dots
-                _LoadingDots().animate().fadeIn(delay: 600.ms),
+                // Loading Indicator
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3D6754)),
+                        backgroundColor: gridColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'MEMUAT SISTEM',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2.0,
+                        color: isDark ? Colors.white70 : const Color(0xFF717974),
+                      ),
+                    ),
+                  ],
+                ).animate().fadeIn(delay: 600.ms),
               ],
+            ),
+          ),
+
+          // Decorative Progress Blueprint Line at the very bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 4,
+              color: isDark ? const Color(0xFF1C2230) : const Color(0xFFDBF1FF),
+              alignment: Alignment.centerLeft,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 1800),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) {
+                  return FractionallySizedBox(
+                    widthFactor: value,
+                    child: Container(color: const Color(0xFF3D6754)),
+                  );
+                },
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _LoadingDots extends StatefulWidget {
-  @override
-  State<_LoadingDots> createState() => _LoadingDotsState();
-}
-
-class _LoadingDotsState extends State<_LoadingDots>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _ctrls;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrls = List.generate(3, (i) {
-      final ctrl = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 600),
-      );
-      Future.delayed(Duration(milliseconds: i * 150), () {
-        if (mounted) ctrl.repeat(reverse: true);
-      });
-      return ctrl;
-    });
-  }
-
-  @override
-  void dispose() {
-    for (final c in _ctrls) { c.dispose(); }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (i) {
-        return AnimatedBuilder(
-          animation: _ctrls[i],
-          builder: (_, __) => Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: 8,
-            height: 8 + 8 * _ctrls[i].value,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppTheme.indigoPrimary.withAlpha((150 + 105 * _ctrls[i].value).round()),
-                  AppTheme.primary.withAlpha((100 + 80 * _ctrls[i].value).round()),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        );
-      }),
     );
   }
 }
