@@ -96,204 +96,388 @@ class _GuruMateriViewState extends State<GuruMateriView> {
     bool isUploading = false;
     String? selectedFileName = isEditing && materi['file_url'] != null ? 'File tersemat' : null;
 
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
+    final primaryContainer = isDark ? const Color(0xFF161B27) : const Color(0xFFB7E5CD);
+
     showDialog(
       context: context,
+      barrierColor: onSurface.withValues(alpha: 0.4),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          return AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-            ),
-            title: Text(
-              isEditing ? 'Edit Materi' : 'Tambah Materi Baru', 
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppTheme.textLight),
-            ),
-            content: SizedBox(
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(24),
+            child: Container(
               width: 500,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppTextField(
-                      controller: judulCtrl,
-                      labelText: 'Judul Materi',
-                      prefixIcon: LucideIcons.type,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(color: onSurface, width: 2),
+                boxShadow: [
+                  BoxShadow(color: onSurface, offset: const Offset(4, 4)),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // HEADER
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: primaryContainer,
+                      border: Border(bottom: BorderSide(color: onSurface, width: 2)),
                     ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        border: Border.all(color: Theme.of(context).dividerColor),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: TextField(
-                        controller: deskripsiCtrl,
-                        maxLines: 4,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
-                        decoration: InputDecoration(
-                          labelText: 'Deskripsi Singkat',
-                          labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.w600),
-                          prefixIcon: const Icon(LucideIcons.alignLeft, size: 18),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEditing ? 'EDIT MATERI' : 'BUAT MATERI BARU',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: onSurface,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(ctx),
+                          child: Icon(Icons.close, color: onSurface, size: 24),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    
-                    // --- AREA UPLOAD ---
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
-                      ),
+                  ),
+
+                  // BODY
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Judul Materi
                           Text(
-                            'LAMPIRAN MATERI (OPSIONAL)',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
-                              color: AppTheme.primary,
-                              letterSpacing: 1.0,
+                            'JUDUL MATERI',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: onSurface,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: judulCtrl,
+                            style: GoogleFonts.inter(color: onSurface),
+                            decoration: InputDecoration(
+                              hintText: 'Masukkan judul materi...',
+                              hintStyle: GoogleFonts.inter(color: onSurfaceVariant),
+                              filled: true,
+                              fillColor: Theme.of(context).colorScheme.surface,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Deskripsi
+                          Text(
+                            'DESKRIPSI SINGKAT',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: onSurface,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: deskripsiCtrl,
+                            maxLines: 3,
+                            style: GoogleFonts.inter(color: onSurface),
+                            decoration: InputDecoration(
+                              hintText: 'Jelaskan isi materi secara ringkas...',
+                              hintStyle: GoogleFonts.inter(color: onSurfaceVariant),
+                              filled: true,
+                              fillColor: Theme.of(context).colorScheme.surface,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Lampiran
+                          Row(
+                            children: [
+                              Text(
+                                'LAMPIRAN MATERI',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: onSurface,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Divider(color: onSurfaceVariant.withValues(alpha: 0.2), thickness: 1),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          
                           if (isUploading)
                             const Center(
                               child: Padding(
-                                padding: EdgeInsets.all(12.0),
-                                child: CircularProgressIndicator(strokeWidth: 3),
+                                padding: EdgeInsets.all(24.0),
+                                child: CircularProgressIndicator(),
                               ),
                             )
                           else
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () async {
-                                  fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
-                                    type: fp.FileType.custom,
-                                    allowedExtensions: const ['pdf', 'jpg', 'png', 'doc', 'docx'],
-                                    withData: true,
-                                  );
-
-                                  if (result != null && result.files.single.bytes != null) {
-                                    setDialogState(() => isUploading = true);
-                                    
-                                    final file = result.files.single;
-                                    String? url = await UploadService.uploadFile(
-                                      fileBytes: file.bytes!,
-                                      fileName: file.name,
-                                      token: widget.token,
-                                    );
-
-                                    setDialogState(() {
-                                      isUploading = false;
-                                      if (url != null) {
-                                        linkCtrl.text = url;
-                                        selectedFileName = file.name;
-                                      }
-                                    });
-
-                                    if (url == null && ctx.mounted) {
-                                      ScaffoldMessenger.of(ctx).showSnackBar(
-                                        const SnackBar(content: Text('Gagal upload file!'), backgroundColor: AppTheme.error)
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      fp.FilePickerResult? result = await fp.FilePicker.platform.pickFiles(
+                                        type: fp.FileType.custom,
+                                        allowedExtensions: const ['pdf', 'jpg', 'png', 'doc', 'docx'],
+                                        withData: true,
                                       );
-                                    }
-                                  }
-                                },
-                                icon: const Icon(LucideIcons.uploadCloud, size: 16),
-                                label: Text(
-                                  selectedFileName ?? 'Pilih File (PDF/Gambar)',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+
+                                      if (result != null && result.files.single.bytes != null) {
+                                        setDialogState(() => isUploading = true);
+                                        
+                                        final file = result.files.single;
+                                        String? url = await UploadService.uploadFile(
+                                          fileBytes: file.bytes!,
+                                          fileName: file.name,
+                                          token: widget.token,
+                                        );
+
+                                        setDialogState(() {
+                                          isUploading = false;
+                                          if (url != null) {
+                                            linkCtrl.text = url;
+                                            selectedFileName = file.name;
+                                          }
+                                        });
+
+                                        if (url == null && ctx.mounted) {
+                                          ScaffoldMessenger.of(ctx).showSnackBar(
+                                            const SnackBar(content: Text('Gagal upload file!'), backgroundColor: AppTheme.error)
+                                          );
+                                        }
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 20),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.surface,
+                                        border: Border.all(color: onSurface, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(color: onSurface, offset: const Offset(2, 2)),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(Icons.upload_file, color: onSurface, size: 32),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'UPLOAD FILE',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: onSurface,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.surface,
-                                  foregroundColor: theme.primaryColor,
-                                  side: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1.0),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // Optional cloud logic
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 20),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.surface,
+                                        border: Border.all(color: onSurface, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(color: onSurface, offset: const Offset(2, 2)),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(Icons.cloud_done_outlined, color: onSurface, size: 32),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'CLOUD LINK',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: onSurface,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
+                          
+                          if (selectedFileName != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text('File terpilih: $selectedFileName', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF3D6754), fontWeight: FontWeight.bold)),
+                            ),
+
                           const SizedBox(height: 12),
-                          AppTextField(
+                          TextField(
                             controller: linkCtrl,
-                            labelText: 'Link File / URL Cloudinary',
-                            prefixIcon: LucideIcons.link,
+                            style: GoogleFonts.inter(color: onSurface),
+                            decoration: InputDecoration(
+                              hintText: 'Atau masukkan Link / URL File...',
+                              hintStyle: GoogleFonts.inter(color: onSurfaceVariant),
+                              filled: true,
+                              fillColor: Theme.of(context).colorScheme.surface,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.zero,
+                                borderSide: BorderSide(color: onSurface, width: 2),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+
+                  // FOOTER
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            if (judulCtrl.text.isEmpty) return;
+
+                            final body = {
+                              'judul': judulCtrl.text,
+                              'deskripsi': deskripsiCtrl.text,
+                              'file_url': linkCtrl.text, 
+                              'kelas_id': widget.teamData['id'],
+                              'kelas': widget.teamData['nama_kelas'],
+                              'guru_id': widget.userData['id'],
+                              'guru_nama': widget.userData['nama'] ?? 'Guru',
+                              if (!isEditing) 'created_at': DateTime.now().toIso8601String(),
+                            };
+
+                            final url = isEditing
+                                ? '$baseUrl/api/materi/${materi['id']}'
+                                : '$baseUrl/api/materi';
+
+                            final res = isEditing
+                                ? await http.put(Uri.parse(url),
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': 'Bearer ${widget.token}'
+                                    },
+                                    body: jsonEncode(body))
+                                : await http.post(Uri.parse(url),
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': 'Bearer ${widget.token}'
+                                    },
+                                    body: jsonEncode(body));
+
+                            if (res.statusCode == 200 || res.statusCode == 201) {
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              _fetchMateri();
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3D6754),
+                              border: Border.all(color: onSurface, width: 2),
+                              boxShadow: [
+                                BoxShadow(color: onSurface, offset: const Offset(4, 4)),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'SIMPAN MATERI',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(Icons.save, color: Colors.white, size: 20),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(ctx),
+                          child: Text(
+                            'BATAL',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: onSurfaceVariant,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(
-                  'Batal',
-                  style: GoogleFonts.poppins(
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (judulCtrl.text.isEmpty) return;
-
-                  final body = {
-                    'judul': judulCtrl.text,
-                    'deskripsi': deskripsiCtrl.text,
-                    'file_url': linkCtrl.text, 
-                    'kelas_id': widget.teamData['id'],
-                    'kelas': widget.teamData['nama_kelas'],
-                    'guru_id': widget.userData['id'],
-                    'guru_nama': widget.userData['nama'] ?? 'Guru',
-                    if (!isEditing) 'created_at': DateTime.now().toIso8601String(),
-                  };
-
-                  final url = isEditing
-                      ? '$baseUrl/api/materi/${materi['id']}'
-                      : '$baseUrl/api/materi';
-
-                  final res = isEditing
-                      ? await http.put(Uri.parse(url),
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ${widget.token}'
-                          },
-                          body: jsonEncode(body))
-                      : await http.post(Uri.parse(url),
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ${widget.token}'
-                          },
-                          body: jsonEncode(body));
-
-                  if (res.statusCode == 200 || res.statusCode == 201) {
-                    if (ctx.mounted) Navigator.pop(ctx);
-                    _fetchMateri();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.secondary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 0,
-                ),
-                child: Text('Simpan Materi', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-              )
-            ],
           );
         },
       ),
