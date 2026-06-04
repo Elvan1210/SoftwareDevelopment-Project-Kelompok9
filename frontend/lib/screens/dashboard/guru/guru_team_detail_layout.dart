@@ -875,8 +875,6 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                         ),
                       ),
                       const Spacer(),
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
                       NotificationBell(
                         userData: widget.userData,
                         token: widget.token,
@@ -1363,8 +1361,6 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
                               .animate(key: ValueKey(_activeTabID))
                               .fade(duration: 250.ms)
                               .slideX(begin: -0.03)),
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
                       NotificationBell(
                           userData: widget.userData,
                           token: widget.token,

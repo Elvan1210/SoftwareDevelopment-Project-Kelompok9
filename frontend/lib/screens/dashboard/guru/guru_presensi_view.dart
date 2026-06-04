@@ -165,7 +165,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
   Map<String, int> _getRecapStatsForStudent(String studentId) {
     int hadir = 0, izin = 0, sakit = 0, alpa = 0;
     for (var r in _recapRecords) {
-      if (r['user_id'] == studentId) {
+      if (r['user_id'].toString() == studentId.toString()) {
         final status = r['status'] ?? '';
         if (status == 'Hadir') {
           hadir++;
@@ -583,7 +583,7 @@ class _GuruPresensiViewState extends State<GuruPresensiView> {
   }
 
   Widget _buildRecapStudentCard(dynamic s, ThemeData theme, bool isDark) {
-    final stats = _getRecapStatsForStudent(s['id']);
+    final stats = _getRecapStatsForStudent(s['id'].toString());
     final total =
         stats['Hadir']! + stats['Izin']! + stats['Sakit']! + stats['Alpa']!;
     final pct = total > 0 ? (stats['Hadir']! / total) : 0.0;
