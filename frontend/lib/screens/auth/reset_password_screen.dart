@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 import '../../services/forgot_password_service.dart';
+import '../../config/theme.dart';
+
+// --- Color Palette from Neo-Brutalist Theme ---
+const Color _bgColor = Color(0xFFF4FAFF);
+const Color _onSurface = Color(0xFF001E2B);
+const Color _onSurfaceVariant = Color(0xFF414944);
+const Color _surfaceContainerLow = Color(0xFFE8F6FF);
+const Color _primaryColor = Color(0xFF3D6754);
+const Color _primaryFixedDim = Color(0xFFA3D1B9);
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -13,8 +23,7 @@ class ResetPasswordScreen extends StatefulWidget {
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen>
-    with SingleTickerProviderStateMixin {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -22,20 +31,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
   bool _isPasswordVisible = false;
   bool _isConfirmVisible = false;
 
-  late final AnimationController _floatController;
-
-  @override
-  void initState() {
-    super.initState();
-    _floatController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat(reverse: true);
-  }
-
   @override
   void dispose() {
-    _floatController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -68,17 +65,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded,
-                      color: Colors.white, size: 20),
+                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
                   const SizedBox(width: 10),
-                  Text('Kata sandi berhasil diperbarui! Silakan masuk.', style: Theme.of(context).textTheme.bodyLarge),
+                  Text('Kata sandi berhasil diperbarui! Silakan masuk.', style: GoogleFonts.inter(color: Colors.white)),
                 ],
               ),
               backgroundColor: const Color(0xFF10B981),
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 4),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
           );
         }
@@ -86,11 +81,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'], style: Theme.of(context).textTheme.bodyLarge),
-          backgroundColor: const Color(0xFFEF4444),
+          content: Text(result['message'], style: GoogleFonts.inter(color: Colors.white)),
+          backgroundColor: AppTheme.rose,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         ),
       );
     }
@@ -99,443 +93,324 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF0D0D1A) : const Color(0xFFF5F5FF),
-      body: Stack(
-        children: [
-          _buildBackground(),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  child: Column(
-                    children: [
-                      // Back + Logo
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1)
-                                    .withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.arrow_back_ios_new_rounded,
-                                size: 16,
-                                color: Color(0xFF6366F1),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          _buildLogo(),
-                        ],
-                      ).animate().fadeIn(duration: 500.ms),
-                      const SizedBox(height: 48),
-
-                      // Icon
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF6366F1)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.lock_person_rounded,
-                          color: Colors.white,
-                          size: 36,
-                        ),
-                      )
-                          .animate()
-                          .fadeIn(delay: 150.ms)
-                          .scale(begin: const Offset(0.8, 0.8)),
-                      const SizedBox(height: 24),
-
-                      // Title
-                      Text(
-                        'Buat Kata Sandi Baru',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0A1628),
-                          letterSpacing: -0.8,
-                        ),
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(delay: 200.ms),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Kata sandi baru kamu harus berbeda dari kata sandi yang pernah digunakan sebelumnya.',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.5),
-                          height: 1.6,
-                        ),
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(delay: 250.ms),
-                      const SizedBox(height: 40),
-
-                      // Form
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Email chip (read-only info)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1)
-                                    .withValues(alpha: 0.06),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: const Color(0xFF6366F1)
-                                      .withValues(alpha: 0.12),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.email_outlined,
-                                      size: 14,
-                                      color: const Color(0xFF6366F1)
-                                          .withValues(alpha: 0.7)),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    widget.email,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6366F1),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ).animate().fadeIn(delay: 280.ms),
-                            const SizedBox(height: 24),
-
-                            _buildLabel('Kata Sandi Baru'),
-                            const SizedBox(height: 8),
-                            _buildPasswordField(
-                              controller: _passwordController,
-                              hint: 'Minimal 6 karakter',
-                              isVisible: _isPasswordVisible,
-                              onToggle: () => setState(
-                                  () => _isPasswordVisible = !_isPasswordVisible),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Kata sandi tidak boleh kosong';
-                                }
-                                if (v.length < 6) {
-                                  return 'Kata sandi minimal 6 karakter';
-                                }
-                                return null;
-                              },
-                            ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
-                            const SizedBox(height: 20),
-
-                            _buildLabel('Konfirmasi Kata Sandi'),
-                            const SizedBox(height: 8),
-                            _buildPasswordField(
-                              controller: _confirmController,
-                              hint: 'Ulangi kata sandi baru',
-                              isVisible: _isConfirmVisible,
-                              onToggle: () => setState(() =>
-                                  _isConfirmVisible = !_isConfirmVisible),
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) => _resetPassword(),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Konfirmasi kata sandi tidak boleh kosong';
-                                }
-                                if (v != _passwordController.text) {
-                                  return 'Kata sandi tidak cocok';
-                                }
-                                return null;
-                              },
-                            ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.1),
-
-                            // Password strength hints
-                            const SizedBox(height: 16),
-                            _buildPasswordHint(
-                              icon: Icons.check_circle_outline_rounded,
-                              text: 'Minimal 6 karakter',
-                              satisfied: _passwordController.text.length >= 6,
-                            ).animate().fadeIn(delay: 380.ms),
-                            const SizedBox(height: 6),
-                            _buildPasswordHint(
-                              icon: Icons.check_circle_outline_rounded,
-                              text: 'Kata sandi cocok',
-                              satisfied: _passwordController.text.isNotEmpty &&
-                                  _passwordController.text ==
-                                      _confirmController.text,
-                            ).animate().fadeIn(delay: 400.ms),
-                            const SizedBox(height: 32),
-
-                            // Submit button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed:
-                                    _isLoading ? null : _resetPassword,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF6366F1),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(14)),
-                                  disabledBackgroundColor:
-                                      const Color(0xFF6366F1)
-                                          .withValues(alpha: 0.5),
-                                ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2.5))
-                                    : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.lock_open_rounded,
-                                              size: 18),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Simpan Kata Sandi Baru',
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700,
-                                                letterSpacing: 0.2),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ).animate().fadeIn(delay: 420.ms).slideY(begin: 0.1),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+      backgroundColor: _bgColor,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth > 900;
+          
+          final formContent = Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    _buildBentoCard(),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+          );
+
+          if (!isDesktop) return formContent;
+
+          return Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Container(
+                  color: _primaryColor,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(48.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: _onSurface, width: 2),
+                              boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(6, 6))],
+                            ),
+                            child: const Icon(Icons.school_rounded, size: 80, color: _primaryColor),
+                          ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8)),
+                          const SizedBox(height: 48),
+                          Text(
+                            'MyPSKD',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 56,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: -1.5,
+                            ),
+                          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Sekolah yang hebat,\ngenerasi yang kuat.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                              color: _surfaceContainerLow,
+                              height: 1.3,
+                            ),
+                          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Container(
+                  color: _bgColor,
+                  child: formContent,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildPasswordField({
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _surfaceContainerLow,
+                  border: Border.all(color: _onSurface, width: 1.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.arrow_back_rounded, size: 20, color: _onSurface),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'Reset Password',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                color: _onSurface,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const Spacer(),
+            const SizedBox(width: 36), // To balance the back button
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Buat kata sandi baru untuk akunmu.',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: _onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.1);
+  }
+
+  Widget _buildBentoCard() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: _onSurface, width: 1.5),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+          topRight: Radius.circular(8),
+          bottomLeft: Radius.circular(8),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: _onSurface,
+            offset: Offset(4, 4),
+          )
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Email (Read Only)
+            Text('EMAIL ADDRESS', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _onSurfaceVariant, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: _surfaceContainerLow,
+                border: Border.all(color: _onSurface, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.mail_outline_rounded, color: _onSurfaceVariant),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.email, 
+                      style: GoogleFonts.inter(color: _onSurface, fontSize: 16, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Password Baru
+            Text('NEW PASSWORD', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _onSurfaceVariant, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _passwordController,
+              hint: 'Minimal 6 karakter',
+              icon: _isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              obscureText: !_isPasswordVisible,
+              onIconTap: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Kata sandi tidak boleh kosong';
+                if (v.length < 6) return 'Kata sandi minimal 6 karakter';
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Konfirmasi Password Baru
+            Text('CONFIRM PASSWORD', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: _onSurfaceVariant, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _confirmController,
+              hint: 'Ulangi kata sandi',
+              icon: _isConfirmVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              obscureText: !_isConfirmVisible,
+              onIconTap: () => setState(() => _isConfirmVisible = !_isConfirmVisible),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Konfirmasi kata sandi tidak boleh kosong';
+                if (v != _passwordController.text) return 'Kata sandi tidak cocok';
+                return null;
+              },
+            ),
+            const SizedBox(height: 32),
+            
+            // Submit Action
+            Container(
+              width: double.infinity,
+              height: 56,
+              decoration: BoxDecoration(
+                color: _primaryColor,
+                border: Border.all(color: _onSurface, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: const [
+                  BoxShadow(color: _onSurface, offset: Offset(2, 2))
+                ]
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _isLoading ? null : _resetPassword,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Center(
+                    child: _isLoading 
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Simpan Password Baru', style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.check_circle_outline_rounded, size: 24, color: Colors.white),
+                          ],
+                        ),
+                  ),
+                ),
+              ),
+            ),
+            
+            // Decorative status indicator
+            const SizedBox(height: 24),
+            Container(
+              height: 4,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: _surfaceContainerLow,
+                border: Border.all(color: _onSurface, width: 1),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: 1.0,
+                child: Container(color: _primaryFixedDim),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05);
+  }
+
+  Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
-    required bool isVisible,
-    required VoidCallback onToggle,
-    TextInputAction textInputAction = TextInputAction.next,
-    void Function(String)? onSubmitted,
+    required IconData icon,
+    bool obscureText = false,
     String? Function(String?)? validator,
+    VoidCallback? onIconTap,
   }) {
     return TextFormField(
       controller: controller,
-      obscureText: !isVisible,
-      textInputAction: textInputAction,
-      onFieldSubmitted: onSubmitted,
+      obscureText: obscureText,
       validator: validator,
       onChanged: (_) => setState(() {}),
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500,
-        color: const Color(0xFF0A1628),
-      ),
+      style: GoogleFonts.inter(color: _onSurface, fontSize: 16),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black.withValues(alpha: 0.3),
-        ),
-        prefixIcon: Icon(Icons.lock_outline_rounded,
-            size: 18, color: Colors.black.withValues(alpha: 0.35)),
+        hintStyle: GoogleFonts.inter(color: _onSurfaceVariant.withAlpha(150), fontSize: 16),
         suffixIcon: IconButton(
-          onPressed: onToggle,
-          icon: Icon(
-            isVisible
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            size: 18,
-            color: Colors.black.withValues(alpha: 0.4),
-          ),
+          icon: Icon(icon, color: _onSurfaceVariant),
+          onPressed: onIconTap ?? () {},
         ),
-        suffixIconConstraints:
-            const BoxConstraints(minWidth: 0, minHeight: 0),
         filled: true,
-        fillColor: const Color(0xFF1C1C2E),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: _surfaceContainerLow,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: Colors.black.withValues(alpha: 0.08)),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: _onSurface, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: Colors.black.withValues(alpha: 0.08)),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: _onSurface, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: _primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 2),
         ),
-        errorStyle: Theme.of(context).textTheme.bodyMedium,
+        errorStyle: GoogleFonts.inter(fontWeight: FontWeight.w500),
       ),
     );
   }
-
-  Widget _buildPasswordHint(
-      {required IconData icon,
-      required String text,
-      required bool satisfied}) {
-    final color = satisfied ? const Color(0xFF10B981) : const Color(0xFF9CA3AF);
-    return Row(
-      children: [
-        Icon(
-          satisfied ? Icons.check_circle_rounded : icon,
-          size: 15,
-          color: color,
-        ),
-        const SizedBox(width: 6),
-        Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color)),
-      ],
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
-        color: const Color(0xFF6366F1),
-      ),
-    );
-  }
-
-  Widget _buildLogo() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child:
-              const Icon(Icons.school_rounded, color: Colors.white, size: 18),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          'MyPSKD',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800,
-            color: const Color(0xFF6366F1),
-            letterSpacing: -0.5,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBackground() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -60,
-          child: AnimatedBuilder(
-            animation: _floatController,
-            builder: (_, __) => Transform.translate(
-              offset: Offset(0, 10 * _floatController.value),
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF6366F1).withValues(alpha: 0.07),
-                      const Color(0xFF6366F1).withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: -80,
-          left: -40,
-          child: AnimatedBuilder(
-            animation: _floatController,
-            builder: (_, __) => Transform.translate(
-              offset: Offset(0, -8 * _floatController.value),
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF8B5CF6).withValues(alpha: 0.09),
-                      const Color(0xFF8B5CF6).withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
-      ],
-    );
-  }
-}
-
-class _DotGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF6366F1).withValues(alpha: 0.04)
-      ..strokeCap = StrokeCap.round;
-    const spacing = 28.0;
-    const dotRadius = 1.2;
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), dotRadius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotGridPainter oldDelegate) => false;
 }
