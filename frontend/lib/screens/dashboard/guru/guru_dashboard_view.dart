@@ -269,47 +269,50 @@ class _GuruDashboardViewState extends State<GuruDashboardView> {
                         .fadeIn(duration: 350.ms)
                         .slideY(begin: -0.04),
                     const SizedBox(height: 24),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Left Column
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildRingkasanCard()
-                                  .animate()
-                                  .fadeIn(delay: 80.ms)
-                                  .slideY(begin: 0.05),
-                              const SizedBox(height: 20),
-                              _buildPengumumanCard()
-                                  .animate()
-                                  .fadeIn(delay: 140.ms)
-                                  .slideY(begin: 0.05),
-                            ],
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: _buildRingkasanCard()
+                                .animate()
+                                .fadeIn(delay: 80.ms)
+                                .slideY(begin: 0.05),
                           ),
-                        ),
-                        const SizedBox(width: 24),
-                        // Right Column
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildJadwalCard()
-                                  .animate()
-                                  .fadeIn(delay: 200.ms)
-                                  .slideY(begin: 0.05),
-                              const SizedBox(height: 20),
-                              _buildPresensiCard()
-                                  .animate()
-                                  .fadeIn(delay: 260.ms)
-                                  .slideY(begin: 0.05),
-                            ],
+                          const SizedBox(width: 24),
+                          Expanded(
+                            flex: 5,
+                            child: _buildJadwalCard()
+                                .animate()
+                                .fadeIn(delay: 200.ms)
+                                .slideY(begin: 0.05),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: _buildPengumumanCard()
+                                .animate()
+                                .fadeIn(delay: 140.ms)
+                                .slideY(begin: 0.05),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            flex: 5,
+                            child: _buildPresensiCard()
+                                .animate()
+                                .fadeIn(delay: 260.ms)
+                                .slideY(begin: 0.05),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

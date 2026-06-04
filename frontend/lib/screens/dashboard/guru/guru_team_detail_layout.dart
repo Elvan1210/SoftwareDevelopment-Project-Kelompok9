@@ -323,7 +323,12 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
             userData: widget.userData,
             token: widget.token,
             teamData: widget.teamData);
+      case 'menu':
+        return _buildMenuHub();
       default:
+        if (_activeTabID.startsWith('channel_')) {
+          return _buildChannelView();
+        }
         return _buildDashboardView();
     }
   }
@@ -359,6 +364,668 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     } catch (e) {
       debugPrint('Err start live class: $e');
     }
+  }
+
+  Widget _buildMenuHub() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryBg = isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF);
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final shadowColor = isDark ? Colors.white.withAlpha(20) : const Color(0xFF001E2B);
+    final nama = widget.userData['nama'] ?? 'Guru';
+    final photoUrl = widget.userData['photoUrl'] ?? '';
+
+    return Scaffold(
+      backgroundColor: primaryBg,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: primaryBg,
+                border: Border(bottom: BorderSide(color: onSurface, width: 1)),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFB7E5CD),
+                            border: Border.all(color: onSurface, width: 2),
+                          ),
+                          child: photoUrl.isNotEmpty
+                              ? Image.network(photoUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildAvatarInitials(nama))
+                              : _buildAvatarInitials(nama),
+                        ),
+                        const SizedBox(width: 12),
+                        Text('Menu Hub',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: onSurface,
+                              fontFamily: 'Plus Jakarta Sans',
+                            )),
+                      ],
+                    ),
+                    NotificationBell(
+                      userData: widget.userData,
+                      token: widget.token,
+                      iconColor: const Color(0xFF3D6754),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  children: [
+                    _buildMenuCard(
+                      icon: Icons.how_to_reg,
+                      label: 'Presensi Kelas',
+                      bgColor: const Color(0xFFB7E5CD),
+                      onSurface: onSurface,
+                      shadowColor: shadowColor,
+                      onTap: () => setState(() {
+                        _activeTabID = 'presensi';
+                        _activeTitle = 'Presensi';
+                      }),
+                    ),
+                    _buildMenuCard(
+                      icon: Icons.quiz,
+                      label: 'Kuis & Ujian',
+                      bgColor: const Color(0xFFCEEDFF),
+                      onSurface: onSurface,
+                      shadowColor: shadowColor,
+                      onTap: () => setState(() {
+                        _activeTabID = 'kuis';
+                        _activeTitle = 'Kuis & Ujian';
+                      }),
+                    ),
+                    _buildMenuCard(
+                      icon: Icons.menu_book,
+                      label: 'Materi Ajar',
+                      bgColor: const Color(0xFFC1E8FF),
+                      onSurface: onSurface,
+                      shadowColor: shadowColor,
+                      onTap: () => setState(() {
+                        _activeTabID = 'materi';
+                        _activeTitle = 'Materi Ajar';
+                      }),
+                    ),
+                    _buildMenuCard(
+                      icon: Icons.assessment,
+                      label: 'Laporan Nilai',
+                      bgColor: const Color(0xFFFFD1C0),
+                      onSurface: onSurface,
+                      shadowColor: shadowColor,
+                      onTap: () => setState(() {
+                        _activeTabID = 'nilai';
+                        _activeTitle = 'Nilai Siswa';
+                      }),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Daftar Channel',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: onSurface,
+                          fontFamily: 'Plus Jakarta Sans',
+                        )),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB7EDE7),
+                        border: Border.all(color: onSurface),
+                      ),
+                      child: Text('${_channels.length + 1} TOTAL',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: onSurface,
+                            fontFamily: 'Inter',
+                          )),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF161B27) : Colors.white,
+                    border: Border.all(color: onSurface, width: 2),
+                    boxShadow: [
+                      BoxShadow(color: shadowColor, offset: const Offset(2, 2)),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        color: onSurface,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('General',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF),
+                                  fontFamily: 'Plus Jakarta Sans',
+                                )),
+                            Icon(Icons.expand_more, color: isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF)),
+                          ],
+                        ),
+                      ),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _channels.length + 1,
+                        separatorBuilder: (_, __) => Divider(color: onSurface, height: 1),
+                        itemBuilder: (context, index) {
+                          final isGeneral = index == 0;
+                          final channelName = isGeneral ? 'General' : (_channels[index - 1]['nama_channel'] ?? 'Unnamed');
+                          final tabId = isGeneral ? 'channel_general' : 'channel_${_channels[index - 1]['id']}';
+                          return ListTile(
+                            onTap: () => setState(() {
+                              _activeTabID = tabId;
+                              _activeTitle = channelName;
+                            }),
+                            leading: Container(
+                              width: 8,
+                              height: 8,
+                              color: const Color(0xFF3D6754),
+                            ),
+                            title: Text(channelName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: onSurface,
+                                  fontFamily: 'Inter',
+                                )),
+                            trailing: Icon(Icons.chevron_right, color: onSurface.withAlpha(150)),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: _showCreateChannelDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF161B27) : const Color(0xFFF4FAFF),
+                      border: Border.all(color: onSurface, width: 2),
+                      boxShadow: [
+                        BoxShadow(color: shadowColor, offset: const Offset(2, 2)),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.forum, color: Color(0xFF336763)),
+                            const SizedBox(width: 12),
+                            Text('Buat Channel Baru',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: onSurface,
+                                  fontFamily: 'Inter',
+                                )),
+                          ],
+                        ),
+                        Container(
+                          color: const Color(0xFFBA1A1A),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          child: const Text('NEW',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 80), // Padding for bottom nav
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarInitials(String nama) {
+    return Center(
+      child: Text(
+        nama[0].toUpperCase(),
+        style: const TextStyle(
+          color: Color(0xFF3E6855),
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required IconData icon,
+    required String label,
+    required Color bgColor,
+    required Color onSurface,
+    required Color shadowColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          border: Border.all(color: onSurface, width: 2),
+          boxShadow: [
+            BoxShadow(color: shadowColor, offset: const Offset(4, 4)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(icon, size: 36, color: onSurface),
+            Text(label,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                  color: onSurface,
+                  fontFamily: 'Plus Jakarta Sans',
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChannelView() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryBg = isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF);
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
+    final shadowColor = isDark ? Colors.white.withAlpha(20) : const Color(0xFF001E2B);
+    
+    return Container(
+      color: primaryBg,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Channel Tabs (Horizontal Scroll)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161B27) : const Color(0xFFE8F6FF),
+              border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Saluran Diskusi',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: onSurface,
+                      fontFamily: 'Plus Jakarta Sans',
+                    )),
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildChannelTab('General', 'channel_general', isDark),
+                      for (var c in _channels)
+                        _buildChannelTab(c['nama_channel'] ?? 'Unnamed', 'channel_${c['id']}', isDark),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _showCreateChannelDialog,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1C2230) : const Color(0xFFCEEDFF),
+                            border: Border.all(color: onSurfaceVariant),
+                          ),
+                          child: Icon(Icons.add, size: 20, color: onSurfaceVariant),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Forum Content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isDesktop = constraints.maxWidth > 800;
+                  
+                  final infoCard = Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF161B27) : Colors.white,
+                      border: Border(
+                        top: BorderSide(color: onSurfaceVariant),
+                        right: BorderSide(color: onSurfaceVariant),
+                        bottom: BorderSide(color: onSurfaceVariant),
+                        left: const BorderSide(color: Color(0xFF3D6754), width: 4),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('INFO SALURAN',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF3D6754),
+                              letterSpacing: 0.5,
+                              fontFamily: 'Inter',
+                            )),
+                        const SizedBox(height: 8),
+                        Text('Ruang Diskusi Utama',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: onSurface,
+                              fontFamily: 'Plus Jakarta Sans',
+                            )),
+                        const SizedBox(height: 16),
+                        Text('Tempat berbagi informasi, bertanya, dan berkolaborasi antar siswa dan pengajar MyPSKD.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: onSurfaceVariant,
+                              fontFamily: 'Inter',
+                            )),
+                        const SizedBox(height: 32),
+                        Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('24', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF336763), fontFamily: 'Plus Jakarta Sans')),
+                                Text('TOPIK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurfaceVariant, fontFamily: 'Inter')),
+                              ],
+                            ),
+                            const SizedBox(width: 24),
+                            Container(width: 1, height: 40, color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2)),
+                            const SizedBox(width: 24),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('156', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF336763), fontFamily: 'Plus Jakarta Sans')),
+                                Text('BALASAN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurfaceVariant, fontFamily: 'Inter')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+
+                  final threads = Column(
+                    children: [
+                      _buildThreadCard(
+                        isDark: isDark,
+                        badge: 'DISKUSI AKTIF',
+                        badgeColor: const Color(0xFF8D4D33), // Terracotta
+                        title: 'Diskusi Tugas Akhir Semester 1',
+                        author: 'Oleh Bpk. Ahmad Subarjo',
+                        timeAgo: '2 jam yang lalu',
+                        snippet: 'Selamat siang rekan-rekan siswa. Silakan ajukan pertanyaan mengenai format penulisan tugas akhir di sini...',
+                        replies: 12,
+                        lastActive: '5m lalu',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildThreadCard(
+                        isDark: isDark,
+                        badge: null,
+                        title: 'Pertanyaan Materi Logaritma Dasar',
+                        author: 'Oleh Siti Nurhaliza (Siswa)',
+                        timeAgo: 'Kemarin',
+                        snippet: 'Halo semuanya, saya masih bingung dengan sifat-sifat logaritma yang ke-4. Apakah ada yang bisa bantu jelaskan...',
+                        replies: 8,
+                        lastActive: '1j lalu',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildThreadCard(
+                        isDark: isDark,
+                        badge: 'TERJAWAB',
+                        badgeColor: const Color(0xFF3D6754),
+                        title: 'Jadwal Praktikum Fisika Pekan Depan',
+                        author: 'Oleh Ibu Dian Lestari',
+                        timeAgo: '3 hari lalu',
+                        snippet: 'Pengumuman: Jadwal praktikum untuk kelas XII IPA 2 dipindahkan ke hari Rabu jam 09.00 WIB. Mohon konfirmasi...',
+                        replies: 45,
+                        lastActive: '2j lalu',
+                      ),
+                      const SizedBox(height: 80), // Padding for FAB/BottomNav
+                    ],
+                  );
+
+                  if (isDesktop) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 4, child: infoCard),
+                        const SizedBox(width: 20),
+                        Expanded(flex: 8, child: threads),
+                      ],
+                    );
+                  } else {
+                    return Column(
+                      children: [
+                        infoCard,
+                        const SizedBox(height: 20),
+                        threads,
+                      ],
+                    );
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChannelTab(String label, String tabId, bool isDark) {
+    final isActive = _activeTabID == tabId;
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
+    final primary = const Color(0xFF3D6754);
+
+    return GestureDetector(
+      onTap: () => setState(() {
+        _activeTabID = tabId;
+        _activeTitle = label;
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          border: isActive ? Border(bottom: BorderSide(color: primary, width: 3)) : null,
+        ),
+        child: Text(label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: isActive ? primary : onSurfaceVariant,
+              fontFamily: 'Inter',
+            )),
+      ),
+    );
+  }
+
+  Widget _buildThreadCard({
+    required bool isDark,
+    required String? badge,
+    Color? badgeColor,
+    required String title,
+    required String author,
+    required String timeAgo,
+    required String snippet,
+    required int replies,
+    required String lastActive,
+  }) {
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
+    
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: badge == 'TERJAWAB' ? (isDark ? const Color(0xFF161B27) : Colors.white) : (isDark ? const Color(0xFF1C2230) : Colors.white),
+            border: Border.all(color: onSurfaceVariant),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFB7EDE7),
+                  border: Border.all(color: onSurfaceVariant),
+                ),
+                child: Center(
+                  child: Text(author[5].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF336763),
+                      )),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: onSurface,
+                                fontFamily: 'Plus Jakarta Sans',
+                              )),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(timeAgo,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: onSurfaceVariant,
+                              fontFamily: 'Inter',
+                            )),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(author,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF336763),
+                          fontFamily: 'Inter',
+                        )),
+                    const SizedBox(height: 12),
+                    Text(snippet,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: onSurfaceVariant,
+                          fontFamily: 'Inter',
+                          height: 1.5,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.only(top: 16),
+                      decoration: BoxDecoration(
+                        border: Border(top: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.forum, size: 16, color: onSurfaceVariant),
+                          const SizedBox(width: 4),
+                          Text('$replies Balasan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
+                          const SizedBox(width: 24),
+                          Icon(Icons.history, size: 16, color: onSurfaceVariant),
+                          const SizedBox(width: 4),
+                          Text('Aktif $lastActive', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (badge != null)
+          Positioned(
+            top: -1,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: badgeColor,
+                border: Border.all(color: onSurfaceVariant),
+              ),
+              child: Text(badge,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontFamily: 'Inter',
+                    letterSpacing: 0.5,
+                  )),
+            ),
+          ),
+      ],
+    );
   }
 
    Widget _buildDashboardView() {
@@ -841,14 +1508,15 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
         body: Column(children: [
  
           // ── HEADER ──────────────────────────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161B27) : _white,
-              border: Border(bottom: BorderSide(
-                color: isDark ? const Color(0xFF252D3D) : _ink,
-              )),
-            ),
-            child: SafeArea(
+          if (_activeTabID != 'menu')
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF161B27) : _white,
+                border: Border(bottom: BorderSide(
+                  color: isDark ? const Color(0xFF252D3D) : _ink,
+                )),
+              ),
+              child: SafeArea(
               bottom: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
@@ -1392,129 +2060,10 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
 
 
   void _showMobileMenu() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161B27) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(
-              top: BorderSide(
-                  color: isDark
-                      ? const Color(0xFF252D3D)
-                      : const Color(0xFFE5E7EB),
-                  width: 1.0)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF252D3D)
-                        : const Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(2))),
-            Text('Menu Lainnya',
-                style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    color: isDark ? Colors.white : const Color(0xFF1A1A3E))),
-            const SizedBox(height: 16),
-            _buildMenuSheetItem(ctx, 'presensi', Icons.how_to_reg_outlined,
-                'Presensi Kelas', const Color(0xFF7B83EB), isDark),
-            _buildMenuSheetItem(ctx, 'kuis', Icons.quiz_outlined,
-                'Kuis & Ujian', const Color(0xFFF27F33), isDark),
-            _buildMenuSheetItem(ctx, 'materi', Icons.auto_stories_outlined,
-                'Materi Ajar', const Color(0xFF8B5CF6), isDark),
-            const Divider(height: 16),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('CHANNELS',
-                    style: TextStyle(
-                      fontSize: 10, fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white38 : Colors.black38,
-                      letterSpacing: 1.5,
-                    )),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _showCreateChannelDialog();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withAlpha(20),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFF10B981).withAlpha(80),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add_rounded, size: 13, color: Color(0xFF10B981)),
-                          SizedBox(width: 4),
-                          Text('Buat Channel', style: TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.w700,
-                            color: Color(0xFF10B981),
-                          )),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _buildMenuSheetItem(ctx, 'channel_general', Icons.tag_rounded,
-                'General', const Color(0xFF10B981), isDark),
-            for (var c in _channels)
-              _buildMenuSheetItem(
-                ctx,
-                'channel_${c['id']}',
-                Icons.tag_rounded,
-                c['nama_channel'] ?? 'Unnamed',
-                const Color(0xFF10B981),
-                isDark,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuSheetItem(BuildContext ctx, String id, IconData icon,
-      String label, Color color, bool isDark) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: color, size: 20)),
-      title: Text(label,
-          style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: isDark ? Colors.white : const Color(0xFF1A1A3E))),
-      onTap: () {
-        Navigator.pop(ctx);
-        setState(() {
-          _activeTabID = id;
-          _activeTitle = label;
-        });
-      },
-    );
+    setState(() {
+      _activeTabID = 'menu';
+      _activeTitle = 'Menu Hub';
+    });
   }
 
   @override
