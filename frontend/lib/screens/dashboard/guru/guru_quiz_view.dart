@@ -218,66 +218,184 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final ctrl = TextEditingController();
+    bool isImporting = false;
+    
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-        ),
-        title: Text(
-          'Tarik Kuis (Import)',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Masukkan Kode Share kuis yang ingin Anda tarik ke kelas ini.', 
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                border: Border.all(color: Theme.of(context).dividerColor),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextField(
-                controller: ctrl,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
-                decoration: InputDecoration(
-                  hintText: 'Contoh: A1B2C3D4',
-                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  border: InputBorder.none,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 450),
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF001E2B) : const Color(0xFFF4FAFF),
+                  border: Border.all(color: isDark ? Colors.white38 : const Color(0xFF2D3436), width: 2),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                    topRight: Radius.circular(4),
+                    bottomLeft: Radius.circular(4),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.white38 : const Color(0xFF2D3436),
+                      offset: const Offset(6, 6),
+                      blurRadius: 0,
+                    ),
+                  ],
                 ),
-                textCapitalization: TextCapitalization.characters,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      'IMPORT QUIZ',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        color: isDark ? Colors.white : const Color(0xFF001E2B),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 8, bottom: 24),
+                      height: 4,
+                      width: 48,
+                      color: const Color(0xFF8D4D33), // tertiary
+                    ),
+                    
+                    // Instruction
+                    Text(
+                      'Masukkan kode share kuis yang ingin anda tarik/import ke kelas ini',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        height: 1.4,
+                        color: isDark ? Colors.white70 : const Color(0xFF414944),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Input
+                    Text(
+                      'KODE KUIS',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        color: isDark ? Colors.white70 : const Color(0xFF414944),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: ctrl,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: 'Contoh: QZ-99238',
+                        hintStyle: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white38 : const Color(0xFFC1C8C2),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF073446) : Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: isDark ? Colors.white38 : const Color(0xFF2D3436), width: 2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: isDark ? Colors.white38 : const Color(0xFF2D3436), width: 2),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: Color(0xFF3D6754), width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Action Button
+                    GestureDetector(
+                      onTapDown: (_) => setState(() {}),
+                      onTap: () async {
+                        final code = ctrl.text.trim().toUpperCase();
+                        if (code.isEmpty) return;
+                        setState(() => isImporting = true);
+                        await Future.delayed(const Duration(milliseconds: 100)); // allow push animation
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                        _importQuiz(code);
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 56,
+                            color: isDark ? Colors.white38 : const Color(0xFF2D3436),
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 100),
+                            width: double.infinity,
+                            height: 56,
+                            transform: Matrix4.translationValues(isImporting ? 0 : -3, isImporting ? 0 : -3, 0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3D6754), // primary
+                              border: Border.all(color: const Color(0xFF2D3436), width: 2),
+                            ),
+                            child: Center(
+                              child: isImporting
+                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                                : Text(
+                                    'IMPORT',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 2.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Batal
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: TextButton.styleFrom(
+                          foregroundColor: isDark ? Colors.white : const Color(0xFF717974),
+                        ),
+                        child: Text(
+                          'BATAL',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
-            ),
-          ),
-          NeoButton(
-            onTap: () async {
-              final code = ctrl.text.trim().toUpperCase();
-              if (code.isEmpty) return;
-              Navigator.pop(ctx);
-              _importQuiz(code);
-            },
-            text: 'Import',
-            color: AppTheme.indigoPrimary,
-          ),
-        ],
+          );
+        }
       ),
     );
   }

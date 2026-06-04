@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/theme.dart';
-import '../../../widgets/app_shell.dart';
 import '../../../services/quiz_service.dart';
 import '../../../services/upload_service.dart';
 import '../../../services/notifikasi_service.dart';
@@ -300,355 +298,649 @@ class _GuruQuizCreateScreenState extends State<GuruQuizCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AppShell(
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF001E2B) : const Color(0xFFF4FAFF), // surface
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: const Icon(LucideIcons.arrowLeft),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            isEditing ? 'Edit Kuis' : 'Buat Kuis Baru',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w900, letterSpacing: -0.5),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-              child: PremiumElevatedButton(
-                onPressed: _isSaving ? null : _save,
-                icon: _isSaving ? null : LucideIcons.save,
-                iconSize: 14,
-                color: AppTheme.indigoPrimary,
-                textColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                radius: 12,
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text(
-                        'Simpan',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-              ),
-            ),
-          ],
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: () => Navigator.pop(context),
+          color: isDark ? Colors.white : const Color(0xFF001E2B),
         ),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(24),
-            children: [
-              const _SectionLabel(label: 'INFORMASI KUIS', icon: LucideIcons.info),
-              const SizedBox(height: 12),
-
-              _buildField('Judul Ujian', _titleCtrl, 'Masukkan judul kuis', LucideIcons.type, theme, isDark),
-              const SizedBox(height: 14),
-              _buildField('Deskripsi', _descCtrl, 'Deskripsi singkat kuis', LucideIcons.alignLeft, theme, isDark),
-              const SizedBox(height: 24),
-
-              const _SectionLabel(label: 'PENGATURAN UJIAN', icon: LucideIcons.settings),
-              const SizedBox(height: 12),
-
-              _buildField('Durasi (menit)', _durationCtrl, '60', LucideIcons.clock, theme, isDark,
-                  isNumber: true),
-
-              const SizedBox(height: 16),
-
-              _buildToggleCard(
-                title: 'Batas Waktu (Jam Tutup)',
-                subtitle: _closedAt != null ? 'Tutup pada: ${DateFormat('dd MMM yyyy HH:mm').format(_closedAt!)}' : 'Ujian otomatis di-submit jika lewat batas waktu',
-                icon: LucideIcons.timerOff,
-                value: _closedAt != null,
-                onChanged: (v) {
-                  if (v) {
-                    _pickCloseTime();
-                  } else {
-                    setState(() => _closedAt = null);
-                  }
-                },
-                theme: theme,
-                isDark: isDark,
-                extraAction: _closedAt != null ? IconButton(
-                  icon: const Icon(LucideIcons.edit2, size: 16),
-                  onPressed: _pickCloseTime,
-                ) : null,
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildToggleCard(
-                title: 'Secure Exam Mode',
-                subtitle: 'Fullscreen, anti-cheat, dan proteksi shortcut',
-                icon: _isSecureMode ? LucideIcons.shieldCheck : LucideIcons.shieldOff,
-                value: _isSecureMode,
-                onChanged: (v) => setState(() => _isSecureMode = v),
-                theme: theme,
-                isDark: isDark,
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildToggleCard(
-                title: 'Rilis Otomatis (Terjadwal)',
-                subtitle: _scheduledAt != null ? 'Terjadwal: ${DateFormat('dd MMM yyyy HH:mm').format(_scheduledAt!)}' : 'Tentukan jadwal kuis dirilis',
-                icon: LucideIcons.calendar,
-                value: _isScheduled,
-                onChanged: (v) {
-                  setState(() => _isScheduled = v);
-                  if (v) _pickSchedule();
-                },
-                theme: theme,
-                isDark: isDark,
-                extraAction: _isScheduled && _scheduledAt != null ? IconButton(
-                  icon: const Icon(LucideIcons.edit2, size: 16),
-                  onPressed: _pickSchedule,
-                ) : null,
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildToggleCard(
-                title: 'Acak Urutan Soal',
-                subtitle: 'Soal akan ditampilkan acak ke setiap siswa',
-                icon: LucideIcons.shuffle,
-                value: _shuffleQuestions,
-                onChanged: (v) => setState(() => _shuffleQuestions = v),
-                theme: theme,
-                isDark: isDark,
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildToggleCard(
-                title: 'Acak Opsi Jawaban',
-                subtitle: 'Pilihan ganda akan diacak urutannya',
-                icon: LucideIcons.listOrdered,
-                value: _shuffleOptions,
-                onChanged: (v) => setState(() => _shuffleOptions = v),
-                theme: theme,
-                isDark: isDark,
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildToggleCard(
-                title: 'Kuis Aktif Sekarang',
-                subtitle: 'Siswa dapat melihat dan mengerjakan kuis ini',
-                icon: _isActive ? LucideIcons.checkCircle : LucideIcons.xCircle,
-                value: _isActive,
-                onChanged: (v) {
-                  setState(() {
-                    _isActive = v;
-                    if (v) _isScheduled = false;
-                  });
-                },
-                theme: theme,
-                isDark: isDark,
-                activeColor: AppTheme.success,
-              ),
-
-              const SizedBox(height: 28),
-
-              Row(
-                children: [
-                  const _SectionLabel(label: 'DAFTAR SOAL UJIAN', icon: LucideIcons.helpCircle),
-                  const Spacer(),
-                  Container(
-                    width: 90,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Theme.of(context).dividerColor),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: TextFormField(
-                      controller: _jumlahSoalCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      textAlign: TextAlign.center,
-                      onChanged: _onJumlahSoalChanged,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppTheme.textLight),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        hintText: 'Jml',
-                        hintStyle: Theme.of(context).textTheme.labelLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                        border: InputBorder.none,
+      ),
+      body: Form(
+        key: _formKey,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              children: [
+                // Header
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF8D4D33), // tertiary
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(0),
+                        topRight: Radius.circular(10),
+                        bottomRight: Radius.circular(0),
+                        bottomLeft: Radius.circular(10),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('soal', style: GoogleFonts.poppins(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface.withAlpha(160))),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              ...List.generate(_questions.length, (i) {
-                return _QuestionCard(
-                  index: i,
-                  form: _questions[i],
-                  isDark: isDark,
-                  theme: theme,
-                  token: widget.token,
-                  onRemove: _questions.length > 1 ? () => _removeQuestion(i) : null,
-                  onUpdate: () => setState(() {}),
-                ).animate(delay: (50 * i).ms)
-                  .fadeIn(duration: 300.ms)
-                  .slideY(begin: 0.03);
-              }),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _addQuestion,
-                  icon: const Icon(LucideIcons.plusCircle, size: 16),
-                  label: Text('Tambah Soal', style: GoogleFonts.poppins(fontWeight: FontWeight.w800)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.indigoPrimary,
-                    side: const BorderSide(color: AppTheme.indigoPrimary, width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    child: Text(
+                      'MODUL GURU',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 100),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  isEditing ? 'Edit Kuis' : 'Buat Kuis Baru',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? Colors.white : const Color(0xFF001E2B),
+                    height: 1.1,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Rancang pengalaman belajar yang menantang dan interaktif untuk siswa Anda.',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    color: isDark ? Colors.white70 : const Color(0xFF414944), // on-surface-variant
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Section 1: Identitas Kuis
+                _NeoCard(
+                  isDark: isDark,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(LucideIcons.edit3, color: isDark ? Colors.white : const Color(0xFF001E2B), size: 24),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Identitas Kuis',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? Colors.white : const Color(0xFF001E2B),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _buildNeoField(
+                        label: 'JUDUL KUIS',
+                        controller: _titleCtrl,
+                        hint: 'Contoh: Dasar Algoritma Modern',
+                        isDark: isDark,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildNeoField(
+                        label: 'DESKRIPSI SINGKAT',
+                        controller: _descCtrl,
+                        hint: 'Jelaskan tujuan kuis ini kepada siswa...',
+                        isDark: isDark,
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Section 2: Struktur Soal
+                _NeoCard(
+                  isDark: isDark,
+                  backgroundColor: isDark ? const Color(0xFF073446) : const Color(0xFFE8F6FF), // surface-container-low
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Struktur Soal',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? Colors.white : const Color(0xFF001E2B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tentukan jumlah soal untuk membuat template otomatis.',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: isDark ? Colors.white70 : const Color(0xFF414944),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF001E2B) : Colors.white,
+                              border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 2),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('JUMLAH', style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black54)),
+                                TextFormField(
+                                  controller: _jumlahSoalCtrl,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  textAlign: TextAlign.center,
+                                  onChanged: _onJumlahSoalChanged,
+                                  style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black),
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.zero,
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () => _onJumlahSoalChanged(_jumlahSoalCtrl.text),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFB7E5CD), // primary-container
+                                border: Border.all(color: Colors.black, width: 2),
+                              ),
+                              child: Text(
+                                'GENERATE',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Settings Grid
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Pengaturan
+                    _NeoCard(
+                      isDark: isDark,
+                      backgroundColor: isDark ? const Color(0xFF0F4D66) : const Color(0xFFC1E8FF), // surface-container-highest
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.settings, color: isDark ? Colors.white : const Color(0xFF001E2B), size: 24),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Pengaturan',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : const Color(0xFF001E2B),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          _buildNeoSwitch(
+                            title: 'Secure Exam',
+                            subtitle: 'Cegah berpindah tab',
+                            value: _isSecureMode,
+                            onChanged: (v) => setState(() => _isSecureMode = v),
+                            isDark: isDark,
+                          ),
+                          const Divider(color: Colors.black12, height: 24),
+                          _buildNeoSwitch(
+                            title: 'Acak Urutan Soal',
+                            subtitle: 'Urutan pertanyaan berbeda tiap siswa',
+                            value: _shuffleQuestions,
+                            onChanged: (v) => setState(() => _shuffleQuestions = v),
+                            isDark: isDark,
+                          ),
+                          const Divider(color: Colors.black12, height: 24),
+                          _buildNeoSwitch(
+                            title: 'Acak Opsi Jawaban',
+                            subtitle: 'Urutan pilihan jawaban diacak',
+                            value: _shuffleOptions,
+                            onChanged: (v) => setState(() => _shuffleOptions = v),
+                            isDark: isDark,
+                          ),
+                          const Divider(color: Colors.black12, height: 24),
+                          _buildNeoSwitch(
+                            title: 'Rilis Otomatis (Terjadwal)',
+                            subtitle: 'Publikasi otomatis pada waktu tertentu',
+                            value: _isScheduled,
+                            onChanged: (v) {
+                              setState(() => _isScheduled = v);
+                              if (v && _scheduledAt == null) _pickSchedule();
+                              if (v) _isActive = false; // Cannot be active now if scheduled
+                            },
+                            isDark: isDark,
+                          ),
+                          if (_isScheduled) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              margin: const EdgeInsets.only(left: 12),
+                              padding: const EdgeInsets.only(left: 16),
+                              decoration: BoxDecoration(
+                                border: Border(left: BorderSide(color: isDark ? Colors.white54 : const Color(0xFF3D6754), width: 2)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _scheduledAt != null ? DateFormat('dd MMM yyyy, HH:mm').format(_scheduledAt!) : 'Belum diatur',
+                                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: _pickSchedule,
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                          minimumSize: Size.zero,
+                                        ),
+                                        child: Text('Ubah', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12, color: const Color(0xFF3D6754))),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          const Divider(color: Colors.black12, height: 24),
+                          _buildNeoSwitch(
+                            title: 'Auto-Submit',
+                            subtitle: 'Kirim saat deadline',
+                            value: _closedAt != null,
+                            onChanged: (v) {
+                              if (v) {
+                                _pickCloseTime();
+                              } else {
+                                setState(() => _closedAt = null);
+                              }
+                            },
+                            isDark: isDark,
+                          ),
+                          const Divider(color: Colors.black12, height: 24),
+                          _buildNeoSwitch(
+                            title: 'Kuis Aktif Sekarang',
+                            subtitle: 'Siswa dapat melihat kuis ini',
+                            value: _isActive,
+                            onChanged: (v) {
+                              setState(() {
+                                _isActive = v;
+                                if (v) _isScheduled = false; // Disable schedule if forcing active now
+                              });
+                            },
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Jadwal & Waktu
+                    _NeoCard(
+                      isDark: isDark,
+                      backgroundColor: isDark ? const Color(0xFF0F4D66) : const Color(0xFFDBF1FF), // surface-container
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.calendarClock, color: isDark ? Colors.white : const Color(0xFF001E2B), size: 24),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Jadwal & Waktu',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : const Color(0xFF001E2B),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'DURASI PENGERJAAN',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
+                              color: isDark ? Colors.white70 : const Color(0xFF414944),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Stack(
+                            alignment: Alignment.centerRight,
+                            children: [
+                              TextFormField(
+                                controller: _durationCtrl,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black),
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: isDark ? const Color(0xFF001E2B) : Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+                                  focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: Color(0xFF3D6754), width: 2)),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 16),
+                                child: Text('MENIT', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, color: isDark ? Colors.white70 : Colors.black54)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'BATAS WAKTU (DEADLINE)',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
+                              color: isDark ? Colors.white70 : const Color(0xFF414944),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: _pickCloseTime,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF001E2B) : Colors.white,
+                                border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 2),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _closedAt != null ? DateFormat('dd/MM/yyyy - HH:mm').format(_closedAt!) : 'Pilih batas waktu...',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        color: _closedAt != null ? (isDark ? Colors.white : Colors.black) : (isDark ? Colors.white54 : Colors.black54),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(LucideIcons.calendar, size: 18, color: isDark ? Colors.white : Colors.black),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '*Kuis akan ditutup secara otomatis sesuai waktu di atas.',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontStyle: FontStyle.italic,
+                              color: isDark ? Colors.white54 : const Color(0xFF717974), // outline
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Section 3: Questions
+                ...List.generate(_questions.length, (i) {
+                  return _QuestionCard(
+                    index: i,
+                    form: _questions[i],
+                    isDark: isDark,
+                    token: widget.token,
+                    onRemove: _questions.length > 1 ? () => _removeQuestion(i) : null,
+                    onUpdate: () => setState(() {}),
+                  );
+                }),
+                
+                const SizedBox(height: 24),
+
+                // Save Action
+                Center(
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTapDown: (_) => setState(() {}), // Implement full pushable later
+                        onTap: _isSaving ? null : _save,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 400,
+                              height: 64,
+                              color: isDark ? Colors.white38 : Colors.black,
+                            ),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 100),
+                              width: 400,
+                              height: 64,
+                              transform: Matrix4.translationValues(_isSaving ? 0 : -4, _isSaving ? 0 : -4, 0),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFB7E5CD), // primary-container
+                                border: Border.all(color: Colors.black, width: 2),
+                              ),
+                              child: Center(
+                                child: _isSaving
+                                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3))
+                                    : Text(
+                                        'Simpan & Terbitkan Kuis',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF001E2B),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.cloudLightning, size: 16, color: isDark ? Colors.white70 : const Color(0xFF414944)),
+                          const SizedBox(width: 8),
+                          Text(
+                            'DRAF TERAKHIR DISIMPAN PADA ${DateFormat('HH:mm').format(DateTime.now())}',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? Colors.white70 : const Color(0xFF414944),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 100),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildToggleCard({
+  Widget _buildNeoField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    required bool isDark,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+            color: isDark ? Colors.white70 : const Color(0xFF414944), // on-surface-variant
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(color: isDark ? Colors.white38 : const Color(0xFFC1C8C2)),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF001E2B) : const Color(0xFFF4FAFF),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+            focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: Color(0xFF3D6754), width: 2)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNeoSwitch({
     required String title,
     required String subtitle,
-    required IconData icon,
     required bool value,
     required ValueChanged<bool> onChanged,
-    required ThemeData theme,
     required bool isDark,
-    Color activeColor = AppTheme.indigoPrimary,
-    Widget? extraAction,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: value ? activeColor.withAlpha(isDark ? 55 : 30) : Theme.of(context).dividerColor,
-          width: 1.2,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: value ? activeColor.withAlpha(20) : Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: value ? activeColor : isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : AppTheme.textLight),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: isDark ? Colors.white70 : const Color(0xFF414944),
+                ),
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: () => onChanged(!value),
+          child: Container(
+            width: 48,
+            height: 24,
+            decoration: BoxDecoration(
+              color: value ? const Color(0xFF001E2B) : (isDark ? const Color(0xFF001E2B) : Colors.white),
+              border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 1.5),
+            ),
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  left: value ? 24 : 2,
+                  top: 2,
+                  child: Container(
+                    width: 17,
+                    height: 17,
+                    decoration: BoxDecoration(
+                      color: value ? const Color(0xFFB7E5CD) : (isDark ? Colors.white54 : Colors.black),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          if (extraAction != null) extraAction,
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeTrackColor: activeColor,
-            activeThumbColor: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField(String label, TextEditingController ctrl, String hint, IconData icon,
-      ThemeData theme, bool isDark, {bool isNumber = false}) {
-    return TextFormField(
-      controller: ctrl,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : null,
-      validator: (v) => (v == null || v.trim().isEmpty) ? '$label wajib diisi' : null,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700, color: isDark ? Colors.white : AppTheme.textLight),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-        hintText: hint,
-        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-        prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+      ],
     );
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  final IconData icon;
+class _NeoCard extends StatelessWidget {
+  final Widget child;
+  final bool isDark;
+  final Color? backgroundColor;
 
-  const _SectionLabel({required this.label, required this.icon});
+  const _NeoCard({required this.child, required this.isDark, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: AppTheme.indigoPrimary),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
-            letterSpacing: 1.0,
-            color: AppTheme.indigoPrimary),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? (isDark ? const Color(0xFF001E2B) : Colors.white),
+        border: Border.all(color: isDark ? Colors.white38 : const Color(0xFF001E2B), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.white38 : const Color(0xFF001E2B),
+            offset: const Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }
@@ -702,7 +994,6 @@ class _QuestionCard extends StatefulWidget {
   final int index;
   final _QuestionForm form;
   final bool isDark;
-  final ThemeData theme;
   final String token;
   final VoidCallback? onRemove;
   final VoidCallback onUpdate;
@@ -711,7 +1002,6 @@ class _QuestionCard extends StatefulWidget {
     required this.index,
     required this.form,
     required this.isDark,
-    required this.theme,
     required this.token,
     this.onRemove,
     required this.onUpdate,
@@ -801,326 +1091,304 @@ class _QuestionCardState extends State<_QuestionCard> {
   @override
   Widget build(BuildContext context) {
     final form = widget.form;
+    final isDark = widget.isDark;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-          width: 1.2,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.indigoPrimary.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50)),
-                ),
-                child: Text(
-                  'Soal ${widget.index + 1}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900,
-                    color: AppTheme.indigoPrimary),
-                ),
-              ),
-              const SizedBox(width: 12),
-              
-              Expanded(
-                child: Container(
-                  height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: form.questionType,
-                      isExpanded: true,
-                      dropdownColor: Theme.of(context).colorScheme.surface,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800, color: widget.isDark ? Colors.white : AppTheme.textLight),
-                      items: const [
-                        DropdownMenuItem(value: 'multipleChoice', child: Text('Pilihan Ganda')),
-                        DropdownMenuItem(value: 'multipleAnswer', child: Text('Pilihan Ganda (Banyak Jawaban)')),
-                        DropdownMenuItem(value: 'complexCheckbox', child: Text('Pilihan Ganda (Kompleks)')),
-                        DropdownMenuItem(value: 'essay', child: Text('Uraian')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            form.questionType = val;
-                            if (val == 'multipleChoice') {
-                              form.correctAnswers = form.correctAnswers.isNotEmpty ? [form.correctAnswers.first] : [0];
-                            }
-                            if (val != 'essay' && form.optionCtrls.isEmpty) {
-                              form.optionCtrls.addAll([TextEditingController(), TextEditingController()]);
-                            }
-                          });
-                          widget.onUpdate();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 75,
-                height: 40,
-                child: TextFormField(
-                  controller: form.pointsCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900, color: widget.isDark ? Colors.white : AppTheme.textLight),
-                  decoration: InputDecoration(
-                    labelText: 'Poin',
-                    labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.indigoPrimary),
-                    ),
-                  ),
-                ),
-              ),
-              if (widget.onRemove != null) ...[
-                const SizedBox(width: 4),
-                IconButton(
-                  icon: const Icon(LucideIcons.trash2, size: 18, color: AppTheme.error),
-                  onPressed: widget.onRemove,
-                  tooltip: 'Hapus soal',
-                ),
-              ],
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          TextFormField(
-            controller: form.questionCtrl,
-            maxLines: 3,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700, color: widget.isDark ? Colors.white : AppTheme.textLight),
-            decoration: InputDecoration(
-              hintText: 'Tulis pertanyaan kuis di sini...',
-              hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          if (form.imageUrl != null)
-            Stack(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: _NeoCard(
+        isDark: isDark,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Question Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 250),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      form.imageUrl!,
-                      width: double.infinity,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: InkWell(
-                    onTap: _removeImage,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: AppTheme.error, shape: BoxShape.circle),
-                      child: const Icon(LucideIcons.x, size: 14, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          else
-            OutlinedButton.icon(
-              onPressed: _isUploading ? null : _pickAndUploadImage,
-              icon: _isUploading 
-                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(LucideIcons.image, size: 14),
-              label: Text(
-                _isUploading ? 'Mengupload...' : 'Sisipkan Gambar', 
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.indigoPrimary,
-                side: const BorderSide(color: AppTheme.indigoPrimary, width: 1.0),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            ),
-
-          const SizedBox(height: 14),
-
-          if (form.questionType != 'essay') ...[
-            Text(
-              form.questionType == 'multipleChoice' 
-                  ? 'OPSI JAWABAN (Pilih satu jawaban benar)'
-                  : 'OPSI JAWABAN (Pilih semua jawaban benar)',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900,
-                letterSpacing: 0.5,
-                color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-            ),
-            const SizedBox(height: 10),
-
-            ...List.generate(form.optionCtrls.length, (oi) {
-              final isCorrect = form.correctAnswers.contains(oi);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
+                Row(
                   children: [
-                    if (form.questionType == 'multipleChoice')
-                      Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: InkWell(
-                          onTap: () {
-                            setState(() => form.correctAnswers = [oi]);
-                            widget.onUpdate();
-                          },
-                          child: Icon(
-                            form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
-                                ? LucideIcons.checkCircle2
-                                : LucideIcons.circle,
-                            color: form.correctAnswers.isNotEmpty && form.correctAnswers.first == oi
-                                ? AppTheme.success
-                                : widget.theme.colorScheme.onSurface.withAlpha(160),
-                            size: 22,
-                          ),
-                        ),
-                      )
-                    else
-                      Checkbox(
-                        value: isCorrect,
-                        onChanged: (v) {
-                          setState(() {
-                            if (v == true) {
-                              form.correctAnswers.add(oi);
-                            } else {
-                              form.correctAnswers.remove(oi);
-                            }
-                          });
-                          widget.onUpdate();
-                        },
-                        activeColor: AppTheme.success,
-                      ),
-                    Expanded(
-                      child: TextFormField(
-                        controller: form.optionCtrls[oi],
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
-                          color: widget.isDark ? Colors.white : AppTheme.textLight),
-                        decoration: InputDecoration(
-                          hintText: 'Opsi ${String.fromCharCode(65 + oi)}',
-                          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          filled: true,
-                          fillColor: isCorrect
-                              ? AppTheme.success.withAlpha(widget.isDark ? 20 : 10)
-                              : Theme.of(context).colorScheme.surface,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: isCorrect ? AppTheme.success.withAlpha(160) : Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: isCorrect ? AppTheme.success.withAlpha(160) : Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppTheme.indigoPrimary, width: 2),
-                          ),
-                        ),
+                    Icon(LucideIcons.gripVertical, size: 20, color: isDark ? Colors.white54 : const Color(0xFF717974)),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Pertanyaan #${widget.index + 1}',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : const Color(0xFF001E2B),
                       ),
                     ),
-                    if (form.optionCtrls.length > 2)
-                      IconButton(
-                        icon: const Icon(LucideIcons.x, size: 16, color: AppTheme.error),
-                        onPressed: () => _removeOption(oi),
-                        visualDensity: VisualDensity.compact,
-                      ),
                   ],
                 ),
-              );
-            }),
-
-            if (form.optionCtrls.length < 6)
-              TextButton.icon(
-                onPressed: _addOption,
-                icon: const Icon(LucideIcons.plusCircle, size: 14),
-                label: Text('Tambah Opsi', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800)),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.indigoPrimary,
-                ),
-              ),
-          ] else ...[
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).dividerColor),
-              ),
-              child: Row(
-                children: [
-                  Icon(LucideIcons.alignLeft, size: 15, color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Siswa akan menjawab berupa teks uraian / essay',
-                      style: GoogleFonts.poppins(
-                        color: (widget.isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                if (widget.onRemove != null)
+                  IconButton(
+                    icon: const Icon(LucideIcons.trash2, color: Color(0xFFBA1A1A)),
+                    onPressed: widget.onRemove,
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFBA1A1A).withValues(alpha: 0.1),
+                    ),
+                  ),
+              ],
+            ),
+            const Divider(color: Colors.black12, height: 32),
+            
+            // Type & Score
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('TIPE SOAL', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.0, color: isDark ? Colors.white70 : const Color(0xFF414944))),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF001E2B) : Colors.white,
+                          border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 2),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: form.questionType,
+                            isExpanded: true,
+                            dropdownColor: isDark ? const Color(0xFF001E2B) : Colors.white,
+                            style: GoogleFonts.inter(fontSize: 16, color: isDark ? Colors.white : Colors.black),
+                            items: const [
+                              DropdownMenuItem(value: 'multipleChoice', child: Text('Pilihan Ganda')),
+                              DropdownMenuItem(value: 'multipleAnswer', child: Text('Pilihan Ganda Kompleks')),
+                              DropdownMenuItem(value: 'essay', child: Text('Essay')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() {
+                                  form.questionType = val;
+                                  if (val == 'multipleChoice') {
+                                    form.correctAnswers = form.correctAnswers.isNotEmpty ? [form.correctAnswers.first] : [0];
+                                  }
+                                });
+                                widget.onUpdate();
+                              }
+                            },
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('SKOR', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.0, color: isDark ? Colors.white70 : const Color(0xFF414944))),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: form.pointsCtrl,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(fontSize: 16, color: isDark ? Colors.white : Colors.black),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF001E2B) : Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+                          focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: Color(0xFF3D6754), width: 2)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Content
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('KONTEN PERTANYAAN', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.0, color: isDark ? Colors.white70 : const Color(0xFF414944))),
+                GestureDetector(
+                  onTap: _isUploading ? null : _pickAndUploadImage,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF001E2B) : Colors.white,
+                      border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        if (_isUploading)
+                          const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF001E2B)))
+                        else
+                          Icon(LucideIcons.image, size: 14, color: isDark ? Colors.white : const Color(0xFF001E2B)),
+                        const SizedBox(width: 6),
+                        Text('INSERT GAMBAR', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF001E2B))),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: form.questionCtrl,
+              maxLines: 3,
+              style: GoogleFonts.inter(fontSize: 16, color: isDark ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                hintText: 'Ketik pertanyaan di sini...',
+                hintStyle: GoogleFonts.inter(color: isDark ? Colors.white38 : const Color(0xFFC1C8C2)),
+                filled: true,
+                fillColor: isDark ? const Color(0xFF001E2B) : Colors.white,
+                contentPadding: const EdgeInsets.all(16),
+                border: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isDark ? Colors.white38 : Colors.black, width: 2)),
+                focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: Color(0xFF3D6754), width: 2)),
+              ),
+            ),
+            if (form.imageUrl != null) ...[
+              const SizedBox(height: 12),
+              Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF073446) : const Color(0xFFE8F6FF),
+                      border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 1.5),
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 250),
+                      child: Image.network(form.imageUrl!, fit: BoxFit.contain),
+                    ),
+                  ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: IconButton(
+                      onPressed: _removeImage,
+                      icon: const Icon(LucideIcons.trash2, color: Colors.white),
+                      style: IconButton.styleFrom(backgroundColor: const Color(0xFFBA1A1A)),
                     ),
                   ),
                 ],
               ),
-            ),
+            ],
+            const SizedBox(height: 24),
+
+            // Options
+            if (form.questionType != 'essay') ...[
+              Text('OPSI JAWABAN', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.0, color: isDark ? Colors.white70 : const Color(0xFF414944))),
+              const SizedBox(height: 12),
+              ...List.generate(form.optionCtrls.length, (oi) {
+                final isCorrect = form.correctAnswers.contains(oi);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (form.questionType == 'multipleChoice') {
+                              form.correctAnswers = [oi];
+                            } else {
+                              if (isCorrect) {
+                                form.correctAnswers.remove(oi);
+                              } else {
+                                form.correctAnswers.add(oi);
+                              }
+                            }
+                          });
+                          widget.onUpdate();
+                        },
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: form.questionType == 'multipleChoice' ? BoxShape.circle : BoxShape.rectangle,
+                            border: Border.all(color: isCorrect ? const Color(0xFF3D6754) : (isDark ? Colors.white38 : const Color(0xFF717974)), width: 2),
+                          ),
+                          child: isCorrect ? Center(
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3D6754),
+                                shape: form.questionType == 'multipleChoice' ? BoxShape.circle : BoxShape.rectangle,
+                              ),
+                            ),
+                          ) : null,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: form.optionCtrls[oi],
+                          style: GoogleFonts.inter(fontSize: 16, color: isDark ? Colors.white : Colors.black),
+                          decoration: InputDecoration(
+                            hintText: 'Opsi ${oi + 1}',
+                            hintStyle: GoogleFonts.inter(color: isDark ? Colors.white38 : const Color(0xFFC1C8C2)),
+                            filled: true,
+                            fillColor: isDark ? const Color(0xFF001E2B) : Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isCorrect ? const Color(0xFF3D6754) : (isDark ? Colors.white38 : Colors.black), width: isCorrect ? 2 : 1.5)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: isCorrect ? const Color(0xFF3D6754) : (isDark ? Colors.white38 : Colors.black), width: isCorrect ? 2 : 1.5)),
+                            focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.zero, borderSide: BorderSide(color: Color(0xFF3D6754), width: 2)),
+                          ),
+                        ),
+                      ),
+                      if (form.optionCtrls.length > 2) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(LucideIcons.x, color: Color(0xFF717974)),
+                          onPressed: () => _removeOption(oi),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+              if (form.optionCtrls.length < 6)
+                GestureDetector(
+                  onTap: _addOption,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(LucideIcons.plusCircle, size: 16, color: Color(0xFF3D6754)),
+                        const SizedBox(width: 8),
+                        Text('Tambah Opsi Baru', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF3D6754))),
+                      ],
+                    ),
+                  ),
+                ),
+            ] else ...[
+              Text('AREA JAWABAN SISWA', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.0, color: isDark ? Colors.white70 : const Color(0xFF414944))),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF073446) : const Color(0xFFE8F6FF), // surface-container-low
+                  border: Border.all(color: isDark ? Colors.white38 : const Color(0xFFC1C8C2), width: 1.5, style: BorderStyle.none), // Dashed equivalent not natively supported easily without custom painter, using solid light
+                ),
+                child: Column(
+                  children: [
+                    Icon(LucideIcons.type, size: 40, color: isDark ? Colors.white38 : const Color(0xFFC1C8C2)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Siswa akan diberikan area teks luas untuk mengetikkan jawaban Essay mereka di sini.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(fontSize: 14, fontStyle: FontStyle.italic, color: isDark ? Colors.white54 : const Color(0xFF717974)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
