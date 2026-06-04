@@ -31,6 +31,18 @@ class GuruMateriView extends StatefulWidget {
 class _GuruMateriViewState extends State<GuruMateriView> {
   List<dynamic> _materiList = [];
   bool _isLoading = true;
+  String _searchQuery = '';
+
+  String _formatDate(dynamic dateString) {
+    if (dateString == null) return '';
+    try {
+      final date = DateTime.parse(dateString.toString());
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (e) {
+      return dateString.toString().split('T')[0];
+    }
+  }
 
   @override
   void initState() {
@@ -420,6 +432,29 @@ class _GuruMateriViewState extends State<GuruMateriView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
+    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
+    final outline = isDark ? Colors.white38 : const Color(0xFF717974);
+    final surfaceContainerLow = isDark ? const Color(0xFF161B27) : const Color(0xFFE8F6FF);
+
+    final cardColors = [
+      const Color(0xFF3D6754),
+      const Color(0xFF336763),
+      const Color(0xFF8D4D33),
+    ];
+    final cardBgColors = [
+      isDark ? const Color(0xFF161B27) : const Color(0xFFE8F6FF),
+      isDark ? const Color(0xFF161B27) : const Color(0xFFDBF1FF),
+      isDark ? const Color(0xFF161B27) : const Color(0xFFCEEDFF),
+    ];
+
+    List<dynamic> filteredMateri = _materiList.where((m) {
+      final judul = (m['judul'] ?? '').toString().toLowerCase();
+      final deskripsi = (m['deskripsi'] ?? '').toString().toLowerCase();
+      final query = _searchQuery.toLowerCase();
+      return judul.contains(query) || deskripsi.contains(query);
+    }).toList();
 
     if (_isLoading) {
       return const Scaffold(
@@ -430,118 +465,292 @@ class _GuruMateriViewState extends State<GuruMateriView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: GestureDetector(
-        onTap: () => _showMateriForm(),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          constraints: const BoxConstraints(minHeight: 44),
-          decoration: BoxDecoration(
-            color: AppTheme.primary,
-            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4))],
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(LucideIcons.plusCircle, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Text('MATERI BARU', style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5,
-            )),
-          ]),
-        ),
-      ).animate().fadeIn().slideY(begin: 0.5),
-      body: _materiList.isEmpty
-          ? EmptyState(
-              icon: LucideIcons.bookOpen,
-              message: 'Belum ada materi untuk kelas ini.',
-              color: theme.primaryColor,
-            )
-          : ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: _materiList.length,
-              itemBuilder: (_, i) {
-                final m = _materiList[i];
-                return GestureDetector(
-                  onTap: () => _showMateriDetail(m),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // Header
+                Text(
+                  'Kelola Materi\nAnda',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 40,
+                    height: 1.1,
+                    letterSpacing: -1.5,
+                    fontWeight: FontWeight.w800,
+                    color: onSurface,
+                  ),
+                ).animate().fadeIn().slideX(begin: -0.1),
+                const SizedBox(height: 24),
+                
+                // Button Buat Materi Baru
+                GestureDetector(
+                  onTap: () => _showMateriForm(),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 16),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                      boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+                      color: const Color(0xFF3D6754),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: onSurface, width: 2),
+                      boxShadow: [
+                        BoxShadow(color: onSurface, offset: const Offset(4, 4)),
+                      ],
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary,
-                            border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                            boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
+                        const Icon(Icons.add, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Buat Materi Baru',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
-                          child: const Icon(LucideIcons.bookOpen, color: Colors.white, size: 22),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ),
+                  ),
+                ).animate().fadeIn().slideY(begin: 0.1),
+                const SizedBox(height: 24),
+
+                // Search Box
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: onSurface, width: 2),
+                    boxShadow: [
+                      BoxShadow(color: onSurface, offset: const Offset(4, 4)),
+                    ],
+                  ),
+                  child: TextField(
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                    style: GoogleFonts.inter(color: onSurface),
+                    decoration: InputDecoration(
+                      hintText: 'Cari materi berdasarkan judul...',
+                      hintStyle: GoogleFonts.inter(color: outline),
+                      prefixIcon: Icon(Icons.search, color: outline),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 100.ms),
+                const SizedBox(height: 16),
+              ]),
+            ),
+          ),
+
+          // List of Materi
+          if (_materiList.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index >= filteredMateri.length) return const SizedBox.shrink();
+                    final m = filteredMateri[index];
+                    final colorAccent = cardColors[index % cardColors.length];
+                    final bgColor = cardBgColors[index % cardBgColors.length];
+                    
+                    return GestureDetector(
+                      onTap: () => _showMateriDetail(m),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: onSurface, width: 2),
+                          boxShadow: [
+                            BoxShadow(color: onSurface, offset: const Offset(4, 4)),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: Stack(
                             children: [
-                              Text(
-                                m['judul'] ?? '-',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color!),
+                              Positioned(
+                                top: 0, bottom: 0, left: 0,
+                                child: Container(width: 8, color: colorAccent),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                m['deskripsi'] ?? '-',
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: Theme.of(context).textTheme.bodyMedium!.color!,
-                                  fontWeight: FontWeight.w600),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: colorAccent,
+                                                  borderRadius: BorderRadius.circular(100),
+                                                  border: Border.all(color: onSurface, width: 1),
+                                                ),
+                                                child: Text(
+                                                  'MATERI',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Colors.white,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFFFD1C0),
+                                                  borderRadius: BorderRadius.circular(100),
+                                                  border: Border.all(color: onSurface, width: 1),
+                                                ),
+                                                child: Text(
+                                                  m['kelas']?.toString().toUpperCase() ?? 'KELAS',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: const Color(0xFF8E4F34),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            m['judul'] ?? '-',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                              color: onSurface,
+                                              letterSpacing: -0.5,
+                                            ),
+                                          ),
+                                          if (m['deskripsi'] != null && m['deskripsi'].toString().isNotEmpty) ...[
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              m['deskripsi'],
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                color: onSurfaceVariant,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.calendar_today_outlined, size: 14, color: onSurfaceVariant),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  'Ditambahkan pada ${_formatDate(m['created_at'])}',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 14,
+                                                    color: onSurfaceVariant,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    
+                                    PopupMenuButton<String>(
+                                      icon: Icon(Icons.more_vert, color: onSurfaceVariant),
+                                      onSelected: (value) {
+                                        if (value == 'open') _openFile(m['file_url']);
+                                        if (value == 'edit') _showMateriForm(m);
+                                        if (value == 'delete') _deleteMateri(m['id'].toString());
+                                      },
+                                      itemBuilder: (context) => [
+                                        if (m['file_url'] != null && m['file_url'].toString().isNotEmpty)
+                                          const PopupMenuItem(value: 'open', child: Text('Buka File')),
+                                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                        const PopupMenuItem(value: 'delete', child: Text('Hapus', style: TextStyle(color: Colors.red))),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            GestureDetector(
-                              onTap: () => _openFile(m['file_url']),
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.emerald,
-                                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
-                                ),
-                                child: const Icon(LucideIcons.externalLink, color: Colors.white, size: 14),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () => _deleteMateri(m['id'].toString()),
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.rose,
-                                  border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                                  boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(2, 2), blurRadius: 0)],
-                                ),
-                                child: const Icon(LucideIcons.trash2, color: Colors.white, size: 14),
-                              ),
-                            ),
+                      ),
+                    ).animate(delay: (index * 50).ms).fadeIn().slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                  },
+                  childCount: filteredMateri.length,
+                ),
+              ),
+            ),
+
+          // Add More Prompt (Empty state or bottom banner)
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            sliver: SliverToBoxAdapter(
+              child: GestureDetector(
+                onTap: () => _showMateriForm(),
+                child: Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: onSurfaceVariant.withValues(alpha: 0.3), width: 2),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: onSurface, width: 2),
+                          boxShadow: [
+                            BoxShadow(color: onSurface, offset: const Offset(3, 3)),
                           ],
                         ),
-                      ],       
-                    ),
+                        child: Icon(Icons.library_add_outlined, color: onSurface, size: 28),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Butuh materi tambahan?',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Buat materi baru dan bagikan\nke ruang kelas Anda.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                ).animate(delay: (i * 50).ms).fadeIn().slideY(begin: 0.1, curve: Curves.easeOutQuart);
-              },
+                ),
+              ).animate().fadeIn(delay: 300.ms),
             ),
+          ),
+          
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+        ],
+      ),
     );
   }
 }
