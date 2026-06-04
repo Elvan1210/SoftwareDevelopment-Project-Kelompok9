@@ -10,25 +10,23 @@ import 'package:intl/intl.dart';
 
 import 'siswa_tugas_detail_screen.dart';
 
-// --- Tailwind Neo-Brutalist Tokens -----------------------------------------
-const Color _onSurface = Color(0xFF001E2B);
-const Color _onSurfaceVariant = Color(0xFF414944);
+// ── Design tokens ────────────────────────────────────────────────────────────
+const Color _ink = Color(0xFF001E2B);
+const Color _inkMuted = Color(0xFF4B6459);
 const Color _primary = Color(0xFF3D6754);
-const Color _primaryContainer = Color(0xFFB7E5CD);
-const Color _onPrimaryContainer = Color(0xFF3E6855);
-const Color _secondaryContainer = Color(0xFFB7EDE7);
-const Color _onSecondaryContainer = Color(0xFF3A6D69);
-const Color _tertiaryContainer = Color(0xFFFFD1C0);
-const Color _onTertiaryContainer = Color(0xFF8E4F34);
-const Color _surfaceContainerHighest = Color(0xFFC1E8FF);
-const Color _surface = Color(0xFFF4FAFF);
-const Color _onBackground = Color(0xFF001E2B);
+const Color _primaryLight = Color(0xFFC0E5CB);
+const Color _secondaryLight = Color(0xFFB7EDE7);
+const Color _tertiaryLight = Color(0xFFFFD1C0);
+const Color _skyLight = Color(0xFFC1E8FF);
+const Color _white = Colors.white;
+const Color _errorRed = Color(0xFFD32F2F);
+const Color _successGreen = Color(0xFF2E7D52);
 
 class SiswaTugasView extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String token;
-  final dynamic teamData; 
-  final bool isGlobal; 
+  final dynamic teamData;
+  final bool isGlobal;
 
   const SiswaTugasView({
     super.key,
@@ -52,191 +50,65 @@ class _SiswaTugasViewState extends State<SiswaTugasView> {
   @override
   void initState() {
     super.initState();
-    _fetchTugas();
+    _fetchAll();
   }
 
-  Future<void> _fetchTugas() async {
-    setState(() => _isLoading = true);
+  // ── Fetch tugas + pengumpulan, lalu merge status sudah_kumpul ───────────
+  Future<void> _fetchAll() async {
+    if (mounted) setState(() => _isLoading = true);
     try {
-      String url = '$baseUrl/api/tugas';
+      String tugasUrl = '$baseUrl/api/tugas';
       if (!widget.isGlobal && widget.teamData != null) {
-        url += '?kelas_id=${widget.teamData['id']}';
+        tugasUrl += '?kelas_id=${widget.teamData['id']}';
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
+      final results = await Future.wait([
+        http.get(Uri.parse(tugasUrl),
+            headers: {'Authorization': 'Bearer ${widget.token}'}),
+        http.get(Uri.parse('$baseUrl/api/pengumpulan'),
+            headers: {'Authorization': 'Bearer ${widget.token}'}),
+      ]);
 
-      if (response.statusCode == 200) {
-        final dec = jsonDecode(response.body);
-        List all = dec is List ? dec : [];
-        setState(() => _tugasList = all);
+      if (results[0].statusCode == 200) {
+        final List tugasList =
+            (jsonDecode(results[0].body) is List) ? jsonDecode(results[0].body) : [];
+
+        Set<String> submittedTugasIds = {};
+        if (results[1].statusCode == 200) {
+          final List pengumpulanList =
+              (jsonDecode(results[1].body) is List) ? jsonDecode(results[1].body) : [];
+          final siswId = widget.userData['id']?.toString() ?? '';
+          submittedTugasIds = pengumpulanList
+              .where((p) => p['siswa_id']?.toString() == siswId)
+              .map((p) => p['tugas_id']?.toString() ?? '')
+              .toSet();
+        }
+
+        // Merge flag sudah_kumpul berdasarkan data pengumpulan
+        final merged = tugasList.map((t) {
+          final id = (t['id'] ?? '').toString();
+          return {
+            ...Map<String, dynamic>.from(t),
+            'sudah_kumpul': submittedTugasIds.contains(id),
+          };
+        }).toList();
+
+        if (mounted) setState(() => _tugasList = merged);
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      debugPrint('Error fetchAll: $e');
     }
     if (mounted) setState(() => _isLoading = false);
   }
 
   List<dynamic> get _filtered {
     return _tugasList.where((t) {
-      final isDone = t['sudah_kumpul'] == true || t['status'] == 'selesai';
+      final isDone = t['sudah_kumpul'] == true;
       if (_selectedFilter == 'Semua') return true;
       if (_selectedFilter == 'Belum') return !isDone;
       if (_selectedFilter == 'Selesai') return isDone;
       return true;
     }).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) return _buildSkeleton();
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: LayoutBuilder(
-        builder: (ctx, constraints) {
-          final isDesktop = constraints.maxWidth >= 768;
-
-          return RefreshIndicator(
-            onRefresh: _fetchTugas,
-            color: _primary,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.only(
-                left: isDesktop ? 40 : 16,
-                right: isDesktop ? 40 : 16,
-                top: 32,
-                bottom: 100,
-              ),
-              children: [
-                // -- Headline -------------------------------------------
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 32),
-                  child: Text(
-                    'Daftar Tugas',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isDesktop ? 48 : 36,
-                      fontWeight: FontWeight.w800,
-                      color: _onBackground,
-                      letterSpacing: -1.92,
-                      height: 1.1,
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1),
-
-                // -- Filter Tabs ----------------------------------------------
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: _buildFilterTabs(),
-                ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05),
-
-                // -- Assignment Grid -------------------------------------------
-                if (_filtered.isEmpty)
-                  _buildEmpty()
-                else
-                  _buildGrid(isDesktop),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFilterTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: _filters.map((f) {
-          final isSelected = _selectedFilter == f;
-          return Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedFilter = f),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                transform: Matrix4.translationValues(
-                  isSelected ? 2 : 0,
-                  isSelected ? 2 : 0,
-                  0,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? _primary : _surface,
-                  borderRadius: BorderRadius.circular(9999),
-                  border: Border.all(color: _onSurface, width: 2),
-                  boxShadow: isSelected ? [] : const [BoxShadow(color: _onSurface, offset: Offset(2, 2))],
-                ),
-                child: Text(
-                  f.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                    letterSpacing: 0.6,
-                    color: isSelected ? Colors.white : _onSurface,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildGrid(bool isDesktop) {
-    if (!isDesktop) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(_filtered.length, (i) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: _TaskCardNeo(
-              tugas: _filtered[i],
-              index: i,
-              onTap: () => _openDetail(_filtered[i]),
-            ),
-          );
-        }),
-      );
-    } else {
-      List<Widget> rows = [];
-      for (int i = 0; i < _filtered.length; i += 2) {
-        Widget left = Expanded(
-          child: _TaskCardNeo(
-            tugas: _filtered[i],
-            index: i,
-            onTap: () => _openDetail(_filtered[i]),
-          ),
-        );
-        Widget right = (i + 1 < _filtered.length)
-            ? Expanded(
-                child: _TaskCardNeo(
-                  tugas: _filtered[i + 1],
-                  index: i + 1,
-                  onTap: () => _openDetail(_filtered[i + 1]),
-                ),
-              )
-            : const Expanded(child: SizedBox());
-        
-        rows.add(
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [left, const SizedBox(width: 24), right],
-              ),
-            ),
-          ),
-        );
-      }
-      return Column(children: rows);
-    }
   }
 
   void _openDetail(dynamic tugas) {
@@ -249,84 +121,380 @@ class _SiswaTugasViewState extends State<SiswaTugasView> {
           userData: widget.userData,
         ),
       ),
-    ).then((_) => _fetchTugas());
+    ).then((_) => _fetchAll());
   }
 
+  // ── Count helpers ─────────────────────────────────────────────────────────
+  int get _doneCount => _tugasList.where((t) => t['sudah_kumpul'] == true).length;
+  int get _totalCount => _tugasList.length;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) return _buildSkeleton();
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final isDesktop = constraints.maxWidth >= 768;
+          final hPad = isDesktop ? 40.0 : 16.0;
+
+          return RefreshIndicator(
+            onRefresh: _fetchAll,
+            color: _primary,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
+              slivers: [
+                // ── HEADER ──────────────────────────────────────────────
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(hPad, 36, hPad, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Label pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: _primaryLight,
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(color: _ink, width: 2),
+                            boxShadow: const [
+                              BoxShadow(color: _ink, offset: Offset(2, 2))
+                            ],
+                          ),
+                          child: Text(
+                            'TUGAS KELAS',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                              color: _primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Daftar\nTugas',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: isDesktop ? 52 : 40,
+                            fontWeight: FontWeight.w900,
+                            color: _ink,
+                            letterSpacing: -2,
+                            height: 1.05,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Progress bar
+                        if (_totalCount > 0) ...[
+                          Row(
+                            children: [
+                              Text(
+                                '$_doneCount/$_totalCount selesai',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: _inkMuted,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                '${(_doneCount / _totalCount * 100).round()}%',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w900,
+                                  color: _primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          LayoutBuilder(builder: (ctx, c) {
+                            final frac = _doneCount / _totalCount;
+                            return Container(
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: _primaryLight,
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(color: _ink, width: 1.5),
+                              ),
+                              child: FractionallySizedBox(
+                                widthFactor: frac,
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: _primary,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                          const SizedBox(height: 28),
+                        ],
+
+                        // Filter tabs
+                        _buildFilterTabs(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.08),
+                ),
+
+                // ── LIST ─────────────────────────────────────────────────
+                if (_filtered.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: hPad),
+                      child: _buildEmpty(),
+                    ),
+                  )
+                else if (isDesktop)
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 80),
+                    sliver: _buildDesktopGrid(),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 80),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, i) => Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: _TaskCardNeo(
+                            tugas: _filtered[i],
+                            index: i,
+                            onTap: () => _openDetail(_filtered[i]),
+                          )
+                              .animate(delay: (i * 60).ms)
+                              .fadeIn(duration: 350.ms)
+                              .slideY(begin: 0.1),
+                        ),
+                        childCount: _filtered.length,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Desktop grid (2 columns) ──────────────────────────────────────────────
+  Widget _buildDesktopGrid() {
+    final List<Widget> pairs = [];
+    for (int i = 0; i < _filtered.length; i += 2) {
+      pairs.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _TaskCardNeo(
+                    tugas: _filtered[i],
+                    index: i,
+                    onTap: () => _openDetail(_filtered[i]),
+                  ).animate(delay: (i * 60).ms).fadeIn().slideY(begin: 0.1),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: i + 1 < _filtered.length
+                      ? _TaskCardNeo(
+                          tugas: _filtered[i + 1],
+                          index: i + 1,
+                          onTap: () => _openDetail(_filtered[i + 1]),
+                        )
+                          .animate(delay: ((i + 1) * 60).ms)
+                          .fadeIn()
+                          .slideY(begin: 0.1)
+                      : const SizedBox(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return SliverList(delegate: SliverChildListDelegate(pairs));
+  }
+
+  // ── Filter tabs ───────────────────────────────────────────────────────────
+  Widget _buildFilterTabs() {
+    // Count per filter
+    final int totalAll = _tugasList.length;
+    final int totalBelum =
+        _tugasList.where((t) => t['sudah_kumpul'] != true).length;
+    final int totalSelesai =
+        _tugasList.where((t) => t['sudah_kumpul'] == true).length;
+    final counts = {'Semua': totalAll, 'Belum': totalBelum, 'Selesai': totalSelesai};
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: _filters.map((f) {
+          final isSelected = _selectedFilter == f;
+          final count = counts[f] ?? 0;
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedFilter = f),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                transform: Matrix4.translationValues(
+                    isSelected ? 2 : 0, isSelected ? 2 : 0, 0),
+                decoration: BoxDecoration(
+                  color: isSelected ? _primary : _white,
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(color: _ink, width: 2),
+                  boxShadow: isSelected
+                      ? []
+                      : const [BoxShadow(color: _ink, offset: Offset(2, 2))],
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      f.toUpperCase(),
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                        letterSpacing: 0.6,
+                        color: isSelected ? _white : _ink,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? _white.withValues(alpha: 0.25)
+                            : _primaryLight,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
+                          color: isSelected ? _white : _primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ── Empty state ───────────────────────────────────────────────────────────
   Widget _buildEmpty() {
+    final msg = _selectedFilter == 'Selesai'
+        ? 'Belum ada tugas yang\ndiselesaikan.'
+        : _selectedFilter == 'Belum'
+            ? 'Semua tugas sudah\ndiselesaikan! 🎉'
+            : 'Belum ada tugas\ndi kelas ini.';
+
     return Center(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+        margin: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 28),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _onSurface, width: 2),
-          boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
+          color: _white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _ink, width: 2),
+          boxShadow: const [BoxShadow(color: _ink, offset: Offset(4, 4))],
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: _surfaceContainerHighest,
+              color: _primaryLight,
               shape: BoxShape.circle,
-              border: Border.all(color: _onSurface, width: 2),
+              border: Border.all(color: _ink, width: 2),
             ),
-            child: const Icon(LucideIcons.fileQuestion, color: _onSurface, size: 32),
+            child: const Icon(LucideIcons.fileQuestion, color: _ink, size: 32),
           ),
           const SizedBox(height: 20),
           Text(
-            'Belum ada tugas.',
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 24, color: _onSurface),
+            msg,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800, fontSize: 22, color: _ink),
           ),
           const SizedBox(height: 8),
           Text(
-            'Hore! Kamu tidak punya tugas yang\nharus dikerjakan saat ini.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 16, color: _onSurfaceVariant, fontWeight: FontWeight.w400),
+            'Tarik ke bawah untuk memuat ulang.',
+            style: GoogleFonts.inter(
+                fontSize: 14, color: _inkMuted, fontWeight: FontWeight.w500),
           ),
         ]),
       ),
     );
   }
 
+  // ── Skeleton ──────────────────────────────────────────────────────────────
   Widget _buildSkeleton() {
-    return Padding(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SkeletonLoader(height: 60, width: 200),
-          const SizedBox(height: 40),
-          const Row(
-            children: [
-              SkeletonLoader(height: 40, width: 100, radius: 20),
-              SizedBox(width: 12),
-              SkeletonLoader(height: 40, width: 100, radius: 20),
-            ],
-          ),
-          const SizedBox(height: 40),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 24,
-              crossAxisSpacing: 24,
-              childAspectRatio: 2,
-              children: List.generate(4, (_) => const SkeletonLoader(height: 160, radius: 12)),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SkeletonLoader(height: 20, width: 120, radius: 12),
+            const SizedBox(height: 12),
+            const SkeletonLoader(height: 56, width: 220, radius: 12),
+            const SizedBox(height: 24),
+            const SkeletonLoader(height: 12, radius: 12),
+            const SizedBox(height: 24),
+            const Row(
+              children: [
+                SkeletonLoader(height: 38, width: 90, radius: 100),
+                SizedBox(width: 10),
+                SkeletonLoader(height: 38, width: 90, radius: 100),
+                SizedBox(width: 10),
+                SkeletonLoader(height: 38, width: 90, radius: 100),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Expanded(
+              child: ListView.builder(
+                itemCount: 3,
+                itemBuilder: (_, __) => const Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: SkeletonLoader(height: 180, radius: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// -- Task Card Neo -----------------------------------------------------------
+// ── Task Card Neo ─────────────────────────────────────────────────────────────
 class _TaskCardNeo extends StatefulWidget {
   final dynamic tugas;
   final int index;
   final VoidCallback onTap;
 
-  const _TaskCardNeo({required this.tugas, required this.index, required this.onTap});
+  const _TaskCardNeo(
+      {required this.tugas, required this.index, required this.onTap});
 
   @override
   State<_TaskCardNeo> createState() => _TaskCardNeoState();
@@ -334,9 +502,17 @@ class _TaskCardNeo extends StatefulWidget {
 
 class _TaskCardNeoState extends State<_TaskCardNeo> {
   bool _isPressed = false;
+  bool _isHovering = false;
+
+  static const _cardPalette = [
+    _primaryLight,   // hijau pastel
+    _secondaryLight, // teal pastel
+    _tertiaryLight,  // peach pastel
+    _skyLight,       // biru pastel
+  ];
 
   String _formatDate(String? iso) {
-    if (iso == null || iso.isEmpty) return 'Tanpa Tenggat';
+    if (iso == null || iso.isEmpty) return '';
     try {
       return DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(iso));
     } catch (_) {
@@ -344,127 +520,231 @@ class _TaskCardNeoState extends State<_TaskCardNeo> {
     }
   }
 
+  bool _isOverdue(String? iso) {
+    if (iso == null || iso.isEmpty) return false;
+    try {
+      return DateTime.parse(iso).isBefore(DateTime.now());
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bgColors = [
-      _primaryContainer,
-      _secondaryContainer,
-      _tertiaryContainer,
-      _surfaceContainerHighest
-    ];
-    final fgColors = [
-      _onPrimaryContainer,
-      _onSecondaryContainer,
-      _onTertiaryContainer,
-      _onSurfaceVariant
-    ];
+    final isDone = widget.tugas['sudah_kumpul'] == true;
+    final deadline = widget.tugas['deadline']?.toString() ??
+        widget.tugas['tenggat_waktu']?.toString();
+    final hasDeadline = deadline != null && deadline.isNotEmpty;
+    final isOverdue = !isDone && hasDeadline && _isOverdue(deadline);
 
-    final colorIdx = widget.index % bgColors.length;
-    final bgColor = bgColors[colorIdx];
-    final fgColor = fgColors[colorIdx];
+    final guruNama = widget.tugas['guru_nama']?.toString() ?? 'Guru';
+    final tipeTugas = widget.tugas['tipe_tugas']?.toString() ?? 'Individu';
+    final bgColor = _cardPalette[widget.index % _cardPalette.length];
 
-    final isDone = widget.tugas['sudah_kumpul'] == true || widget.tugas['status'] == 'selesai';
-    final hasDeadline = widget.tugas['tenggat_waktu'] != null && widget.tugas['tenggat_waktu'].toString().isNotEmpty;
+    // Status badge
+    final Color badgeBg;
+    final Color badgeText;
+    final String badgeLabel;
+    final IconData badgeIcon;
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(
-          _isPressed ? 2 : 0,
-          _isPressed ? 2 : 0,
-          0,
-        ),
-        constraints: const BoxConstraints(minHeight: 160),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _onSurface, width: 2),
-          boxShadow: _isPressed 
-              ? const [BoxShadow(color: _onSurface, offset: Offset(2, 2))]
-              : const [BoxShadow(color: _onSurface, offset: Offset(4, 4))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
+    if (isDone) {
+      badgeBg = const Color(0xFFD1FAE5);
+      badgeText = _successGreen;
+      badgeLabel = 'Sudah Dikumpulkan';
+      badgeIcon = LucideIcons.checkCircle;
+    } else if (isOverdue) {
+      badgeBg = const Color(0xFFFFE4E1);
+      badgeText = _errorRed;
+      badgeLabel = 'Terlewat';
+      badgeIcon = LucideIcons.alertCircle;
+    } else if (hasDeadline) {
+      badgeBg = const Color(0xFFFFF3CD);
+      badgeText = const Color(0xFFB45309);
+      badgeLabel = 'Jatuh tempo: ${_formatDate(deadline)}';
+      badgeIcon = LucideIcons.clock;
+    } else {
+      badgeBg = const Color(0xFFE5E7EB);
+      badgeText = const Color(0xFF4B5563);
+      badgeLabel = 'Tanpa Tenggat';
+      badgeIcon = LucideIcons.info;
+    }
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(
+            _isPressed ? 2 : (_isHovering ? -2 : 0),
+            _isPressed ? 2 : (_isHovering ? -2 : 0),
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _ink, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: _ink,
+                offset: _isPressed
+                    ? const Offset(2, 2)
+                    : _isHovering
+                        ? const Offset(6, 6)
+                        : const Offset(4, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  (widget.tugas['kategori'] ?? 'UMUM').toString().toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 10,
-                    letterSpacing: 1.2,
-                    color: fgColor.withAlpha(178),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.tugas['judul'] ?? 'Tugas',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                    height: 1.2,
-                    color: _onBackground,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (isDone)
-              Row(
-                children: [
-                  const Icon(Icons.check_circle, color: _primary, size: 24),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Sudah Dikumpulkan',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _onBackground),
-                  ),
-                ],
-              )
-            else if (!hasDeadline)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _surface.withAlpha(128),
-                  borderRadius: BorderRadius.circular(9999),
-                  border: Border.all(color: _onBackground.withAlpha(51), width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                // ── Row atas: ikon + judul + badge ──────────────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline, size: 14, color: _onBackground),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Tanpa Tenggat',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: _onBackground),
+                    // Ikon kotak
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: isDone ? _successGreen : _primary,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: _ink, width: 2),
+                        boxShadow: const [
+                          BoxShadow(color: _ink, offset: Offset(2, 2))
+                        ],
+                      ),
+                      child: Icon(
+                        isDone
+                            ? LucideIcons.clipboardCheck
+                            : LucideIcons.clipboardList,
+                        color: _white,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.tugas['judul'] ?? 'Tugas',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                              height: 1.2,
+                              color: _ink,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                          // Badge status
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: _ink, width: 1.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(badgeIcon,
+                                    size: 13, color: badgeText),
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    badgeLabel,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                      color: badgeText,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              )
-            else
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today, size: 18, color: _onBackground),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatDate(widget.tugas['tenggat_waktu']),
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: _onBackground),
+
+                // ── Divider ──────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  child: Container(
+                    height: 1.5,
+                    decoration: BoxDecoration(
+                      color: _ink.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                ],
-              ),
-          ],
+                ),
+
+                // ── Info rows ─────────────────────────────────────────────
+                _InfoRow(
+                  icon: LucideIcons.userCircle,
+                  label: 'Pengajar',
+                  value: guruNama,
+                ),
+                const SizedBox(height: 10),
+                _InfoRow(
+                  icon: LucideIcons.users,
+                  label: 'Tipe',
+                  value: tipeTugas,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+}
+
+// ── Info row helper ───────────────────────────────────────────────────────────
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow(
+      {required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: _inkMuted),
+        const SizedBox(width: 10),
+        Text(
+          '$label: ',
+          style: GoogleFonts.inter(
+              fontSize: 14, fontWeight: FontWeight.w500, color: _inkMuted),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.inter(
+                fontSize: 14, fontWeight: FontWeight.w800, color: _ink),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
