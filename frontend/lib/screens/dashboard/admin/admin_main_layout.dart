@@ -418,8 +418,6 @@ import 'admin_dashboard_view.dart';
 import 'user_management_view.dart';
 import 'kelas_management_view.dart';
 import '../shared/messages_screen.dart';
-import 'admin_materi_view.dart';
-import 'admin_tugas_view.dart';
 import 'admin_pengumuman_view.dart';
 import 'admin_profil_view.dart';
 import '../../../widgets/notification_bell.dart';
@@ -443,14 +441,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   int _selectedIndex = 0;
   late List<Widget> _views;
 
-  // Urutan Tab: 0: Dashboard, 1: Users, 2: Kelas, 3: Messages, 4: Materi, 5: Tugas, 6: Pengumuman, 7: Profil
+  // Urutan Tab: 0: Dashboard, 1: Users, 2: Kelas, 3: Messages, 4: Pengumuman, 5: Profil
   final List<String> _titles = [
     'Admin Dashboard',
     'User Management',
     'Kelas Management',
     'Messages',
-    'Materi',
-    'Tugas',
     'Pengumuman',
     'Admin Profil',
   ];
@@ -468,8 +464,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       UserManagementView(token: widget.token),
       KelasManagementView(token: widget.token),
       MessagesScreen(userData: _adminUserData), // VIEW MESSAGES BARU
-      AdminMateriView(token: widget.token),
-      AdminTugasView(token: widget.token),
       AdminPengumumanView(token: widget.token),
       AdminProfilView(token: widget.token),
     ];
@@ -526,16 +520,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   icon: Icons.message_outlined,
                   selectedIcon: Icons.message_rounded,
                   label: 'Messages',
-                ),
-                SidebarItemData(
-                  icon: Icons.auto_stories_outlined,
-                  selectedIcon: Icons.auto_stories_rounded,
-                  label: 'Materi',
-                ),
-                SidebarItemData(
-                  icon: Icons.assignment_outlined,
-                  selectedIcon: Icons.assignment_rounded,
-                  label: 'Tugas',
                 ),
                 SidebarItemData(
                   icon: Icons.campaign_outlined,
@@ -610,7 +594,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   // MOBILE LAYOUT (≤ 1100px)
   // ═══════════════════════════════════════════════════════════
   Widget _buildMobileLayout(BuildContext context) {
-    const List<int> mobileTabMapping = [0, 1, 2, 7];
+    const List<int> mobileTabMapping = [0, 1, 2, 5];
     int bottomNavIndex = mobileTabMapping.indexOf(_selectedIndex);
     if (bottomNavIndex < 0) bottomNavIndex = -1;
 
@@ -704,9 +688,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     CosmicPillNavItem(icon: Icons.school_outlined, label: 'Kelas',
                       isSelected: _selectedIndex == 2, onTap: () => setState(() => _selectedIndex = 2)),
                     CosmicPillNavItem(icon: Icons.manage_accounts_outlined, label: 'Profil',
-                      isSelected: _selectedIndex == 7, onTap: () => setState(() => _selectedIndex = 7)),
+                      isSelected: _selectedIndex == 5, onTap: () => setState(() => _selectedIndex = 5)),
                     CosmicPillNavItem(icon: Icons.more_horiz_rounded, label: 'Lainnya',
-                      isSelected: _selectedIndex >= 3 && _selectedIndex <= 6,
+                      isSelected: _selectedIndex >= 3 && _selectedIndex <= 4,
                       onTap: () => _showMobileMenu()),
                   ],
                 ),
@@ -754,9 +738,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               ),
               const SizedBox(height: 16),
               _buildMenuTile(Icons.message_outlined, 'Messages', 3, ctx, isDark),
-              _buildMenuTile(Icons.auto_stories_outlined, 'Materi', 4, ctx, isDark),
-              _buildMenuTile(Icons.assignment_outlined, 'Tugas', 5, ctx, isDark),
-              _buildMenuTile(Icons.campaign_outlined, 'Pengumuman', 6, ctx, isDark),
+              _buildMenuTile(Icons.campaign_outlined, 'Pengumuman', 4, ctx, isDark),
               const SizedBox(height: 8),
               Divider(color: Theme.of(context).colorScheme.onSurface, thickness: 1.5),
               _buildMenuTile(Icons.logout_rounded, 'Logout', -1, ctx, isDark, isLogout: true),
