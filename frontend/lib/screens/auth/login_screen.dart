@@ -92,23 +92,91 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bgColor,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-                _buildBentoCard(),
-                const SizedBox(height: 32),
-                _buildFooter(),
-              ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth > 900;
+          
+          final formContent = Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    _buildBentoCard(),
+                    const SizedBox(height: 32),
+                    _buildFooter(),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+
+          if (!isDesktop) return formContent;
+
+          return Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Container(
+                  color: _primaryColor,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(48.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: _onSurface, width: 2),
+                              boxShadow: const [BoxShadow(color: _onSurface, offset: Offset(6, 6))],
+                            ),
+                            child: const Icon(Icons.school_rounded, size: 80, color: _primaryColor),
+                          ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8)),
+                          const SizedBox(height: 48),
+                          Text(
+                            'MyPSKD',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 56,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: -1.5,
+                            ),
+                          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Sekolah yang hebat,\ngenerasi yang kuat.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                              color: _surfaceContainerLow,
+                              height: 1.3,
+                            ),
+                          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Container(
+                  color: _bgColor,
+                  child: formContent,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

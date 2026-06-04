@@ -11,7 +11,6 @@ import '../../../models/quiz_model.dart';
 import 'guru_quiz_create_screen.dart';
 import 'guru_submission_detail.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../widgets/app_shell.dart';
 import '../../../widgets/neo_brutalism.dart';
 
 class GuruQuizView extends StatefulWidget {
@@ -33,6 +32,9 @@ class GuruQuizView extends StatefulWidget {
 class _GuruQuizViewState extends State<GuruQuizView> {
   List<Quiz> _quizzes = [];
   bool _isLoading = true;
+  final Set<String> _selectedQuizIds = {};
+  int _currentPage = 1;
+  static const int _itemsPerPage = 10;
 
   @override
   void initState() {
@@ -91,7 +93,55 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     );
 
     if (confirmed == true) {
+      setState(() => _isLoading = true);
       await QuizService.deleteQuiz(token: widget.token, quizId: quizId);
+      _selectedQuizIds.remove(quizId);
+      _loadQuizzes();
+    }
+  }
+
+  Future<void> _deleteSelectedQuizzes() async {
+    if (_selectedQuizIds.isEmpty) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
+        ),
+        title: Text(
+          'Hapus ${_selectedQuizIds.length} Kuis Terpilih?',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
+        ),
+        content: Text(
+          'Kuis yang dipilih beserta jawabannya akan dihapus secara permanen.',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Batal',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
+            ),
+          ),
+          NeoButton(
+            onTap: () => Navigator.pop(ctx, true),
+            text: 'Hapus Semua',
+            color: AppTheme.error,
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      for (final id in _selectedQuizIds) {
+        await QuizService.deleteQuiz(token: widget.token, quizId: id);
+      }
+      _selectedQuizIds.clear();
       _loadQuizzes();
     }
   }
@@ -168,66 +218,184 @@ class _GuruQuizViewState extends State<GuruQuizView> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final ctrl = TextEditingController();
+    bool isImporting = false;
+    
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-        ),
-        title: Text(
-          'Tarik Kuis (Import)',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Masukkan Kode Share kuis yang ingin Anda tarik ke kelas ini.', 
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white70 : AppTheme.textLight),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                border: Border.all(color: Theme.of(context).dividerColor),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextField(
-                controller: ctrl,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white : AppTheme.textLight),
-                decoration: InputDecoration(
-                  hintText: 'Contoh: A1B2C3D4',
-                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                  border: InputBorder.none,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 450),
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF001E2B) : const Color(0xFFF4FAFF),
+                  border: Border.all(color: isDark ? Colors.white38 : const Color(0xFF2D3436), width: 2),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                    topRight: Radius.circular(4),
+                    bottomLeft: Radius.circular(4),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.white38 : const Color(0xFF2D3436),
+                      offset: const Offset(6, 6),
+                      blurRadius: 0,
+                    ),
+                  ],
                 ),
-                textCapitalization: TextCapitalization.characters,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      'IMPORT QUIZ',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        color: isDark ? Colors.white : const Color(0xFF001E2B),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 8, bottom: 24),
+                      height: 4,
+                      width: 48,
+                      color: const Color(0xFF8D4D33), // tertiary
+                    ),
+                    
+                    // Instruction
+                    Text(
+                      'Masukkan kode share kuis yang ingin anda tarik/import ke kelas ini',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        height: 1.4,
+                        color: isDark ? Colors.white70 : const Color(0xFF414944),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Input
+                    Text(
+                      'KODE KUIS',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        color: isDark ? Colors.white70 : const Color(0xFF414944),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: ctrl,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: 'Contoh: QZ-99238',
+                        hintStyle: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white38 : const Color(0xFFC1C8C2),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF073446) : Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: isDark ? Colors.white38 : const Color(0xFF2D3436), width: 2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: isDark ? Colors.white38 : const Color(0xFF2D3436), width: 2),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide(color: Color(0xFF3D6754), width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Action Button
+                    GestureDetector(
+                      onTapDown: (_) => setState(() {}),
+                      onTap: () async {
+                        final code = ctrl.text.trim().toUpperCase();
+                        if (code.isEmpty) return;
+                        setState(() => isImporting = true);
+                        await Future.delayed(const Duration(milliseconds: 100)); // allow push animation
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                        _importQuiz(code);
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 56,
+                            color: isDark ? Colors.white38 : const Color(0xFF2D3436),
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 100),
+                            width: double.infinity,
+                            height: 56,
+                            transform: Matrix4.translationValues(isImporting ? 0 : -3, isImporting ? 0 : -3, 0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3D6754), // primary
+                              border: Border.all(color: const Color(0xFF2D3436), width: 2),
+                            ),
+                            child: Center(
+                              child: isImporting
+                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                                : Text(
+                                    'IMPORT',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 2.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Batal
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: TextButton.styleFrom(
+                          foregroundColor: isDark ? Colors.white : const Color(0xFF717974),
+                        ),
+                        child: Text(
+                          'BATAL',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, fontWeight: FontWeight.bold),
-            ),
-          ),
-          NeoButton(
-            onTap: () async {
-              final code = ctrl.text.trim().toUpperCase();
-              if (code.isEmpty) return;
-              Navigator.pop(ctx);
-              _importQuiz(code);
-            },
-            text: 'Import',
-            color: AppTheme.indigoPrimary,
-          ),
-        ],
+          );
+        }
       ),
     );
   }
@@ -275,6 +443,12 @@ class _GuruQuizViewState extends State<GuruQuizView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    
+    int totalPages = (_quizzes.length / _itemsPerPage).ceil();
+    if (totalPages == 0) totalPages = 1;
+    if (_currentPage > totalPages) _currentPage = totalPages;
+    
+    final displayedQuizzes = _quizzes.skip((_currentPage - 1) * _itemsPerPage).take(_itemsPerPage).toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -282,49 +456,236 @@ class _GuruQuizViewState extends State<GuruQuizView> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          FloatingActionButton.small(
-            heroTag: 'import_quiz',
-            onPressed: _showImportDialog,
-            backgroundColor: AppTheme.info,
-            foregroundColor: Colors.white,
-            shape: const CircleBorder(),
-            child: const Icon(LucideIcons.download),
-          ),
-          const SizedBox(height: 12),
-          AppFAB(
-            onPressed: _navigateToCreate,
+          _NeoFAB(
             icon: LucideIcons.plus,
-            label: 'Buat Kuis',
-            color: AppTheme.success,
+            label: 'BUAT KUIS',
+            color: const Color(0xFFB7E5CD), // primary-container
+            textColor: const Color(0xFF3E6855), // on-primary-container
+            onTap: _navigateToCreate,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 16),
+          _NeoFAB(
+            icon: LucideIcons.uploadCloud,
+            label: 'IMPOR KUIS',
+            color: const Color(0xFFB7EDE7), // secondary-container
+            textColor: const Color(0xFF3A6D69), // on-secondary-container
+            onTap: _showImportDialog,
+            isDark: isDark,
           ),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.success))
           : _quizzes.isEmpty
-              ? _buildEmptyState(theme, isDark)
+              ? Column(
+                  children: [
+                    _buildHeader(isDark),
+                    Expanded(child: _buildEmptyState(theme, isDark)),
+                  ],
+                )
               : RefreshIndicator(
                   onRefresh: _loadQuizzes,
                   color: AppTheme.indigoPrimary,
                   child: ListView.builder(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(24),
-                    itemCount: _quizzes.length,
+                    padding: const EdgeInsets.only(bottom: 120), // Leave space for FAB
+                    itemCount: displayedQuizzes.length + 3, // Header + list + footer + pagination
                     itemBuilder: (context, index) {
-                      return _QuizCard(
-                        quiz: _quizzes[index],
-                        isDark: isDark,
-                        onEdit: () => _navigateToEdit(_quizzes[index]),
-                        onDelete: () => _deleteQuiz(_quizzes[index].id),
-                        onViewSubmissions: () => _viewSubmissions(_quizzes[index]),
-                        onShare: () => _copyShareCode(_quizzes[index]),
-                        onLiveMonitor: () => _openLiveMonitor(_quizzes[index]),
-                      ).animate(delay: (100 + index * 60).ms)
-                        .fadeIn(duration: 400.ms)
-                        .slideY(begin: 0.05, curve: Curves.easeOutQuart);
+                      if (index == 0) return _buildHeader(isDark);
+                      
+                      if (index == displayedQuizzes.length + 1) {
+                        return _buildFooter(isDark);
+                      }
+                      
+                      if (index == displayedQuizzes.length + 2) {
+                        return _buildPagination(totalPages, isDark);
+                      }
+                      
+                      final quizIndex = index - 1;
+                      final quiz = displayedQuizzes[quizIndex];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: _QuizCard(
+                          quiz: quiz,
+                          isDark: isDark,
+                          isSelected: _selectedQuizIds.contains(quiz.id),
+                          onSelect: (val) {
+                            setState(() {
+                              if (val == true) {
+                                _selectedQuizIds.add(quiz.id);
+                              } else {
+                                _selectedQuizIds.remove(quiz.id);
+                              }
+                            });
+                          },
+                          onEdit: () => _navigateToEdit(quiz),
+                          onDelete: () => _deleteQuiz(quiz.id),
+                          onViewSubmissions: () => _viewSubmissions(quiz),
+                          onShare: () => _copyShareCode(quiz),
+                          onLiveMonitor: () => _openLiveMonitor(quiz),
+                        ).animate(delay: (50 + quizIndex * 40).ms)
+                          .fadeIn(duration: 400.ms)
+                          .slideY(begin: 0.05, curve: Curves.easeOutQuart),
+                      );
                     },
                   ),
                 ),
+    );
+  }
+
+  Widget _buildHeader(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3D6754),
+              border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.barChart2, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'DASHBOARD PENDIDIK', 
+                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Daftar Kuis', 
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 36, 
+                      fontWeight: FontWeight.w900, 
+                      color: isDark ? Colors.white : const Color(0xFF001E2B), 
+                      height: 1.1,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(height: 5, width: 90, color: const Color(0xFF336763)),
+                ],
+              ),
+              if (_selectedQuizIds.isNotEmpty)
+                GestureDetector(
+                  onTap: _deleteSelectedQuizzes,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.red.withOpacity(0.2) : Colors.red.withOpacity(0.1),
+                      border: Border.all(color: AppTheme.error, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.trash2, color: AppTheme.error, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'HAPUS TERPILIH', 
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.error, letterSpacing: 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: GestureDetector(
+        onTap: _navigateToCreate,
+        child: Container(
+          padding: const EdgeInsets.all(40),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.4),
+            border: Border.all(
+              color: isDark ? Colors.white24 : Colors.black.withOpacity(0.3),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E2060) : Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: isDark ? Colors.white54 : Colors.black, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(color: isDark ? Colors.white24 : Colors.black, offset: const Offset(3, 3), blurRadius: 0),
+                  ],
+                ),
+                child: Icon(LucideIcons.plus, size: 36, color: isDark ? Colors.white : Colors.black),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Buat Kuis Baru',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : const Color(0xFF001E2B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPagination(int totalPages, bool isDark) {
+    if (totalPages <= 1) return const SizedBox.shrink();
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+            icon: const Icon(LucideIcons.chevronLeft),
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          const SizedBox(width: 16),
+          Text(
+            'Halaman $_currentPage dari $totalPages',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+            onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
+            icon: const Icon(LucideIcons.chevronRight),
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ],
+      ),
     );
   }
 
@@ -334,24 +695,24 @@ class _GuruQuizViewState extends State<GuruQuizView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: AppTheme.indigoPrimary.withAlpha(20),
+              color: AppTheme.primary.withAlpha(20),
               shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.indigoPrimary.withAlpha(50), width: 1.5),
+              border: Border.all(color: AppTheme.primary.withAlpha(50), width: 2),
             ),
-            child: Icon(LucideIcons.clipboardList, size: 56, color: AppTheme.indigoPrimary.withAlpha(180)),
+            child: Icon(LucideIcons.clipboardList, size: 64, color: AppTheme.primary.withAlpha(180)),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           Text(
             'Belum ada kuis',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900,
               color: isDark ? Colors.white : AppTheme.textLight),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             'Buat kuis pertama untuk ujian siswa',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600,
               color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
           ),
         ],
@@ -360,255 +721,28 @@ class _GuruQuizViewState extends State<GuruQuizView> {
   }
 }
 
-class _QuizCard extends StatelessWidget {
-  final Quiz quiz;
-  final bool isDark;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-  final VoidCallback onViewSubmissions;
-  final VoidCallback onShare;
-  final VoidCallback onLiveMonitor;
-
-  const _QuizCard({
-    required this.quiz,
-    required this.isDark,
-    required this.onEdit,
-    required this.onDelete,
-    required this.onViewSubmissions,
-    required this.onShare,
-    required this.onLiveMonitor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final accentColor = quiz.isSecureMode ? AppTheme.primary : AppTheme.success;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E2060) : Colors.white,
-          border: Border.all(color: Colors.black, width: 2),
-          boxShadow: const [
-            BoxShadow(color: Colors.black, offset: Offset(4, 4), blurRadius: 0),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF2A2D70) : Colors.white,
-                      border: Border.all(color: Colors.black, width: 1.5),
-                      boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
-                    ),
-                    child: Icon(
-                      quiz.isSecureMode ? LucideIcons.shieldCheck : LucideIcons.clipboardList,
-                      color: accentColor,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          quiz.title,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : Colors.black,
-                            fontSize: 18,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          quiz.description.isNotEmpty ? quiz.description : 'Tidak ada deskripsi',
-                          style: GoogleFonts.inter(
-                            color: isDark ? Colors.white70 : Colors.black87,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  if (quiz.isScheduled)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.warning,
-                        border: Border.all(color: Colors.black, width: 1.5),
-                        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
-                      ),
-                      child: Text('TERJADWAL', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                    )
-                  else
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: quiz.isActive ? AppTheme.success : Colors.grey,
-                        border: Border.all(color: Colors.black, width: 1.5),
-                        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
-                      ),
-                      child: Text(quiz.isActive ? 'AKTIF' : 'NONAKTIF', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _InfoChip(
-                    icon: LucideIcons.helpCircle,
-                    label: '${quiz.questions.length} Soal',
-                    color: AppTheme.orangeVivid,
-                    isDark: isDark,
-                  ),
-                  _InfoChip(
-                    icon: LucideIcons.clock,
-                    label: '${quiz.durationMinutes} Menit',
-                    color: AppTheme.success,
-                    isDark: isDark,
-                  ),
-                  if (quiz.isScheduled && quiz.scheduledAt != null)
-                    _InfoChip(
-                      icon: LucideIcons.calendarClock,
-                      label: DateFormat('dd MMM, HH:mm').format(quiz.scheduledAt!),
-                      color: AppTheme.warning,
-                      isDark: isDark,
-                    ),
-                  if (quiz.isSecureMode)
-                    _InfoChip(
-                      icon: LucideIcons.lock,
-                      label: 'Secure Mode',
-                      color: AppTheme.success,
-                      isDark: isDark,
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-              const Divider(height: 1, color: Colors.black, thickness: 1.5),
-              const SizedBox(height: 14),
-
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _ActionBtn(
-                    icon: LucideIcons.barChart2,
-                    label: 'Hasil',
-                    onTap: onViewSubmissions,
-                    color: AppTheme.indigoPrimary,
-                    isDark: isDark,
-                  ),
-                  if ((quiz.isActive || quiz.isScheduled) && quiz.isSecureMode)
-                    _ActionBtn(
-                      icon: LucideIcons.activity,
-                      label: 'Live',
-                      onTap: onLiveMonitor,
-                      color: AppTheme.error,
-                      isDark: isDark,
-                    ),
-                  _ActionBtn(
-                    icon: LucideIcons.share2,
-                    label: 'Share',
-                    onTap: onShare,
-                    color: AppTheme.info,
-                    isDark: isDark,
-                  ),
-                  _ActionBtn(
-                    icon: LucideIcons.edit3,
-                    label: 'Edit',
-                    onTap: onEdit,
-                    color: AppTheme.primary,
-                    isDark: isDark,
-                  ),
-                  _ActionBtn(
-                    icon: LucideIcons.trash2,
-                    label: 'Hapus',
-                    onTap: onDelete,
-                    color: AppTheme.error,
-                    isDark: isDark,
-                  ),
-                ],
-              ),
-            ],
-          ),
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
+class _NeoFAB extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
-  final bool isDark;
-
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2D70) : Colors.white,
-        border: Border.all(color: Colors.black, width: 1.2),
-        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: color, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionBtn extends StatefulWidget {
-  final IconData icon;
-  final String label;
+  final Color textColor;
   final VoidCallback onTap;
-  final Color color;
   final bool isDark;
 
-  const _ActionBtn({
+  const _NeoFAB({
     required this.icon,
     required this.label,
-    required this.onTap,
     required this.color,
+    required this.textColor,
+    required this.onTap,
     required this.isDark,
   });
 
   @override
-  State<_ActionBtn> createState() => _ActionBtnState();
+  State<_NeoFAB> createState() => _NeoFABState();
 }
 
-class _ActionBtnState extends State<_ActionBtn> {
+class _NeoFABState extends State<_NeoFAB> {
   bool _isPressed = false;
 
   @override
@@ -620,25 +754,29 @@ class _ActionBtnState extends State<_ActionBtn> {
       onTap: widget.onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        transform: Matrix4.translationValues(
-          _isPressed ? 2 : 0,
-          _isPressed ? 2 : 0,
-          0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        transform: Matrix4.translationValues(_isPressed ? 4 : 0, _isPressed ? 4 : 0, 0),
         decoration: BoxDecoration(
           color: widget.color,
-          border: Border.all(color: Colors.black, width: 1.5),
-          boxShadow: _isPressed ? [] : const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+          border: Border.all(color: widget.isDark ? Colors.white38 : Colors.black, width: 2.5),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: _isPressed
+              ? []
+              : [BoxShadow(color: widget.isDark ? Colors.white38 : Colors.black, offset: const Offset(4, 4), blurRadius: 0)],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(widget.icon, size: 14, color: Colors.white),
-            const SizedBox(width: 6),
+            Icon(widget.icon, size: 24, color: widget.textColor),
+            const SizedBox(width: 12),
             Text(
               widget.label,
-              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 13),
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+                color: widget.textColor,
+              ),
             ),
           ],
         ),
@@ -646,6 +784,356 @@ class _ActionBtnState extends State<_ActionBtn> {
     );
   }
 }
+
+class _QuizCard extends StatelessWidget {
+  final Quiz quiz;
+  final bool isDark;
+  final bool isSelected;
+  final Function(bool?) onSelect;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onViewSubmissions;
+  final VoidCallback onShare;
+  final VoidCallback onLiveMonitor;
+
+  const _QuizCard({
+    required this.quiz,
+    required this.isDark,
+    required this.isSelected,
+    required this.onSelect,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onViewSubmissions,
+    required this.onShare,
+    required this.onLiveMonitor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24), // Larger padding
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF073446) : Colors.white,
+          border: Border.all(color: isDark ? Colors.white38 : Colors.black, width: 2.5), // Thicker border
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.white38 : Colors.black,
+              offset: const Offset(8, 8), // Harder shadow
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(28), // Larger inner padding
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Checkbox
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, right: 16),
+                        child: Transform.scale(
+                          scale: 1.4, // Larger checkbox
+                          child: Checkbox(
+                            value: isSelected,
+                            onChanged: onSelect,
+                            activeColor: const Color(0xFF3D6754),
+                            checkColor: Colors.white,
+                            side: BorderSide(color: isDark ? Colors.white54 : Colors.black, width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ),
+                      ),
+                      
+                      // Title
+                      Expanded(
+                        child: Text(
+                          quiz.title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : const Color(0xFF001E2B),
+                            fontSize: 22, // Larger font
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(width: 16),
+                      
+                      // Actions (Edit, Share, Delete)
+                      Row(
+                        children: [
+                          _SmallActionButton(
+                            icon: LucideIcons.edit2,
+                            onTap: onEdit,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 12),
+                          _SmallActionButton(
+                            icon: LucideIcons.share2,
+                            onTap: onShare,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 12),
+                          _SmallActionButton(
+                            icon: LucideIcons.trash2,
+                            onTap: onDelete,
+                            isDark: isDark,
+                            iconColor: AppTheme.error,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Info Chips
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 12,
+                    children: [
+                      _InfoChip(
+                        icon: LucideIcons.fileText,
+                        label: '${quiz.questions.length} Soal',
+                        isDark: isDark,
+                      ),
+                      if (quiz.isScheduled && quiz.scheduledAt != null)
+                        _InfoChip(
+                          icon: LucideIcons.calendar,
+                          label: DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!),
+                          isDark: isDark,
+                        )
+                      else 
+                        _InfoChip(
+                          icon: LucideIcons.calendar,
+                          label: 'Tidak terjadwal',
+                          isDark: isDark,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Bottom Action Bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: isDark ? Colors.white38 : Colors.black.withOpacity(0.1), width: 1.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _BottomButton(
+                      icon: LucideIcons.barChart2,
+                      label: 'HASIL UJIAN',
+                      color: const Color(0xFFB7E5CD), // primary-container
+                      textColor: const Color(0xFF3E6855), // on-primary-container
+                      onTap: onViewSubmissions,
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  if (quiz.isSecureMode)
+                    Expanded(
+                      child: _BottomButton(
+                        icon: LucideIcons.eye,
+                        label: 'LIVE CHEATING',
+                        color: const Color(0xFFFFD1C0), // tertiary-container
+                        textColor: const Color(0xFF8E4F34), // on-tertiary-container
+                        onTap: onLiveMonitor,
+                        isDark: isDark,
+                        animateIcon: true,
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: _BottomButton(
+                        icon: LucideIcons.eyeOff,
+                        label: 'LIVE MONITORING',
+                        color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFE8F6FF),
+                        textColor: isDark ? Colors.white38 : const Color(0xFFC1C8C2),
+                        onTap: () {},
+                        isDark: isDark,
+                        isDisabled: true,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SmallActionButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isDark;
+  final Color? iconColor;
+
+  const _SmallActionButton({required this.icon, required this.onTap, required this.isDark, this.iconColor});
+
+  @override
+  State<_SmallActionButton> createState() => _SmallActionButtonState();
+}
+
+class _SmallActionButtonState extends State<_SmallActionButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: 40,
+        height: 40,
+        transform: Matrix4.translationValues(_isPressed ? 2 : 0, _isPressed ? 2 : 0, 0),
+        decoration: BoxDecoration(
+          color: widget.isDark ? const Color(0xFF1E2060) : Colors.white,
+          border: Border.all(color: widget.isDark ? Colors.white38 : Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: _isPressed
+              ? []
+              : [BoxShadow(color: widget.isDark ? Colors.white38 : Colors.black, offset: const Offset(2, 2), blurRadius: 0)],
+        ),
+        child: Icon(
+          widget.icon, 
+          size: 20, 
+          color: widget.iconColor ?? (widget.isDark ? Colors.white : Colors.black),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final Color textColor;
+  final VoidCallback onTap;
+  final bool isDark;
+  final bool animateIcon;
+  final bool isDisabled;
+
+  const _BottomButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.textColor,
+    required this.onTap,
+    required this.isDark,
+    this.animateIcon = false,
+    this.isDisabled = false,
+  });
+
+  @override
+  State<_BottomButton> createState() => _BottomButtonState();
+}
+
+class _BottomButtonState extends State<_BottomButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: widget.isDisabled ? null : (_) => setState(() => _isPressed = true),
+      onTapUp: widget.isDisabled ? null : (_) => setState(() => _isPressed = false),
+      onTapCancel: widget.isDisabled ? null : () => setState(() => _isPressed = false),
+      onTap: widget.isDisabled ? null : widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        transform: Matrix4.translationValues(_isPressed ? 2 : 0, _isPressed ? 2 : 0, 0),
+        decoration: BoxDecoration(
+          color: widget.color,
+          border: Border.all(color: widget.isDark ? Colors.white38 : Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: _isPressed || widget.isDisabled
+              ? []
+              : [BoxShadow(color: widget.isDark ? Colors.white38 : Colors.black, offset: const Offset(3, 3), blurRadius: 0)],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.animateIcon)
+              Icon(widget.icon, size: 20, color: widget.textColor).animate(onPlay: (c) => c.repeat(reverse: true)).fadeOut(curve: Curves.easeInOut) 
+            else
+              Icon(widget.icon, size: 20, color: widget.textColor),
+            const SizedBox(width: 8),
+            Text(
+              widget.label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+                color: widget.textColor,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isDark;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFDBF1FF), // surface-container
+        border: Border.all(color: isDark ? Colors.white24 : Colors.black.withOpacity(0.1), width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: isDark ? Colors.white70 : const Color(0xFF414944)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w700, 
+              color: isDark ? Colors.white : const Color(0xFF001E2B), 
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Unused _ActionBtn classes removed
 
 class _SubmissionsSheet extends StatefulWidget {
   final Quiz quiz;
