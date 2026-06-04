@@ -279,14 +279,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
 
   Widget _getActiveView() {
     if (_activeTabID.startsWith('channel_')) {
-      final cId = _activeTabID.replaceFirst('channel_', '');
-      return SaluranView(
-        userData: widget.userData,
-        token: widget.token,
-        teamData: widget.teamData,
-        channelId: cId,
-        channelName: _activeTitle,
-      );
+      return _buildChannelView();
     }
 
     switch (_activeTabID) {
@@ -326,9 +319,6 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
       case 'menu':
         return _buildMenuHub();
       default:
-        if (_activeTabID.startsWith('channel_')) {
-          return _buildChannelView();
-        }
         return _buildDashboardView();
     }
   }
@@ -678,187 +668,67 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
     final shadowColor = isDark ? Colors.white.withAlpha(20) : const Color(0xFF001E2B);
     
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Container(
       color: primaryBg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Channel Tabs (Horizontal Scroll)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161B27) : const Color(0xFFE8F6FF),
-              border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Saluran Diskusi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: onSurface,
-                      fontFamily: 'Plus Jakarta Sans',
-                    )),
-                const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildChannelTab('General', 'channel_general', isDark),
-                      for (var c in _channels)
-                        _buildChannelTab(c['nama_channel'] ?? 'Unnamed', 'channel_${c['id']}', isDark),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: _showCreateChannelDialog,
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1C2230) : const Color(0xFFCEEDFF),
-                            border: Border.all(color: onSurfaceVariant),
+          // Channel Tabs (Horizontal Scroll) - Hide on desktop
+          if (!isDesktop)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF161B27) : const Color(0xFFE8F6FF),
+                border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Saluran Diskusi',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: onSurface,
+                        fontFamily: 'Plus Jakarta Sans',
+                      )),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildChannelTab('General', 'channel_general', isDark),
+                        for (var c in _channels)
+                          _buildChannelTab(c['nama_channel'] ?? 'Unnamed', 'channel_${c['id']}', isDark),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: _showCreateChannelDialog,
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1C2230) : const Color(0xFFCEEDFF),
+                              border: Border.all(color: onSurfaceVariant),
+                            ),
+                            child: Icon(Icons.add, size: 20, color: onSurfaceVariant),
                           ),
-                          child: Icon(Icons.add, size: 20, color: onSurfaceVariant),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           
           // Forum Content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isDesktop = constraints.maxWidth > 800;
-                  
-                  final infoCard = Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF161B27) : Colors.white,
-                      border: Border(
-                        top: BorderSide(color: onSurfaceVariant),
-                        right: BorderSide(color: onSurfaceVariant),
-                        bottom: BorderSide(color: onSurfaceVariant),
-                        left: const BorderSide(color: Color(0xFF3D6754), width: 4),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('INFO SALURAN',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF3D6754),
-                              letterSpacing: 0.5,
-                              fontFamily: 'Inter',
-                            )),
-                        const SizedBox(height: 8),
-                        Text('Ruang Diskusi Utama',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: onSurface,
-                              fontFamily: 'Plus Jakarta Sans',
-                            )),
-                        const SizedBox(height: 16),
-                        Text('Tempat berbagi informasi, bertanya, dan berkolaborasi antar siswa dan pengajar MyPSKD.',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: onSurfaceVariant,
-                              fontFamily: 'Inter',
-                            )),
-                        const SizedBox(height: 32),
-                        Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('24', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF336763), fontFamily: 'Plus Jakarta Sans')),
-                                Text('TOPIK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurfaceVariant, fontFamily: 'Inter')),
-                              ],
-                            ),
-                            const SizedBox(width: 24),
-                            Container(width: 1, height: 40, color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2)),
-                            const SizedBox(width: 24),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('156', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF336763), fontFamily: 'Plus Jakarta Sans')),
-                                Text('BALASAN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurfaceVariant, fontFamily: 'Inter')),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-
-                  final threads = Column(
-                    children: [
-                      _buildThreadCard(
-                        isDark: isDark,
-                        badge: 'DISKUSI AKTIF',
-                        badgeColor: const Color(0xFF8D4D33), // Terracotta
-                        title: 'Diskusi Tugas Akhir Semester 1',
-                        author: 'Oleh Bpk. Ahmad Subarjo',
-                        timeAgo: '2 jam yang lalu',
-                        snippet: 'Selamat siang rekan-rekan siswa. Silakan ajukan pertanyaan mengenai format penulisan tugas akhir di sini...',
-                        replies: 12,
-                        lastActive: '5m lalu',
-                      ),
-                      const SizedBox(height: 16),
-                      _buildThreadCard(
-                        isDark: isDark,
-                        badge: null,
-                        title: 'Pertanyaan Materi Logaritma Dasar',
-                        author: 'Oleh Siti Nurhaliza (Siswa)',
-                        timeAgo: 'Kemarin',
-                        snippet: 'Halo semuanya, saya masih bingung dengan sifat-sifat logaritma yang ke-4. Apakah ada yang bisa bantu jelaskan...',
-                        replies: 8,
-                        lastActive: '1j lalu',
-                      ),
-                      const SizedBox(height: 16),
-                      _buildThreadCard(
-                        isDark: isDark,
-                        badge: 'TERJAWAB',
-                        badgeColor: const Color(0xFF3D6754),
-                        title: 'Jadwal Praktikum Fisika Pekan Depan',
-                        author: 'Oleh Ibu Dian Lestari',
-                        timeAgo: '3 hari lalu',
-                        snippet: 'Pengumuman: Jadwal praktikum untuk kelas XII IPA 2 dipindahkan ke hari Rabu jam 09.00 WIB. Mohon konfirmasi...',
-                        replies: 45,
-                        lastActive: '2j lalu',
-                      ),
-                      const SizedBox(height: 80), // Padding for FAB/BottomNav
-                    ],
-                  );
-
-                  if (isDesktop) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 4, child: infoCard),
-                        const SizedBox(width: 20),
-                        Expanded(flex: 8, child: threads),
-                      ],
-                    );
-                  } else {
-                    return Column(
-                      children: [
-                        infoCard,
-                        const SizedBox(height: 20),
-                        threads,
-                      ],
-                    );
-                  }
-                },
-              ),
+            child: SaluranView(
+              userData: widget.userData,
+              token: widget.token,
+              teamData: widget.teamData,
+              channelId: _activeTabID.replaceFirst('channel_', ''),
+              channelName: _activeTitle,
             ),
           ),
         ],
@@ -891,140 +761,6 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
               fontFamily: 'Inter',
             )),
       ),
-    );
-  }
-
-  Widget _buildThreadCard({
-    required bool isDark,
-    required String? badge,
-    Color? badgeColor,
-    required String title,
-    required String author,
-    required String timeAgo,
-    required String snippet,
-    required int replies,
-    required String lastActive,
-  }) {
-    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
-    final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
-    
-    return Stack(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: badge == 'TERJAWAB' ? (isDark ? const Color(0xFF161B27) : Colors.white) : (isDark ? const Color(0xFF1C2230) : Colors.white),
-            border: Border.all(color: onSurfaceVariant),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFB7EDE7),
-                  border: Border.all(color: onSurfaceVariant),
-                ),
-                child: Center(
-                  child: Text(author[5].toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF336763),
-                      )),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(title,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: onSurface,
-                                fontFamily: 'Plus Jakarta Sans',
-                              )),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(timeAgo,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: onSurfaceVariant,
-                              fontFamily: 'Inter',
-                            )),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(author,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF336763),
-                          fontFamily: 'Inter',
-                        )),
-                    const SizedBox(height: 12),
-                    Text(snippet,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: onSurfaceVariant,
-                          fontFamily: 'Inter',
-                          height: 1.5,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.only(top: 16),
-                      decoration: BoxDecoration(
-                        border: Border(top: BorderSide(color: isDark ? const Color(0xFF414944) : const Color(0xFFC1C8C2))),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.forum, size: 16, color: onSurfaceVariant),
-                          const SizedBox(width: 4),
-                          Text('$replies Balasan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
-                          const SizedBox(width: 24),
-                          Icon(Icons.history, size: 16, color: onSurfaceVariant),
-                          const SizedBox(width: 4),
-                          Text('Aktif $lastActive', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: onSurface, fontFamily: 'Inter')),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (badge != null)
-          Positioned(
-            top: -1,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: badgeColor,
-                border: Border.all(color: onSurfaceVariant),
-              ),
-              child: Text(badge,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    fontFamily: 'Inter',
-                    letterSpacing: 0.5,
-                  )),
-            ),
-          ),
-      ],
     );
   }
 
