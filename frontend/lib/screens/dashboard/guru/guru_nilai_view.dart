@@ -1,13 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../widgets/confirm_delete.dart';
-import '../../../widgets/app_shell.dart';
-import '../../../config/theme.dart';
+
 import '../../../config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../widgets/neo_brutalism.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// ── Neo-Brutalist Tokens ──────────────────────────────────────────────────────
+const Color _ink = Color(0xFF001E2B);
+const Color _inkMuted = Color(0xFF4B6459);
+const Color _primary = Color(0xFF3D6754);
+const Color _primaryLight = Color(0xFFB7E5CD);
+const Color _surface = Color(0xFFF4FAFF);
+const Color _white = Colors.white;
+const Color _errorBg = Color(0xFFFFDAD6);
+const Color _errorFg = Color(0xFF93000A);
+
+// Score color helpers
+Color _scoreColor(double val) {
+  if (val >= 80) return const Color(0xFF2E7D52);
+  if (val >= 60) return const Color(0xFFB45309);
+  return const Color(0xFFD32F2F);
+}
+
+Color _scoreBg(double val) {
+  if (val >= 80) return const Color(0xFFD1FAE5);
+  if (val >= 60) return const Color(0xFFFFF3CD);
+  return const Color(0xFFFFE4E1);
+}
+
+// Type palette
+Map<String, Color> _typeColor(String tipe) {
+  switch (tipe) {
+    case 'Kuis':
+      return {'start': const Color(0xFFF59E0B), 'bg': const Color(0xFFFFF3CD)};
+    case 'Assignment':
+      return {'start': const Color(0xFF10B981), 'bg': const Color(0xFFD1FAE5)};
+    default:
+      return {'start': const Color(0xFF6366F1), 'bg': const Color(0xFFEDE9FE)};
+  }
+}
 
 class GuruNilaiView extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -41,6 +75,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     try {
       final headers = {'Authorization': 'Bearer ${widget.token}'};
       final kelasId = widget.teamData['id']?.toString() ?? '';
+      final guruId = widget.userData['id']?.toString() ?? '';
 
       final responses = await Future.wait([
         http.get(Uri.parse('$baseUrl/api/nilai'), headers: headers),
@@ -51,58 +86,65 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         http.get(Uri.parse('$baseUrl/api/quiz?kelasId=$kelasId'), headers: headers),
         http.get(Uri.parse('$baseUrl/api/tugas?kelas_id=$kelasId'), headers: headers),
       ]);
-      
+
       List<dynamic> allNilai = [];
 
+      // Build tugas map for this class
       final Map<String, String> tugasMap = {};
       if (responses[3].statusCode == 200) {
         final decTugas = jsonDecode(responses[3].body);
         final listTugas = decTugas is List ? decTugas : [];
         for (var t in listTugas) {
-          if (t['kelas_id']?.toString() == kelasId || t['kelas'] == widget.teamData['nama_kelas']) {
-            tugasMap[t['id'].toString()] = t['judul'] ?? 'Tugas';
-          }
+          tugasMap[t['id'].toString()] = t['judul'] ?? 'Tugas';
         }
       }
 
+      // Process manual/tugas nilai
+      // BUG FIX: was != (inverting the filter), should be ==
       if (responses[0].statusCode == 200) {
         final dec = jsonDecode(responses[0].body);
         List data = dec is List ? dec : [];
-        
+
         for (var n in data) {
-          if (n['guru_id'].toString() != widget.userData['id'].toString()) continue;
+          // Only show nilai from THIS guru
+          if (n['guru_id']?.toString() != guruId) continue;
 
           if (n['tugas_id'] != null) {
             final tId = n['tugas_id'].toString();
-            if (tugasMap.containsKey(tId)) {
+            // Accept if tugas is in this class OR if kelas_id matches
+            final inClass = tugasMap.containsKey(tId) ||
+                n['kelas_id']?.toString() == kelasId;
+            if (inClass) {
               n['tipe'] = 'Assignment';
               n['isManual'] = false;
               n['judul'] = tugasMap[tId] ?? n['tugas_judul'] ?? n['judul'] ?? 'Tugas';
               n['tanggal'] = n['waktu_dinilai'] ?? n['tanggal'];
-              allNilai.add(n);
+              allNilai.add(Map<String, dynamic>.from(n));
             }
           } else {
-            if (kelasId.isNotEmpty && n['kelas_id']?.toString() == kelasId) {
+            // Manual nilai — match kelas_id
+            final inClass = kelasId.isEmpty ||
+                n['kelas_id']?.toString() == kelasId;
+            if (inClass) {
               n['tipe'] = n['tipe'] ?? 'Lainnya';
               n['isManual'] = true;
-              allNilai.add(n);
-            } else if (kelasId.isEmpty) {
-              n['tipe'] = n['tipe'] ?? 'Lainnya';
-              n['isManual'] = true;
-              allNilai.add(n);
+              allNilai.add(Map<String, dynamic>.from(n));
             }
           }
         }
       }
 
+      // Process quiz nilai
       if (responses[2].statusCode == 200) {
         final decQuiz = jsonDecode(responses[2].body);
         final listQuiz = decQuiz['data'] is List ? decQuiz['data'] : [];
-        
+
         if (listQuiz.isNotEmpty) {
-          final quizReqs = listQuiz.map((q) => http.get(Uri.parse('$baseUrl/api/quiz/${q['_id']}/submissions'), headers: headers));
+          final quizReqs = listQuiz.map((q) => http.get(
+              Uri.parse('$baseUrl/api/quiz/${q['_id']}/submissions'),
+              headers: headers));
           final quizResps = await Future.wait(quizReqs);
-          
+
           for (int i = 0; i < listQuiz.length; i++) {
             final q = listQuiz[i];
             final r = quizResps[i];
@@ -110,9 +152,9 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
               final subDec = jsonDecode(r.body);
               final subs = subDec['data'] is List ? subDec['data'] : [];
               for (var s in subs) {
-                final score = s['score'] ?? 0;
-                final total = s['totalPoints'] ?? 100;
-                final finalScore = total > 0 ? (score / total) * 100 : 0;
+                final score = (s['score'] ?? 0).toDouble();
+                final total = (s['totalPoints'] ?? 100).toDouble();
+                final finalScore = total > 0 ? (score / total) * 100 : 0.0;
                 allNilai.add({
                   'id': s['_id'],
                   'siswa_id': s['studentId'],
@@ -134,7 +176,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         final dB = DateTime.tryParse(b['tanggal']?.toString() ?? '') ?? DateTime(2000);
         return dB.compareTo(dA);
       });
-      
+
       _nilaiList = allNilai;
 
       if (responses[1].statusCode == 200) {
@@ -143,7 +185,7 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
         _userList = users.toList();
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      debugPrint('Error fetchData: $e');
     }
     if (mounted) setState(() => _isLoading = false);
   }
@@ -165,10 +207,8 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
 
   void _showNilaiForm([Map<String, dynamic>? nilai]) {
     final isEditing = nilai != null;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     String? selectedSiswaId = isEditing ? nilai['siswa_id'].toString() : null;
-    final judulCtrl = TextEditingController(
-        text: isEditing ? nilai['judul'] : '');
+    final judulCtrl = TextEditingController(text: isEditing ? nilai['judul'] : '');
     final nilaiCtrl = TextEditingController(
         text: isEditing ? nilai['nilai']?.toString() : '');
     final keteranganCtrl =
@@ -177,177 +217,268 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            side: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-          ),
-          title: Text(
-            isEditing ? 'Edit Nilai' : 'Input Nilai Siswa',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-          ),
-          content: SizedBox(
-            width: 500,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedSiswaId,
-                    isExpanded: true,
-                    dropdownColor: Theme.of(context).colorScheme.surface,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : AppTheme.textLight),
-                    decoration: InputDecoration(
-                      labelText: 'Pilih Siswa',
-                      labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                      prefixIcon: Icon(LucideIcons.user, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                      filled: true,
-                      fillColor: Theme.of(context).colorScheme.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 2),
-                      ),
-                    ),
-                    hint: Text('Pilih siswa...', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)),
-                    items: _userList.map<DropdownMenuItem<String>>((u) {
-                      return DropdownMenuItem<String>(
-                        value: u['id'].toString(),
-                        child: Text(u['nama'] ?? '-'),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setDialogState(() => selectedSiswaId = val),
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 520),
+            decoration: BoxDecoration(
+              color: _white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _ink, width: 2),
+              boxShadow: const [BoxShadow(color: _ink, offset: Offset(6, 6))],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 20, 20),
+                  decoration: const BoxDecoration(
+                    color: _primaryLight,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(18)),
+                    border: Border(
+                        bottom: BorderSide(color: _ink, width: 2)),
                   ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  _buildFormInput('Judul / Topik', judulCtrl, LucideIcons.bookOpen, isDark),
-                  
-                  const SizedBox(height: 16),
-                  
-                  _buildFormInput('Nilai (0-100)', nilaiCtrl, LucideIcons.award, isDark, isNumber: true),
-                  
-                  const SizedBox(height: 16),
-                  
-                  _buildFormInput('Keterangan / Catatan', keteranganCtrl, LucideIcons.messageSquare, isDark, isMultiLine: true),
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: _primary,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: _ink, width: 2),
+                        ),
+                        child: const Icon(LucideIcons.clipboardEdit,
+                            color: _white, size: 20),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          isEditing ? 'Edit Nilai' : 'Input Nilai Siswa',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 22,
+                            color: _ink,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(ctx),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: _white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _ink, width: 2),
+                          ),
+                          child: const Icon(LucideIcons.x,
+                              size: 16, color: _ink),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Body
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Dropdown pilih siswa
+                        _fieldLabel('Pilih Siswa'),
+                        const SizedBox(height: 6),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: _white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: _ink, width: 2),
+                            boxShadow: const [
+                              BoxShadow(color: _ink, offset: Offset(3, 3))
+                            ],
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedSiswaId,
+                              hint: Padding(
+                                padding: const EdgeInsets.only(left: 14),
+                                child: Text('Pilih siswa...',
+                                    style: GoogleFonts.inter(
+                                        color: _inkMuted, fontSize: 15)),
+                              ),
+                              isExpanded: true,
+                              dropdownColor: _white,
+                              borderRadius: BorderRadius.circular(10),
+                              icon: const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.expand_more, color: _ink),
+                              ),
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: _ink),
+                              items: _userList
+                                  .map<DropdownMenuItem<String>>((u) {
+                                return DropdownMenuItem<String>(
+                                  value: u['id'].toString(),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 14),
+                                    child: Text(u['nama'] ?? '-'),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) =>
+                                  setDialogState(() => selectedSiswaId = val),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        _fieldLabel('Judul / Topik'),
+                        const SizedBox(height: 6),
+                        _neoTextField(judulCtrl, 'Contoh: UH Bab 3',
+                            LucideIcons.bookOpen),
+
+                        const SizedBox(height: 16),
+                        _fieldLabel('Nilai (0–100)'),
+                        const SizedBox(height: 6),
+                        _neoTextField(nilaiCtrl, 'Masukkan angka 0-100',
+                            LucideIcons.award,
+                            isNumber: true),
+
+                        const SizedBox(height: 16),
+                        _fieldLabel('Keterangan (opsional)'),
+                        const SizedBox(height: 6),
+                        _neoTextField(keteranganCtrl, 'Catatan tambahan...',
+                            LucideIcons.messageSquare,
+                            isMultiLine: true),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Footer buttons
+                Container(
+                  padding:
+                      const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Row(
+                    children: [
+                      // Batal
+                      Expanded(
+                        child: _NeoBtn(
+                          label: 'Batal',
+                          bgColor: _white,
+                          fgColor: _ink,
+                          onTap: () => Navigator.pop(ctx),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Simpan
+                      Expanded(
+                        child: _NeoBtn(
+                          label: isEditing ? 'Simpan' : 'Simpan Nilai',
+                          bgColor: _primary,
+                          fgColor: _white,
+                          icon: LucideIcons.check,
+                          onTap: () async {
+                            if (selectedSiswaId == null ||
+                                nilaiCtrl.text.isEmpty) { return; }
+                            final siswa = _userList.firstWhere(
+                                (u) =>
+                                    u['id'].toString() == selectedSiswaId,
+                                orElse: () => {});
+                            final body = {
+                              'siswa_id': selectedSiswaId,
+                              'siswa_nama': siswa['nama'] ?? '-',
+                              'judul': judulCtrl.text,
+                              'nilai':
+                                  double.tryParse(nilaiCtrl.text) ?? 0,
+                              'keterangan': keteranganCtrl.text,
+                              'tipe': 'Lainnya',
+                              'guru_id': widget.userData['id'],
+                              'kelas_id': widget.teamData['id'],
+                              if (!isEditing)
+                                'tanggal': DateTime.now().toIso8601String(),
+                            };
+
+                            final url = isEditing
+                                ? '$baseUrl/api/nilai/${nilai['id']}'
+                                : '$baseUrl/api/nilai';
+                            final response = await (isEditing
+                                ? http.put(Uri.parse(url),
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization':
+                                          'Bearer ${widget.token}'
+                                    },
+                                    body: jsonEncode(body))
+                                : http.post(Uri.parse(url),
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization':
+                                          'Bearer ${widget.token}'
+                                    },
+                                    body: jsonEncode(body)));
+
+                            if (response.statusCode == 200 ||
+                                response.statusCode == 201) {
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              _fetchData();
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(
-                'Batal',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () async {
-                if (selectedSiswaId == null || nilaiCtrl.text.isEmpty) return;
-                final siswa = _userList
-                    .firstWhere((u) => u['id'].toString() == selectedSiswaId);
-                
-                final body = {
-                  'siswa_id': selectedSiswaId,
-                  'siswa_nama': siswa['nama'],
-                  'judul': judulCtrl.text,
-                  'nilai': double.tryParse(nilaiCtrl.text) ?? 0,
-                  'keterangan': keteranganCtrl.text,
-                  'tipe': 'Lainnya',
-                  'guru_id': widget.userData['id'],
-                  'kelas_id': widget.teamData['id'],
-                  if (!isEditing) 'tanggal': DateTime.now().toIso8601String(),
-                };
-
-                final url = isEditing
-                    ? '$baseUrl/api/nilai/${nilai['id']}'
-                    : '$baseUrl/api/nilai';
-                final response = await (isEditing
-                    ? http.put(Uri.parse(url),
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': 'Bearer ${widget.token}'
-                        },
-                        body: jsonEncode(body))
-                    : http.post(Uri.parse(url),
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': 'Bearer ${widget.token}'
-                        },
-                        body: jsonEncode(body)));
-
-                if (response.statusCode == 200 || response.statusCode == 201) {
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  _fetchData();
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: const BoxDecoration(
-                  color: AppTheme.indigoPrimary,
-                ),
-                child: Text(
-                  isEditing ? 'SIMPAN' : 'SIMPAN NILAI',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w900, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildFormInput(
-    String label,
+  Widget _fieldLabel(String text) => Text(
+        text,
+        style: GoogleFonts.inter(
+            fontWeight: FontWeight.w800, fontSize: 13, color: _ink),
+      );
+
+  Widget _neoTextField(
     TextEditingController ctrl,
-    IconData icon,
-    bool isDark, {
+    String hint,
+    IconData icon, {
     bool isNumber = false,
     bool isMultiLine = false,
   }) {
-    return TextFormField(
-      controller: ctrl,
-      keyboardType: isNumber ? TextInputType.number : (isMultiLine ? TextInputType.multiline : TextInputType.text),
-      maxLines: isMultiLine ? 3 : 1,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700,
-        color: isDark ? Colors.white : AppTheme.textLight),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-        prefixIcon: Icon(icon, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
+    return Container(
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _ink, width: 2),
+        boxShadow: const [BoxShadow(color: _ink, offset: Offset(3, 3))],
+      ),
+      child: TextField(
+        controller: ctrl,
+        keyboardType: isNumber
+            ? TextInputType.number
+            : (isMultiLine ? TextInputType.multiline : TextInputType.text),
+        maxLines: isMultiLine ? 3 : 1,
+        style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700, fontSize: 15, color: _ink),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.inter(color: _inkMuted, fontSize: 14),
+          prefixIcon: Icon(icon, size: 18, color: _inkMuted),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.2),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppTheme.indigoPrimary, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -355,17 +486,14 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
   String _formatDateStr(String raw) {
     try {
       final dt = DateTime.parse(raw);
-      final listHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-      final listBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-      
-      final hari = listHari[dt.weekday % 7];
-      final tanggal = dt.day;
-      final bulan = listBulan[dt.month - 1];
-      final tahun = dt.year;
-      final jam = dt.hour.toString().padLeft(2, '0');
-      final menit = dt.minute.toString().padLeft(2, '0');
-      
-      return '$hari, $tanggal $bulan $tahun, $jam:$menit';
+      const listHari = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
+      ];
+      const listBulan = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      ];
+      return '${listHari[dt.weekday % 7]}, ${dt.day} ${listBulan[dt.month - 1]} ${dt.year}';
     } catch (_) {
       return raw;
     }
@@ -373,382 +501,474 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
 
   void _showStudentDetail(dynamic siswa, List<dynamic> nilaiSiswa) {
     String activeFilter = 'Semua';
+    final filters = ['Semua', 'Assignment', 'Kuis', 'Lainnya'];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final theme = Theme.of(context);
-        final isDark = theme.brightness == Brightness.dark;
-        
-        return StatefulBuilder(
-          builder: (ctx, setModalState) {
-            final filteredNilai = activeFilter == 'Semua' 
-              ? nilaiSiswa 
-              : nilaiSiswa.where((n) {
-                  final tipe = n['tipe'] ?? 'Lainnya';
-                  return tipe == activeFilter;
-                }).toList();
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final filtered = activeFilter == 'Semua'
+              ? nilaiSiswa
+              : nilaiSiswa
+                  .where((n) => (n['tipe'] ?? 'Lainnya') == activeFilter)
+                  .toList();
 
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.85,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.zero),
-                border: Border(
-                  top: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: AppTheme.indigoPrimary.withAlpha(20),
-                          radius: 24,
-                          child: const Icon(LucideIcons.user, color: AppTheme.indigoPrimary),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                siswa['nama'] ?? '-', 
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppTheme.textLight),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Rekapitulasi Nilai Siswa', 
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt, 
-                                  fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(LucideIcons.x, size: 24, color: isDark ? Colors.white : AppTheme.textLight),
-                          onPressed: () => Navigator.pop(ctx),
-                        )
-                      ],
-                    ),
+          double avg = 0;
+          if (filtered.isNotEmpty) {
+            avg = filtered.fold(
+                    0.0,
+                    (sum, n) =>
+                        sum + (double.tryParse(n['nilai'].toString()) ?? 0)) /
+                filtered.length;
+          }
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.88,
+            decoration: const BoxDecoration(
+              color: _surface,
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                  top: BorderSide(color: _ink, width: 2),
+                  left: BorderSide(color: _ink, width: 2),
+                  right: BorderSide(color: _ink, width: 2)),
+            ),
+            child: Column(
+              children: [
+                // Drag handle
+                const SizedBox(height: 12),
+                Container(
+                  width: 48,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: _ink.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                    height: 56,
-                    child: ListView(
-                      clipBehavior: Clip.none,
-                      scrollDirection: Axis.horizontal,
-                      children: ['Semua', 'Assignment', 'Kuis', 'Lainnya'].map((k) {
-                        final selected = activeFilter == k;
-                        Color colorStart = AppTheme.indigoPrimary;
-                        Color colorEnd = const Color(0xFF818CF8);
-                        IconData icon = LucideIcons.layoutGrid;
+                ),
+                const SizedBox(height: 12),
 
-                        if (k == 'Kuis') {
-                          icon = LucideIcons.helpCircle;
-                          colorStart = const Color(0xFFF59E0B);
-                          colorEnd = const Color(0xFFFBBF24);
-                        } else if (k == 'Assignment') {
-                          icon = LucideIcons.clipboardList;
-                          colorStart = const Color(0xFF10B981);
-                          colorEnd = const Color(0xFF34D399);
-                        } else if (k == 'Lainnya') {
-                          icon = LucideIcons.fileText;
-                          colorStart = const Color(0xFF6366F1);
-                          colorEnd = const Color(0xFF818CF8);
-                        }
-                        
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: GestureDetector(
-                            onTap: () => setModalState(() => activeFilter = k),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                gradient: selected ? LinearGradient(colors: [colorStart, colorEnd]) : null,
-                                color: selected ? null : (Theme.of(context).colorScheme.surface),
-                                borderRadius: BorderRadius.zero,
-                                border: Border.all(color: selected ? Colors.transparent : (Theme.of(context).dividerColor)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(icon, size: 13, color: selected ? Colors.white : colorStart),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    k, 
-                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900,
-                                      color: selected ? Colors.white : colorStart),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: _primaryLight,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _ink, width: 2),
+                            ),
+                            child: const Icon(LucideIcons.user,
+                                color: _primary, size: 22),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  siswa['nama'] ?? '-',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 20,
+                                    color: _ink,
                                   ),
+                                ),
+                                Text(
+                                  'Rekapitulasi Nilai',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: _inkMuted,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (filtered.isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _scoreBg(avg),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: _ink, width: 2),
+                                boxShadow: const [
+                                  BoxShadow(color: _ink, offset: Offset(2, 2))
                                 ],
                               ),
+                              child: Text(
+                                'Rata-rata: ${avg.toStringAsFixed(1)}',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                  color: _scoreColor(avg),
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(ctx),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: _errorBg,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: _ink, width: 2),
+                              ),
+                              child: const Icon(LucideIcons.x,
+                                  size: 18, color: _errorFg),
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-
-                  Expanded(
-                    child: filteredNilai.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Belum ada entri nilai.', 
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(24),
-                            itemCount: filteredNilai.length,
-                            itemBuilder: (ctx, i) {
-                              final n = filteredNilai[i];
-                              final val = double.tryParse(n['nilai'].toString()) ?? 0;
-                              final tipe = n['tipe'] ?? 'Lainnya';
-                              
-                              IconData iconData = LucideIcons.fileText;
-                              Color colorStart = AppTheme.indigoPrimary;
-                              Color colorEnd = const Color(0xFF818CF8);
-                              
-                              if (tipe == 'Kuis') {
-                                iconData = LucideIcons.helpCircle;
-                                colorStart = const Color(0xFFF59E0B);
-                                colorEnd = const Color(0xFFFBBF24);
-                              } else if (tipe == 'Assignment') {
-                                iconData = LucideIcons.clipboardList;
-                                colorStart = const Color(0xFF10B981);
-                                colorEnd = const Color(0xFF34D399);
-                              } else {
-                                colorStart = const Color(0xFF6366F1);
-                                colorEnd = const Color(0xFF818CF8);
-                              }
-                              
-                              String dateStr = '';
-                              if (n['tanggal'] != null) {
-                                dateStr = _formatDateStr(n['tanggal']);
-                              }
-                              
-                              final colorScore = val >= 80 ? const Color(0xFF10B981) : (val >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: NeoCard(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  borderColor: colorStart,
-                                  padding: EdgeInsets.zero,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-                                        decoration: BoxDecoration(
-                                          color: colorStart.withAlpha(isDark ? 40 : 25),
-                                          border: Border(bottom: BorderSide(color: colorStart, width: 2)),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(colors: [colorStart, colorEnd]),
-                                                borderRadius: BorderRadius.zero,
-                                              ),
-                                              child: Icon(iconData, color: Colors.white, size: 14),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: colorStart.withAlpha(isDark ? 30 : 15),
-                                                      borderRadius: BorderRadius.zero,
-                                                    ),
-                                                    child: Text(
-                                                      tipe.toUpperCase(),
-                                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, 
-                                                        color: colorStart, 
-                                                        letterSpacing: 0.5),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    n['judul'] ?? '-',
-                                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800, 
-                                                      color: isDark ? Colors.white : AppTheme.textLight),
-                                                    maxLines: 1, 
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            if (dateStr.isNotEmpty) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: colorStart.withAlpha(20),
-                                                  borderRadius: BorderRadius.zero,
-                                                ),
-                                                child: Text(
-                                                  dateStr, 
-                                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800, 
-                                                    color: colorStart),
-                                                ),
-                                              ),
-                                            ],
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Filter chips
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: filters.map((f) {
+                            final sel = activeFilter == f;
+                            final tc = _typeColor(f);
+                            final chipColor = sel
+                                ? (tc['start'] ?? _primary)
+                                : _white;
+                            final txtColor = sel ? _white : _ink;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setModalState(() => activeFilter = f),
+                                child: AnimatedContainer(
+                                  duration:
+                                      const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: chipColor,
+                                    borderRadius:
+                                        BorderRadius.circular(100),
+                                    border:
+                                        Border.all(color: _ink, width: 2),
+                                    boxShadow: sel
+                                        ? []
+                                        : const [
+                                            BoxShadow(
+                                                color: _ink,
+                                                offset: Offset(2, 2))
                                           ],
-                                        ),
+                                  ),
+                                  child: Text(f,
+                                      style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 12,
+                                          color: txtColor)),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Container(height: 2, color: _ink.withValues(alpha: 0.1)),
+
+                // List nilai
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: _primaryLight,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: _ink, width: 2),
+                                ),
+                                child: const Icon(LucideIcons.inbox,
+                                    color: _primary, size: 28),
+                              ),
+                              const SizedBox(height: 14),
+                              Text('Belum ada nilai.',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 18,
+                                      color: _ink)),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+                          itemCount: filtered.length,
+                          itemBuilder: (ctx, i) {
+                            final n = filtered[i];
+                            final val =
+                                double.tryParse(n['nilai'].toString()) ??
+                                    0;
+                            final tipe = n['tipe'] ?? 'Lainnya';
+                            final tc = _typeColor(tipe);
+                            final accentColor = tc['start']!;
+                            final accentBg = tc['bg']!;
+
+                            IconData iconData = LucideIcons.fileText;
+                            if (tipe == 'Kuis') {
+                              iconData = LucideIcons.helpCircle;
+                            } else if (tipe == 'Assignment') {
+                              iconData = LucideIcons.clipboardList;
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: _white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border:
+                                      Border.all(color: _ink, width: 2),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: _ink,
+                                        offset: Offset(3, 3))
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    // Card header
+                                    Container(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          14, 10, 14, 10),
+                                      decoration: BoxDecoration(
+                                        color: accentBg,
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                                top: Radius.circular(12)),
+                                        border: const Border(
+                                            bottom: BorderSide(
+                                                color: _ink, width: 1.5)),
                                       ),
-                                      
-                                      Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                                              textBaseline: TextBaseline.alphabetic,
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.all(7),
+                                            decoration: BoxDecoration(
+                                              color: accentColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Icon(iconData,
+                                                color: _white, size: 13),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Skor:', 
-                                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold,
-                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                                                  tipe.toUpperCase(),
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight:
+                                                        FontWeight.w900,
+                                                    fontSize: 10,
+                                                    color: accentColor,
+                                                    letterSpacing: 0.8,
+                                                  ),
                                                 ),
-                                                const SizedBox(width: 6),
                                                 Text(
-                                                  val.toStringAsFixed(0), 
-                                                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900, 
-                                                    color: colorScore),
-                                                ),
-                                                Text(
-                                                  ' / 100', 
-                                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold,
-                                                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
+                                                  n['judul'] ?? '-',
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                    fontWeight:
+                                                        FontWeight.w800,
+                                                    fontSize: 14,
+                                                    color: _ink,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ],
                                             ),
-                                            if (n['keterangan'] != null && n['keterangan'].toString().isNotEmpty) ...[
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                '${n['keterangan']}',
-                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600,
-                                                  color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                                                maxLines: 2, 
-                                                overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (n['tanggal'] != null) ...[
+                                            Text(
+                                              _formatDateStr(
+                                                  n['tanggal'].toString()),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11,
+                                                color: _inkMuted,
+                                                fontWeight: FontWeight.w600,
                                               ),
-                                            ],
-                                            
-                                            if (n['isManual'] == true) ...[
-                                              const SizedBox(height: 12),
-                                              Divider(height: 1, color: Theme.of(context).dividerColor),
-                                              const SizedBox(height: 12),
-                                              Row(
-                                                children: [
-                                                  Icon(LucideIcons.pencil, size: 12, color: colorStart),
-                                                  const SizedBox(width: 6),
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Input Manual', 
-                                                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, 
-                                                        color: colorStart),
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      Navigator.pop(ctx); 
-                                                      _showNilaiForm(n);
-                                                    },
-                                                    borderRadius: BorderRadius.zero,
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                      decoration: BoxDecoration(
-                                                        color: colorStart.withAlpha(20),
-                                                        borderRadius: BorderRadius.zero,
-                                                        border: Border.all(color: colorStart.withAlpha(50)),
-                                                      ),
-                                                      child: Row(
-                                                        children: [
-                                                          Icon(LucideIcons.edit3, size: 11, color: colorStart),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            'Edit', 
-                                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, color: colorStart),
-                                                          ),
-                                                        ],
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    // Card body
+                                    Padding(
+                                      padding: const EdgeInsets.all(14),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .baseline,
+                                                  textBaseline:
+                                                      TextBaseline.alphabetic,
+                                                  children: [
+                                                    Text(
+                                                      val.toStringAsFixed(0),
+                                                      style: GoogleFonts
+                                                          .plusJakartaSans(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: 36,
+                                                        color:
+                                                            _scoreColor(val),
+                                                        height: 1,
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      Navigator.pop(ctx);
-                                                      _deleteNilai(n['id'].toString());
-                                                    },
-                                                    borderRadius: BorderRadius.zero,
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                      decoration: BoxDecoration(
-                                                        color: AppTheme.error.withAlpha(20),
-                                                        borderRadius: BorderRadius.zero,
-                                                        border: Border.all(color: AppTheme.error.withAlpha(50)),
-                                                      ),
-                                                      child: Row(
-                                                        children: [
-                                                          const Icon(LucideIcons.trash2, size: 11, color: AppTheme.error),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            'Hapus', 
-                                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900, color: AppTheme.error),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                    Text(' / 100',
+                                                        style: GoogleFonts.inter(
+                                                            fontSize: 13,
+                                                            color: _inkMuted,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                  ],
+                                                ),
+                                                if (n['keterangan'] !=
+                                                        null &&
+                                                    n['keterangan']
+                                                        .toString()
+                                                        .isNotEmpty) ...[
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    n['keterangan'],
+                                                    style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        color: _inkMuted,
+                                                        fontWeight: FontWeight
+                                                            .w500),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ],
+                                              ],
+                                            ),
+                                          ),
+                                          // Score badge
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: _scoreBg(val),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                  color: _ink, width: 1.5),
+                                            ),
+                                            child: Text(
+                                              val >= 80
+                                                  ? 'Bagus 🎉'
+                                                  : val >= 60
+                                                      ? 'Cukup'
+                                                      : 'Perlu\nPerbaikan',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 11,
+                                                color: _scoreColor(val),
                                               ),
-                                            ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Edit/Delete (manual only)
+                                    if (n['isManual'] == true)
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            14, 0, 14, 12),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            _SmallBtn(
+                                              label: 'Edit',
+                                              icon: LucideIcons.pencil,
+                                              color: _primary,
+                                              bgColor: _primaryLight,
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _showNilaiForm(
+                                                    Map<String,
+                                                            dynamic>.from(n));
+                                              },
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _SmallBtn(
+                                              label: 'Hapus',
+                                              icon: LucideIcons.trash2,
+                                              color: _errorFg,
+                                              bgColor: _errorBg,
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _deleteNilai(
+                                                    n['id'].toString());
+                                              },
+                                            ),
                                           ],
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+                              ).animate(delay: (i * 40).ms).fadeIn(duration: 300.ms).slideY(begin: 0.05),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_isLoading) return _buildSkeleton();
 
-    if (_isLoading) {
-      return AppShell(child: _buildSkeleton());
-    }
-
-    final filteredUsers = _searchQuery.isEmpty 
-      ? _userList 
-      : _userList.where((u) => (u['nama'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    final filteredUsers = _searchQuery.isEmpty
+        ? _userList
+        : _userList
+            .where((u) => (u['nama'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()))
+            .toList();
 
     final Map<String, List<dynamic>> groupedNilai = {};
     for (var u in filteredUsers) {
@@ -761,127 +981,214 @@ class _GuruNilaiViewState extends State<GuruNilaiView> {
       }
     }
 
-    return AppShell(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _showNilaiForm(),
-          backgroundColor: AppTheme.indigoPrimary,
-          foregroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-          icon: const Icon(LucideIcons.plusCircle, size: 18),
-          label: Text('Input Nilai', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800)),
-        ),
-        body: _userList.isEmpty
-            ? const EmptyState(
-                icon: LucideIcons.users,
-                message: 'Belum ada siswa\ndi kelas ini.',
-                color: Color(0xFF10B981))
-            : Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2),
-                        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface, offset: const Offset(4, 4), blurRadius: 0)],
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: _NeoFAB(
+        label: 'Input Nilai',
+        icon: LucideIcons.plusCircle,
+        onTap: () => _showNilaiForm(),
+      ),
+      body: _userList.isEmpty
+          ? _buildEmpty()
+          : Column(
+              children: [
+                // Search bar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _ink, width: 2),
+                      boxShadow: const [
+                        BoxShadow(color: _ink, offset: Offset(4, 4))
+                      ],
+                    ),
+                    child: TextField(
+                      onChanged: (val) =>
+                          setState(() => _searchQuery = val),
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700, color: _ink),
+                      decoration: InputDecoration(
+                        hintText: 'Cari nama siswa...',
+                        hintStyle:
+                            GoogleFonts.inter(color: _inkMuted, fontSize: 15),
+                        prefixIcon: const Icon(LucideIcons.search,
+                            size: 18, color: _inkMuted),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
                       ),
-                      child: TextField(
-                        onChanged: (val) => setState(() => _searchQuery = val),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textLight),
-                        decoration: InputDecoration(
-                          hintText: 'Cari nama siswa...',
-                          hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                          prefixIcon: Icon(LucideIcons.search, size: 18, color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        ),
-                      ),
-                    ).animate().fadeIn().slideY(begin: -0.1),
-                  ),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: _fetchData,
-                      child: filteredUsers.isEmpty 
+                    ),
+                  ).animate().fadeIn().slideY(begin: -0.1),
+                ),
+
+                // Stats row
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                  child: Row(
+                    children: [
+                      _StatChip(
+                          label: 'Siswa',
+                          value: '${_userList.length}',
+                          icon: LucideIcons.users),
+                      const SizedBox(width: 10),
+                      _StatChip(
+                          label: 'Total Nilai',
+                          value: '${_nilaiList.length}',
+                          icon: LucideIcons.clipboardList),
+                    ],
+                  ).animate().fadeIn(delay: 100.ms),
+                ),
+
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _fetchData,
+                    color: _primary,
+                    child: filteredUsers.isEmpty
                         ? Center(
-                            child: Text(
-                              'Siswa tidak ditemukan.', 
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                                fontWeight: FontWeight.bold),
-                            ),
-                          )
+                            child: Text('Siswa tidak ditemukan.',
+                                style: GoogleFonts.inter(
+                                    color: _inkMuted,
+                                    fontWeight: FontWeight.w600)))
                         : LayoutBuilder(
                             builder: (ctx, c) {
                               final w = c.maxWidth;
-                              final padding = Breakpoints.screenPadding(w);
-                              final crossCount = w >= Breakpoints.tablet
+                              final crossCount = w >= 900
                                   ? 3
-                                  : (w >= Breakpoints.mobile ? 2 : 1);
+                                  : (w >= 600 ? 2 : 1);
 
                               return GridView.builder(
-                                padding: padding.copyWith(top: 8, bottom: 100),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                padding: const EdgeInsets.fromLTRB(
+                                    20, 0, 20, 100),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: crossCount,
                                   crossAxisSpacing: 16,
                                   mainAxisSpacing: 16,
-                                  childAspectRatio: crossCount == 1 ? 2.5 : 1.6,
+                                  childAspectRatio:
+                                      crossCount == 1 ? 2.4 : 1.5,
                                 ),
                                 itemCount: filteredUsers.length,
                                 itemBuilder: (_, i) {
                                   final siswa = filteredUsers[i];
                                   final sId = siswa['id'].toString();
                                   final nList = groupedNilai[sId] ?? [];
-                                  
                                   double avg = 0;
                                   if (nList.isNotEmpty) {
-                                    double sum = 0;
-                                    for (var n in nList) {
-                                      sum += double.tryParse(n['nilai'].toString()) ?? 0;
-                                    }
-                                    avg = sum / nList.length;
+                                    avg = nList.fold(
+                                            0.0,
+                                            (s, n) =>
+                                                s +
+                                                (double.tryParse(
+                                                        n['nilai'].toString()) ??
+                                                    0)) /
+                                        nList.length;
                                   }
 
-                                  return _GuruRekapCard(
+                                  return _RekapCard(
                                     siswa: siswa,
                                     avg: avg,
                                     count: nList.length,
-                                    onTap: () => _showStudentDetail(siswa, nList),
+                                    onTap: () =>
+                                        _showStudentDetail(siswa, nList),
                                   )
-                                      .animate(delay: (i * 30).ms)
-                                      .fadeIn(duration: 400.ms)
-                                      .slideY(begin: 0.1, curve: Curves.easeOutQuart);
+                                      .animate(delay: (i * 35).ms)
+                                      .fadeIn(duration: 350.ms)
+                                      .slideY(
+                                          begin: 0.1,
+                                          curve: Curves.easeOutQuart);
                                 },
                               );
                             },
                           ),
-                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _ink, width: 2),
+          boxShadow: const [BoxShadow(color: _ink, offset: Offset(4, 4))],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: _primaryLight,
+              shape: BoxShape.circle,
+              border: Border.all(color: _ink, width: 2),
+            ),
+            child: const Icon(LucideIcons.users, color: _primary, size: 30),
+          ),
+          const SizedBox(height: 16),
+          Text('Belum ada siswa\ndi kelas ini.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800, fontSize: 20, color: _ink)),
+        ]),
       ),
     );
   }
 
   Widget _buildSkeleton() {
-    return GridView.count(
-      padding: const EdgeInsets.all(24),
-      crossAxisCount: 2,
-      childAspectRatio: 1.8,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: List.generate(6, (_) => const SkeletonLoader()),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: _white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _ink, width: 2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                childAspectRatio: 1.5,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: List.generate(
+                    6,
+                    (_) => Container(
+                          decoration: BoxDecoration(
+                            color: _white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: _ink, width: 2),
+                          ),
+                        )),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _GuruRekapCard extends StatelessWidget {
+// ── Rekap Card ────────────────────────────────────────────────────────────────
+class _RekapCard extends StatefulWidget {
   final dynamic siswa;
   final double avg;
   final int count;
   final VoidCallback onTap;
 
-  const _GuruRekapCard({
+  const _RekapCard({
     required this.siswa,
     required this.avg,
     required this.count,
@@ -889,126 +1196,331 @@ class _GuruRekapCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = avg >= 80
-        ? const Color(0xFF10B981)
-        : (avg >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
-    final borderColor = count == 0
-        ? Theme.of(context).colorScheme.onSurface
-        : color;
+  State<_RekapCard> createState() => _RekapCardState();
+}
 
+class _RekapCardState extends State<_RekapCard> {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = widget.count > 0;
+    final accent = hasData ? _scoreColor(widget.avg) : _inkMuted;
+    final accentBg = hasData ? _scoreBg(widget.avg) : const Color(0xFFF0F4F8);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          transform: Matrix4.translationValues(
+            _isPressed ? 2 : (_isHovered ? -2 : 0),
+            _isPressed ? 2 : (_isHovered ? -2 : 0),
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: _white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _ink, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: _ink,
+                offset: _isPressed
+                    ? const Offset(2, 2)
+                    : (_isHovered ? const Offset(6, 6) : const Offset(4, 4)),
+              )
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Nama siswa + icon
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _primaryLight,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _ink, width: 2),
+                    ),
+                    child:
+                        const Icon(LucideIcons.user, color: _primary, size: 14),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.siswa['nama'] ?? '-',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: _ink,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(LucideIcons.chevronRight,
+                      size: 16, color: _inkMuted),
+                ],
+              ),
+
+              // Score + count
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        hasData ? widget.avg.toStringAsFixed(1) : '-',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 36,
+                          color: accent,
+                          letterSpacing: -1,
+                          height: 1,
+                        ),
+                      ),
+                      if (hasData)
+                        Text(' rata-rata',
+                            style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: _inkMuted,
+                                fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: accentBg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: _ink, width: 1.5),
+                    ),
+                    child: Text(
+                      hasData ? '${widget.count} NILAI' : 'BELUM ADA',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        color: accent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Small action button ───────────────────────────────────────────────────────
+class _SmallBtn extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color bgColor;
+  final VoidCallback onTap;
+
+  const _SmallBtn(
+      {required this.label,
+      required this.icon,
+      required this.color,
+      required this.bgColor,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.onSurface,
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.onSurface,
-              offset: const Offset(4, 4),
-              blurRadius: 0,
-            ),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _ink, width: 1.5),
+          boxShadow: const [BoxShadow(color: _ink, offset: Offset(2, 2))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 5),
+            Text(label,
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w800, fontSize: 12, color: color)),
           ],
         ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      ),
+    );
+  }
+}
+
+// ── Neo FAB ───────────────────────────────────────────────────────────────────
+class _NeoFAB extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _NeoFAB(
+      {required this.label, required this.icon, required this.onTap});
+
+  @override
+  State<_NeoFAB> createState() => _NeoFABState();
+}
+
+class _NeoFABState extends State<_NeoFAB> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.translationValues(
+            _isPressed ? 2 : 0, _isPressed ? 2 : 0, 0),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: _primary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _ink, width: 2),
+          boxShadow: _isPressed
+              ? const [BoxShadow(color: _ink, offset: Offset(2, 2))]
+              : const [BoxShadow(color: _ink, offset: Offset(4, 4))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.indigoPrimary.withAlpha(20),
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        offset: const Offset(2, 2),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(LucideIcons.user, color: AppTheme.indigoPrimary, size: 14),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    siswa['nama'] ?? '-',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : AppTheme.textLight,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Icon(LucideIcons.chevronRight, size: 16,
-                    color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      count == 0 ? '-' : avg.toStringAsFixed(1),
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: count == 0
-                            ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)
-                            : borderColor,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    if (count > 0) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        'rata-rata',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: count == 0
-                        ? Theme.of(context).colorScheme.onSurface.withAlpha(20)
-                        : borderColor.withAlpha(20),
-                    border: Border.all(
-                      color: count == 0
-                          ? Theme.of(context).colorScheme.onSurface
-                          : borderColor,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Text(
-                    count == 0 ? 'BELUM ADA' : '$count NILAI',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: count == 0
-                          ? (isDark ? AppTheme.textMutedDk : AppTheme.textMutedLt)
-                          : borderColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            Icon(widget.icon, color: _white, size: 18),
+            const SizedBox(width: 10),
+            Text(widget.label,
+                style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: _white)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Stat chip ─────────────────────────────────────────────────────────────────
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _StatChip(
+      {required this.label, required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: _primaryLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _ink, width: 2),
+        boxShadow: const [BoxShadow(color: _ink, offset: Offset(2, 2))],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: _primary),
+          const SizedBox(width: 7),
+          Text('$label: ',
+              style: GoogleFonts.inter(
+                  fontSize: 13, color: _inkMuted, fontWeight: FontWeight.w600)),
+          Text(value,
+              style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: _ink,
+                  fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Neo Button ────────────────────────────────────────────────────────────────
+class _NeoBtn extends StatefulWidget {
+  final String label;
+  final Color bgColor;
+  final Color fgColor;
+  final IconData? icon;
+  final VoidCallback? onTap;
+
+  const _NeoBtn(
+      {required this.label,
+      required this.bgColor,
+      required this.fgColor,
+      this.icon,
+      this.onTap});
+
+  @override
+  State<_NeoBtn> createState() => _NeoBtnState();
+}
+
+class _NeoBtnState extends State<_NeoBtn> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) =>
+          {if (widget.onTap != null) setState(() => _isPressed = true)},
+      onTapUp: (_) =>
+          {if (widget.onTap != null) setState(() => _isPressed = false)},
+      onTapCancel: () =>
+          {if (widget.onTap != null) setState(() => _isPressed = false)},
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.translationValues(
+            _isPressed ? 2 : 0, _isPressed ? 2 : 0, 0),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: widget.onTap == null
+              ? Colors.grey.shade300
+              : widget.bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _ink, width: 2),
+          boxShadow: _isPressed || widget.onTap == null
+              ? []
+              : const [BoxShadow(color: _ink, offset: Offset(3, 3))],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.icon != null) ...[
+              Icon(widget.icon, color: widget.fgColor, size: 16),
+              const SizedBox(width: 8),
+            ],
+            Text(widget.label,
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    color: widget.fgColor)),
           ],
         ),
       ),
