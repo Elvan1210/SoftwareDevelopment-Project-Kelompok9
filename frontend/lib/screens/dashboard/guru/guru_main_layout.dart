@@ -355,8 +355,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                         style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                     actions: [
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
                       NotificationBell(
                         userData: widget.userData,
                         token: widget.token,
@@ -417,8 +415,6 @@ class _GuruMainLayoutState extends State<GuruMainLayout> {
                           color: Theme.of(context).textTheme.bodyLarge!.color!,
                           letterSpacing: -0.5)),
                     Row(children: [
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
                       NotificationBell(
                         userData: widget.userData,
                         token: widget.token,

@@ -10,7 +10,8 @@ const createCrudController = (collectionName) => ({
   // GET /api/:collection
   getAll: async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit) || 50;
+      const hasDateRange = req.query.start_date || req.query.end_date;
+      const limit = parseInt(req.query.limit) || (hasDateRange ? 5000 : 50);
       const offset = parseInt(req.query.offset) || 0;
       
       let queryRef = db.collection(collectionName);
@@ -36,14 +37,16 @@ const createCrudController = (collectionName) => ({
       // In-memory filter for start_date and end_date
       if (req.query.start_date || req.query.end_date) {
         data = data.filter(item => {
-          if (!item.tanggal) return true; // if no date, don't filter out or decide policy. We'll allow it.
+          if (!item.tanggal) return true;
           const itemDate = new Date(item.tanggal);
           if (req.query.start_date) {
             const start = new Date(req.query.start_date);
+            start.setHours(0, 0, 0, 0);
             if (itemDate < start) return false;
           }
           if (req.query.end_date) {
             const end = new Date(req.query.end_date);
+            end.setHours(23, 59, 59, 999); // inclusive end of day
             if (itemDate > end) return false;
           }
           return true;

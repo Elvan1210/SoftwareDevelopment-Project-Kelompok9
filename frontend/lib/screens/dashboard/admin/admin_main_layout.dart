@@ -572,8 +572,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                           fontWeight: FontWeight.w900, letterSpacing: -0.5, color: Theme.of(context).textTheme.bodyLarge!.color!),
                     ),
                     actions: [
-                      const ThemeToggle(),
-                      const SizedBox(width: 8),
                       NotificationBell(
                         userData: _adminUserData,
                         token: widget.token,
@@ -663,8 +661,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               ],
             ),
             actions: [
-              const ThemeToggle(),
-              const SizedBox(width: 4),
               NotificationBell(
                 userData: _adminUserData,
                 token: widget.token,

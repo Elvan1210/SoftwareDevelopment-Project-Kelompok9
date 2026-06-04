@@ -91,44 +91,61 @@ class _SiswaProfilViewState extends State<SiswaProfilView> {
               bottom: 100,
             ),
             child: isWide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 8,
-                        child: Column(
+                ? Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 960),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _ProfileCard(initials: initials, nama: nama, role: role, photoUrl: photoUrl, onUpdated: _loadUserData),
-                            const SizedBox(height: 20),
-                            _StatusCard(
-                              userId: userId,
-                              initialStatus: currentStatus,
-                              onStatusChanged: _loadUserData,
+                            // LEFT — full height profile card
+                            Expanded(
+                              flex: 5,
+                              child: _ProfileCard(
+                                initials: initials,
+                                nama: nama,
+                                role: role,
+                                photoUrl: photoUrl,
+                                onUpdated: _loadUserData,
+                                fullHeight: true,
+                              ),
                             ),
-                            const SizedBox(height: 20),
-                            const _ActionCard(),
+                            const SizedBox(width: 20),
+                            // RIGHT — info + status + logout
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _InfoCard(email: email),
+                                  const SizedBox(height: 16),
+                                  _StatusCard(
+                                    userId: userId,
+                                    initialStatus: currentStatus,
+                                    onStatusChanged: _loadUserData,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const _ActionCard(),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        flex: 4,
-                        child: _InfoCard(email: email),
-                      ),
-                    ],
+                    ),
                   )
                 : Column(
                     children: [
                       _ProfileCard(initials: initials, nama: nama, role: role, photoUrl: photoUrl, onUpdated: _loadUserData),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
                       _InfoCard(email: email),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
                       _StatusCard(
                         userId: userId,
                         initialStatus: currentStatus,
                         onStatusChanged: _loadUserData,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
                       const _ActionCard(),
                     ],
                   ),
@@ -145,6 +162,7 @@ class _ProfileCard extends StatefulWidget {
   final String role;
   final String photoUrl;
   final VoidCallback onUpdated;
+  final bool fullHeight;
 
   const _ProfileCard({
     required this.initials,
@@ -152,6 +170,7 @@ class _ProfileCard extends StatefulWidget {
     required this.role,
     required this.photoUrl,
     required this.onUpdated,
+    this.fullHeight = false,
   });
 
   @override
@@ -187,6 +206,7 @@ class _ProfileCardState extends State<_ProfileCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: double.infinity,
+        height: widget.fullHeight ? double.infinity : null,
         padding: const EdgeInsets.all(32),
         transform: Matrix4.translationValues(
           _isHovered ? -2 : 0,
@@ -204,11 +224,11 @@ class _ProfileCardState extends State<_ProfileCard> {
             )
           ],
         ),
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          alignment: WrapAlignment.center,
-          spacing: 32,
-          runSpacing: 24,
+        child: Column(
+          mainAxisAlignment: widget.fullHeight
+              ? MainAxisAlignment.center
+              : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             GestureDetector(
               onTap: _pickAndCropImage,
@@ -218,7 +238,7 @@ class _ProfileCardState extends State<_ProfileCard> {
                   AvatarWidget(
                     initial: widget.initials,
                     photoUrl: widget.photoUrl,
-                    size: 128,
+                    size: widget.fullHeight ? 160 : 128,
                     bgColor: _surface,
                     textColor: _primary,
                   ),
@@ -238,34 +258,31 @@ class _ProfileCardState extends State<_ProfileCard> {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            const SizedBox(height: 24),
+            Text(
+              widget.nama,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: widget.fullHeight ? 32 : 28,
+                color: _onPrimaryContainer,
+                letterSpacing: -0.56,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const Icon(Icons.school, color: _onSurfaceVariant, size: 18),
+                const SizedBox(width: 8),
                 Text(
-                  widget.nama,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 28, // md:text-32
-                    color: _onPrimaryContainer,
-                    letterSpacing: -0.56,
+                  widget.role,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 18,
+                    color: _onSurfaceVariant,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.school, color: _onSurfaceVariant, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.role,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 18,
-                        color: _onSurfaceVariant,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -321,22 +338,44 @@ class _InfoCardState extends State<_InfoCard> {
                 fontWeight: FontWeight.w700,
                 fontSize: 12,
                 color: _onSurfaceVariant,
-                letterSpacing: 0.6, // 0.05em
+                letterSpacing: 0.6,
               ),
             ),
             const SizedBox(height: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Email', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12, color: _primary, letterSpacing: 0.6)),
-                Text(widget.email, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 16, color: _onSurface)),
-              ],
-            ),
-
+            _infoRow(Icons.email_outlined, 'Email', widget.email),
+            const SizedBox(height: 12),
+            _infoRow(Icons.school_outlined, 'Role', 'Siswa'),
           ],
         ),
       ),
     ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.1);
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: _primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: _primary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 11, color: _primary, letterSpacing: 0.5)),
+              const SizedBox(height: 2),
+              Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 14, color: _onSurface)),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -413,7 +452,7 @@ class _StatusCardState extends State<_StatusCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: double.infinity,
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(20),
         transform: Matrix4.translationValues(
           _isHovered ? -2 : 0,
           _isHovered ? -2 : 0,
@@ -440,12 +479,12 @@ class _StatusCardState extends State<_StatusCard> {
                   'Status Chat',
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.w700,
-                    fontSize: 24,
+                    fontSize: 18,
                     color: _onSurface,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: _primary,
                     borderRadius: BorderRadius.circular(4),
@@ -455,7 +494,7 @@ class _StatusCardState extends State<_StatusCard> {
                     'LIVE',
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w700,
-                      fontSize: 12,
+                      fontSize: 11,
                       color: Colors.white,
                       letterSpacing: 0.6,
                     ),
@@ -463,9 +502,8 @@ class _StatusCardState extends State<_StatusCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             Container(
-              constraints: const BoxConstraints(maxWidth: 448), // max-w-md
               decoration: BoxDecoration(
                 border: Border.all(color: _onSurface, width: 2),
                 color: Colors.white,
@@ -650,7 +688,7 @@ class _ActionCardState extends State<_ActionCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
           transform: Matrix4.translationValues(
             _isPressed || _isHovered ? 2 : 0,
             _isPressed || _isHovered ? 2 : 0,
@@ -667,13 +705,13 @@ class _ActionCardState extends State<_ActionCard> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.logout, color: _onErrorContainer, size: 24),
-              const SizedBox(width: 16),
+              const Icon(Icons.logout, color: _onErrorContainer, size: 20),
+              const SizedBox(width: 12),
               Text(
                 'Keluar dari Akun',
                 style: GoogleFonts.plusJakartaSans(
                   fontWeight: FontWeight.w700,
-                  fontSize: 24,
+                  fontSize: 16,
                   color: _onErrorContainer,
                 ),
               ),
