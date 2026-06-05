@@ -586,7 +586,7 @@ class _GuruQuizViewState extends State<GuruQuizView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.red.withOpacity(0.2) : Colors.red.withOpacity(0.1),
+                      color: isDark ? Colors.red.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.1),
                       border: Border.all(color: AppTheme.error, width: 2),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -617,9 +617,9 @@ class _GuruQuizViewState extends State<GuruQuizView> {
         child: Container(
           padding: const EdgeInsets.all(40),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.4),
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.4),
             border: Border.all(
-              color: isDark ? Colors.white24 : Colors.black.withOpacity(0.3),
+              color: isDark ? Colors.white24 : Colors.black.withValues(alpha: 0.3),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(16),
@@ -864,11 +864,43 @@ class _QuizCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
-                      const SizedBox(width: 16),
-                      
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Info Chips and Actions
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 12,
+                        children: [
+                          _InfoChip(
+                            icon: LucideIcons.fileText,
+                            label: '${quiz.questions.length} Soal',
+                            isDark: isDark,
+                          ),
+                          if (quiz.isScheduled && quiz.scheduledAt != null)
+                            _InfoChip(
+                              icon: LucideIcons.calendar,
+                              label: DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!),
+                              isDark: isDark,
+                            )
+                          else 
+                            _InfoChip(
+                              icon: LucideIcons.calendar,
+                              label: 'Tidak terjadwal',
+                              isDark: isDark,
+                            ),
+                        ],
+                      ),
                       // Actions (Edit, Share, Delete)
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           _SmallActionButton(
                             icon: LucideIcons.edit2,
@@ -892,32 +924,6 @@ class _QuizCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  
-                  // Info Chips
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 12,
-                    children: [
-                      _InfoChip(
-                        icon: LucideIcons.fileText,
-                        label: '${quiz.questions.length} Soal',
-                        isDark: isDark,
-                      ),
-                      if (quiz.isScheduled && quiz.scheduledAt != null)
-                        _InfoChip(
-                          icon: LucideIcons.calendar,
-                          label: DateFormat('dd MMM yyyy, HH:mm').format(quiz.scheduledAt!),
-                          isDark: isDark,
-                        )
-                      else 
-                        _InfoChip(
-                          icon: LucideIcons.calendar,
-                          label: 'Tidak terjadwal',
-                          isDark: isDark,
-                        ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -927,7 +933,7 @@ class _QuizCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: isDark ? Colors.white38 : Colors.black.withOpacity(0.1), width: 1.5),
+                  top: BorderSide(color: isDark ? Colors.white38 : Colors.black.withValues(alpha: 0.1), width: 1.5),
                 ),
               ),
               child: Row(
@@ -960,7 +966,7 @@ class _QuizCard extends StatelessWidget {
                       child: _BottomButton(
                         icon: LucideIcons.eyeOff,
                         label: 'LIVE MONITORING',
-                        color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFE8F6FF),
+                        color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFE8F6FF),
                         textColor: isDark ? Colors.white38 : const Color(0xFFC1C8C2),
                         onTap: () {},
                         isDark: isDark,
@@ -1110,8 +1116,8 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFDBF1FF), // surface-container
-        border: Border.all(color: isDark ? Colors.white24 : Colors.black.withOpacity(0.1), width: 1.5),
+        color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFDBF1FF), // surface-container
+        border: Border.all(color: isDark ? Colors.white24 : Colors.black.withValues(alpha: 0.1), width: 1.5),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

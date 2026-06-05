@@ -737,7 +737,7 @@ class _MateriCardNeoState extends State<_MateriCardNeo> {
     if (url.startsWith('http://')) {
       return url.replaceFirst('http://', 'https://');
     } else if (!url.startsWith('https://')) {
-      return 'https://' + url;
+      return 'https://$url';
     }
     return url;
   }
