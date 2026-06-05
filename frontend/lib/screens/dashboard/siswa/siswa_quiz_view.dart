@@ -133,7 +133,8 @@ class _SiswaQuizViewState extends State<SiswaQuizView> {
       deviceId: _deviceId,
     );
 
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    Navigator.pop(context);
 
     if (lockRes['success'] != true) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -15,7 +15,6 @@ import '../../../config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../widgets/notification_bell.dart';
 import '../../../widgets/app_shell.dart';
-import '../../../widgets/theme_toggle.dart';
 import '../../../widgets/jitsi_embed.dart';
 
 
@@ -666,7 +665,6 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
     final primaryBg = isDark ? const Color(0xFF0F1420) : const Color(0xFFF4FAFF);
     final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
     final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
-    final shadowColor = isDark ? Colors.white.withAlpha(20) : const Color(0xFF001E2B);
     
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
@@ -738,9 +736,8 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
 
   Widget _buildChannelTab(String label, String tabId, bool isDark) {
     final isActive = _activeTabID == tabId;
-    final onSurface = isDark ? Colors.white : const Color(0xFF001E2B);
     final onSurfaceVariant = isDark ? Colors.white70 : const Color(0xFF414944);
-    final primary = const Color(0xFF3D6754);
+    const primary = Color(0xFF3D6754);
 
     return GestureDetector(
       onTap: () => setState(() {
@@ -751,7 +748,7 @@ class _GuruTeamDetailLayoutState extends State<GuruTeamDetailLayout> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
-          border: isActive ? Border(bottom: BorderSide(color: primary, width: 3)) : null,
+          border: isActive ? const Border(bottom: BorderSide(color: primary, width: 3)) : null,
         ),
         child: Text(label,
             style: TextStyle(
